@@ -35,29 +35,41 @@
         }
         .r-navbar {
           position: fixed;
-          top: 0;
-          left: 95%;
-          width: var(--nav-width);
-          height: 100vh;
+          top: 10%;
+          left: 91%;
+          width: var(--nav-width) + 7;
+          height: 25vh;
           background-color: var(--first-color);
           padding: .5rem 1rem 1rem;
           transition: .5s;
           z-index: var(--z-fixed);
           background-color: #f8f9f8; /* Black fallback color */
           border-left: 2px solid black;
+          border-top: 2px solid black;
+          border-bottom: 2px solid black;
+          border-radius: 25px 0 0 25px;
         }
-
-
-
+        .r-navbar a {
+          padding: 8px;
+          text-decoration: none;
+          font-size: 15px;
+          color: #818181;
+          display: block; /* Display block instead of inline */
+          transition: 0.2s; /* Transition effects on hover (color) */
+        }
+        /* When you mouse over the navigation links, change their color */
+        .r-navbar a:hover, .overlay a:focus {
+          color: #f1f1f1;
+        }
 
         /* GenAI tools menu */
         .overlay {
           /* Height & width depends on how you want to reveal the overlay (see JS below) */
           height: 100%;
-          width: 0;
+          width: 0%;
           position: fixed; /* Stay in place */
           z-index: 1; /* Sit on top */
-          left: 0;
+          right: 0;
           top: 0;
           background-color: rgb(255,255,255); /* Black fallback color */
           background-color: rgba(255,255,255, 1); /* Black w/opacity */
@@ -148,7 +160,16 @@
             <genai-sidebar class="r-navbar">
               <div>
                 <h3>GenAI</h3>
-                </div>
+                <a href="">Validation</a>
+                <a href="">Content</a>
+                <a href="">Metadata</a>
+
+                <!-- Use any element to open/show the overlay navigation menu -->
+                <button><span onclick="openNav()">report</span></button>
+
+
+
+              </div>
             </genai-sidebar>
             <h1 _ngcontent-ng-c3392822675="" class="visually-hidden ng-tns-c3392822675-0">UPD | UX projects | Home</h1>
             <main _ngcontent-ng-c3392822675="" style="min-height: 100%;" class="ng-tns-c3392822675-0 ng-trigger ng-trigger-routeAnimations">
@@ -162,21 +183,94 @@
                         <div tabindex="0" class="card pt-2">
                            <div class="card-body card-pad pt-2 h-100">
                               <div class=" justify-content-between">
-                                 <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                   Page content
-                                 </h3>
-                                 <!-- This should theoretically allow for a page load, but Canada.ca has x-frame options set to deny, so it's being blocked - I wonder if there's a way to specifically allow it for certain websites or tools from the AEM end? -->
 
-                                 <iframe
-                                     src="https://www.canada.ca/en/revenue-agency.html"
-                                     name="targetframe"
-                                     allowTransparency="true"
-                                     scrolling="no"
-                                     frameborder="0"
-                                     width="100%"
-                                     height="100%"
-                                 >
-                                 </iframe>
+                                <!-- probably want to add some kind of reset button -->
+                                <button id="reset-btn" style="margin-bottom:20px;">Go back to upload options</button>
+
+
+                                <div id="upload-chooser">
+                                    <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Choose a genAI tool</h3>
+                                    <!-- Radio buttons for URL analysis, HTML snippet upload, image upload -->
+                                    <fieldset>
+                                      <legend>What do you want to upload?</legend>
+                                      <input type="radio" id="url" name="upload-option" value="url">
+                                      <label for="url">A page by URL</label><br>
+                                      <input type="radio" id="html" name="upload-option" value="html">
+                                      <label for="html">Content or HTML snippet</label><br>
+                                      <input type="radio" id="image" name="upload-option" value="image">
+                                      <label for="image">Image</label><br>
+                                      <!-- <button id="upload-chooser-btn">Continue</button> -->
+                                    </fieldset>
+                                </div>
+                                <div id="url-upload" class="hidden">
+                                  <div id="url-upload-input" style="margin-bottom:20px;">
+                                    <fieldset>
+                                      <legend>Enter the URL of the github page</legend>
+                                      <p class="small">Canada.ca is not yet supported</p>
+                                      <input id="url-input" type="text">
+                                      <button id="url-upload-btn">Continue</button>
+                                    </fieldset>
+                                  </div>
+                                  <div id="url-upload-preview" class="hidden">
+                                    <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                                      Page preview
+                                    </h3>
+                                    <!-- This should theoretically allow for a page load, but Canada.ca has x-frame options set to deny, so it's being blocked - works for github for the moment though... Maybe there's a way on the AEM side to configure to specifically allow this tool to iframe pages? -->
+                                    <!-- <div style="border:black solid 1px;" -->
+
+                                    <!-- add some kind of tabbed interface with preview + code tabs? -->
+
+                                      <iframe
+                                           id="url-frame"
+                                           src=""
+                                           name="targetframe"
+                                           allowTransparency="true"
+                                           width="100%"
+                                           height="1000px"
+                                       >
+                                       </iframe>
+
+                                       <p id="url-invalid-msg" class="hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>
+                                       <p id="canada-ca-msg" class="hidden">Due to technical limitations, Canada.ca pages are not yet compatible with this tool. Try a Github URL to test it out!</p>
+                                       <p id="other-site-msg" class="hidden">The tool is only for validation of Canada.ca design work. If you believe this URL should be in scope, please reach out to the tool adminstrators to whitelist the domain.</p>
+                                     <!-- </div> -->
+                                  </div>
+                                </div>
+                                <div id="html-upload" class="hidden">
+                                  <div id="html-upload-input">
+                                    <div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
+                                      <span id="html-input" class="input" role="textbox" contenteditable></span>
+                                    </div>
+                                    <button id="html-upload-btn">Submit</button>
+                                  </div>
+
+                                  <div id="html-upload-preview">
+
+                                  </div>
+                                </div>
+                                <div id="image-upload" class="hidden">
+                                  <div id="image-upload-input">
+                                    <form action="">
+                                      <fieldset>
+                                        <legend>Choose an image</legend>
+                                        <input type="file" id="img-file" name="img-file">
+                                        <input type="submit">
+                                      </fieldset>
+                                    </form>
+                                  </div>
+                                  <div id="image-upload-preview">
+
+
+                                  </div>
+                                </div>
+
+
+
+
+
+
+
+
                                  <!---->
                                  <upd-card-secondary-title _nghost-ng-c334178256="">
                                     <!----><!---->
@@ -195,11 +289,11 @@
             </main>
             <footer _ngcontent-ng-c3392822675="" class="mt-4 ng-tns-c3392822675-0">
                <div _ngcontent-ng-c3392822675="" class="d-flex justify-content-between align-items-end mt-auto pb-4 ng-tns-c3392822675-0">
-                  <div _ngcontent-ng-c3392822675="" class="align-self-end ng-tns-c3392822675-0"><span _ngcontent-ng-c3392822675="" class="text-muted small ng-tns-c3392822675-0">version: 3.1.0 </span></div>
+                  <div _ngcontent-ng-c3392822675="" class="align-self-end ng-tns-c3392822675-0"><span _ngcontent-ng-c3392822675="" class="text-muted small ng-tns-c3392822675-0">version: 0.0.1 </span></div>
                   <div _ngcontent-ng-c3392822675="" class="col-lg-2 col-md-3 col-sm-4 col-4 ng-tns-c3392822675-0"><img _ngcontent-ng-c3392822675="" class="img-fluid ng-tns-c3392822675-0" alt="Government of Canada" src="img/canada-black-30mm.png"></div>
                </div>
             </footer>
-            <!-- Left overlay menu -->
+            <!-- expanded genai nav -->
             <div id="genai-nav" class="overlay">
 
               <!-- Button to close the overlay navigation -->
@@ -207,40 +301,113 @@
 
                 <!-- Overlay content -->
                 <div class="overlay-content">
-                  <a href="#">About</a>
-                  <a href="#">Services</a>
-                  <a href="#">Clients</a>
-                  <a href="#">Contact</a>
+                  <h3>Full report or extra details?</h3>
                 </div>
 
             </div>
-
-            <!-- Use any element to open/show the overlay navigation menu -->
-            <span onclick="openNav()">open</span>
          </div>
       </upd-root>
-      <link rel="modulepreload" href="chunk-UUN4AIJG.js">
+      <!-- <link rel="modulepreload" href="chunk-UUN4AIJG.js">
       <link rel="modulepreload" href="chunk-GGWSDF3Q.js">
-      <link rel="modulepreload" href="chunk-ODN5LVDJ.js">
-      <script src="//ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-      <script src="polyfills-VMRJL7IV.js" type="module"></script><script src="main-BEEWNT6W.js" type="module"></script>
+      <link rel="modulepreload" href="chunk-ODN5LVDJ.js"> -->
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+      <!-- <script src="polyfills-VMRJL7IV.js" type="module"></script><script src="main-BEEWNT6W.js" type="module"></script> -->
       <script type="text/javascript">
-          //  $(document).ready(function() {
-          //       $("#webpage").load("<?=$_GET['https://www.canada.ca/en/revenue-agency.html']?>");
-          //       $("#webpage").anythingZoomer({
-          //          expansionSize: 30,
-          //          speedMultiplier: 1.4
-          //       });
-          // })
+          $(document).ready(function() {
+
+            $("#reset-btn").click(function(){
+              resetHiddenUploadOptions();
+              $('#upload-chooser').removeClass("hidden");
+            });
+
+            $(document).on("click", "input[type=radio]", function (event) {
+              var target = event.target;
+              // var parts = target.name.split("-");
+              // var locationNumber = parts[parts.length - 1];
+              if (target.name == "upload-option") {
+                //Check which radio button it is and which content it's show/hiding
+                resetHiddenUploadOptions();
+                if (target.id == "url") {
+                  $('#url-upload').removeClass("hidden");
+                  $('#url-upload-input').removeClass("hidden");
+                } else if (target.id == "html") {
+                  $('#html-upload').removeClass("hidden");
+                  $('#html-upload-input').removeClass("hidden");
+                } else if (target.id == "image") {
+                  $('#image-upload').removeClass("hidden");
+                  $('#image-upload-input').removeClass("hidden");
+                }
+              }
+            });
+
+            $("#url-upload-btn").click(function(){
+              $('#upload-chooser').addClass("hidden");
+              $('#url-upload-input').addClass("hidden");
+              $('#url-upload-preview').removeClass("hidden");
+              $("#url-frame").addClass("hidden"); //reset iframe hidden
+              $("#url-invalid-msg").addClass("hidden");
+              $("#canada-ca-msg").addClass("hidden");
+              $("#other-site-msg").addClass("hidden");
+              //load the iframe with the html preview
+              //working test url: https://cra-design.github.io/gst-hst-business/en/topics/gst-hst-businesses.html
+              var bUrlInput = isValidUrl($('#url-input').val());
+              if (bUrlInput == false) { //invalid url
+                //unhide URL invalid message
+                $("#url-invalid-msg").removeClass("hidden");
+                $('#url-upload-input').removeClass("hidden");
+                return;
+              }
+              const urlInput = new URL($('#url-input').val());
+              // Currently configuring it to specific github organizations:
+              if (urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
+                $("#url-frame").attr("src", urlInput.href);
+                $("#url-frame").removeClass("hidden");
+              } else if (urlInput.host == "www.canada.ca") { //canada.ca link
+                //unhide Canada.ca not yet supported message
+                $("#canada-ca-msg").removeClass("hidden");
+                $('#url-upload-input').removeClass("hidden");
+              } else { //unsupported site
+                //unhide unsupported site message
+                $("#other-site-msg").removeClass("hidden");
+                $('#url-upload-input').removeClass("hidden");
+              }
+
+              //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
+
+            });
+
+
+          });
+          function resetHiddenUploadOptions() {
+            $('#url-upload').addClass("hidden");
+            $('#url-upload-input').addClass("hidden");
+            $('#url-upload-preview').addClass("hidden");
+            $('#html-upload').addClass("hidden");
+            $('#html-upload-input').addClass("hidden");
+            $('#html-upload-preview').addClass("hidden");
+            $('#image-upload').addClass("hidden");
+            $('#image-upload-input').addClass("hidden");
+            $('#image-upload-preview').addClass("hidden");
+          }
           /* Open when someone clicks on the span element */
           function openNav() {
+            console.log("bye");
             document.getElementById("genai-nav").style.width = "100%";
           }
-
           /* Close when someone clicks on the "x" symbol inside the overlay */
           function closeNav() {
             document.getElementById("genai-nav").style.width = "0%";
           }
+
+          const isValidUrl = urlString=> {
+              try {
+                  return Boolean(new URL(urlString));
+              }
+              catch(e){
+                  return false;
+              }
+          }
+
       </script>
 
    </body>
