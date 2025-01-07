@@ -378,7 +378,8 @@
             });
 			
 			$("#html-upload-btn").click(function(){
-				$("#html-preview").text($("#html-input").text());
+				$("#html-preview").html($("#html-input").html());
+				//
 				$("#html-upload-preview").removeClass("hidden");
 				/*var htmlObject = ;
 				if (.length < 1 || fileList == undefined) {
