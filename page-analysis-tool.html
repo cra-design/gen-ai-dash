@@ -161,12 +161,15 @@
             <genai-sidebar class="r-navbar">
               <div>
                 <h3>GenAI</h3>
-                <a href="">Validation</a>
-                <a href="">Content</a>
-                <a href="">Metadata</a>
 
+                <input type="checkbox" id="genai-reports-validation" name="genai-reports" value="Validation">
+                <label for="genai-reports-validation">Validation</label><br>
+                <input type="checkbox" id="genai-reports-content" name="genai-reports" value="Content">
+                <label for="genai-reports-content">Content</label><br>
+                <input type="checkbox" id="genai-reports-metadata" name="genai-reports" value="Metadata">
+                <label for="genai-reports-metadata">Metadata</label><br>
                 <!-- Use any element to open/show the overlay navigation menu -->
-                <button><span onclick="openNav()">report</span></button>
+                <button id="run-report-btn">Run report</button>
 
 
 
@@ -186,10 +189,34 @@
                               <div class=" justify-content-between">
 
                                 <!-- probably want to add some kind of reset button -->
-                                <button id="reset-btn" style="margin-bottom:20px;">Go back to upload options</button>
+                                <button id="reset-btn" style="margin-bottom:20px;">Restart</button>
 
+                                <div id="api-key-entry">
+                                  <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Enter the GenAI key</h3>
+                                  <p>Before we start, add an openrouter API key to make your requests.</p>
+                                  <fieldset style="margin-bottom:20px;">
+                                    <legend>OpenRouter API key</legend>
+                                    <input id="api-key" type="text"></span>
+                                    <button id="api-key-submit-btn" style="margin-top: 20px">Submit</button>
+                                  </fieldset>
 
-                                <div id="upload-chooser">
+                                  <p>If you don't have one yet, here are some steps to create one:</p>
+                                  <ol>
+                                    <li>Create an account at <a href="https://www.openrouter.ai">openrouter.ai</a></li>
+                                    <li>Under the top right hamburger menu icon, select "Keys"</li>
+                                    <li>Create key, then add a credit limit
+                                      <ul>
+                                        <li>the point of this is to prevent abuse if you bought credits on your account if third parties find your key</li>
+                                        <li>you don't need to buy credits for free models used in this demo</li>
+                                        <li>you will be shown your key right after creating it: copy and save it somewhere, as you can't access it again through openrouter</li>
+                                      </ul>
+                                    </li>
+                                    <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
+                                  </ol>
+
+                                </div>
+
+                                <div id="upload-chooser" class="hidden">
                                     <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Choose a genAI tool</h3>
                                     <!-- Radio buttons for URL analysis, HTML snippet upload, image upload -->
                                     <fieldset>
@@ -209,7 +236,11 @@
                                       <legend>Enter the URL of the github page</legend>
                                       <p class="small">Canada.ca is not yet supported</p>
                                       <input id="url-input" type="text">
-                                      <button id="url-upload-btn">Continue</button>
+                                      <legend style="margin-top:20px;">(Optional) Enter the equivalent page on Canada.ca</legend>
+                                      <p class="small">This will help pull relevant analytics or feedback to enrich your GenAI recommendations</p>
+                                      <input id="url-input-source" type="text">
+                                      <br>
+                                      <button id="url-upload-btn" style="margin-top:40px;">Continue</button>
                                     </fieldset>
                                   </div>
                                   <div id="url-upload-preview" class="hidden">
@@ -239,36 +270,36 @@
                                 </div>
                                 <div id="html-upload" class="hidden">
                                   <div id="html-upload-input" style="margin-top:20px">
-									<fieldset>
-										<legend>Write or paste in your content or HTML snippet</legend>
-										<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
-										  <span id="html-input" class="input" role="textbox" contenteditable></span>
-										</div>
-										<button id="html-upload-btn" style="margin-top: 20px">Submit</button>
-									</fieldset>
+                  									<fieldset>
+                  										<legend>Write or paste in your content or HTML snippet</legend>
+                  										<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
+                  										  <span id="html-input" class="input" role="textbox" contenteditable></span>
+                  										</div>
+                  										<button id="html-upload-btn" style="margin-top: 20px">Submit</button>
+                  									</fieldset>
                                   </div>
 
                                   <div id="html-upload-preview">
-									<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
-										<pre id="html-preview"></pre>
-									</div>
+                  									<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
+                  										<pre id="html-preview"></pre>
+                  									</div>
                                   </div>
                                 </div>
                                 <div id="image-upload" class="hidden">
                                   <div id="image-upload-input" class="" style="margin-top:20px">
-									<fieldset>
-										<legend>Choose an image</legend>
-										<input type="file" id="img-file" name="img-file">
-										<!--<input type="submit" id="img-upload-btn">-->
-									</fieldset>
+                  									<fieldset>
+                  										<legend>Choose an image</legend>
+                  										<input type="file" id="img-file" name="img-file">
+                  										<!--<input type="submit" id="img-upload-btn">-->
+                  									</fieldset>
                                   </div>
                                   <div id="image-upload-preview" class="" style="margin-top:20px;">
-									<h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                       Image preview
                                     </h3>
-									<img id="image-preview"></img>
-									<p id="image-invalid-msg" class="hidden">The image you uploaded isn't in a recognized format. Please try a JPG or PNG. If you think the image format should be accepted, please reach out to the administrator.</p>
-									<p id="image-multiple-msg" class="hidden">We currently only accept uploading image files individually. Try again with 1 image.</p>
+	                                  <img id="image-preview"></img>
+                  									<p id="image-invalid-msg" class="hidden">The image you uploaded isn't in a recognized format. Please try a JPG or PNG. If you think the image format should be accepted, please reach out to the administrator.</p>
+                  									<p id="image-multiple-msg" class="hidden">We currently only accept uploading image files individually. Try again with 1 image.</p>
 
                                   </div>
                                 </div>
@@ -320,6 +351,14 @@
 
             $("#reset-btn").click(function(){
               resetHiddenUploadOptions();
+              $('#api-key-entry').removeClass("hidden");
+              $('#upload-chooser').addClass("hidden");
+            });
+
+            $("#api-key-submit-btn").click(function(){
+              //validate the key to see if it's legit?
+
+              $('#api-key-entry').addClass("hidden");
               $('#upload-chooser').removeClass("hidden");
             });
 
@@ -376,39 +415,51 @@
               }
               //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
             });
-			
-			$("#html-upload-btn").click(function(){
-				$("#html-preview").html($("#html-input").html());
-				//
-				$("#html-upload-preview").removeClass("hidden");
-				/*var htmlObject = ;
-				if (.length < 1 || fileList == undefined) {
-					$("#html-invalid-msg").removeClass("hidden");
-				}
-				$("#image-preview").attr("data-src", URL.createObjectURL(htmlObject));
-				$("#image-upload-preview").removeClass("hidden");
-				*/
-				
-			});
-			
-			$(document).on("change", "input", function (event) {
-				if (event.target.id == "img-file") {
-					$("#image-invalid-msg").addClass("hidden");
-					$("#image-multiple-msg").addClass("hidden");				
-					var fileList = event.target.files;
-					if (fileList.length > 0 && fileList != undefined) {
-						if (fileList.length > 1) { //uploaded more than 1 picture - could perhaps support this in the future
-							$("#image-multiple-msg").removeClass("hidden");
-						} else if (fileList[0].type.substring(0,5) != "image") {
-							$("#image-invalid-msg").removeClass("hidden");
-						} else {
-							//Preview the image
-							$("#image-preview").attr("src", URL.createObjectURL(fileList[0]));
-							$("#image-upload-preview").removeClass("hidden");
-						}
-					}
-				}
-			});
+
+      			$("#html-upload-btn").click(function(){
+      				$("#html-preview").html($("#html-input").html());
+      				//
+      				$("#html-upload-preview").removeClass("hidden");
+      				/*var htmlObject = ;
+      				if (.length < 1 || fileList == undefined) {
+      					$("#html-invalid-msg").removeClass("hidden");
+      				}
+      				$("#image-preview").attr("data-src", URL.createObjectURL(htmlObject));
+      				$("#image-upload-preview").removeClass("hidden");
+      				*/
+
+      			});
+
+      			$(document).on("change", "input", function (event) {
+      				if (event.target.id == "img-file") {
+      					$("#image-invalid-msg").addClass("hidden");
+      					$("#image-multiple-msg").addClass("hidden");
+      					var fileList = event.target.files;
+      					if (fileList.length > 0 && fileList != undefined) {
+      						if (fileList.length > 1) { //uploaded more than 1 picture - could perhaps support this in the future
+      							$("#image-multiple-msg").removeClass("hidden");
+      						} else if (fileList[0].type.substring(0,5) != "image") {
+      							$("#image-invalid-msg").removeClass("hidden");
+      						} else {
+      							//Preview the image
+      							$("#image-preview").attr("src", URL.createObjectURL(fileList[0]));
+      							$("#image-upload-preview").removeClass("hidden");
+      						}
+      					}
+      				}
+      			});
+
+            $("#run-report-btn").click(function(){
+              /* Open when someone clicks on the span element */
+              function openNav() {
+                document.getElementById("genai-nav").style.width = "100%";
+              }
+            }
+
+            /* Close when someone clicks on the "x" symbol inside the overlay */
+            function closeNav() {
+              document.getElementById("genai-nav").style.width = "0%";
+            }
 
           });
           function resetHiddenUploadOptions() {
@@ -422,14 +473,6 @@
             $('#image-upload-input').addClass("hidden");
             $('#image-upload-preview').addClass("hidden");
           }
-          /* Open when someone clicks on the span element */
-          function openNav() {
-            document.getElementById("genai-nav").style.width = "100%";
-          }
-          /* Close when someone clicks on the "x" symbol inside the overlay */
-          function closeNav() {
-            document.getElementById("genai-nav").style.width = "0%";
-          }
 
           const isValidUrl = urlString=> {
               try {
@@ -439,6 +482,21 @@
                   return false;
               }
           }
+
+          fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": "Bearer " + $("#"),
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              "model": "mistralai/mixtral-8x7b-instruct",
+              "messages": [
+                {"role": "user", "content": "Who are you?"},
+                {"role": "assistant", "content": "I'm not sure, but my best guess is"}
+              ]
+            })
+          });
 
       </script>
 
