@@ -448,6 +448,28 @@
       				$("#html-preview").html($("#html-input").html());
       				//
       				$("#html-upload-preview").removeClass("hidden");
+					console.log($("#api-key").val());
+					/*
+					const ORresponse = fetch("https://openrouter.ai/api/v1/chat/completions", {
+						method: "POST",
+						headers: {
+							"Authorization": "Bearer " + $("#api-key").val(),
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify({
+							"model": "google/gemini-2.0-flash-exp:free",
+							"messages": [
+								{"role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:"},
+								{"role": "user", "content": $("#html-input").html()}
+							]
+						})
+					});
+					console.log(ORresponse);
+					console.log(ORresponse.json);
+					*/
+					var ORjson = getORData();
+					console.log(ORjson);
+					
       				/*var htmlObject = ;
       				if (.length < 1 || fileList == undefined) {
       					$("#html-invalid-msg").removeClass("hidden");
@@ -500,6 +522,34 @@
             $('#image-upload-input').addClass("hidden");
             $('#image-upload-preview').addClass("hidden");
           }
+	
+			async function getORData() {
+				try {
+					const ORresponse = fetch("https://openrouter.ai/api/v1/chat/completions", {
+						method: "POST",
+						headers: {
+							"Authorization": "Bearer " + $("#api-key").val(),
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify({
+							"model": "google/gemini-2.0-flash-exp:free",
+							"messages": [
+								{"role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:"},
+								{"role": "user", "content": $("#html-input").html()}
+							]
+						})
+					});
+					if (!response.ok) {
+						throw new Error("Response status: ${response.status}");
+					}
+					
+					const ORjson = await response.json();
+					
+				} catch (error) {
+					console.error(error.message);
+				}
+				return ORjson;
+			}
 
           const isValidUrl = urlString=> {
               try {
@@ -509,21 +559,6 @@
                   return false;
               }
           }
-
-          // fetch("https://openrouter.ai/api/v1/chat/completions", {
-          //   method: "POST",
-          //   headers: {
-          //     "Authorization": "Bearer " + $("#"),
-          //     "Content-Type": "application/json"
-          //   },
-          //   body: JSON.stringify({
-          //     "model": "mistralai/mixtral-8x7b-instruct",
-          //     "messages": [
-          //       {"role": "user", "content": "Who are you?"},
-          //       {"role": "assistant", "content": "I'm not sure, but my best guess is"}
-          //     ]
-          //   })
-          // });
 
       </script>
 
