@@ -330,11 +330,39 @@
             <div id="genai-nav" class="overlay">
 
               <!-- Button to close the overlay navigation -->
-              <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+              <a href="javascript:void(0)" class="closebtn" id="close-report-btn">&times;</a>
 
                 <!-- Overlay content -->
                 <div class="overlay-content">
-                  <h3>Full report or extra details?</h3>
+                  <div id="accessibility-report">
+					<h3>Accessibility validation summary</h3>
+					<div>
+					
+					
+					</div>
+				  </div>
+				  
+				  <div id="content-recommendations">
+					<h3>Content recommendations</h3>
+					<div>
+						<h4>Title report</h4>
+						<!-- 2 column layout perhaps with analytics + title recommendations?-->
+						
+					</div>
+				  
+				  </div>
+				  
+				  <div id="metadata-recommendations">
+					<h3>Metadata recommendations</h3>
+					<div>
+					
+					
+					</div>
+				  
+				  </div>
+				  
+				  
+				  
                 </div>
 
             </div>
@@ -451,15 +479,14 @@
 
             $("#run-report-btn").click(function(){
               /* Open when someone clicks on the span element */
-              function openNav() {
+              //function openNav() {
                 document.getElementById("genai-nav").style.width = "100%";
-              }
+              //}
             });
-
-            /* Close when someone clicks on the "x" symbol inside the overlay */
-            function closeNav() {
-              document.getElementById("genai-nav").style.width = "0%";
-            }
+			$("#close-report-btn").click(function(){
+              /* Open when someone clicks on the span element */
+                document.getElementById("genai-nav").style.width = "0%";
+            });
 
           });
           function resetHiddenUploadOptions() {
