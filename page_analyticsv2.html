@@ -578,7 +578,7 @@
               //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
             });
 
-      			$("#html-upload-btn").click(function(){
+      			$("#html-upload-btn").click(async function () {
       				$("#html-preview").html($("#html-input").html());
       				//
       				$("#html-upload-preview").removeClass("hidden");
@@ -601,7 +601,7 @@
 					console.log(ORresponse);
 					console.log(ORresponse.json);
 					*/
-					var ORjson = getORData();
+					var ORjson = await getORData();
 					console.log(ORjson);
 
       				/*var htmlObject = ;
