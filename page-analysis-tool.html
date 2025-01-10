@@ -44,7 +44,7 @@
           top: 10%;
           right: 0;
           width: var(--nav-width) + 7;
-          height: 230px;
+          height: 300px;
           background-color: var(--first-color);
           padding: .5rem 1rem 1rem;
           transition: .5s;
@@ -123,6 +123,28 @@
             top: 15px;
             right: 35px;
           }
+        }
+
+        streamlit-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .streamlit-embed {
+            width: 100%;
+            height: 800px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .streamlit-embed {
+                height: 600px;
+            }
         }
       </style>
 	  <!--style>
@@ -237,13 +259,22 @@
             <genai-sidebar class="r-navbar">
               <div>
                 <h3>GenAI</h3>
-
+                <input type="checkbox" id="genai-reports-title" name="genai-reports" value="Title">
+                <label for="genai-reports-title">Optimize title for search</label><br>
                 <input type="checkbox" id="genai-reports-validation" name="genai-reports" value="Validation">
-                <label for="genai-reports-validation">Validation</label><br>
+                <label for="genai-reports-validation">Validate accessibility</label><br>
                 <input type="checkbox" id="genai-reports-content" name="genai-reports" value="Content">
-                <label for="genai-reports-content">Content</label><br>
+                <label for="genai-reports-content">Simplify language</label><br>
+                <input type="checkbox" id="genai-reports-jargon" name="genai-reports" value="Jargon">
+                <label for="genai-reports-jargon">Identify jargon</label><br>
+                <input type="checkbox" id="genai-reports-structure" name="genai-reports" value="Structure">
+                <label for="genai-reports-structure">Improve structure</label><br>
+                <input type="checkbox" id="genai-reports-redundancies" name="genai-reports" value="Redundancies">
+                <label for="genai-reports-redundancies">Remove redundancies</label><br>
                 <input type="checkbox" id="genai-reports-metadata" name="genai-reports" value="Metadata">
-                <label for="genai-reports-metadata">Metadata</label><br>
+                <label for="genai-reports-metadata">Description and keywords</label><br>
+                <input type="checkbox" id="genai-reports-alt" name="genai-reports" value="Alt">
+                <label for="genai-reports-alt">Alt text for images</label><br>
                 <!-- Use any element to open/show the overlay navigation menu -->
                 <button id="run-report-btn">Run report</button>
 
@@ -387,20 +418,28 @@
                                 </div>
                                 <div id="image-upload" class="hidden">
                                   <div id="image-upload-input" class="" style="margin-top:20px">
-                  									<fieldset>
+                  									<!--<fieldset>
                   										<legend>Upload images or PDFs to create image alt text</legend>
-														<input type="file" id="img-file" name="img-file">
+						                          <input type="file" id="img-file" name="img-file"-->
                   										<!--div id="image-drop-upload-area">
-															<i class="fas fa-upload"></i>
-															Drag and drop files here
-															<span id="file-upload-btn">Browse files
-																<input type="file" id="img-file" name="img-file">
-															</span>
-														</div>-->
+          															<i class="fas fa-upload"></i>
+          															Drag and drop files here
+          															<span id="file-upload-btn">Browse files
+          																<input type="file" id="img-file" name="img-file">
+          															</span>
+          														</div>-->
 
 
                   										<!--<input type="submit" id="img-upload-btn">-->
-                  									</fieldset>
+                  									<!--/fieldset-->
+                                    <div class="streamlit-container">
+                                        <iframe
+                                            src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
+                                            class="streamlit-embed"
+                                            allow="camera;microphone"
+                                            scrolling="yes">
+                                        </iframe>
+                                    </div>
                                   </div>
                                   <div id="image-upload-preview" class="" style="margin-top:20px;">
 			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
