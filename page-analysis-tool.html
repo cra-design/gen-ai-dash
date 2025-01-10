@@ -582,27 +582,43 @@
       				$("#html-preview").html($("#html-input").html());
       				//
       				$("#html-upload-preview").removeClass("hidden");
-					console.log($("#api-key").val());
-					/*
-					const ORresponse = fetch("https://openrouter.ai/api/v1/chat/completions", {
-						method: "POST",
-						headers: {
-							"Authorization": "Bearer " + $("#api-key").val(),
-							"Content-Type": "application/json"
-						},
-						body: JSON.stringify({
-							"model": "google/gemini-2.0-flash-exp:free",
-							"messages": [
-								{"role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:"},
-								{"role": "user", "content": $("#html-input").html()}
-							]
-						})
-					});
-					console.log(ORresponse);
-					console.log(ORresponse.json);
-					*/
-					var ORjson = await getORData();
-					console.log(ORjson);
+              var assistant = new Object();
+              var user = new Object();
+              assistant.role = "assistant";
+              assistant.content = "";
+              user.role = "user";
+              user.content = $("#html-input").html();
+
+              if ($('#html-upload-genai-analysis-description').is(':checked')) {
+                assistant.content = "Provide a single sentence response that summarizes the following text input into a web page description:";
+              } else if ($('#html-upload-genai-analysis-description').is(':checked')) {
+                assistant.content = "Provide a response with only 5 to 10 keywords that best describe the following text:";
+              } else if ($('#html-upload-genai-analysis-description').is(':checked')) {
+                assistant.content = "Provide a rewrite of the following text that is more conversational and easy to understand, while still being professional in tone:";
+              } else if ($('#html-upload-genai-analysis-description').is(':checked')) {
+                assistant.content = "Shorten the following text to be more concise:";
+              } else { //none are checked
+              //unhide error message?
+              }
+
+              var requestJson = JSON.stringify([assistant, user]);
+
+              var model = "";
+              if ($('#html-upload-genai-model-gemini').is(':checked')) {
+                model = "google/gemini-2.0-flash-exp:free";
+              } else if ($('#html-upload-genai-model-llama').is(':checked')) {
+                model = "meta-llama/llama-3.2-90b-vision-instruct:free";
+              } else if ($('#html-upload-genai-model-phi').is(':checked')) {
+                model = "microsoft/phi-3-medium-128k-instruct:free";
+              } else if ($('#html-upload-genai-model-qwen').is(':checked')) {
+                model = "qwen/qwen-2-7b-instruct:free";
+              } else { //none are checked
+              //unhide error message?
+              }
+              console.log(model);
+              console.log(requestJson);
+              var ORjson = await getORData(model, requestJson);
+              console.log(ORjson);
 
       				/*var htmlObject = ;
       				if (.length < 1 || fileList == undefined) {
@@ -658,7 +674,7 @@
           }
 
 async function getORData() {
-    let ORjson; 
+    let ORjson;
     try {
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
@@ -682,10 +698,10 @@ async function getORData() {
 
     } catch (error) {
         console.error("Error fetching from OpenRouter API:", error.message);
-        return undefined; 
+        return undefined;
     }
 	console.log("ORjson: ", ORjson);
-  return ORjson; 
+  return ORjson;
 }
 
           const isValidUrl = urlString=> {
