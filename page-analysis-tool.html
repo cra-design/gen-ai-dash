@@ -630,17 +630,18 @@
               console.log(requestJson);
               var ORjson = await getORData(model, requestJson);
               console.log(ORjson);
-              console.log(ORjson.choices[0].message)
+              console.log(ORjson.choices[0].message.content)
 
 
               if ($('#html-upload-genai-analysis-description').is(':checked')) {
-                $('#report-genai-description-output').html(ORjson.choices[0].message);
+                console.log("pasting description");
+                $('#report-genai-description-output').html(ORjson.choices[0].message.content);
               } else if ($('#html-upload-genai-analysis-keywords').is(':checked')) {
-                $('#report-genai-keywords-output').html(ORjson.choices[0].message);
+                $('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
               } else if ($('#html-upload-genai-analysis-conversational').is(':checked')) {
-                $('#report-genai-conversational-output').html(ORjson.choices[0].message);
+                $('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
               } else if ($('#html-upload-genai-analysis-trim').is(':checked')) {
-                $('#report-genai-trim-output').html(ORjson.choices[0].message);
+                $('#report-genai-trim-output').html(ORjson.choices[0].message.content);
               } else { //none are checked
               //unhide error message?
               }
