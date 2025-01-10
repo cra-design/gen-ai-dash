@@ -282,145 +282,16 @@
 			  
                      <h2 _ngcontent-ng-c1826793033="">GenAI page tool</h2>
 
-                     <upd-card _ngcontent-ng-c1826793033="" titlesize="h5">
-                        <div tabindex="0" class="card pt-2">
-                           <div class="card-body card-pad pt-2 h-100">
-                              <div class=" justify-content-between">
+<div class="streamlit-container">
+        <iframe 
+            src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
+            class="streamlit-embed"
+            allow="camera;microphone"
+            scrolling="yes">
+        </iframe>
+    </div>	
 
-                                <!-- probably want to add some kind of reset button -->
-                                <button id="reset-btn" style="margin-bottom:20px;">Restart</button>
-
-                                <div id="api-key-entry">
-                                  <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Enter the GenAI key</h3>
-                                  <p>Before we start, add an openrouter API key to make your requests.</p>
-                                  <fieldset style="margin-bottom:20px;">
-                                    <legend>OpenRouter API key</legend>
-                                    <input id="api-key" type="text"></span>
-                                    <button id="api-key-submit-btn" style="margin-top: 20px">Submit</button>
-                                  </fieldset>
-
-                                  <p>If you don't have one yet, here are some steps to create one:</p>
-                                  <ol>
-                                    <li>Create an account at <a href="https://www.openrouter.ai">openrouter.ai</a></li>
-                                    <li>Under the top right hamburger menu icon, select "Keys"</li>
-                                    <li>Create key, then add a credit limit
-                                      <ul>
-                                        <li>the point of this is to prevent abuse if you bought credits on your account if third parties find your key</li>
-                                        <li>you don't need to buy credits for free models used in this demo</li>
-                                        <li>you will be shown your key right after creating it: copy and save it somewhere, as you can't access it again through openrouter</li>
-                                      </ul>
-                                    </li>
-                                    <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
-                                  </ol>
-
-                                </div>
-
-                                <div id="upload-chooser" class="hidden">
-                                    <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Choose a genAI tool</h3>
-                                    <!-- Radio buttons for URL analysis, HTML snippet upload, image upload -->
-                                    <fieldset>
-                                      <legend>What do you want to upload?</legend>
-                                      <input type="radio" id="url" name="upload-option" value="url">
-                                      <label for="url">A page by URL</label><br>
-                                      <input type="radio" id="html" name="upload-option" value="html">
-                                      <label for="html">Content or HTML snippet</label><br>
-                                      <input type="radio" id="image" name="upload-option" value="image">
-                                      <label for="image">Image</label><br>
-                                      <!-- <button id="upload-chooser-btn">Continue</button> -->
-                                    </fieldset>
-                                </div>
-                                <div id="url-upload" class="hidden">
-                                  <div id="url-upload-input" style="margin-top: 20px; margin-bottom:20px;">
-                                    <fieldset>
-                                      <legend>Enter the URL of the github page</legend>
-                                      <p class="small">Canada.ca is not yet supported</p>
-                                      <input id="url-input" type="text">
-                                      <legend style="margin-top:20px;">(Optional) Enter the equivalent page on Canada.ca</legend>
-                                      <p class="small">This will help pull relevant analytics or feedback to enrich your GenAI recommendations</p>
-                                      <input id="url-input-source" type="text">
-                                      <br>
-                                      <button id="url-upload-btn" style="margin-top:40px;">Continue</button>
-                                    </fieldset>
-                                  </div>
-                                  <div id="url-upload-preview" class="hidden">
-                                    <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                      Page preview
-                                    </h3>
-                                    <!-- This should theoretically allow for a page load, but Canada.ca has x-frame options set to deny, so it's being blocked - works for github for the moment though... Maybe there's a way on the AEM side to configure to specifically allow this tool to iframe pages? -->
-                                    <!-- <div style="border:black solid 1px;" -->
-
-                                    <!-- add some kind of tabbed interface with preview + code tabs? -->
-
-                                      <iframe
-                                           id="url-frame"
-                                           src=""
-                                           name="targetframe"
-                                           allowTransparency="true"
-                                           width="100%"
-                                           height="1000px"
-                                       >
-                                       </iframe>
-
-                                       <p id="url-invalid-msg" class="hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>
-                                       <p id="canada-ca-msg" class="hidden">Due to technical limitations, Canada.ca pages are not yet compatible with this tool. Try a Github URL to test it out!</p>
-                                       <p id="other-site-msg" class="hidden">The tool is only for validation of Canada.ca design work. If you believe this URL should be in scope, please reach out to the tool adminstrators to whitelist the domain.</p>
-                                     <!-- </div> -->
-                                  </div>
-                                </div>
-                                <div id="html-upload" class="hidden">
-                                  <div id="html-upload-input" style="margin-top:20px">
-                  									<fieldset>
-                  										<legend>Write or paste in your content or HTML snippet</legend>
-                  										<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
-                  										  <span id="html-input" class="input" role="textbox" contenteditable></span>
-                  										</div>
-                  										<button id="html-upload-btn" style="margin-top: 20px">Submit</button>
-                  									</fieldset>
-                                  </div>
-
-                                  <div id="html-upload-preview">
-                  									<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
-                  										<pre id="html-preview"></pre>
-                  									</div>
-                                  </div>
-                                </div>
-                                <div id="image-upload" class="hidden">
-                                  <div id="image-upload-input" class="" style="margin-top:20px">
-                  									<fieldset>
-                  										<legend>Upload images or PDFs to create image alt text</legend>
-														<input type="file" id="img-file" name="img-file">
-                  										<!--div id="image-drop-upload-area">
-															<i class="fas fa-upload"></i>
-															Drag and drop files here
-															<span id="file-upload-btn">Browse files
-																<input type="file" id="img-file" name="img-file">
-															</span>
-														</div>-->
-
-
-                  										<!--<input type="submit" id="img-upload-btn">-->
-                  									</fieldset>
-                                  </div>
-                                  <div id="image-upload-preview" class="" style="margin-top:20px;">
-			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                      Image preview
-                                    </h3>
-	                                  <img id="image-preview"></img>
-                  									<p id="image-invalid-msg" class="hidden">The image you uploaded isn't in a recognized format. Please try a JPG or PNG. If you think the image format should be accepted, please reach out to the administrator.</p>
-                  									<p id="image-multiple-msg" class="hidden">We currently only accept uploading image files individually. Try again with 1 image.</p>
-
-                                  </div>
-                                </div>
-
-                                 <!---->
-                                 <upd-card-secondary-title _nghost-ng-c334178256="">
-                                    <!----><!---->
-                                 </upd-card-secondary-title>
-                              </div>
-
-                           </div>
-                        </div>
-                     </upd-card>
+			  
                   </upd-projects-home>
                   <!---->
                </upd-projects>
@@ -726,16 +597,7 @@ async function getORData() {
 
 
       </script>
-
-
-	    <div class="streamlit-container">
-        <iframe 
-            src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
-            class="streamlit-embed"
-            allow="camera;microphone"
-            scrolling="yes">
-        </iframe>
-    </div>		  
+	  
 
 
    </body>
