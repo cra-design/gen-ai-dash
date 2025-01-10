@@ -121,6 +121,29 @@
             right: 35px;
           }
         }
+
+  .streamlit-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .streamlit-embed {
+            width: 100%;
+            height: 800px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .streamlit-embed {
+                height: 600px;
+            }
+        }
+		  
       </style>
 	  <!--style>
 		#image-drop-upload-area {
@@ -254,14 +277,16 @@
                <upd-projects _nghost-ng-c947851115="" class="ng-star-inserted" style="">
                   <router-outlet _ngcontent-ng-c947851115=""></router-outlet>
                   <upd-projects-home _nghost-ng-c1826793033="" class="ng-star-inserted">
+ 
 
-
-    <iframe 
+ <div class="streamlit-container">
+        <iframe 
             src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
             class="streamlit-embed"
             allow="camera;microphone"
             scrolling="yes">
         </iframe>
+    </div>		  
 
 
 
