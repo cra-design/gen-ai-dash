@@ -32,6 +32,9 @@
       <!-- for left nav styles -->
 
 	  <style>
+        strong {
+          font-weight: bold;
+        }
         .body-pd {
             padding-left: calc(var(--nav-width) + 178px);
             padding-right: calc(var(--nav-width) - 4px);
@@ -438,8 +441,9 @@
               <!-- Button to close the overlay navigation -->
               <a href="javascript:void(0)" class="closebtn" id="close-report-btn">&times;</a>
 
-              <h3>GenAI reports</h3>
-              <div class="overlay-content">
+
+              <div class="overlay-content" style="padding-left:300px;">
+                <h3>GenAI reports</h3>
                 <div id="accessibility-report" class="hidden">
         					<h4>Accessibility validation summary</h4>
       				  </div>
@@ -634,13 +638,16 @@
 
 
               if ($('#html-upload-genai-analysis-description').is(':checked')) {
-                console.log("pasting description");
+                $("#metadata-report").removeClass("hidden");
                 $('#report-genai-description-output').html(ORjson.choices[0].message.content);
               } else if ($('#html-upload-genai-analysis-keywords').is(':checked')) {
+                $("#metadata-report").removeClass("hidden");
                 $('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
               } else if ($('#html-upload-genai-analysis-conversational').is(':checked')) {
+                $("#content-report").removeClass("hidden");
                 $('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
               } else if ($('#html-upload-genai-analysis-trim').is(':checked')) {
+                $("#metadata-content").removeClass("hidden");
                 $('#report-genai-trim-output').html(ORjson.choices[0].message.content);
               } else { //none are checked
               //unhide error message?
