@@ -453,6 +453,7 @@
       				  <div id="content-report" class="hidden">
                   <h4>Content recommendations</h4>
         					<p><strong>Conversational rewrite:</strong> <span id="report-genai-conversational-output"></span></p>
+                  <p><strong>Shortened rewrite:</strong> <span id="report-genai-trim-output"></span></p>
       				  </div>
 
               </div>
@@ -601,11 +602,11 @@
 
               if ($('#html-upload-genai-analysis-description').is(':checked')) {
                 assistant.content = "Provide a single sentence response that summarizes the following text input into a web page description:";
-              } else if ($('#html-upload-genai-analysis-description').is(':checked')) {
+              } else if ($('#html-upload-genai-analysis-keywords').is(':checked')) {
                 assistant.content = "Provide a response with only 5 to 10 keywords that best describe the following text:";
-              } else if ($('#html-upload-genai-analysis-description').is(':checked')) {
+              } else if ($('#html-upload-genai-analysis-conversational').is(':checked')) {
                 assistant.content = "Provide a rewrite of the following text that is more conversational and easy to understand, while still being professional in tone:";
-              } else if ($('#html-upload-genai-analysis-description').is(':checked')) {
+              } else if ($('#html-upload-genai-analysis-trim').is(':checked')) {
                 assistant.content = "Shorten the following text to be more concise:";
               } else { //none are checked
               //unhide error message?
@@ -629,6 +630,40 @@
               console.log(requestJson);
               var ORjson = await getORData(model, requestJson);
               console.log(ORjson);
+              console.log(ORjson.choices[0].message)
+
+
+              if ($('#html-upload-genai-analysis-description').is(':checked')) {
+                $('#report-genai-description-output').html(ORjson.choices[0].message);
+              } else if ($('#html-upload-genai-analysis-keywords').is(':checked')) {
+                $('#report-genai-keywords-output').html(ORjson.choices[0].message);
+              } else if ($('#html-upload-genai-analysis-conversational').is(':checked')) {
+                $('#report-genai-conversational-output').html(ORjson.choices[0].message);
+              } else if ($('#html-upload-genai-analysis-trim').is(':checked')) {
+                $('#report-genai-trim-output').html(ORjson.choices[0].message);
+              } else { //none are checked
+              //unhide error message?
+              }
+
+              /*
+              <div id="accessibility-report" class="hidden">
+                <h4>Accessibility validation summary</h4>
+              </div>
+
+              <div id="metadata-report" class="hidden">
+                <h4>Metadata recommendations</h4>
+                <p><strong>Description:</strong> <span id="report-genai-description-output"></span></p>
+                <p><strong>Keywords:</strong> <span id="report-genai-keywords-output"></span></p>
+              </div>
+
+              <div id="content-report" class="hidden">
+                <h4>Content recommendations</h4>
+                <p><strong>Conversational rewrite:</strong> <span id="report-genai-conversational-output"></span></p>
+              </div>
+              */
+
+
+
 
       				/*var htmlObject = ;
       				if (.length < 1 || fileList == undefined) {
