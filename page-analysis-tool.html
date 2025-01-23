@@ -639,7 +639,9 @@
       				$("#html-preview").html($("#html-input").html());
       				//
       				$("#html-upload-preview").removeClass("hidden");
-              			let filePath = $('input[name="html-upload-genai-analysis"]:checked').val();
+              			let selectedTasks = [];
+				let model = $('input[name="html-upload-genai-model"]:checked').val();
+				var requestJson = "";
 				var assistant = new Object();
 				var user = new Object();
 				assistant.role = "assistant";
@@ -647,63 +649,50 @@
 				user.role = "user";
 				user.content = $("#html-input").html();
 				
-				if (filePath) {
-					// Use jQuery to read the text file
-					$.get(filePath, function (data) {
-						// Assign the text file content to the variable
-						assistant.content = data;
-						console.log(fileContent); // Output the content to the console
-					}).fail(function () {
-						$("#html-upload-preview").addClass("hidden");
-						$("#html-upload-no-action-error").removeClass("hidden");
-						return;
-					});
+				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
+					selectedTasks.push($(this).val());
+				});
+
+				if (selectedTasks.length > 0) {
+				
+					selectedTasks.forEach(function (filePath) {
+						// Use jQuery to read the text file
+						$.get(filePath, function (data) {
+							// Assign the text file content to the variable
+							assistant.content = data;
+							console.log(fileContent); // Output the content to the console
+						}).fail(function () {
+							$("#html-upload-preview").addClass("hidden");
+							$("#html-upload-no-action-error").removeClass("hidden");
+							return;
+						});
+						//Create the json with the prompt and instructions
+						requestJson = JSON.stringify([assistant, user]);
+						//Send it to the API
+						console.log(model);
+						console.log(requestJson);
+						var ORjson = await getORData(model, requestJson);
+						console.log(ORjson);
+						console.log(ORjson.choices[0].message.content)
+						if (filePath == "") {
+							$("#metadata-report").removeClass("hidden");
+							$('#report-genai-description-output').html(ORjson.choices[0].message.content);
+						} else if (filePath == "") {
+							$("#metadata-report").removeClass("hidden");
+							$('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
+						} else if (filePath == "conversational-content.txt") {
+							$("#content-report").removeClass("hidden");
+							$('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
+						} else if (filePath == "") {
+							$("#metadata-content").removeClass("hidden");
+							$('#report-genai-trim-output').html(ORjson.choices[0].message.content);
+						} else { //none are checked
+							$("#html-upload-preview").addClass("hidden");
+							$("#html-upload-no-action-error").removeClass("hidden");
+						}
+					}
+					
 				}
-
-				var requestJson = JSON.stringify([assistant, user]);
-
-				console.log(model);
-				console.log(requestJson);
-				var ORjson = await getORData(model, requestJson);
-				console.log(ORjson);
-				console.log(ORjson.choices[0].message.content);
-				
-				
-				if ($('#html-upload-genai-analysis-description').is(':checked')) {
-				$("#metadata-report").removeClass("hidden");
-				$('#report-genai-description-output').html(ORjson.choices[0].message.content);
-				} else if ($('#html-upload-genai-analysis-keywords').is(':checked')) {
-				$("#metadata-report").removeClass("hidden");
-				$('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
-				} else if ($('#html-upload-genai-analysis-conversational').is(':checked')) {
-				$("#content-report").removeClass("hidden");
-				$('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
-				} else if ($('#html-upload-genai-analysis-trim').is(':checked')) {
-				$("#metadata-content").removeClass("hidden");
-				$('#report-genai-trim-output').html(ORjson.choices[0].message.content);
-				} else { //none are checked
-				//unhide error message?
-				}
-				
-				/*
-				<div id="accessibility-report" class="hidden">
-				<h4>Accessibility validation summary</h4>
-				</div>
-				
-				<div id="metadata-report" class="hidden">
-				<h4>Metadata recommendations</h4>
-				<p><strong>Description:</strong> <span id="report-genai-description-output"></span></p>
-				<p><strong>Keywords:</strong> <span id="report-genai-keywords-output"></span></p>
-				</div>
-				
-				<div id="content-report" class="hidden">
-				<h4>Content recommendations</h4>
-				<p><strong>Conversational rewrite:</strong> <span id="report-genai-conversational-output"></span></p>
-				</div>
-				*/
-
-
-
 
       				/*var htmlObject = ;
       				if (.length < 1 || fileList == undefined) {
