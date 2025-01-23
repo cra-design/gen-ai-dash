@@ -351,29 +351,51 @@
                                     </fieldset>
                                   </div>
                                   <div id="url-upload-preview" class="hidden">
-                                    <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                      Page preview
-                                    </h3>
-                                    <!-- This should theoretically allow for a page load, but Canada.ca has x-frame options set to deny, so it's being blocked - works for github for the moment though... Maybe there's a way on the AEM side to configure to specifically allow this tool to iframe pages? -->
-                                    <!-- <div style="border:black solid 1px;" -->
+                                    <upd-nav-tabs>
+                                      <div class="tabs sticky">
+                                         <ul>
+                                            <li><a href="#" class="active" data-target="#url-preview"> Page</a></li>
+                                            <li><a href="#" data-target="#code-preview"> Code</a></li>
+                                          </ul>
+                                        </div>
+                                     </upd-nav-tabs>
 
-                                    <!-- add some kind of tabbed interface with preview + code tabs? -->
+                                     <div id="url-preview" class="tab-content">
 
-                                      <iframe
-                                           id="url-frame"
-                                           src=""
-                                           name="targetframe"
-                                           allowTransparency="true"
-                                           width="100%"
-                                           height="1000px"
-                                       >
-                                       </iframe>
+                                        <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                                          Page preview
+                                        </h3>
+                                        <!-- This should theoretically allow for a page load, but Canada.ca has x-frame options set to deny, so it's being blocked - works for github for the moment though... Maybe there's a way on the AEM side to configure to specifically allow this tool to iframe pages? -->
+                                        <!-- <div style="border:black solid 1px;" -->
 
-                                       <p id="url-invalid-msg" class="hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>
-                                       <p id="canada-ca-msg" class="hidden">Due to technical limitations, Canada.ca pages are not yet compatible with this tool. Try a Github URL to test it out!</p>
-                                       <p id="other-site-msg" class="hidden">The tool is only for validation of Canada.ca design work. If you believe this URL should be in scope, please reach out to the tool adminstrators to whitelist the domain.</p>
-                                     <!-- </div> -->
-                                  </div>
+                                        <!-- add some kind of tabbed interface with preview + code tabs? -->
+
+                                          <iframe
+                                               id="url-frame"
+                                               src=""
+                                               name="targetframe"
+                                               allowTransparency="true"
+                                               width="100%"
+                                               height="1000px"
+                                           >
+                                           </iframe>
+
+                                           <p id="url-invalid-msg" class="hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>
+                                           <p id="canada-ca-msg" class="hidden">Due to technical limitations, Canada.ca pages are not yet compatible with this tool. Try a Github URL to test it out!</p>
+                                           <p id="other-site-msg" class="hidden">The tool is only for validation of Canada.ca design work. If you believe this URL should be in scope, please reach out to the tool adminstrators to whitelist the domain.</p>
+                                         <!-- </div> -->
+                                     </div>
+                                     <div id="code-preview" class="tab-content hidden">
+                                        <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                                          Code preview
+                                        </h3>
+                                        <div id="fields"> <!--can put something around the parsed fields of the content - heading structure, metadata, etc-->
+                                        </div>
+
+                                        <div id="page-code">
+                                        </div>
+
+                                      </div>
                                 </div>
                                 <div id="html-upload" class="hidden">
                                   <div id="html-upload-input" style="margin-top:20px">
@@ -640,59 +662,59 @@
       				//
       				$("#html-upload-preview").removeClass("hidden");
               			let selectedTasks = [];
-				let model = $('input[name="html-upload-genai-model"]:checked').val();
-				var requestJson = "";
-				var assistant = new Object();
-				var user = new Object();
-				assistant.role = "assistant";
-				assistant.content = "";
-				user.role = "user";
-				user.content = $("#html-input").html();
-				
-				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
-					selectedTasks.push($(this).val());
-				});
+            				let model = $('input[name="html-upload-genai-model"]:checked').val();
+            				var requestJson = "";
+            				var assistant = new Object();
+            				var user = new Object();
+            				assistant.role = "assistant";
+            				assistant.content = "";
+            				user.role = "user";
+            				user.content = $("#html-input").html();
 
-				if (selectedTasks.length > 0) {
-				
-					selectedTasks.forEach(function (filePath) {
-						// Use jQuery to read the text file
-						$.get(filePath, function (data) {
-							// Assign the text file content to the variable
-							assistant.content = data;
-							console.log(fileContent); // Output the content to the console
-						}).fail(function () {
-							$("#html-upload-preview").addClass("hidden");
-							$("#html-upload-no-action-error").removeClass("hidden");
-							return;
-						});
-						//Create the json with the prompt and instructions
-						requestJson = JSON.stringify([assistant, user]);
-						//Send it to the API
-						console.log(model);
-						console.log(requestJson);
-						var ORjson = await getORData(model, requestJson);
-						console.log(ORjson);
-						console.log(ORjson.choices[0].message.content)
-						if (filePath == "custom-instructions/metadata/description-en.txt") {
-							$("#metadata-report").removeClass("hidden");
-							$('#report-genai-description-output').html(ORjson.choices[0].message.content);
-						} else if (filePath == "custom-instructions/metadata/keywords-en.txt") {
-							$("#metadata-report").removeClass("hidden");
-							$('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
-						} else if (filePath == "custom-instructions/content/conversational-content.txt") {
-							$("#content-report").removeClass("hidden");
-							$('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
-						} else if (filePath == "custom-instructions/content/trimmer.txt") {
-							$("#metadata-content").removeClass("hidden");
-							$('#report-genai-trim-output').html(ORjson.choices[0].message.content);
-						} else { //none are checked
-							$("#html-upload-preview").addClass("hidden");
-							$("#html-upload-no-action-error").removeClass("hidden");
-						}
-					}
-					
-				}
+            				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
+            					selectedTasks.push($(this).val());
+            				});
+
+            				if (selectedTasks.length > 0) {
+
+            					selectedTasks.forEach(function (filePath) {
+            						// Use jQuery to read the text file
+            						$.get(filePath, function (data) {
+            							// Assign the text file content to the variable
+            							assistant.content = data;
+            							console.log(fileContent); // Output the content to the console
+            						}).fail(function () {
+            							$("#html-upload-preview").addClass("hidden");
+            							$("#html-upload-no-action-error").removeClass("hidden");
+            							return;
+            						});
+            						//Create the json with the prompt and instructions
+            						requestJson = JSON.stringify([assistant, user]);
+            						//Send it to the API
+            						console.log(model);
+            						console.log(requestJson);
+            						var ORjson = await getORData(model, requestJson);
+            						console.log(ORjson);
+            						console.log(ORjson.choices[0].message.content)
+            						if (filePath == "custom-instructions/metadata/description-en.txt") {
+            							$("#metadata-report").removeClass("hidden");
+            							$('#report-genai-description-output').html(ORjson.choices[0].message.content);
+            						} else if (filePath == "custom-instructions/metadata/keywords-en.txt") {
+            							$("#metadata-report").removeClass("hidden");
+            							$('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
+            						} else if (filePath == "custom-instructions/content/conversational-content.txt") {
+            							$("#content-report").removeClass("hidden");
+            							$('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
+            						} else if (filePath == "custom-instructions/content/trimmer.txt") {
+            							$("#metadata-content").removeClass("hidden");
+            							$('#report-genai-trim-output').html(ORjson.choices[0].message.content);
+            						} else { //none are checked
+            							$("#html-upload-preview").addClass("hidden");
+            							$("#html-upload-no-action-error").removeClass("hidden");
+            						}
+            					}
+
+            				}
 
       				/*var htmlObject = ;
       				if (.length < 1 || fileList == undefined) {
@@ -729,9 +751,21 @@
                 document.getElementById("genai-nav").style.width = "100%";
               //}
             });
-			$("#close-report-btn").click(function(){
+            $("#close-report-btn").click(function(){
               /* Open when someone clicks on the span element */
                 document.getElementById("genai-nav").style.width = "0%";
+            });
+
+            //tab interface - page/code preview for urls
+
+            $('.tabs ul li a').on('click', function (e) {
+              e.preventDefault();
+              $('tabs ul li a').removeClass('active');
+              $(this).addClass('active');
+              $('.tab-content').addClass('hidden');
+              const target = $(this).data('target');
+              $(target).removeClass('hidden');
+
             });
 
           });
