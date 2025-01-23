@@ -1,1 +1,1 @@
-This would be where we put custom instructions that we can then feed through our prompts to LLMs
+Please provide a list of suggested page titles for the provided page based on good writing and SEO practices, as well as the provided search term analytics data and/or user feedback summary provided.
