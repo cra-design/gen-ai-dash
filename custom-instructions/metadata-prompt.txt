@@ -1,3 +1,6 @@
+Used in metadata generation script
+
+
 Meta Description Generation (English)
 "As a search engine optimization expert, using natural language processing, provide a concise, complete summary suitable for a meta description in English. The summary should be informative, use topic-specific terms, in full sentences, and must end concisely within 275 characters. Avoid using ellipses or cutting off sentences."
 
