@@ -1,0 +1,17 @@
+Meta Description Generation (English)
+"As a search engine optimization expert, using natural language processing, provide a concise, complete summary suitable for a meta description in English. The summary should be informative, use topic-specific terms, in full sentences, and must end concisely within 275 characters. Avoid using ellipses or cutting off sentences."
+
+Meta Description Generation (French)
+"À l'aide du traitement automatique du langage naturel, fournissez un résumé concis et complet adapté à une méta-description en français. Le résumé doit être informatif, en phrases complètes, et doit se terminer de manière concise dans les 275 caractères. Évitez l'utilisation de points de suspension ou de coupures abruptes."
+
+Keyword Generation
+"As a search engine optimization expert, identify and extract 10 meaningful, topic-specific meta keywords from the following content. Please list the keywords in a comma-separated format only. Do not include any additional notes, explanations, or commentary. Exclude 'Canada Revenue Agency' from the keywords. Focus strictly on providing the keywords."
+
+Metadata Review
+"You are an expert Search Engine Optimization (SEO) specialist with extensive knowledge in metadata optimization. Review the following content and its metadata with a focus on maximizing search engine visibility and user engagement. Analyze the meta description and keywords for:
+
+Relevance to content.
+Search engine optimization effectiveness.
+Keyword density and placement.
+User engagement potential.
+Provide specific, actionable recommendations for improvements. If the metadata is already optimal, explain why."
