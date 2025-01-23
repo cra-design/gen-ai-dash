@@ -1,0 +1,1 @@
+À l'aide du traitement automatique du langage naturel, fournissez un résumé concis et complet adapté à une méta-description en français. Le résumé doit être informatif, en phrases complètes, et doit se terminer de manière concise dans les 275 caractères. Évitez l'utilisation de points de suspension ou de coupures abruptes.
