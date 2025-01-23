@@ -674,16 +674,16 @@
 						var ORjson = await getORData(model, requestJson);
 						console.log(ORjson);
 						console.log(ORjson.choices[0].message.content)
-						if (filePath == "") {
+						if (filePath == "custom-instructions/metadata/description-en.txt") {
 							$("#metadata-report").removeClass("hidden");
 							$('#report-genai-description-output').html(ORjson.choices[0].message.content);
-						} else if (filePath == "") {
+						} else if (filePath == "custom-instructions/metadata/keywords-en.txt") {
 							$("#metadata-report").removeClass("hidden");
 							$('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
-						} else if (filePath == "conversational-content.txt") {
+						} else if (filePath == "custom-instructions/content/conversational-content.txt") {
 							$("#content-report").removeClass("hidden");
 							$('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
-						} else if (filePath == "") {
+						} else if (filePath == "custom-instructions/content/trimmer.txt") {
 							$("#metadata-content").removeClass("hidden");
 							$('#report-genai-trim-output').html(ORjson.choices[0].message.content);
 						} else { //none are checked
