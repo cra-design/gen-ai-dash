@@ -647,37 +647,26 @@
 				user.role = "user";
 				user.content = $("#html-input").html();
 				
-				if ($('#html-upload-genai-analysis-description').is(':checked')) {
-				assistant.content = "Provide a single sentence response that summarizes the following text input into a web page description:";
-				} else if ($('#html-upload-genai-analysis-keywords').is(':checked')) {
-				assistant.content = "Provide a response with only 5 to 10 keywords that best describe the following text:";
-				} else if ($('#html-upload-genai-analysis-conversational').is(':checked')) {
-				assistant.content = "Provide a rewrite of the following text that is more conversational and easy to understand, while still being professional in tone:";
-				} else if ($('#html-upload-genai-analysis-trim').is(':checked')) {
-				assistant.content = "Shorten the following text to be more concise:";
-				} else { //none are checked
-				//unhide error message?
+				if (filePath) {
+					// Use jQuery to read the text file
+					$.get(filePath, function (data) {
+						// Assign the text file content to the variable
+						assistant.content = data;
+						console.log(fileContent); // Output the content to the console
+					}).fail(function () {
+						$("#html-upload-preview").addClass("hidden");
+						$("#html-upload-no-action-error").removeClass("hidden");
+						return;
+					});
 				}
-				
+
 				var requestJson = JSON.stringify([assistant, user]);
-				
-				var model = "";
-				if ($('#html-upload-genai-model-gemini').is(':checked')) {
-				model = "google/gemini-2.0-flash-exp:free";
-				} else if ($('#html-upload-genai-model-llama').is(':checked')) {
-				model = "meta-llama/llama-3.2-90b-vision-instruct:free";
-				} else if ($('#html-upload-genai-model-phi').is(':checked')) {
-				model = "microsoft/phi-3-medium-128k-instruct:free";
-				} else if ($('#html-upload-genai-model-qwen').is(':checked')) {
-				model = "qwen/qwen-2-7b-instruct:free";
-				} else { //none are checked
-				//unhide error message?
-				}
+
 				console.log(model);
 				console.log(requestJson);
 				var ORjson = await getORData(model, requestJson);
 				console.log(ORjson);
-				console.log(ORjson.choices[0].message.content)
+				console.log(ORjson.choices[0].message.content);
 				
 				
 				if ($('#html-upload-genai-analysis-description').is(':checked')) {
