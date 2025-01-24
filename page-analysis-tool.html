@@ -36,7 +36,7 @@
           font-weight: bold;
         }
         .body-pd {
-            padding-left: calc(var(--nav-width) + 178px);
+            /*padding-left: calc(var(--nav-width) + 178px);*/
             padding-right: calc(var(--nav-width) - 4px);
         }
         .r-navbar {
@@ -44,7 +44,7 @@
           top: 10%;
           right: 0;
           width: var(--nav-width) + 7;
-          height: 300px;
+          /*height: 300px;*/
           background-color: var(--first-color);
           padding: .5rem 1rem 1rem;
           transition: .5s;
@@ -235,7 +235,7 @@
                </header>
             </upd-header>
             <upd-sidebar _ngcontent-ng-c3392822675="" class="ng-tns-c3392822675-0" _nghost-ng-c82967845="">
-               <div _ngcontent-ng-c82967845="" id="nav-bar" class="l-navbar show-n">
+               <!--div _ngcontent-ng-c82967845="" id="nav-bar" class="l-navbar show-n">
                   <nav _ngcontent-ng-c82967845="" class="nav">
                      <div _ngcontent-ng-c82967845="">
                         <a _ngcontent-ng-c82967845="" class="nav_logo" href="/en?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><img _ngcontent-ng-c82967845="" alt="Usability Performance Dashboard" src="img/upd-logo.png"></a>
@@ -254,32 +254,61 @@
                      </div>
                      <div _ngcontent-ng-c82967845="" class="mb-4"><a _ngcontent-ng-c82967845="" class="nav_link" href="/en/about-us?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">web_asset</span><span _ngcontent-ng-c82967845="" data-i18n="about-us" class="nav_name">About Us</span></a><a _ngcontent-ng-c82967845="" class="nav_link" href="mailto:DUAADCG@cra-arc.gc.ca?subject=Feedback for UPD (Usability Performance Dashboard)&amp;body="><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">feedback</span><span _ngcontent-ng-c82967845="" data-i18n="menu-feedback" class="nav_name">Feedback</span></a></div>
                   </nav>
-               </div>
+               </div-->
             </upd-sidebar>
             <genai-sidebar class="r-navbar">
               <div>
                 <h3>GenAI</h3>
-                <input type="checkbox" id="genai-reports-title" name="genai-reports" value="Title">
-                <label for="genai-reports-title">Optimize title for search</label><br>
-                <input type="checkbox" id="genai-reports-validation" name="genai-reports" value="Validation">
-                <label for="genai-reports-validation">Validate accessibility</label><br>
-                <input type="checkbox" id="genai-reports-content" name="genai-reports" value="Content">
-                <label for="genai-reports-content">Simplify language</label><br>
-                <input type="checkbox" id="genai-reports-jargon" name="genai-reports" value="Jargon">
-                <label for="genai-reports-jargon">Identify jargon</label><br>
-                <input type="checkbox" id="genai-reports-structure" name="genai-reports" value="Structure">
-                <label for="genai-reports-structure">Improve structure</label><br>
-                <input type="checkbox" id="genai-reports-redundancies" name="genai-reports" value="Redundancies">
-                <label for="genai-reports-redundancies">Remove redundancies</label><br>
-                <input type="checkbox" id="genai-reports-metadata" name="genai-reports" value="Metadata">
-                <label for="genai-reports-metadata">Description and keywords</label><br>
-                <input type="checkbox" id="genai-reports-alt" name="genai-reports" value="Alt">
-                <label for="genai-reports-alt">Alt text for images</label><br>
-                <!-- Use any element to open/show the overlay navigation menu -->
-                <button id="run-report-btn">Run report</button>
+                <div id="genai-upload-msg">
+                  <p>Upload content to enable analysis options</p>
+                </div>
+                <fieldset id="genai-task-options" class="hidden">
+                  <legend>Select task</legend>
+                  <input type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
+                  <label for="html-upload-genai-analysis-description"> Suggest a metadata description</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-keywords" name="html-upload-genai-analysis" value="custom-instructions/metadata/keywords-en.txt">
+                  <label for="html-upload-genai-analysis-keywords"> Suggest metadata keywords</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-conversational" name="html-upload-genai-analysis" value="custom-instructions/content/conversational-content.txt">
+                  <label for="html-upload-genai-analysis-conversational"> Rewrite for conversational tone</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-trim" name="html-upload-genai-analysis" value="custom-instructions/content/trimmer.txt">
+                  <label for="html-upload-genai-analysis-trim"> Trim the content to be more concise</label><br>
 
+                  <!--<input type="checkbox" id="genai-reports-title" name="genai-reports" value="Title">
+                  <label for="genai-reports-title">Optimize title for search</label><br>
+                  <input type="checkbox" id="genai-reports-validation" name="genai-reports" value="Validation">
+                  <label for="genai-reports-validation">Validate accessibility</label><br>
+                  <input type="checkbox" id="genai-reports-content" name="genai-reports" value="Content">
+                  <label for="genai-reports-content">Simplify language</label><br>
+                  <input type="checkbox" id="genai-reports-jargon" name="genai-reports" value="Jargon">
+                  <label for="genai-reports-jargon">Identify jargon</label><br>
+                  <input type="checkbox" id="genai-reports-structure" name="genai-reports" value="Structure">
+                  <label for="genai-reports-structure">Improve structure</label><br>
+                  <input type="checkbox" id="genai-reports-redundancies" name="genai-reports" value="Redundancies">
+                  <label for="genai-reports-redundancies">Remove redundancies</label><br>
+                  <input type="checkbox" id="genai-reports-metadata" name="genai-reports" value="Metadata">
+                  <label for="genai-reports-metadata">Description and keywords</label><br>
+                  <input type="checkbox" id="genai-reports-alt" name="genai-reports" value="Alt">
+                  <label for="genai-reports-alt">Alt text for images</label><br>-->
+                  <!-- Use any element to open/show the overlay navigation menu -->
+                  <button id="genai-select-tasks-btn" style="margin-top:15px;">Continue</button>
+                </fieldset>
+                <fieldset id="genai-model-options" class="hidden">
+                  <legend>Select model</legend>
+                  <input type="radio" id="html-upload-genai-model-gemini" name="html-upload-genai-model" value="google/gemini-2.0-flash-exp:free">
+                  <label for="html-upload-genai-model-gemini"> Gemini 2.0 Flash</label><br>
+                  <input type="radio" id="html-upload-genai-model-llama" name="html-upload-genai-model" value="meta-llama/llama-3.2-90b-vision-instruct:free">
+                  <label for="html-upload-genai-model-llama"> Llama 3.2 90B</label><br>
+                  <input type="radio" id="html-upload-genai-model-phi" name="html-upload-genai-model" value="microsoft/phi-3-medium-128k-instruct:free">
+                  <label for="html-upload-genai-model-phi"> Microsoft Phi-3 Medium</label><br>
+                  <input type="radio" id="html-upload-genai-model-qwen" name="html-upload-genai-model" value="qwen/qwen-2-7b-instruct:free">
+                  <label for="html-upload-genai-model-qwen"> Qwen 2 7B</label><br>
+                  <button id="genai-run-report-btn" style="margin-top:15px;">Run report</button>
+                </fieldset>
 
-
+                <!--div id="genai-report-reset-options" class="hidden"-->
+                <button id="genai-open-report-btn" style="margin-top:15px;">Open report</button>
+                <br>
+                <button id="genai-reset-report-btn" style="margin-top:15px;">Reset</button>
               </div>
             </genai-sidebar>
             <h1 _ngcontent-ng-c3392822675="" class="visually-hidden ng-tns-c3392822675-0">UPD | UX projects | Home</h1>
@@ -341,7 +370,7 @@
                                   <div id="url-upload-input" style="margin-top: 20px; margin-bottom:20px;">
                                     <fieldset>
                                       <legend>Enter the URL of the github page</legend>
-                                      <p class="small">Canada.ca is not yet supported</p>
+                                      <p class="small">Canada.ca is not yet supported. Use a github page! (for example: https://cra-design.github.io/gst-hst-business/en/topics/gst-hst-businesses.html)</p>
                                       <input id="url-input" type="text">
                                       <legend style="margin-top:20px;">(Optional) Enter the equivalent page on Canada.ca</legend>
                                       <p class="small">This will help pull relevant analytics or feedback to enrich your GenAI recommendations</p>
@@ -352,7 +381,7 @@
                                   </div>
                                   <div id="url-upload-preview" class="hidden">
                                     <upd-nav-tabs>
-                                      <div class="tabs sticky">
+                                      <div class="tabs sticky" style="z-index: 0 !important;">
                                          <ul>
                                             <li><a href="#" class="active" data-target="#url-preview"> Page</a></li>
                                             <li><a href="#" data-target="#code-preview"> Code</a></li>
@@ -394,12 +423,12 @@
                                         </div>
 
                                       </div>
-                                      <div id="code-preview" class="tab-content hidden">
+                                      <div id="field-preview" class="tab-content hidden">
                                          <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                            Field preview
                                          </h3>
                                          <div id="fields"> <!--can put something around the parsed fields of the content - heading structure, metadata, etc-->
-                                           
+
                                          </div>
                                        </div>
                                     </div>
@@ -413,33 +442,10 @@
                   										</div>
 
                   									</fieldset>
-                                    <fieldset style="margin-top:30px;">
-                  										<legend>Select what you would like to do with GenAI</legend>
-                                      <input type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
-                                      <label for="html-upload-genai-analysis-description"> Suggest a metadata description</label><br>
-                                      <input type="checkbox" id="html-upload-genai-analysis-keywords" name="html-upload-genai-analysis" value="custom-instructions/metadata/keywords-en.txt">
-                                      <label for="html-upload-genai-analysis-keywords"> Suggest metadata keywords</label><br>
-                                      <input type="checkbox" id="html-upload-genai-analysis-conversational" name="html-upload-genai-analysis" value="custom-instructions/content/conversational-content.txt">
-                                      <label for="html-upload-genai-analysis-conversational"> Rewrite for conversational tone</label><br>
-                                      <input type="checkbox" id="html-upload-genai-analysis-trim" name="html-upload-genai-analysis" value="custom-instructions/content/trimmer.txt">
-                                      <label for="html-upload-genai-analysis-trim"> Trim the content to be more concise</label><br>
-                  									</fieldset>
-
-                                    <fieldset style="margin-top:30px;">
-                  										<legend>What LLM model would you like to use?</legend>
-                                      <input type="radio" id="html-upload-genai-model-gemini" name="html-upload-genai-model" value="google/gemini-2.0-flash-exp:free">
-                                      <label for="html-upload-genai-model-gemini"> Gemini 2.0 Flash</label><br>
-                                      <input type="radio" id="html-upload-genai-model-llama" name="html-upload-genai-model" value="meta-llama/llama-3.2-90b-vision-instruct:free">
-                                      <label for="html-upload-genai-model-llama"> Llama 3.2 90B</label><br>
-                                      <input type="radio" id="html-upload-genai-model-phi" name="html-upload-genai-model" value="microsoft/phi-3-medium-128k-instruct:free">
-                                      <label for="html-upload-genai-model-phi"> Microsoft Phi-3 Medium</label><br>
-                                      <input type="radio" id="html-upload-genai-model-qwen" name="html-upload-genai-model" value="qwen/qwen-2-7b-instruct:free">
-                                      <label for="html-upload-genai-model-qwen"> Qwen 2 7B</label><br>
-                  									</fieldset>
 
                                     <button id="html-upload-btn" style="margin-top: 20px">Submit</button>
                                   </div>
-                                  <div id="html-upload-preview">
+                                  <div id="html-upload-preview" class="hidden">
                   									<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
                   										<pre id="html-preview"></pre>
                   									</div>
@@ -642,7 +648,6 @@
               $("#canada-ca-msg").addClass("hidden");
               $("#other-site-msg").addClass("hidden");
               //load the iframe with the html preview
-              //working test url: https://cra-design.github.io/gst-hst-business/en/topics/gst-hst-businesses.html
               var bUrlInput = isValidUrl($('#url-input').val());
               if (bUrlInput == false) { //invalid url
                 //unhide URL invalid message
@@ -655,6 +660,8 @@
               if (urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
                 $("#url-frame").attr("src", urlInput.href);
                 $("#url-frame").removeClass("hidden");
+                $("#genai-upload-msg").addClass("hidden");
+                $("#genai-task-options").removeClass("hidden");
               } else if (urlInput.host == "www.canada.ca") { //canada.ca link
                 //unhide Canada.ca not yet supported message
                 $("#canada-ca-msg").removeClass("hidden");
@@ -667,73 +674,13 @@
               //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
             });
 
-      			$("#html-upload-btn").click(async function () {
+      			$("#html-upload-btn").click(function() {
       				$("#html-preview").html($("#html-input").html());
-      				//
       				$("#html-upload-preview").removeClass("hidden");
-              			let selectedTasks = [];
-            				let model = $('input[name="html-upload-genai-model"]:checked').val();
-            				let assistant = { role: "assistant", content: "" }
-            				var user = { role: "user", content: $("#html-input").html() }
+              $("#genai-upload-msg").addClass("hidden");
+              $("#genai-task-options").removeClass("hidden");
+            });
 
-            				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
-            					selectedTasks.push($(this).val());
-            				});
-
-            				if (selectedTasks.length > 0) {
-                        for (const filePath of selectedTasks) {
-                          try {
-                            let fileContent = await $.get(filePath);
-                            assistant.content = fileContent;
-
-                            // Create the JSON with the prompt and instructions
-                            let requestJson = JSON.stringify([assistant, user]);
-
-                            // Send it to the API
-                            console.log(model);
-                            console.log(requestJson);
-                            let ORjson = await getORData(model, requestJson);
-                            console.log(ORjson);
-                            console.log(ORjson.choices[0].message.content);
-
-                            // Update the UI based on filePath selection
-                            if (filePath == "custom-instructions/metadata/description-en.txt") {
-                							$("#metadata-report").removeClass("hidden");
-                							$('#report-genai-description-output').html(ORjson.choices[0].message.content);
-                						} else if (filePath == "custom-instructions/metadata/keywords-en.txt") {
-                							$("#metadata-report").removeClass("hidden");
-                							$('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
-                						} else if (filePath == "custom-instructions/content/conversational-content.txt") {
-                							$("#content-report").removeClass("hidden");
-                							$('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
-                						} else if (filePath == "custom-instructions/content/trimmer.txt") {
-                							$("#metadata-content").removeClass("hidden");
-                							$('#report-genai-trim-output').html(ORjson.choices[0].message.content);
-                						} else { //none are checked
-                							$("#html-upload-preview").addClass("hidden");
-                							$("#html-upload-no-action-error").removeClass("hidden");
-                						}
-                          } catch (error) {
-                              console.error(`Error fetching file at ${filePath}:`, error);
-                              $("#html-upload-preview").addClass("hidden");
-                              $("#html-upload-no-action-error").removeClass("hidden");
-                              break; // Stop execution on failure
-                          }
-                      }
-                  } else {
-                    $("#html-upload-preview").addClass("hidden");
-                    $("#html-upload-no-action-error").removeClass("hidden");
-                  }
-
-      				/*var htmlObject = ;
-      				if (.length < 1 || fileList == undefined) {
-      					$("#html-invalid-msg").removeClass("hidden");
-      				}
-      				$("#image-preview").attr("data-src", URL.createObjectURL(htmlObject));
-      				$("#image-upload-preview").removeClass("hidden");
-      				*/
-
-      			});
 
       			$(document).on("change", "input", function (event) {
       				if (event.target.id == "img-file") {
@@ -754,11 +701,99 @@
       				}
       			});
 
-            $("#run-report-btn").click(function(){
+            $("#genai-select-tasks-btn").click(function () {
+              $("#genai-task-options").addClass("hidden");
+              $("#genai-model-options").removeClass("hidden");
+            });
+
+            $("#genai-run-report-btn").click(async function () {
+              $("#genai-model-options").addClass("hidden");
+              //$("#genai-report-reset-options").removeClass("hidden");
+
+        			let selectedTasks = [];
+      				let model = $('input[name="html-upload-genai-model"]:checked').val();
+      				let assistant = { role: "assistant", content: "" }
+      				let user = { role: "user", content: "" }
+
+              //triage which content to feed to the AI for analysis
+              if ($('#html-upload-preview').is(':visible')) {
+                user.content = $("#html-input").html();
+              } else if ($('#url-upload-preview').is(':visible')) {
+                //user.content = ;
+              }
+
+
+      				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
+      					selectedTasks.push($(this).val());
+      				});
+
+      				if (selectedTasks.length > 0) {
+                  for (const filePath of selectedTasks) {
+                    try {
+                      let fileContent = await $.get(filePath);
+                      assistant.content = fileContent;
+
+                      // Create the JSON with the prompt and instructions
+                      let requestJson = JSON.stringify([assistant, user]);
+
+                      // Send it to the API
+                      console.log(model);
+                      console.log(requestJson);
+                      let ORjson = await getORData(model, requestJson);
+                      console.log(ORjson);
+                      console.log(ORjson.choices[0].message.content);
+
+                      // Update the UI based on filePath selection
+                      if (filePath == "custom-instructions/metadata/description-en.txt") {
+          							$("#metadata-report").removeClass("hidden");
+          							$('#report-genai-description-output').html(ORjson.choices[0].message.content);
+          						} else if (filePath == "custom-instructions/metadata/keywords-en.txt") {
+          							$("#metadata-report").removeClass("hidden");
+          							$('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
+          						} else if (filePath == "custom-instructions/content/conversational-content.txt") {
+          							$("#content-report").removeClass("hidden");
+          							$('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
+          						} else if (filePath == "custom-instructions/content/trimmer.txt") {
+          							$("#metadata-content").removeClass("hidden");
+          							$('#report-genai-trim-output').html(ORjson.choices[0].message.content);
+          						} else { //none are checked
+          							$("#html-upload-preview").addClass("hidden");
+          							$("#html-upload-no-action-error").removeClass("hidden");
+          						}
+                    } catch (error) {
+                        console.error(`Error fetching file at ${filePath}:`, error);
+                        $("#html-upload-preview").addClass("hidden");
+                        $("#html-upload-no-action-error").removeClass("hidden");
+                        break; // Stop execution on failure
+                    }
+                  }
+              } else {
+                $("#html-upload-preview").addClass("hidden");
+                $("#html-upload-no-action-error").removeClass("hidden");
+              }
+
+      				/*var htmlObject = ;
+      				if (.length < 1 || fileList == undefined) {
+      					$("#html-invalid-msg").removeClass("hidden");
+      				}
+      				$("#image-preview").attr("data-src", URL.createObjectURL(htmlObject));
+      				$("#image-upload-preview").removeClass("hidden");
+      				*/
+
+            });
+
+
+            $("#genai-open-report-btn").click(function(){
               /* Open when someone clicks on the span element */
               //function openNav() {
                 document.getElementById("genai-nav").style.width = "100%";
               //}
+            });
+            $("#genai-reset-report-btn").click(function(){
+              $("#genai-model-options").addClass("hidden");
+              $("#genai-task-options").removeClass("hidden");
+              $('input[name="html-upload-genai-analysis"]').prop('checked', false);
+              $('input[name="html-upload-genai-model"]').prop('checked', false);
             });
             $("#close-report-btn").click(function(){
               /* Open when someone clicks on the span element */
@@ -769,7 +804,7 @@
 
             $('.tabs ul li a').on('click', function (e) {
               e.preventDefault();
-              $('tabs ul li a').removeClass('active');
+              $('.tabs ul li a').removeClass('active');
               $(this).addClass('active');
               $('.tab-content').addClass('hidden');
               const target = $(this).data('target');
@@ -785,42 +820,46 @@
             $('#html-upload').addClass("hidden");
             $('#html-upload-input').addClass("hidden");
             $('#html-upload-preview').addClass("hidden");
-	    $("#html-upload-no-action-error").addClass("hidden");
+            $("#html-upload-no-action-error").addClass("hidden");
             $('#image-upload').addClass("hidden");
             $('#image-upload-input').addClass("hidden");
             $('#image-upload-preview').addClass("hidden");
+            $("#genai-upload-msg").removeClass("hidden");
+            $("#genai-task-options").addClass("hidden");
+            $('input[name="html-upload-genai-analysis"]').prop('checked', false);
+            $('input[name="html-upload-genai-model"]').prop('checked', false);
           }
 
-async function getORData() {
-    let ORjson;
-    try {
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + $("#api-key").val(),
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "model": "google/gemini-2.0-flash-exp:free",
-                "messages": [
-                    { "role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:" },
-                    { "role": "user", "content": $("#html-input").html() }
-                ]
-            })
-        });
+          async function getORData() {
+              let ORjson;
+              try {
+                  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                      method: "POST",
+                      headers: {
+                          "Authorization": "Bearer " + $("#api-key").val(),
+                          "Content-Type": "application/json"
+                      },
+                      body: JSON.stringify({
+                          "model": "google/gemini-2.0-flash-exp:free",
+                          "messages": [
+                              { "role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:" },
+                              { "role": "user", "content": $("#html-input").html() }
+                          ]
+                      })
+                  });
 
-        if (!response.ok) {
-            throw new Error(`Response status: ${response.status}`);
-        }
-        ORjson = await response.json();
+                  if (!response.ok) {
+                      throw new Error(`Response status: ${response.status}`);
+                  }
+                  ORjson = await response.json();
 
-    } catch (error) {
-        console.error("Error fetching from OpenRouter API:", error.message);
-        return undefined;
-    }
-	console.log("ORjson: ", ORjson);
-  return ORjson;
-}
+              } catch (error) {
+                  console.error("Error fetching from OpenRouter API:", error.message);
+                  return undefined;
+              }
+          	console.log("ORjson: ", ORjson);
+            return ORjson;
+          }
 
           const isValidUrl = urlString=> {
               try {
