@@ -903,6 +903,25 @@
               });
           }
 
+          // Function to extract fields from the HTML
+          function extractFields(html) {
+              const $html = $(html);
+
+              // Extract specific fields
+              const h1 = $html.find('h1').first().text().trim() || 'Not Found';
+              const metaDescription = $html.find('meta[name="description"]').attr('content') || 'Not Found';
+              const metaKeywords = $html.find('meta[name="keywords"]').attr('content') || 'Not Found';
+              const introParagraph = $html.find('p').first().text().trim() || 'Not Found';
+
+              // Return extracted fields
+              return {
+                  h1,
+                  metaDescription,
+                  metaKeywords,
+                  introParagraph,
+              };
+          }
+
           // Function to render the full HTML and extracted fields
           function renderHTMLFields(fullHtml, fields) {
               // Display the full HTML in the <pre> tag
