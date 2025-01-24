@@ -356,6 +356,7 @@
                                          <ul>
                                             <li><a href="#" class="active" data-target="#url-preview"> Page</a></li>
                                             <li><a href="#" data-target="#code-preview"> Code</a></li>
+                                            <li><a href="#" data-target="#field-preview"> Fields</a></li>
                                           </ul>
                                         </div>
                                      </upd-nav-tabs>
@@ -389,13 +390,19 @@
                                         <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                           Code preview
                                         </h3>
-                                        <div id="fields"> <!--can put something around the parsed fields of the content - heading structure, metadata, etc-->
-                                        </div>
-
                                         <div id="page-code">
                                         </div>
 
                                       </div>
+                                      <div id="code-preview" class="tab-content hidden">
+                                         <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                                           Field preview
+                                         </h3>
+                                         <div id="fields"> <!--can put something around the parsed fields of the content - heading structure, metadata, etc-->
+                                           
+                                         </div>
+                                       </div>
+                                    </div>
                                 </div>
                                 <div id="html-upload" class="hidden">
                                   <div id="html-upload-input" style="margin-top:20px">
@@ -437,9 +444,9 @@
                   										<pre id="html-preview"></pre>
                   									</div>
                                   </div>
-				  <div id="html-upload-no-action-error" class="hidden">
-					<p>You must select an option for an action and model to run a report.</p>
-				  </div>
+                        				  <div id="html-upload-no-action-error" class="hidden">
+                      					       <p>You must select an option for an action and model to run a report.</p>
+                        				  </div>
                                 </div>
                                 <div id="image-upload" class="hidden">
                                   <div id="image-upload-input" class="" style="margin-top:20px">
@@ -456,17 +463,20 @@
 
 
                   										<!--<input type="submit" id="img-upload-btn">-->
-                  									<!--/fieldset-->
-                                    <div class="streamlit-container">
+
+                                      <!--Streamlit embed for alt text-->
+
+                                    <!--/fieldset-->
+                                    <!--div class="streamlit-container">
                                         <iframe
                                             src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
                                             class="streamlit-embed"
                                             allow="camera;microphone"
                                             scrolling="yes">
-                                        </iframe>
+                                        </iframe-->
                                     </div>
                                   </div>
-                                  <div id="image-upload-preview" class="" style="margin-top:20px;">
+                                  <div id="image-upload-preview" class="hidden" style="margin-top:20px;">
 			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                       Image preview
                                     </h3>
@@ -663,58 +673,57 @@
       				$("#html-upload-preview").removeClass("hidden");
               			let selectedTasks = [];
             				let model = $('input[name="html-upload-genai-model"]:checked').val();
-            				var requestJson = "";
-            				var assistant = new Object();
-            				var user = new Object();
-            				assistant.role = "assistant";
-            				assistant.content = "";
-            				user.role = "user";
-            				user.content = $("#html-input").html();
+            				let assistant = { role: "assistant", content: "" }
+            				var user = { role: "user", content: $("#html-input").html() }
 
             				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
             					selectedTasks.push($(this).val());
             				});
 
             				if (selectedTasks.length > 0) {
+                        for (const filePath of selectedTasks) {
+                          try {
+                            let fileContent = await $.get(filePath);
+                            assistant.content = fileContent;
 
-            					selectedTasks.forEach(function (filePath) {
-            						// Use jQuery to read the text file
-            						$.get(filePath, function (data) {
-            							// Assign the text file content to the variable
-            							assistant.content = data;
-            							console.log(fileContent); // Output the content to the console
-            						}).fail(function () {
-            							$("#html-upload-preview").addClass("hidden");
-            							$("#html-upload-no-action-error").removeClass("hidden");
-            							return;
-            						});
-            						//Create the json with the prompt and instructions
-            						requestJson = JSON.stringify([assistant, user]);
-            						//Send it to the API
-            						console.log(model);
-            						console.log(requestJson);
-            						var ORjson = await getORData(model, requestJson);
-            						console.log(ORjson);
-            						console.log(ORjson.choices[0].message.content)
-            						if (filePath == "custom-instructions/metadata/description-en.txt") {
-            							$("#metadata-report").removeClass("hidden");
-            							$('#report-genai-description-output').html(ORjson.choices[0].message.content);
-            						} else if (filePath == "custom-instructions/metadata/keywords-en.txt") {
-            							$("#metadata-report").removeClass("hidden");
-            							$('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
-            						} else if (filePath == "custom-instructions/content/conversational-content.txt") {
-            							$("#content-report").removeClass("hidden");
-            							$('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
-            						} else if (filePath == "custom-instructions/content/trimmer.txt") {
-            							$("#metadata-content").removeClass("hidden");
-            							$('#report-genai-trim-output').html(ORjson.choices[0].message.content);
-            						} else { //none are checked
-            							$("#html-upload-preview").addClass("hidden");
-            							$("#html-upload-no-action-error").removeClass("hidden");
-            						}
-            					}
+                            // Create the JSON with the prompt and instructions
+                            let requestJson = JSON.stringify([assistant, user]);
 
-            				}
+                            // Send it to the API
+                            console.log(model);
+                            console.log(requestJson);
+                            let ORjson = await getORData(model, requestJson);
+                            console.log(ORjson);
+                            console.log(ORjson.choices[0].message.content);
+
+                            // Update the UI based on filePath selection
+                            if (filePath == "custom-instructions/metadata/description-en.txt") {
+                							$("#metadata-report").removeClass("hidden");
+                							$('#report-genai-description-output').html(ORjson.choices[0].message.content);
+                						} else if (filePath == "custom-instructions/metadata/keywords-en.txt") {
+                							$("#metadata-report").removeClass("hidden");
+                							$('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
+                						} else if (filePath == "custom-instructions/content/conversational-content.txt") {
+                							$("#content-report").removeClass("hidden");
+                							$('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
+                						} else if (filePath == "custom-instructions/content/trimmer.txt") {
+                							$("#metadata-content").removeClass("hidden");
+                							$('#report-genai-trim-output').html(ORjson.choices[0].message.content);
+                						} else { //none are checked
+                							$("#html-upload-preview").addClass("hidden");
+                							$("#html-upload-no-action-error").removeClass("hidden");
+                						}
+                          } catch (error) {
+                              console.error(`Error fetching file at ${filePath}:`, error);
+                              $("#html-upload-preview").addClass("hidden");
+                              $("#html-upload-no-action-error").removeClass("hidden");
+                              break; // Stop execution on failure
+                          }
+                      }
+                  } else {
+                    $("#html-upload-preview").addClass("hidden");
+                    $("#html-upload-no-action-error").removeClass("hidden");
+                  }
 
       				/*var htmlObject = ;
       				if (.length < 1 || fileList == undefined) {
