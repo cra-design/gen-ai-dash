@@ -419,8 +419,9 @@
                                         <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                           Code preview
                                         </h3>
-                                        <div id="page-code">
-                                        </div>
+                                        <pre id="fullHtml">
+
+                                        </pre>
 
                                       </div>
                                       <div id="field-preview" class="tab-content hidden">
@@ -428,7 +429,15 @@
                                            Field preview
                                          </h3>
                                          <div id="fields"> <!--can put something around the parsed fields of the content - heading structure, metadata, etc-->
-
+                                            <table border="1">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Field</th>
+                                                        <th>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="extractedFields"></tbody>
+                                            </table>
                                          </div>
                                        </div>
                                     </div>
@@ -662,6 +671,17 @@
                 $("#url-frame").removeClass("hidden");
                 $("#genai-upload-msg").addClass("hidden");
                 $("#genai-task-options").removeClass("hidden");
+                parsePageHTML(urlInput.href, function (err, html) {
+                    if (err) {
+                        console.error('Failed to fetch the webpage:', err);
+                        alert('Failed to fetch the webpage. Check the console for details.');
+                        return;
+                    }
+                    // Extract fields from the HTML
+                    const fields = extractFields(html);
+                    // Render results to the page
+                    renderHTMLFields(html, fields);
+                });
               } else if (urlInput.host == "www.canada.ca") { //canada.ca link
                 //unhide Canada.ca not yet supported message
                 $("#canada-ca-msg").removeClass("hidden");
@@ -870,6 +890,37 @@
               }
           }
 
+          function parsePageHTML(url, callback) {
+              $.ajax({
+                  url: url,
+                  method: 'GET',
+                  success: function (response) {
+                      callback(null, response);
+                  },
+                  error: function (err) {
+                      callback(err);
+                  }
+              });
+          }
+
+          // Function to render the full HTML and extracted fields
+          function renderHTMLFields(fullHtml, fields) {
+              // Display the full HTML in the <pre> tag
+              $('#fullHtml').text(fullHtml);
+
+              // Display the extracted fields in the table
+              const $tableBody = $('#extractedFields');
+              $tableBody.empty(); // Clear any previous data
+
+              Object.keys(fields).forEach(field => {
+                  $tableBody.append(`
+                      <tr>
+                          <td>${field}</td>
+                          <td>${fields[field]}</td>
+                      </tr>
+                  `);
+              });
+          }
 
 
       </script>
