@@ -924,7 +924,7 @@
 
           // Function to extract fields from the HTML
           function extractFields(html) {
-              const $html = $(html);
+              const $html = $.parseHTML(html);
               console.log($html);
 
               const metaTags = $html.find('meta');
