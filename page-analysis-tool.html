@@ -928,11 +928,13 @@
 
               // Extract specific fields
               const h1 = $html.find('h1').first().text().trim() || 'Not Found';
+              console.log(h1);
               const metaKeywords = $html.find('meta[name="keywords"]').attr('content') || 'Not Found';
               const metaDescriptionTag = $html.find('meta[name="description"]');
-              const metaDescription = metaDescriptionTag.length
-                ? metaDescriptionTag.attr('content').trim() || 'Empty'
-                : 'Not Found';
+              const metaDescriptionTag = $html.find('meta[name="description"]');
+              const metaDescription = metaDescriptionTag.length && metaDescriptionTag.attr('content')
+                  ? metaDescriptionTag.attr('content').trim()
+                  : 'Not Found';
               // Extract the first <p> after the <h1>
               const introParagraph = $html.find('h1').first().nextAll('p').first().text().trim() || 'Not Found';
               // Extract full body content
