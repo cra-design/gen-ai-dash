@@ -929,6 +929,7 @@
               // Extract specific fields
               const h1 = $html.find('h1').first().text().trim() || 'Not Found';
               const metaKeywords = $html.find('meta[name="keywords"]').attr('content') || 'Not Found';
+              const metaDescriptionTag = $html.find('meta[name="description"]');
               const metaDescription = metaDescriptionTag.length
                 ? metaDescriptionTag.attr('content').trim() || 'Empty'
                 : 'Not Found';
