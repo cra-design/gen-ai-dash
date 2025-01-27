@@ -952,7 +952,8 @@
                   const tableHTML = $(this).prop('outerHTML');
                   tables.push(tableHTML ? tableHTML.trim() : 'Not Found');
               });
-              const bodyContent = $html.find('body').html().trim() || 'Not Found';
+              const bodyContentRaw = $html.find('body').html();
+              const bodyContent = bodyContent ? bodyContentRaw.trim() : 'Not Found';
 
               // Return extracted fields
               return {
