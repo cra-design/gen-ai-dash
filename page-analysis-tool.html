@@ -925,6 +925,7 @@
           // Function to extract fields from the HTML
           function extractFields(html) {
               const $html = $(html);
+              console.log($html);
 
               // Extract specific fields
               const h1 = $html.find('h1').first().text().trim() || 'Not Found';
