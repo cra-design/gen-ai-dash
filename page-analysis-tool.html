@@ -950,7 +950,8 @@
               // Extract all tables as an array
               const tables = [];
               $html.find('table').each(function () {
-                  tables.push($(this).prop('outerHTML').trim());
+                  const tableHTML = $(this).prop('outerHTML');
+                  tables.push(tableHTML ? tableHTML.trim() : 'Not Found');
               });
               const bodyContent = $html.find('body').html().trim() || 'Not Found';
 
