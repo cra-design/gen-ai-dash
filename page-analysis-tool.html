@@ -372,7 +372,7 @@
                                       <legend>Enter the URL of the github page</legend>
                                       <p class="small">Canada.ca is not yet supported. Use a github page! (for example: https://cra-design.github.io/gst-hst-business/en/topics/gst-hst-businesses.html)</p>
                                       <input id="url-input" type="text">
-                                      <legend style="margin-top:20px;">(Optional) Enter the equivalent page on Canada.ca</legend>
+                                      <legend style="margin-top:20px;">(Not yet implemented) Enter the equivalent page on Canada.ca</legend>
                                       <p class="small">This will help pull relevant analytics or feedback to enrich your GenAI recommendations</p>
                                       <input id="url-input-source" type="text">
                                       <br>
@@ -386,6 +386,7 @@
                                             <li><a href="#" class="active" data-target="#url-preview"> Page</a></li>
                                             <li><a href="#" data-target="#code-preview"> Code</a></li>
                                             <li><a href="#" data-target="#field-preview"> Fields</a></li>
+                                            <li><a href="#" data-target="#data-tab"> Data</a></li>
                                           </ul>
                                         </div>
                                      </upd-nav-tabs>
@@ -439,6 +440,24 @@
                                                 <tbody id="extractedFields"></tbody>
                                             </table>
                                          </div>
+                                       </div>
+                                       <div id="field-preview" class="tab-content hidden">
+                                         <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                                           Data context
+                                         </h3>
+                                         <p>Add data to these fields to help the AI give meaningful recommendations based on pain points it can identify. Once you complete these fields, rerun your genAI report.</p>
+                                         <p>Search terms</p>
+                                         <div id="search-terms-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
+                     										  <span id="search-terms-input" class="input" role="textbox" contenteditable></span>
+             										         </div>
+                                         <p>Page feedback summary</p>
+                                         <div id="feedback-summary-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
+                     										  <span id="feedback-summary-input" class="input" role="textbox" contenteditable></span>
+             										         </div>
+                                         <p>Heuristic commentary</p>
+                                         <div id="heuristic-commentary-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
+                     										  <span id="heuristic-commentary-input" class="input" role="textbox" contenteditable></span>
+             										         </div>
                                        </div>
                                     </div>
                                 </div>
@@ -913,7 +932,22 @@
               const metaDescription = $html.find('meta[name="description"]').attr('content').trim() || 'Not Found';
               // Extract the first <p> after the <h1>
               const introParagraph = $html.find('h1').first().nextAll('p').first().text().trim() || 'Not Found';
-
+              // Extract full body content
+              const bodyContent = $html.find('body').html().trim() || 'Not Found';
+              // Extract all tables as an array
+              const tables = [];
+              $html.find('table').each(function () {
+                  tables.push($(this).prop('outerHTML').trim());
+              });
+              // Extract "doormats" sections into an array
+              const doormats = [];
+              $html.find('.gc-srvinfo section').each(function () {
+                  const $section = $(this);
+                  const link = $section.find('h3 a').attr('href') || 'No link';
+                  const title = $section.find('h3 a').text().trim() || 'No title';
+                  const description = $section.find('p').text().trim() || 'No description';
+                  doormats.push({ link, title, description });
+              });
 
               // Return extracted fields
               return {
@@ -921,6 +955,9 @@
                   metaDescription,
                   metaKeywords,
                   introParagraph,
+                  bodyContent,
+                  tables,
+                  doormats,
               };
           }
 
