@@ -933,12 +933,6 @@
               // Extract the first <p> after the <h1>
               const introParagraph = $html.find('h1').first().nextAll('p').first().text().trim() || 'Not Found';
               // Extract full body content
-              const bodyContent = $html.find('body').html().trim() || 'Not Found';
-              // Extract all tables as an array
-              const tables = [];
-              $html.find('table').each(function () {
-                  tables.push($(this).prop('outerHTML').trim());
-              });
               // Extract "doormats" sections into an array
               const doormats = [];
               $html.find('.gc-srvinfo section').each(function () {
@@ -948,6 +942,12 @@
                   const description = $section.find('p').text().trim() || 'No description';
                   doormats.push({ link, title, description });
               });
+              // Extract all tables as an array
+              const tables = [];
+              $html.find('table').each(function () {
+                  tables.push($(this).prop('outerHTML').trim());
+              });
+              const bodyContent = $html.find('body').html().trim() || 'Not Found';
 
               // Return extracted fields
               return {
@@ -955,9 +955,9 @@
                   metaDescription,
                   metaKeywords,
                   introParagraph,
-                  bodyContent,
-                  tables,
                   doormats,
+                  tables,
+                  bodyContent,
               };
           }
 
