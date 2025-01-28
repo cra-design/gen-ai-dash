@@ -714,8 +714,8 @@
             });
 
       			$("#html-upload-btn").click(function() {
-      				$("#html-preview").html($("#html-input").html());
-      				$("#html-upload-preview").removeClass("hidden");
+              $("#html-preview").html($("#html-input").html());
+              $("#html-upload-preview").removeClass("hidden");
               $("#genai-upload-msg").addClass("hidden");
               $("#genai-task-options").removeClass("hidden");
             });
@@ -924,11 +924,17 @@
 
           // Function to extract fields from the HTML
           function extractFields(html) {
-              const $html = $(html);
-              console.log($html);
 
-              const metaTags = $html.find('meta');
+              const $html = $('<div>').append(html); // Wrap in a parent container
+
+              const metaTags = $html.find('meta'); // Now `.find()` will catch everything
               console.log(metaTags);
+
+              // const $html = $(html);
+              // console.log($html);
+              //
+              // const metaTags = $html.find('meta');
+              // console.log(metaTags);
 
               // Extract specific fields
               const h1 = $html.find('h1').first().text().trim() || 'Not Found';
