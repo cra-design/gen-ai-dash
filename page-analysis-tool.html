@@ -797,7 +797,7 @@
 
 				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
 					selectedTasks.push({
-						id: $(this.attr('id'),
+						id: $(this).attr('id'),
 						value: $(this).val()
 					});
 				});
