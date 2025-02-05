@@ -805,14 +805,6 @@
 
 						// Create the JSON with the prompt and instructions systemGeneral, , userData
 						let requestJson = JSON.stringify([systemTask, userContent]);
-						
-						console.log(JSON.stringify(
-							[
-								"model": model,
-								"messages": [
-									systemTask, userContent]
-							]
-						));
 
 						// Send it to the API
 						console.log(model);
@@ -916,13 +908,13 @@
                           "model": model,
                           "messages": requestJson
                       }));
-				console.log(JSON.stringify({
+				console.log({
                           "model": "google/gemini-2.0-flash-exp:free",
                           "messages": [
 							{ "role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:" },
 							{ "role": "user", "content": $("#html-input").html() }
 						]
-                      }));
+                      });
 			  
 			  
                   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
