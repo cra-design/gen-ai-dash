@@ -907,13 +907,13 @@
 				console.log(JSON.stringify({
                           "model": model,
                           "messages": requestJson
-                      });
+                      }));
 				console.log(JSON.stringify({
                           "model": "google/gemini-2.0-flash-exp:free",
                           "messages": [
 							{ "role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:" },
 						  ] { "role": "user", "content": $("#html-input").html() }
-                      });
+                      }));
 			  
 			  
                   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
