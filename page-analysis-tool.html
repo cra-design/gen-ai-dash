@@ -775,6 +775,8 @@
 				let systemTask = { role: "system", content: "Custom instruction: " }
 				let userContent = { role: "user", content: "Web page content: "}
 				//let userData = { role: "user", content: "Contextual data: " }
+				let reportContainer = $(".overlay-content");
+				reportContainer.find(".generated-report").remove();
 				
 
 				//triage which content to feed to the AI for analysis if free content input
@@ -794,13 +796,16 @@
 				}
 
 				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
-					selectedTasks.push($(this).val());
+					selectedTasks.push({
+						id: $(this.attr('id'),
+						value: $(this).val()
+					});
 				});
 
 				if (selectedTasks.length > 0) {
-                  for (const filePath of selectedTasks) {
+                  for (const task of selectedTasks) {
                     try {
-						let fileContent = await $.get(filePath);
+						let fileContent = await $.get(task.value);
 						systemTask.content += fileContent;
 
 						// Create the JSON with the prompt and instructions systemGeneral, , userData
@@ -810,28 +815,25 @@
 						console.log(model);
 						console.log(requestJson);
 						let ORjson = await getORData(model, requestJson);
-						console.log(ORjson);
-						console.log(ORjson.choices[0].message.content);
+						let aiResponse = ORjson.choices[0].message.content;
+						console.log(aiResponse);
 
-						// Update the UI based on filePath selection
-						if (filePath == "custom-instructions/metadata/description-en.txt") {
-							$("#metadata-report").removeClass("hidden");
-							$('#report-genai-description-output').html(ORjson.choices[0].message.content);
-						} else if (filePath == "custom-instructions/metadata/keywords-en.txt") {
-							$("#metadata-report").removeClass("hidden");
-							$('#report-genai-keywords-output').html(ORjson.choices[0].message.content);
-						} else if (filePath == "custom-instructions/content/conversational-content.txt") {
-							$("#content-report").removeClass("hidden");
-							$('#report-genai-conversational-output').html(ORjson.choices[0].message.content);
-						} else if (filePath == "custom-instructions/content/trimmer.txt") {
-							$("#metadata-content").removeClass("hidden");
-							$('#report-genai-trim-output').html(ORjson.choices[0].message.content);
-						} else { //none are checked
-							$("#html-upload-preview").addClass("hidden");
-							$("#html-upload-no-action-error").removeClass("hidden");
-						}
+						// Find the corresponding label text
+						let labelText = $(`label[for='${task.id}']`).text().trim();
+
+						// Create new report section dynamically
+						let newReport = $(`
+							<div class="generated-report">
+								<h3>${labelText}</h3>
+								<p>${aiResponse}</p>
+							</div>
+						`);
+
+						// Append to the report container
+						reportContainer.append(newReport);
+						
                     } catch (error) {
-                        console.error(`Error fetching file at ${filePath}:`, error);
+                        console.error(`Error fetching file at ${task.value}:`, error);
                         $("#html-upload-preview").addClass("hidden");
                         $("#html-upload-no-action-error").removeClass("hidden");
                         break; // Stop execution on failure
