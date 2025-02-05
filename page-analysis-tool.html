@@ -900,10 +900,10 @@
               let ORjson;
               try {
 			  
-				console.log(JSON.stringify({
+				console.log({
                           "model": model,
                           "messages": requestJson
-                      }));
+                      });
 				console.log({
                           "model": "google/gemini-2.0-flash-exp:free",
                           "messages": [
@@ -920,11 +920,8 @@
                           "Content-Type": "application/json"
                       },
                       body: JSON.stringify({
-                          "model": "google/gemini-2.0-flash-exp:free",
-                          "messages": [
-							{"role":"system","content":"Custom instruction: You are a professional SEO specialist and web writer.\n\nProvide a bulleted list of 3-5 suggested page titles for the provided page.\n\nThe page titles should be optimized for SEO, integrating where possible the most common search terms people are looking for, but also striving to be easily scannable on a Google or other search results page so people know what they will read when they go to the page.\n"},
-							{"role":"user","content":"Web page content: " }
-						  ]
+                          "model": model,
+                          "messages": requestJson
                       })
                   });
 
