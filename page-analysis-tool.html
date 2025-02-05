@@ -799,7 +799,7 @@
 						systemTask.content += fileContent;
 
 						// Create the JSON with the prompt and instructions
-						let requestJson = JSON.stringify([systemGeneral, systemTask, userContent, userData]);
+						let requestJson = JSON.stringify([systemTask, userContent]);
 
 						// Send it to the API
 						console.log(model);
