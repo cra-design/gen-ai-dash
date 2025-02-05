@@ -782,7 +782,7 @@
 				//triage which content to feed to the AI for analysis if free content input
 				if ($('#html-upload-preview').is(':visible')) {
 					userContent.content += $("#html-input").html();
-				} else if ($('#html-upload-preview').is(':visible')) {
+				} else if ($('#url-upload-preview').is(':visible')) {
 					userContent.content += $("#fullHtml").text(); //give it the full page html
 					console.log(userContent.content);
 					console.log($("#fullHtml"));
@@ -822,12 +822,12 @@
 						let labelText = $(`label[for='${task.id}']`).text().trim();
 
 						// Create new report section dynamically
-						let newReport = $(`
-							<div class="generated-report">
-								<h3>${labelText}</h3>
-								<p>${aiResponse}</p>
-							</div>
-						`);
+						let newReport = $(
+							'<div class="generated-report">' +
+								'<h4>' + labelText + '</h4>' +
+								'<p>' + aiResponse + '</p>' +
+							'</div>'
+						);
 
 						// Append to the report container
 						reportContainer.append(newReport);
