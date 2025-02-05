@@ -771,10 +771,10 @@
 				//$("#genai-report-reset-options").removeClass("hidden");
 				let selectedTasks = [];
 				let model = $('input[name="html-upload-genai-model"]:checked').val();
-				//let systemGeneral = { role: "system", content: "You are an expert web designer and writer. Analyze the provided web page content according to the guidelines in the custom instruction to provide actionable recommendations. The contextual data is provided to give you additional detail on the page, what page users are searching for or saying in feedback or other web behaviour to help inform your recommendations." }
+				let systemGeneral = { role: "system", content: "You are an expert web designer and writer. Analyze the provided web page content according to the guidelines in the custom instruction to provide actionable recommendations. The contextual data is provided to give you additional detail on the page, what page users are searching for or saying in feedback or other web behaviour to help inform your recommendations." }
 				let systemTask = { role: "system", content: "Custom instruction: " }
 				let userContent = { role: "user", content: "Web page content: "}
-				//let userData = { role: "user", content: "Contextual data: " }
+				let userData = { role: "user", content: "Contextual data: " }
 				let reportContainer = $(".overlay-content");
 				reportContainer.find(".generated-report").remove();
 				
@@ -802,8 +802,8 @@
 						let fileContent = await $.get(task.value);
 						systemTask.content += fileContent;
 
-						// Create the JSON with the prompt and instructions systemGeneral, , userData
-						let requestJson = JSON.stringify([systemTask, userContent]);
+						// Create the JSON with the prompt and instructions
+						let requestJson = JSON.stringify([systemGeneral, systemTask, userContent, userData]);
 
 						// Send it to the API
 						console.log(model);
