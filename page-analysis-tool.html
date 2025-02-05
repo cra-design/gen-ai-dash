@@ -771,20 +771,21 @@
 				//$("#genai-report-reset-options").removeClass("hidden");
 				let selectedTasks = [];
 				let model = $('input[name="html-upload-genai-model"]:checked').val();
-				let systemGeneral = { role: "system", content: "You are an expert web designer and writer. Analyze the provided web page content according to the guidelines in the custom instruction to provide actionable recommendations. The contextual data is provided to give you additional detail on the page, what page users are searching for or saying in feedback or other web behaviour to help inform your recommendations." }
+				//let systemGeneral = { role: "system", content: "You are an expert web designer and writer. Analyze the provided web page content according to the guidelines in the custom instruction to provide actionable recommendations. The contextual data is provided to give you additional detail on the page, what page users are searching for or saying in feedback or other web behaviour to help inform your recommendations." }
 				let systemTask = { role: "system", content: "Custom instruction: " }
 				let userContent = { role: "user", content: "Web page content: "}
-				let userData = { role: "user", content: "Contextual data: " }
+				//let userData = { role: "user", content: "Contextual data: " }
 				
 
 				//triage which content to feed to the AI for analysis if free content input
 				if ($('#html-upload-preview').is(':visible')) {
 					userContent.content += $("#html-input").html();
 				} else if ($('#html-upload-preview').is(':visible')) {
-					userContent.content += $("#fullHtml").html(); //give it the full page html
-					userData.content += "Search terms: " + $("#search-terms-input").html(); //give it any data we have
+					userContent.content += $("#fullHtml").text(); //give it the full page html
+					console.log(userContent.content);
+					/*userData.content += "Search terms: " + $("#search-terms-input").html(); //give it any data we have
 					userData.content += "Page feedback summary: " + $("#feedback-summary-input").html();
-					userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").html();
+					userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").html();*/
 				}
 
 				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
