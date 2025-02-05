@@ -784,15 +784,9 @@
 					userContent.content += $("#html-input").html();
 				} else if ($('#url-upload-preview').is(':visible')) {
 					userContent.content += $("#fullHtml").text(); //give it the full page html
-					console.log(userContent.content);
-					console.log($("#fullHtml"));
-					console.log($("#fullHtml").text());
-					console.log($("#fullHtml").value());
-					console.log($("#fullHtml").val());
-					console.log($("#fullHtml").html());
-					/*userData.content += "Search terms: " + $("#search-terms-input").html(); //give it any data we have
-					userData.content += "Page feedback summary: " + $("#feedback-summary-input").html();
-					userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").html();*/
+					userData.content += "Search terms: " + $("#search-terms-input").text(); //give it any data we have
+					userData.content += "Page feedback summary: " + $("#feedback-summary-input").text();
+					userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").text();
 				}
 
 				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
