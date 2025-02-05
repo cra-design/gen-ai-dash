@@ -783,6 +783,11 @@
 				} else if ($('#html-upload-preview').is(':visible')) {
 					userContent.content += $("#fullHtml").text(); //give it the full page html
 					console.log(userContent.content);
+					console.log($("#fullHtml"));
+					console.log($("#fullHtml").text());
+					console.log($("#fullHtml").value());
+					console.log($("#fullHtml").val());
+					console.log($("#fullHtml").html());
 					/*userData.content += "Search terms: " + $("#search-terms-input").html(); //give it any data we have
 					userData.content += "Page feedback summary: " + $("#feedback-summary-input").html();
 					userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").html();*/
@@ -798,7 +803,7 @@
 						let fileContent = await $.get(filePath);
 						systemTask.content += fileContent;
 
-						// Create the JSON with the prompt and instructions
+						// Create the JSON with the prompt and instructions systemGeneral, , userData
 						let requestJson = JSON.stringify([systemTask, userContent]);
 
 						// Send it to the API
