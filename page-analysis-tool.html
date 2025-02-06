@@ -150,6 +150,27 @@
 		.generated-report {
 			text-align: left;
 		}
+		
+		#loading-indicator {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+		}
+
+		.spinner {
+			width: 24px;
+			height: 24px;
+			border: 4px solid #ccc;
+			border-top-color: #007bff;
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+		}
+
+		@keyframes spin {
+			from { transform: rotate(0deg); }
+			to { transform: rotate(360deg); }
+		}
       </style>
 	  <!--style>
 		#image-drop-upload-area {
@@ -330,8 +351,12 @@
                   <button id="genai-run-report-btn" style="margin-top:15px;">Run report</button>
                 </fieldset>
 
+				<div id="loading-indicator" class="hidden">
+					<div class="spinner"></div>
+					<p>Generating reports...</p>
+				</div>
                 <!--div id="genai-report-reset-options" class="hidden"-->
-                <button id="genai-open-report-btn" style="margin-top:15px;">Open report</button>
+                <button id="genai-open-report-btn" style="margin-top:15px;" class="hidden">Open report</button>
                 <br>
                 <button id="genai-reset-report-btn" style="margin-top:15px;">Reset</button>
               </div>
@@ -738,7 +763,7 @@
               //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
             });
 
-      			$("#html-upload-btn").click(function() {
+			$("#html-upload-btn").click(function() {
               $("#html-preview").html($("#html-input").html());
               $("#html-upload-preview").removeClass("hidden");
               $("#genai-upload-msg").addClass("hidden");
@@ -746,24 +771,24 @@
             });
 
 
-      			$(document).on("change", "input", function (event) {
-      				if (event.target.id == "img-file") {
-      					$("#image-invalid-msg").addClass("hidden");
-      					$("#image-multiple-msg").addClass("hidden");
-      					var fileList = event.target.files;
-      					if (fileList.length > 0 && fileList != undefined) {
-      						if (fileList.length > 1) { //uploaded more than 1 picture - could perhaps support this in the future
-      							$("#image-multiple-msg").removeClass("hidden");
-      						} else if (fileList[0].type.substring(0,5) != "image") {
-      							$("#image-invalid-msg").removeClass("hidden");
-      						} else {
-      							//Preview the image
-      							$("#image-preview").attr("src", URL.createObjectURL(fileList[0]));
-      							$("#image-upload-preview").removeClass("hidden");
-      						}
-      					}
-      				}
-      			});
+			$(document).on("change", "input", function (event) {
+				if (event.target.id == "img-file") {
+					$("#image-invalid-msg").addClass("hidden");
+					$("#image-multiple-msg").addClass("hidden");
+					var fileList = event.target.files;
+					if (fileList.length > 0 && fileList != undefined) {
+						if (fileList.length > 1) { //uploaded more than 1 picture - could perhaps support this in the future
+							$("#image-multiple-msg").removeClass("hidden");
+						} else if (fileList[0].type.substring(0,5) != "image") {
+							$("#image-invalid-msg").removeClass("hidden");
+						} else {
+							//Preview the image
+							$("#image-preview").attr("src", URL.createObjectURL(fileList[0]));
+							$("#image-upload-preview").removeClass("hidden");
+						}
+					}
+				}
+			});
 
             $("#genai-select-tasks-btn").click(function () {
               $("#genai-task-options").addClass("hidden");
@@ -772,6 +797,8 @@
 
             $("#genai-run-report-btn").click(async function () {
 				$("#genai-model-options").addClass("hidden");
+				$("#genai-open-report-btn").addClass("hidden"); // Hide report button initially
+				$("#loading-indicator").removeClass("hidden"); // Show spinner
 				//$("#genai-report-reset-options").removeClass("hidden");
 				let selectedTasks = [];
 				let model = $('input[name="html-upload-genai-model"]:checked').val();
@@ -793,6 +820,7 @@
 					userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").text();
 				}
 
+				//Gather selected tasks
 				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
 					selectedTasks.push({
 						id: $(this).attr('id'),
@@ -800,18 +828,16 @@
 					});
 				});
 
+				//Process each selected task asynchronously
 				if (selectedTasks.length > 0) {
                   for (const task of selectedTasks) {
                     try {
 						let fileContent = await $.get(task.value);
 						systemTask.content += fileContent;
-
 						// Create the JSON with the prompt and instructions
 						let requestJson = [systemGeneral, systemTask, userContent, userData];
 
 						// Send it to the API
-						console.log(model);
-						console.log(requestJson);
 						let ORjson = await getORData(model, requestJson);
 						let aiResponse = ORjson.choices[0].message.content;
 						let formattedText = formatAIResponse(aiResponse);
@@ -827,21 +853,19 @@
 								'<p>' + formattedText + '</p>' +
 							'</div>'
 						);
-
 						// Append to the report container
 						reportContainer.append(newReport);
-						
+						$("#genai-open-report-btn").removeClass("hidden"); // Show report button
                     } catch (error) {
-                        console.error(`Error fetching file at ${task.value}:`, error);
+                        console.error(`Error generating report:`, error);
                         $("#html-upload-preview").addClass("hidden");
                         $("#html-upload-no-action-error").removeClass("hidden");
-                        break; // Stop execution on failure
                     }
                   }
-              } else {
-                $("#html-upload-preview").addClass("hidden");
-                $("#html-upload-no-action-error").removeClass("hidden");
-              }
+				} else {
+					$("#html-upload-preview").addClass("hidden");
+					$("#html-upload-no-action-error").removeClass("hidden");
+				}
 
       				/*var htmlObject = ;
       				if (.length < 1 || fileList == undefined) {
@@ -850,7 +874,7 @@
       				$("#image-preview").attr("data-src", URL.createObjectURL(htmlObject));
       				$("#image-upload-preview").removeClass("hidden");
       				*/
-
+				$("#loading-indicator").addClass("hidden"); // Hide spinner when done
             });
 
 
