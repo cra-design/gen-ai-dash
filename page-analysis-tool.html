@@ -392,7 +392,7 @@
                                     <fieldset>
                                       <legend>Enter the URL of the github page</legend>
                                       <p class="small">Canada.ca is not yet supported. Use a github page! (for example: https://cra-design.github.io/gst-hst-business/en/topics/gst-hst-businesses.html)</p>
-                                      <input id="url-input" type="text">
+                                      <input id="url-input" type="text" placeholder="https://cra-design.github.io/gst-hst-business/en/topics/gst-hst-businesses.html">
                                       <legend style="margin-top:20px;">(Not yet implemented) Enter the equivalent page on Canada.ca</legend>
                                       <p class="small">This will help pull relevant analytics or feedback to enrich your GenAI recommendations</p>
                                       <input id="url-input-source" type="text">
@@ -904,13 +904,18 @@
                           "model": model,
                           "messages": requestJson
                       });
-				console.log({
+				console.log(JSON.stringify({
                           "model": "google/gemini-2.0-flash-exp:free",
                           "messages": [
 							{ "role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:" },
 							{ "role": "user", "content": $("#html-input").html() }
 						]
-                      });
+                      }
+					  
+					  /*{
+                          "model": model,
+                          "messages": requestJson
+                      }*/));
 			  
 			  
                   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -920,9 +925,17 @@
                           "Content-Type": "application/json"
                       },
                       body: JSON.stringify({
+                          "model": "google/gemini-2.0-flash-exp:free",
+                          "messages": [
+							{ "role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:" },
+							{ "role": "user", "content": $("#html-input").html() }
+						]
+                      }
+					  
+					  /*{
                           "model": model,
                           "messages": requestJson
-                      })
+                      }*/)
                   });
 
                   if (!response.ok) {
