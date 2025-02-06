@@ -980,8 +980,8 @@
 
               const $html = $('<div>').append(html); // Wrap in a parent container
 
-              const metaTags = $html.find('meta'); // Now `.find()` will catch everything
-              console.log(metaTags);
+              //const metaTags = $html.find('meta'); // Now `.find()` will catch everything
+              //console.log(metaTags);
 
               // const $html = $(html);
               // console.log($html);
@@ -991,10 +991,8 @@
 
               // Extract specific fields
               const h1 = $html.find('h1').first().text().trim() || 'Not Found';
-              console.log(h1);
               const metaKeywords = $html.find('meta[name="keywords"]').attr('content') || 'Not Found';
               const metaDescriptionTag = $html.find("meta[name='description']");
-              console.log(metaDescriptionTag);
               const metaDescription = metaDescriptionTag.length && metaDescriptionTag.attr('content')
                   ? metaDescriptionTag.attr('content').trim()
                   : 'Not Found';
@@ -1010,12 +1008,16 @@
                   const description = $section.find('p').text().trim() || 'No description';
                   doormats.push({ link, title, description });
               });
+			  // Assign "Not Found" if no doormats were extracted
+			  const doormatsResult = doormats.length > 0 ? doormats : 'Not Found';
               // Extract all tables as an array
               const tables = [];
               $html.find('table').each(function () {
                   const tableHTML = $(this).prop('outerHTML');
                   tables.push(tableHTML ? tableHTML.trim() : 'Not Found');
               });
+			  // Assign "Not Found" if no tables were extracted
+			  const tablesResult = tables.length > 0 ? tables : 'Not Found';
               // Extract full body content
               const bodyContentRaw = $html.find('body').html(); // Untrimmed content
               const bodyContent = bodyContentRaw ? bodyContentRaw.trim() : 'Not Found'; // Trimmed content
@@ -1027,8 +1029,8 @@
                   metaDescription,
                   metaKeywords,
                   introParagraph,
-                  doormats,
-                  tables,
+                  doormats: doormatsResult,
+                  tables: tablesResult,
                   bodyContent,
               };
           }
