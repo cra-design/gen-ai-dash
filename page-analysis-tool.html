@@ -803,7 +803,7 @@
 				let selectedTasks = [];
 				let model = $('input[name="html-upload-genai-model"]:checked').val();
 				let systemGeneral = { role: "system", content: "You are an expert web designer and writer. Analyze the provided web page content according to the guidelines in the custom instruction to provide actionable recommendations. The contextual data is provided to give you additional detail on the page, what page users are searching for or saying in feedback or other web behaviour to help inform your recommendations." }
-				let systemTask = { role: "system", content: "Custom instruction: " }
+				let systemTask = { role: "system", content: "" }
 				let userContent = { role: "user", content: "Web page content: "}
 				let userData = { role: "user", content: "Contextual data: " }
 				let reportContainer = $(".overlay-content");
@@ -833,7 +833,7 @@
                   for (const task of selectedTasks) {
                     try {
 						let fileContent = await $.get(task.value);
-						systemTask.content += fileContent;
+						systemTask.content = "Custom instruction: " + fileContent;
 						// Create the JSON with the prompt and instructions
 						let requestJson = [systemGeneral, systemTask, userContent, userData];
 
@@ -841,7 +841,7 @@
 						let ORjson = await getORData(model, requestJson);
 						let aiResponse = ORjson.choices[0].message.content;
 						let formattedText = formatAIResponse(aiResponse);
-						console.log(formattedText);
+						//console.log(formattedText);
 
 						// Find the corresponding label text
 						let labelText = $(`label[for='${task.id}']`).text().trim();
@@ -928,20 +928,6 @@
           async function getORData(model, requestJson) {
               let ORjson;
               try {
-			  
-				console.log(JSON.stringify({
-                          "model": model,
-                          "messages": requestJson
-                      }));
-				console.log(JSON.stringify({
-                          "model": "google/gemini-2.0-flash-exp:free",
-                          "messages": [
-							{ "role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:" },
-							{ "role": "user", "content": $("#html-input").html() }
-						]
-                      }));
-			  
-			  
                   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                       method: "POST",
                       headers: {
@@ -963,7 +949,6 @@
                   console.error("Error fetching from OpenRouter API:", error.message);
                   return undefined;
               }
-          	console.log("ORjson: ", ORjson);
             return ORjson;
           }
 
