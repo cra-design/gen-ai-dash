@@ -146,6 +146,10 @@
                 height: 600px;
             }
         }
+		
+		.generated-report {
+			text-align: left;
+		}
       </style>
 	  <!--style>
 		#image-drop-upload-area {
@@ -810,7 +814,8 @@
 						console.log(requestJson);
 						let ORjson = await getORData(model, requestJson);
 						let aiResponse = ORjson.choices[0].message.content;
-						console.log(aiResponse);
+						let formattedText = formatAIResponse(aiResponse);
+						console.log(formattedText);
 
 						// Find the corresponding label text
 						let labelText = $(`label[for='${task.id}']`).text().trim();
@@ -819,7 +824,7 @@
 						let newReport = $(
 							'<div class="generated-report">' +
 								'<h4>' + labelText + '</h4>' +
-								'<p>' + aiResponse + '</p>' +
+								'<p>' + formattedText + '</p>' +
 							'</div>'
 						);
 
@@ -910,12 +915,7 @@
 							{ "role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:" },
 							{ "role": "user", "content": $("#html-input").html() }
 						]
-                      }
-					  
-					  /*{
-                          "model": model,
-                          "messages": requestJson
-                      }*/));
+                      }));
 			  
 			  
                   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -1022,6 +1022,18 @@
                   bodyContent,
               };
           }
+		  
+		function formatAIResponse(aiResponse) {
+			return aiResponse
+				.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold (**text** → <strong>text</strong>)
+				.replace(/\*(.*?)\*/g, "<em>$1</em>") // Italics (*text* → <em>text</em>)
+				.replace(/\n\s*-\s*(.*?)(?=\n|$)/g, "<li>$1</li>") // Convert "- item" to list items
+				.replace(/(<li>.*<\/li>)/g, "<ul>$1</ul>") // Wrap list items in <ul>
+				.split("\n") // Split by line breaks
+				.filter(line => line.trim() !== "") // Remove empty lines
+				.map(line => `<p>${line}</p>`) // Wrap remaining text in <p> tags
+				.join(""); // Join everything back together
+		}
 
           // Function to render the full HTML and extracted fields
           function renderHTMLFields(fullHtml, fields) {
@@ -1041,6 +1053,8 @@
                   `);
               });
           }
+		  
+		  
 
 
       </script>
