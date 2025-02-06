@@ -803,7 +803,7 @@
 						systemTask.content += fileContent;
 
 						// Create the JSON with the prompt and instructions
-						let requestJson = JSON.stringify([systemGeneral, systemTask, userContent, userData]);
+						let requestJson = [systemGeneral, systemTask, userContent, userData];
 
 						// Send it to the API
 						console.log(model);
@@ -925,17 +925,9 @@
                           "Content-Type": "application/json"
                       },
                       body: JSON.stringify({
-                          "model": "google/gemini-2.0-flash-exp:free",
-                          "messages": [
-							{ "role": "assistant", "content": "Please provide recommendations on how to rewrite this content to be more user friendly and conversational with examples:" },
-							{ "role": "user", "content": $("#html-input").html() }
-						]
-                      }
-					  
-					  /*{
                           "model": model,
                           "messages": requestJson
-                      }*/)
+                      })
                   });
 
                   if (!response.ok) {
