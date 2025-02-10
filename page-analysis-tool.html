@@ -879,6 +879,7 @@
                 reader.onload = async function (event) {
                     var arrayBuffer = reader.result;
                     try {
+                        console.log(window.Mammoth);  // Should not be undefined if Mammoth is loaded correctly
                         // Extract raw text with Mammoth.js
                         let result = await Mammoth.extractRawText({ arrayBuffer: arrayBuffer });
                         let extractedText = result.value.trim();
