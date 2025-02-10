@@ -519,9 +519,7 @@
                   										<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
                   										  <span id="html-input" class="input" role="textbox" contenteditable></span>
                   										</div>
-
                   									</fieldset>
-
                                     <button id="html-upload-btn" style="margin-top: 20px">Submit</button>
                                   </div>
                                   <div id="html-upload-preview" class="hidden">
@@ -804,7 +802,7 @@
 				//$("#genai-report-reset-options").removeClass("hidden");
 				let selectedTasks = [];
 				let model = $('input[name="html-upload-genai-model"]:checked').val();
-				let systemGeneral = { role: "system", content: "You are an expert web designer and writer. Analyze the provided web page content according to the guidelines in the custom instruction to provide actionable recommendations. The contextual data is provided to give you additional detail on the page, what page users are searching for or saying in feedback or other web behaviour to help inform your recommendations." }
+				let systemGeneral = { role: "system", content: "You are an expert web editor. Analyze the provided web page content according to the guidelines in the following system prompt to provide actionable recommendations in plain text. Never include code or HTML in your response. The contextual data may include search terms, user feedback or ux test findings to help you understand the pain points or user behaviour your recommendations should address." }
 				let systemTask = { role: "system", content: "" }
 				let userContent = { role: "user", content: "Web page content: "}
 				let userData = { role: "user", content: "Contextual data: " }
@@ -1036,17 +1034,17 @@
               };
           }
 
-		function formatAIResponse(aiResponse) {
-			return aiResponse
-				.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold (**text** → <strong>text</strong>)
-				.replace(/\*(.*?)\*/g, "<em>$1</em>") // Italics (*text* → <em>text</em>)
-				.replace(/\n\s*-\s*(.*?)(?=\n|$)/g, "<li>$1</li>") // Convert "- item" to list items
-				.replace(/(<li>.*<\/li>)/g, "<ul>$1</ul>") // Wrap list items in <ul>
-				.split("\n") // Split by line breaks
-				.filter(line => line.trim() !== "") // Remove empty lines
-				.map(line => `<p>${line}</p>`) // Wrap remaining text in <p> tags
-				.join(""); // Join everything back together
-		}
+          function formatAIResponse(aiResponse) {
+          	return aiResponse
+          		.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold (**text** → <strong>text</strong>)
+          		.replace(/\*(.*?)\*/g, "<em>$1</em>") // Italics (*text* → <em>text</em>)
+          		.replace(/\n\s*-\s*(.*?)(?=\n|$)/g, "<li>$1</li>") // Convert "- item" to list items
+          		.replace(/(<li>.*<\/li>)/g, "<ul>$1</ul>") // Wrap list items in <ul>
+          		.split("\n") // Split by line breaks
+          		.filter(line => line.trim() !== "") // Remove empty lines
+          		.map(line => `<p>${line}</p>`) // Wrap remaining text in <p> tags
+          		.join(""); // Join everything back together
+          }
 
           // Function to render the full HTML and extracted fields
           function renderHTMLFields(fullHtml, fields) {
