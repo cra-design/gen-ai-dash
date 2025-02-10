@@ -395,8 +395,8 @@
                                         <li>the point of this is to prevent abuse if you bought credits on your account if third parties find your key</li>
                                         <li>you don't need to buy credits for free models used in this demo</li>
                                         <li>you will be shown your key right after creating it: copy and save it somewhere, as you can't access it again through openrouter</li>
-										<li>if you want to try another model, or have credits on your account and want a paid model, let Miguel know so we can update the selections</li>
-									  </ul>
+                    										<li>if you want to try another model, or have credits on your account and want a paid model, let Miguel know so we can update the selections</li>
+                  									  </ul>
                                     </li>
                                     <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
                                   </ol>
@@ -414,6 +414,8 @@
                                       <label for="html">Content or HTML snippet</label><br>
                                       <input type="radio" id="image" name="upload-option" value="image">
                                       <label for="image">Image (Not yet available)</label><br>
+                                      <input type="radio" id="word" name="upload-option" value="word">
+                                      <label for="word">Word doc (Not yet available)</label><br>
                                       <!-- <button id="upload-chooser-btn">Continue</button> -->
                                     </fieldset>
                                 </div>
@@ -533,19 +535,19 @@
                                 </div>
                                 <div id="image-upload" class="hidden">
                                   <div id="image-upload-input" class="" style="margin-top:20px">
-                  									<!--<fieldset>
+                  									<fieldset>
                   										<legend>Upload images or PDFs to create image alt text</legend>
-						                          <input type="file" id="img-file" name="img-file"-->
+						                          <input type="file" id="img-file" name="img-file">
                   										<!--div id="image-drop-upload-area">
           															<i class="fas fa-upload"></i>
           															Drag and drop files here
           															<span id="file-upload-btn">Browse files
           																<input type="file" id="img-file" name="img-file">
           															</span>
-          														</div>-->
+          														</div-->
 
 
-                  										<!--<input type="submit" id="img-upload-btn">-->
+                  										<input type="submit" id="img-upload-btn">
 
                                       <!--Streamlit embed for alt text-->
 
@@ -568,6 +570,70 @@
                   									<p id="image-multiple-msg" class="hidden">We currently only accept uploading image files individually. Try again with 1 image.</p>
 
                                   </div>
+                                  <div id="word-upload" class="hidden">
+                                    <div id="word-upload-input" class="" style="margin-top:20px">
+                    									<fieldset>
+                    										<legend>Upload word documents such as .doc or .docx to generate HTML markup</legend>
+  						                          <input type="file" id="word-file" name="word-file">
+                    										<!--div id="image-drop-upload-area">
+            															<i class="fas fa-upload"></i>
+            															Drag and drop files here
+            															<span id="file-upload-btn">Browse files
+            																<input type="file" id="img-file" name="img-file">
+            															</span>
+            														</div>-->
+
+
+                    										<input type="submit" id="word-upload-btn">
+
+                                        <!--Streamlit embed for alt text-->
+
+                                      <!--/fieldset-->
+                                      <!--div class="streamlit-container">
+                                          <iframe
+                                              src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
+                                              class="streamlit-embed"
+                                              allow="camera;microphone"
+                                              scrolling="yes">
+                                          </iframe-->
+                                      </div>
+                                    </div>
+                                    <div id="word-upload-preview" class="hidden" style="margin-top:20px;">
+  			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                                        Word document preview
+                                      </h3>
+                                      <p id="word-invalid-msg" class="hidden">The document you uploaded isn't in a recognized format. Please try a .doc or .docx. If you think the image format should be accepted, please reach out to the administrator.</p>
+                    									<p id="word-multiple-msg" class="hidden">We currently only accept uploading word documents files individually. Try again with 1 word document.</p>
+  	                                  <div id="word-preview">
+                                          <upd-nav-tabs>
+                                            <div class="tabs sticky" style="z-index: 0 !important;">
+                                              <ul>
+                                                <li><a href="#" class="active" data-target="#word-render-preview"> Rendered preview</a></li>
+                                                <li><a href="#" data-target="#word-code-preview"> Markup</a></li>
+                                                <!-- <li><a href="#" data-target="#field-word-preview"> Fields</a></li> -->
+                                              </ul>
+                                            </div>
+                                          </upd-nav-tabs>
+
+                                          <div id="word-render-preview" class="tab-content">
+                                            <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                                            Rendered HTML preview
+                                            </h3>
+                                            <iframe id="word-preview-iframe" style="width: 100%; height: 300px; border: 1px solid #ddd;"></iframe>
+                                          </div>
+
+                                          <div id="word-code-preview" class="tab-content hidden">
+
+                                            <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                                            HTML markup preview
+                                            </h3>
+                                            <pre id="word-html-code" class="language-markup" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap;"><code></code></pre>
+                                          </div>
+
+
+                                      </div>
+
+                                    </div>
                                 </div>
 
                                  <!---->
@@ -626,6 +692,7 @@
       <link rel="modulepreload" href="chunk-GGWSDF3Q.js">
       <link rel="modulepreload" href="chunk-ODN5LVDJ.js"> -->
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+      <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
       <!-- <script src="polyfills-VMRJL7IV.js" type="module"></script><script src="main-BEEWNT6W.js" type="module"></script> -->
 	  <script src="js/prism.js"></script>
       <script type="text/javascript">
@@ -713,6 +780,9 @@
                 } else if (target.id == "image") {
                   $('#image-upload').removeClass("hidden");
                   $('#image-upload-input').removeClass("hidden");
+                } else if (target.id == "word") {
+                  $('#word-upload').removeClass("hidden");
+                  $('#word-upload-input').removeClass("hidden");
                 }
               }
             });
@@ -763,7 +833,7 @@
               //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
             });
 
-			$("#html-upload-btn").click(function() {
+            $("#html-upload-btn").click(function() {
               $("#html-preview").html($("#html-input").html());
               $("#html-upload-preview").removeClass("hidden");
               $("#genai-upload-msg").addClass("hidden");
@@ -771,24 +841,109 @@
             });
 
 
-			$(document).on("change", "input", function (event) {
-				if (event.target.id == "img-file") {
-					$("#image-invalid-msg").addClass("hidden");
-					$("#image-multiple-msg").addClass("hidden");
-					var fileList = event.target.files;
-					if (fileList.length > 0 && fileList != undefined) {
-						if (fileList.length > 1) { //uploaded more than 1 picture - could perhaps support this in the future
-							$("#image-multiple-msg").removeClass("hidden");
-						} else if (fileList[0].type.substring(0,5) != "image") {
-							$("#image-invalid-msg").removeClass("hidden");
-						} else {
-							//Preview the image
-							$("#image-preview").attr("src", URL.createObjectURL(fileList[0]));
-							$("#image-upload-preview").removeClass("hidden");
-						}
-					}
-				}
-			});
+      			$(document).on("change", "input", async function (event) {
+      				if (event.target.id == "img-file") {
+      					$("#image-invalid-msg").addClass("hidden");
+      					$("#image-multiple-msg").addClass("hidden");
+      					var fileList = event.target.files;
+      					if (fileList.length > 0 && fileList != undefined) {
+      						if (fileList.length > 1) { //uploaded more than 1 picture - could perhaps support this in the future
+      							$("#image-multiple-msg").removeClass("hidden");
+      						} else if (fileList[0].type.substring(0,5) != "image") {
+      							$("#image-invalid-msg").removeClass("hidden");
+      						} else {
+      							//Preview the image
+      							$("#image-preview").attr("src", URL.createObjectURL(fileList[0]));
+      							$("#image-upload-preview").removeClass("hidden");
+      						}
+      					}
+      				} else if (event.target.id == "word-file") {
+      					$("#word-invalid-msg").addClass("hidden");
+      					$("#word-multiple-msg").addClass("hidden");
+      					var fileList = event.target.files;
+                if (fileList.length === 0 || fileList === undefined) return;
+                if (fileList.length > 1) {
+                    $("#word-multiple-msg").removeClass("hidden");
+                    return;
+                }
+                var wordFile = fileList[0];
+                var validTypes = [
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "application/msword"
+                ];
+                if (!validTypes.includes(wordFile.type)) {
+                    $("#word-invalid-msg").removeClass("hidden");
+                    return;
+                }
+                var reader = new FileReader();
+                reader.onload = async function (event) {
+                    var arrayBuffer = reader.result;
+                    try {
+                        // Extract raw text with Mammoth.js
+                        let result = await Mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+                        let extractedText = result.value.trim();
+                        if (!extractedText) {
+                            $("#word-invalid-msg").removeClass("hidden").text("The document is empty or could not be read.");
+                            return;
+                        }
+                        let systemWord = { role: "system", content: "You are an expert in converting plain text into structured, semantic HTML." }
+                        let userWord = { role: "user", content: 'Convert the following document text into clean, semantic HTML with proper headings, paragraphs, and lists where applicable:\n\n${extractedText}' }
+                        // Create the JSON with the prompt and instructions
+                        let requestJson = [systemWord, userWord];
+                        // Send it to the API
+                        let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
+                        let aiWordResponse = ORjson.choices[0].message.content.trim();
+                        // Insert the processed HTML into the iframe
+                        let iframe = document.getElementById("word-preview-iframe");
+                        let iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        iframeDoc.open();
+                        // Inject the full HTML structure into the iframe
+                        iframeDoc.body.innerHTML = `
+                            <!DOCTYPE html>
+                            <html lang="en">
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>Preview</title>
+                                <link href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet">
+                                <link href="../css/custom.css" rel="stylesheet">
+                            </head>
+                            <body>
+                                <main>
+                                    ${aiWordResponse} <!-- Inject OpenAI-generated HTML -->
+                                </main>
+                            </body>
+                            </html>
+                        `;
+                        iframeDoc.close();
+
+                        // Show the raw HTML markup in the code tab
+                        $("#word-html-code code").text(aiWordResponse);
+
+                    } catch (err) {
+                        console.error("Error extracting text:", err);
+                        $("#word-invalid-msg").removeClass("hidden").text("Failed to parse document.");
+                        return;
+                    }
+                };
+                reader.readAsArrayBuffer(wordFile);
+
+
+                // Re-apply syntax highlighting
+                Prism.highlightElement(document.querySelector("#word-html-code code"));
+
+                // Display the tabbed preview
+                $("#word-upload-preview").removeClass("hidden");
+                // if (!validTypes.includes(fileList[0].type)) {
+                //     $("#word-invalid-msg").removeClass("hidden");
+                //     return;
+                // } else {
+                //     // Preview the document (if applicable)
+                //     $("#word-preview").attr("src", URL.createObjectURL(fileList[0]));
+                //     $("#word-upload-preview").removeClass("hidden");
+                // }
+      				}
+            });
 
             $("#genai-select-tasks-btn").click(function () {
               $("#genai-task-options").addClass("hidden");
@@ -796,76 +951,76 @@
             });
 
             $("#genai-run-report-btn").click(async function () {
-				$("#genai-model-options").addClass("hidden");
-				$("#genai-open-report-btn").addClass("hidden"); // Hide report button initially
-				$("#loading-indicator").removeClass("hidden"); // Show spinner
-				//$("#genai-report-reset-options").removeClass("hidden");
-				let selectedTasks = [];
-				let model = $('input[name="html-upload-genai-model"]:checked').val();
-				let systemGeneral = { role: "system", content: "You are an expert web editor. Analyze the provided web page content according to the guidelines in the following system prompt to provide actionable recommendations in plain text. Never include code or HTML in your response. The contextual data may include search terms, user feedback or ux test findings to help you understand the pain points or user behaviour your recommendations should address." }
-				let systemTask = { role: "system", content: "" }
-				let userContent = { role: "user", content: "Web page content: "}
-				let userData = { role: "user", content: "Contextual data: " }
-				let reportContainer = $(".overlay-content");
-				reportContainer.find(".generated-report").remove();
+      				$("#genai-model-options").addClass("hidden");
+      				$("#genai-open-report-btn").addClass("hidden"); // Hide report button initially
+      				$("#loading-indicator").removeClass("hidden"); // Show spinner
+      				//$("#genai-report-reset-options").removeClass("hidden");
+      				let selectedTasks = [];
+      				let model = $('input[name="html-upload-genai-model"]:checked').val();
+      				let systemGeneral = { role: "system", content: "You are an expert web editor. Analyze the provided web page content according to the guidelines in the following system prompt to provide actionable recommendations in plain text. Never include code or HTML in your response. The contextual data may include search terms, user feedback or ux test findings to help you understand the pain points or user behaviour your recommendations should address." }
+      				let systemTask = { role: "system", content: "" }
+      				let userContent = { role: "user", content: "Web page content: "}
+      				let userData = { role: "user", content: "Contextual data: " }
+      				let reportContainer = $(".overlay-content");
+      				reportContainer.find(".generated-report").remove();
 
 
-				//triage which content to feed to the AI for analysis if free content input
-				if ($('#html-upload-preview').is(':visible')) {
-					userContent.content += $("#html-input").html();
-				} else if ($('#url-upload-preview').is(':visible')) {
-					userContent.content += $("#fullHtml").text(); //give it the full page html
-					userData.content += "Search terms: " + $("#search-terms-input").text(); //give it any data we have
-					userData.content += "Page feedback summary: " + $("#feedback-summary-input").text();
-					userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").text();
-				}
+      				//triage which content to feed to the AI for analysis if free content input
+      				if ($('#html-upload-preview').is(':visible')) {
+      					userContent.content += $("#html-input").html();
+      				} else if ($('#url-upload-preview').is(':visible')) {
+      					userContent.content += $("#fullHtml").text(); //give it the full page html
+      					userData.content += "Search terms: " + $("#search-terms-input").text(); //give it any data we have
+      					userData.content += "Page feedback summary: " + $("#feedback-summary-input").text();
+      					userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").text();
+      				}
 
-				//Gather selected tasks
-				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
-					selectedTasks.push({
-						id: $(this).attr('id'),
-						value: $(this).val()
-					});
-				});
+      				//Gather selected tasks
+      				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
+      					selectedTasks.push({
+      						id: $(this).attr('id'),
+      						value: $(this).val()
+      					});
+      				});
 
-				//Process each selected task asynchronously
-				if (selectedTasks.length > 0) {
+      				//Process each selected task asynchronously
+      				if (selectedTasks.length > 0) {
                   for (const task of selectedTasks) {
                     try {
-						let fileContent = await $.get(task.value);
-						systemTask.content = "Custom instruction: " + fileContent;
-						// Create the JSON with the prompt and instructions
-						let requestJson = [systemGeneral, systemTask, userContent, userData];
+          						let fileContent = await $.get(task.value);
+          						systemTask.content = "Custom instruction: " + fileContent;
+          						// Create the JSON with the prompt and instructions
+          						let requestJson = [systemGeneral, systemTask, userContent, userData];
 
-						// Send it to the API
-						let ORjson = await getORData(model, requestJson);
-						let aiResponse = ORjson.choices[0].message.content;
-						let formattedText = formatAIResponse(aiResponse);
-						//console.log(formattedText);
+          						// Send it to the API
+          						let ORjson = await getORData(model, requestJson);
+          						let aiResponse = ORjson.choices[0].message.content;
+          						let formattedText = formatAIResponse(aiResponse);
+          						//console.log(formattedText);
 
-						// Find the corresponding label text
-						let labelText = $(`label[for='${task.id}']`).text().trim();
+          						// Find the corresponding label text
+          						let labelText = $(`label[for='${task.id}']`).text().trim();
 
-						// Create new report section dynamically
-						let newReport = $(
-							'<div class="generated-report">' +
-								'<h4>' + labelText + '</h4>' +
-								'<p>' + formattedText + '</p>' +
-							'</div>'
-						);
-						// Append to the report container
-						reportContainer.append(newReport);
-						$("#genai-open-report-btn").removeClass("hidden"); // Show report button
+          						// Create new report section dynamically
+          						let newReport = $(
+          							'<div class="generated-report">' +
+          								'<h4>' + labelText + '</h4>' +
+          								'<p>' + formattedText + '</p>' +
+          							'</div>'
+          						);
+          						// Append to the report container
+          						reportContainer.append(newReport);
+          						$("#genai-open-report-btn").removeClass("hidden"); // Show report button
                     } catch (error) {
                         console.error(`Error generating report:`, error);
                         $("#html-upload-preview").addClass("hidden");
                         $("#html-upload-no-action-error").removeClass("hidden");
                     }
                   }
-				} else {
-					$("#html-upload-preview").addClass("hidden");
-					$("#html-upload-no-action-error").removeClass("hidden");
-				}
+          		} else {
+          			$("#html-upload-preview").addClass("hidden");
+          			$("#html-upload-no-action-error").removeClass("hidden");
+          		}
 
       				/*var htmlObject = ;
       				if (.length < 1 || fileList == undefined) {
@@ -874,7 +1029,7 @@
       				$("#image-preview").attr("data-src", URL.createObjectURL(htmlObject));
       				$("#image-upload-preview").removeClass("hidden");
       				*/
-				$("#loading-indicator").addClass("hidden"); // Hide spinner when done
+              $("#loading-indicator").addClass("hidden"); // Hide spinner when done
             });
 
 
@@ -907,7 +1062,8 @@
 
             });
 
-          });
+          }); //close document ready
+
           function resetHiddenUploadOptions() {
             $('#url-upload').addClass("hidden");
             $('#url-upload-input').addClass("hidden");
@@ -919,6 +1075,9 @@
             $('#image-upload').addClass("hidden");
             $('#image-upload-input').addClass("hidden");
             $('#image-upload-preview').addClass("hidden");
+            $('#word-upload').addClass("hidden");
+            $('#word-upload-input').addClass("hidden");
+            $('#word-upload-preview').addClass("hidden");
             $("#genai-upload-msg").removeClass("hidden");
             $("#genai-task-options").addClass("hidden");
             $('input[name="html-upload-genai-analysis"]').prop('checked', false);
@@ -1007,16 +1166,16 @@
                   const description = $section.find('p').text().trim() || 'No description';
                   doormats.push({ link, title, description });
               });
-			  // Assign "Not Found" if no doormats were extracted
-			  const doormatsResult = doormats.length > 0 ? doormats : 'Not Found';
+      			  // Assign "Not Found" if no doormats were extracted
+      			  const doormatsResult = doormats.length > 0 ? doormats : 'Not Found';
               // Extract all tables as an array
               const tables = [];
               $html.find('table').each(function () {
                   const tableHTML = $(this).prop('outerHTML');
                   tables.push(tableHTML ? tableHTML.trim() : 'Not Found');
               });
-			  // Assign "Not Found" if no tables were extracted
-			  const tablesResult = tables.length > 0 ? tables : 'Not Found';
+      			  // Assign "Not Found" if no tables were extracted
+      			  const tablesResult = tables.length > 0 ? tables : 'Not Found';
               // Extract full body content
               const bodyContentRaw = $html.find('body').html(); // Untrimmed content
               const bodyContent = bodyContentRaw ? bodyContentRaw.trim() : 'Not Found'; // Trimmed content
