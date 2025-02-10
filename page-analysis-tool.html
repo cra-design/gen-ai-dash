@@ -146,11 +146,11 @@
                 height: 600px;
             }
         }
-		
+
 		.generated-report {
 			text-align: left;
 		}
-		
+
 		#loading-indicator {
 			display: flex;
 			align-items: center;
@@ -297,7 +297,7 @@
                   <label for="html-upload-genai-analysis-keywords"> Suggest metadata keywords</label><br>
 				  <input type="checkbox" id="html-upload-genai-analysis-metadata" name="html-upload-genai-analysis" value="custom-instructions/metadata/metadata-review.txt">
                   <label for="html-upload-genai-analysis-metadata"> Metadata review</label><br>
-				  
+
 				  <input type="checkbox" id="html-upload-genai-analysis-comprehension" name="html-upload-genai-analysis" value="custom-instructions/content/comprehension.txt">
                   <label for="html-upload-genai-analysis-comprehension"> Rewrite for easy comprehension</label><br>
 				  <input type="checkbox" id="html-upload-genai-analysis-consistency" name="html-upload-genai-analysis" value="custom-instructions/content/consistency.txt">
@@ -310,14 +310,14 @@
                   <label for="html-upload-genai-analysis-jargon"> Rewrite to simplify jargon</label><br>
                   <input type="checkbox" id="html-upload-genai-analysis-trim" name="html-upload-genai-analysis" value="custom-instructions/content/trimmer.txt">
                   <label for="html-upload-genai-analysis-trim"> Trim the content to be more concise</label><br>
-				  
+
 				  <input type="checkbox" id="html-upload-genai-analysis-bullets" name="html-upload-genai-analysis" value="custom-instructions/content/bulleted-lists.txt">
                   <label for="html-upload-genai-analysis-bullets"> Restructure with bulleted lists</label><br>
 				  <input type="checkbox" id="html-upload-genai-analysis-grid" name="html-upload-genai-analysis" value="custom-instructions/content/columns-and-rows.txt">
                   <label for="html-upload-genai-analysis-grid"> Restructure with columns and rows</label><br>
 				  <input type="checkbox" id="html-upload-genai-analysis-headings" name="html-upload-genai-analysis" value="custom-instructions/content/headings.txt">
                   <label for="html-upload-genai-analysis-headings"> Propose a better heading structure</label><br>
-				  
+
 
                   <!--<input type="checkbox" id="genai-reports-title" name="genai-reports" value="Title">
                   <label for="genai-reports-title">Optimize title for search</label><br>
@@ -408,12 +408,12 @@
                                     <!-- Radio buttons for URL analysis, HTML snippet upload, image upload -->
                                     <fieldset>
                                       <legend>What do you want to upload?</legend>
-                                      <input type="radio" id="url" name="upload-option" value="url">
+                                      <input type="radio" id="url" name="upload-option" value="url" checked>
                                       <label for="url">A page by URL</label><br>
                                       <input type="radio" id="html" name="upload-option" value="html">
                                       <label for="html">Content or HTML snippet</label><br>
                                       <input type="radio" id="image" name="upload-option" value="image">
-                                      <label for="image">Image</label><br>
+                                      <label for="image">Image (Not yet available)</label><br>
                                       <!-- <button id="upload-chooser-btn">Continue</button> -->
                                     </fieldset>
                                 </div>
@@ -501,11 +501,11 @@
                                          <div id="search-terms-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
                      										  <span id="search-terms-input" class="input" role="textbox" contenteditable></span>
              										         </div>
-                                         <p>Page feedback summary</p>
+                                         <p style="margin-top:20px;">Page feedback summary</p>
                                          <div id="feedback-summary-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
                      										  <span id="feedback-summary-input" class="input" role="textbox" contenteditable></span>
              										         </div>
-                                         <p>Heuristic commentary</p>
+                                         <p style="margin-top:20px;">UX test findings (or heuristic commentary)</p>
                                          <div id="heuristic-commentary-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
                      										  <span id="heuristic-commentary-input" class="input" role="textbox" contenteditable></span>
              										         </div>
@@ -696,6 +696,7 @@
 
               $('#api-key-entry').addClass("hidden");
               $('#upload-chooser').removeClass("hidden");
+              $('#url-upload').removeClass("hidden");
             });
 
             $(document).on("click", "input[type=radio]", function (event) {
@@ -809,7 +810,7 @@
 				let userData = { role: "user", content: "Contextual data: " }
 				let reportContainer = $(".overlay-content");
 				reportContainer.find(".generated-report").remove();
-				
+
 
 				//triage which content to feed to the AI for analysis if free content input
 				if ($('#html-upload-preview').is(':visible')) {
@@ -1028,13 +1029,13 @@
                   h1,
                   metaDescription,
                   metaKeywords,
-                  introParagraph,
-                  doormats: doormatsResult,
-                  tables: tablesResult,
-                  bodyContent,
+                  // introParagraph,
+                  // doormats: doormatsResult,
+                  // tables: tablesResult,
+                  // bodyContent,
               };
           }
-		  
+
 		function formatAIResponse(aiResponse) {
 			return aiResponse
 				.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold (**text** → <strong>text</strong>)
@@ -1065,8 +1066,8 @@
                   `);
               });
           }
-		  
-		  
+
+
 
 
       </script>
