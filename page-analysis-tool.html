@@ -929,29 +929,26 @@
 
                         // Show the raw HTML markup in the code tab
                         $("#word-html-code code").text(aiWordResponse);
+                        // Re-apply syntax highlighting
+                        Prism.highlightElement(document.querySelector("#word-html-code code"));
+
+                        // Display the tabbed preview
+                        $("#word-upload-preview").removeClass("hidden");
+                        // if (!validTypes.includes(fileList[0].type)) {
+                        //     $("#word-invalid-msg").removeClass("hidden");
+                        //     return;
+                        // } else {
+                        //     // Preview the document (if applicable)
+                        //     $("#word-preview").attr("src", URL.createObjectURL(fileList[0]));
+                        //     $("#word-upload-preview").removeClass("hidden");
+                        // }
 
                     } catch (err) {
                         console.error("Error extracting text:", err);
                         $("#word-invalid-msg").removeClass("hidden").text("Failed to parse document.");
                         return;
                     }
-                };
-
-
-                // Re-apply syntax highlighting
-                Prism.highlightElement(document.querySelector("#word-html-code code"));
-
-                // Display the tabbed preview
-                $("#word-upload-preview").removeClass("hidden");
-                // if (!validTypes.includes(fileList[0].type)) {
-                //     $("#word-invalid-msg").removeClass("hidden");
-                //     return;
-                // } else {
-                //     // Preview the document (if applicable)
-                //     $("#word-preview").attr("src", URL.createObjectURL(fileList[0]));
-                //     $("#word-upload-preview").removeClass("hidden");
-                // }
-      				}
+                }
             });
 
             $("#genai-select-tasks-btn").click(function () {
