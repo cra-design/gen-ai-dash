@@ -291,31 +291,31 @@
                   <legend>Select task</legend>
                   <input type="checkbox" id="html-upload-genai-analysis-title" name="html-upload-genai-analysis" value="custom-instructions/metadata/title-en.txt">
                   <label for="html-upload-genai-analysis-title"> Suggest a SEOed title</label><br>
-				  <input type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
+                  <input type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
                   <label for="html-upload-genai-analysis-description"> Suggest a metadata description</label><br>
                   <input type="checkbox" id="html-upload-genai-analysis-keywords" name="html-upload-genai-analysis" value="custom-instructions/metadata/keywords-en.txt">
                   <label for="html-upload-genai-analysis-keywords"> Suggest metadata keywords</label><br>
-				  <input type="checkbox" id="html-upload-genai-analysis-metadata" name="html-upload-genai-analysis" value="custom-instructions/metadata/metadata-review.txt">
+                  <input type="checkbox" id="html-upload-genai-analysis-metadata" name="html-upload-genai-analysis" value="custom-instructions/metadata/metadata-review.txt">
                   <label for="html-upload-genai-analysis-metadata"> Metadata review</label><br>
 
-				  <input type="checkbox" id="html-upload-genai-analysis-comprehension" name="html-upload-genai-analysis" value="custom-instructions/content/comprehension.txt">
+                  <input type="checkbox" id="html-upload-genai-analysis-comprehension" name="html-upload-genai-analysis" value="custom-instructions/content/comprehension.txt">
                   <label for="html-upload-genai-analysis-comprehension"> Rewrite for easy comprehension</label><br>
-				  <input type="checkbox" id="html-upload-genai-analysis-consistency" name="html-upload-genai-analysis" value="custom-instructions/content/consistency.txt">
+                  <input type="checkbox" id="html-upload-genai-analysis-consistency" name="html-upload-genai-analysis" value="custom-instructions/content/consistency.txt">
                   <label for="html-upload-genai-analysis-consistency"> Rewrite for consistency</label><br>
-				  <input type="checkbox" id="html-upload-genai-analysis-conversational" name="html-upload-genai-analysis" value="custom-instructions/content/conversational.txt">
+                  <input type="checkbox" id="html-upload-genai-analysis-conversational" name="html-upload-genai-analysis" value="custom-instructions/content/conversational.txt">
                   <label for="html-upload-genai-analysis-conversational"> Rewrite for conversational tone</label><br>
-				  <input type="checkbox" id="html-upload-genai-analysis-inclusivity" name="html-upload-genai-analysis" value="custom-instructions/content/inclusivity.txt">
+                  <input type="checkbox" id="html-upload-genai-analysis-inclusivity" name="html-upload-genai-analysis" value="custom-instructions/content/inclusivity.txt">
                   <label for="html-upload-genai-analysis-inclusivity"> Rewrite for inclusivity</label><br>
-				  <input type="checkbox" id="html-upload-genai-analysis-jargon" name="html-upload-genai-analysis" value="custom-instructions/content/jargon-remover.txt">
+                  <input type="checkbox" id="html-upload-genai-analysis-jargon" name="html-upload-genai-analysis" value="custom-instructions/content/jargon-remover.txt">
                   <label for="html-upload-genai-analysis-jargon"> Rewrite to simplify jargon</label><br>
                   <input type="checkbox" id="html-upload-genai-analysis-trim" name="html-upload-genai-analysis" value="custom-instructions/content/trimmer.txt">
                   <label for="html-upload-genai-analysis-trim"> Trim the content to be more concise</label><br>
 
-				  <input type="checkbox" id="html-upload-genai-analysis-bullets" name="html-upload-genai-analysis" value="custom-instructions/content/bulleted-lists.txt">
+                  <input type="checkbox" id="html-upload-genai-analysis-bullets" name="html-upload-genai-analysis" value="custom-instructions/content/bulleted-lists.txt">
                   <label for="html-upload-genai-analysis-bullets"> Restructure with bulleted lists</label><br>
-				  <input type="checkbox" id="html-upload-genai-analysis-grid" name="html-upload-genai-analysis" value="custom-instructions/content/columns-and-rows.txt">
+                  <input type="checkbox" id="html-upload-genai-analysis-grid" name="html-upload-genai-analysis" value="custom-instructions/content/columns-and-rows.txt">
                   <label for="html-upload-genai-analysis-grid"> Restructure with columns and rows</label><br>
-				  <input type="checkbox" id="html-upload-genai-analysis-headings" name="html-upload-genai-analysis" value="custom-instructions/content/headings.txt">
+                  <input type="checkbox" id="html-upload-genai-analysis-headings" name="html-upload-genai-analysis" value="custom-instructions/content/headings.txt">
                   <label for="html-upload-genai-analysis-headings"> Propose a better heading structure</label><br>
 
 
@@ -1111,7 +1111,9 @@
                         $("#word-upload-loading-spinner").addClass("hidden");
                         $("#upload-chooser").addClass("hidden");
                         $("#word-upload").addClass("hidden");
-                        $("#url-preview").addClass("hidden");
+                        $("#word-upload-preview").addClass("hidden");
+                        $("#url-upload").removeClass("hidden");
+                        $("#url-upload-preview").removeClass("hidden");
                         $("#genai-upload-msg").addClass("hidden");
                         $("#genai-task-options").removeClass("hidden");
                     } catch (err) {
