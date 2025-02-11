@@ -2,7 +2,7 @@
    <head>
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <title>GenAI Content Assistant | Page Assistant</title>
+      <title>GenAI Content Assistant | Project Assistant</title>
       <!--base href="./"-->
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="icon" type="image/x-icon" href="img/favicon.ico">
@@ -265,8 +265,8 @@
                      <div _ngcontent-ng-c82967845="">
                         <a _ngcontent-ng-c82967845="" class="nav_logo" href="/en?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><img _ngcontent-ng-c82967845="" alt="" src="img/ca-logo.png"></a>
                         <div _ngcontent-ng-c82967845="" class="nav_list mt-5">
-                           <a id="active" class="nav_link active" href="page-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">edit</span><span data-i18n="menu-overview" class="nav_name">Page assistant</span></a>
-                           <a class="nav_link" href="project-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">layers</span><span data-i18n="menu-pages" class="nav_name">Project assistant</span></a>
+                           <a class="nav_link" href="page-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">edit</span><span data-i18n="menu-overview" class="nav_name">Page assistant</span></a>
+                           <a id="active"  class="nav_link active" href="project-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">layers</span><span data-i18n="menu-pages" class="nav_name">Project assistant</span></a>
                            <a class="nav_link" href="image-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">image</span><span data-i18n="menu-tasks" class="nav_name">Image assistant</span></a>
                            <!-- <a class="nav_link" href="/en/projects?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><span aria-hidden="true" class="material-icons nav_icon">folder</span><span data-i18n="menu-projects" class="nav_name">UX projects</span></a> -->
                            <!-- <a class="nav_link" href="/en/documents"><span aria-hidden="true" class="material-icons nav_icon">summarize</span><span data-i18n="menu-documents" class="nav_name">Documents</span></a>
@@ -296,33 +296,16 @@
                 <fieldset id="genai-task-options" class="hidden">
                   <legend>Select task</legend>
                   <input type="checkbox" id="html-upload-genai-analysis-title" name="html-upload-genai-analysis" value="custom-instructions/metadata/title-en.txt">
-                  <label for="html-upload-genai-analysis-title"> Suggest a SEOed title</label><br>
+                  <label for="html-upload-genai-analysis-title"> Suggest SEOed titles</label><br>
                   <input type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
-                  <label for="html-upload-genai-analysis-description"> Suggest a metadata description</label><br>
+                  <label for="html-upload-genai-analysis-description"> Suggest metadata descriptions</label><br>
                   <input type="checkbox" id="html-upload-genai-analysis-keywords" name="html-upload-genai-analysis" value="custom-instructions/metadata/keywords-en.txt">
                   <label for="html-upload-genai-analysis-keywords"> Suggest metadata keywords</label><br>
                   <input type="checkbox" id="html-upload-genai-analysis-metadata" name="html-upload-genai-analysis" value="custom-instructions/metadata/metadata-review.txt">
                   <label for="html-upload-genai-analysis-metadata"> Metadata review</label><br>
 
-                  <input type="checkbox" id="html-upload-genai-analysis-comprehension" name="html-upload-genai-analysis" value="custom-instructions/content/comprehension.txt">
-                  <label for="html-upload-genai-analysis-comprehension"> Rewrite for easy comprehension</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-consistency" name="html-upload-genai-analysis" value="custom-instructions/content/consistency.txt">
-                  <label for="html-upload-genai-analysis-consistency"> Rewrite for consistency</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-conversational" name="html-upload-genai-analysis" value="custom-instructions/content/conversational.txt">
-                  <label for="html-upload-genai-analysis-conversational"> Rewrite for conversational tone</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-inclusivity" name="html-upload-genai-analysis" value="custom-instructions/content/inclusivity.txt">
-                  <label for="html-upload-genai-analysis-inclusivity"> Rewrite for inclusivity</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-jargon" name="html-upload-genai-analysis" value="custom-instructions/content/jargon-remover.txt">
-                  <label for="html-upload-genai-analysis-jargon"> Rewrite to simplify jargon</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-trim" name="html-upload-genai-analysis" value="custom-instructions/content/trimmer.txt">
-                  <label for="html-upload-genai-analysis-trim"> Trim the content to be more concise</label><br>
-
-                  <input type="checkbox" id="html-upload-genai-analysis-bullets" name="html-upload-genai-analysis" value="custom-instructions/content/bulleted-lists.txt">
-                  <label for="html-upload-genai-analysis-bullets"> Restructure with bulleted lists</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-grid" name="html-upload-genai-analysis" value="custom-instructions/content/columns-and-rows.txt">
-                  <label for="html-upload-genai-analysis-grid"> Restructure with columns and rows</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-headings" name="html-upload-genai-analysis" value="custom-instructions/content/headings.txt">
-                  <label for="html-upload-genai-analysis-headings"> Propose a better heading structure</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-duplicate" name="html-upload-genai-analysis" value="custom-instructions/content/duplicate-review.txt">
+                  <label for="html-upload-genai-analysis-duplicate"> Identify duplicate content</label><br>
 
 
                   <!--<input type="checkbox" id="genai-reports-title" name="genai-reports" value="Title">
@@ -367,13 +350,13 @@
                 <button id="genai-reset-report-btn" style="margin-top:15px;">Reset</button>
               </div>
             </genai-sidebar>
-            <h1 _ngcontent-ng-c3392822675="" class="visually-hidden ng-tns-c3392822675-0">GCA | Page Assistant</h1>
+            <h1 _ngcontent-ng-c3392822675="" class="visually-hidden ng-tns-c3392822675-0">GCA | Project Assistant</h1>
             <main _ngcontent-ng-c3392822675="" style="min-height: 100%;" class="ng-tns-c3392822675-0 ng-trigger ng-trigger-routeAnimations">
                <router-outlet _ngcontent-ng-c3392822675="" class="ng-tns-c3392822675-0"></router-outlet>
                <upd-projects _nghost-ng-c947851115="" class="ng-star-inserted" style="">
                   <router-outlet _ngcontent-ng-c947851115=""></router-outlet>
                   <upd-projects-home _nghost-ng-c1826793033="" class="ng-star-inserted">
-                     <h2 _ngcontent-ng-c1826793033="">GenAI content assistant</h2>
+                     <h2 _ngcontent-ng-c1826793033="">GenAI Content aAsistant</h2>
 
                      <upd-card _ngcontent-ng-c1826793033="" titlesize="h5">
                         <div tabindex="0" class="card pt-2">
