@@ -895,6 +895,9 @@
                             <head>
                                 <meta charset="UTF-8">
                                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <script type="text/javascript" src="https://www.canada.ca/etc/designs/canada/cdts/gcweb/v4_0_47/cdts/compiled/soyutils.js"></script>
+                                <script type="text/javascript" src="https://www.canada.ca/etc/designs/canada/cdts/gcweb/v4_0_47/cdts/compiled/wet-en.js"></script>
+                                <link href="https://test.canada.ca/covid-19-guidance/proto/css/alpha-beta-banner.css" rel="stylesheet">
                                 <title>Preview</title>
                                 <link href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet">
 
@@ -920,7 +923,7 @@
                         let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
                         let aiWordResponse = ORjson.choices[0].message.content.trim();
                         // Remove leading and trailing backticks
-                        let trimmedHtml = aiWordResponse.replace(/^```|```$/g, '');
+                        let trimmedHtml = aiWordResponse.replace(/^html|^```|```$/g, '');
                         console.log(trimmedHtml);
                         // Insert the processed HTML into the iframe
                         let iframe = document.getElementById("word-preview-iframe");
