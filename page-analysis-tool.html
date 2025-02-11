@@ -1105,7 +1105,7 @@
                           console.error("Iframe with id 'url-frame' not found.");
                         }
                         // Show the raw HTML markup in the code tab
-                        $("#fullHtml code").text(trimmedHtml);
+                        $("#fullHtml code").text(formattedHTML);
                         // Apply syntax highlighting
                         Prism.highlightElement(document.querySelector("#fullHtml code"));
                         $("#word-upload-loading-spinner").addClass("hidden");
