@@ -602,7 +602,7 @@
   			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                         Word document preview
                                       </h3>
-                                      <p id="word-invalid-msg" class="hidden">The document you uploaded isn't in a recognized format. Please try a .doc or .docx. If you think the image format should be accepted, please reach out to the administrator.</p>
+                                      <p id="word-invalid-msg" class="hidden">This feature currently only supports ".docx" files. .doc or other document file types are not compatible. Please try a .docx file or use the text input option to copy paste.</p>
                     									<p id="word-multiple-msg" class="hidden">We currently only accept uploading word documents files individually. Try again with 1 word document.</p>
   	                                  <div id="word-preview">
                                           <upd-nav-tabs>
@@ -862,17 +862,15 @@
       					$("#word-invalid-msg").addClass("hidden");
       					$("#word-multiple-msg").addClass("hidden");
       					var fileList = event.target.files;
-                if (fileList.length === 0 || fileList === undefined) return;
+                if (!fileList || fileList.length === 0) return;
                 if (fileList.length > 1) {
                     $("#word-multiple-msg").removeClass("hidden");
                     return;
                 }
                 var wordFile = fileList[0];
-                var validTypes = [
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    "application/msword"
-                ];
-                if (!validTypes.includes(wordFile.type)) {
+                var validMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                var fileExtension = wordFile.name.split('.').pop().toLowerCase();
+                if (wordFile.type !== validMimeType || fileExtension !== 'docx') {
                     $("#word-invalid-msg").removeClass("hidden");
                     return;
                 }
@@ -881,7 +879,7 @@
                     var arrayBuffer = reader.result;
                     try {
                         // Extract raw text with Mammoth.js
-                        let result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+                        let result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
                         let extractedText = result.value.trim();
                         console.log(extractedText);
                         if (!extractedText) {
@@ -889,7 +887,7 @@
                             return;
                         }
                         let systemWord = { role: "system", content: "You are an expert in converting plain text into structured, semantic HTML." }
-                        let userWord = { role: "user", content: 'Clean up the following conversion from text into HTML ensuring it has good, clean syntax with proper headings, paragraphs, and lists where applicable:\n\n${extractedText}' }
+                        let userWord = { role: "user", content: 'Clean up the following conversion from text into HTML ensuring it has good, clean syntax with proper headings, paragraphs, and lists where applicable: ' + extractedText }
                         // Create the JSON with the prompt and instructions
                         let requestJson = [systemWord, userWord];
                         // Send it to the API
