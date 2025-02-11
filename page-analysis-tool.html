@@ -894,28 +894,33 @@
                         let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
                         let aiWordResponse = ORjson.choices[0].message.content.trim();
                         // Insert the processed HTML into the iframe
+                        console.log(aiWordResponse);
                         let iframe = document.getElementById("word-preview-iframe");
-                        let iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                        iframeDoc.open();
-                        // Inject the full HTML structure into the iframe
-                        iframeDoc.body.innerHTML = `
-                            <!DOCTYPE html>
-                            <html lang="en">
-                            <head>
-                                <meta charset="UTF-8">
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                <title>Preview</title>
-                                <link href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet">
-                                <link href="../css/custom.css" rel="stylesheet">
-                            </head>
-                            <body>
-                                <main>
-                                    ${aiWordResponse} <!-- Inject OpenAI-generated HTML -->
-                                </main>
-                            </body>
-                            </html>
-                        `;
-                        iframeDoc.close();
+                        if (iframe) {
+                          let iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                          iframeDoc.open();
+                          // Inject the full HTML structure into the iframe
+                          iframeDoc.body.innerHTML = `
+                              <!DOCTYPE html>
+                              <html lang="en">
+                              <head>
+                                  <meta charset="UTF-8">
+                                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                  <title>Preview</title>
+                                  <link href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet">
+                                  <link href="../css/custom.css" rel="stylesheet">
+                              </head>
+                              <body>
+                                  <main>
+                                      ${aiWordResponse} <!-- Inject OpenAI-generated HTML -->
+                                  </main>
+                              </body>
+                              </html>
+                          `;
+                          iframeDoc.close();
+                        } else {
+                            console.error("Iframe with id 'word-preview-iframe' not found.");
+                        }
 
                         // Show the raw HTML markup in the code tab
                         $("#word-html-code code").text(aiWordResponse);
