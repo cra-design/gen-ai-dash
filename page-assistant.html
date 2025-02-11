@@ -2,7 +2,7 @@
    <head>
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <title>DDPD | Content Assistant</title>
+      <title>DDPD | GenAI Content Assistant</title>
       <!--base href="./"-->
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="icon" type="image/x-icon" href="img/favicon.ico">
@@ -260,12 +260,16 @@
                </header>
             </upd-header>
             <upd-sidebar _ngcontent-ng-c3392822675="" class="ng-tns-c3392822675-0" _nghost-ng-c82967845="">
-               <!--div _ngcontent-ng-c82967845="" id="nav-bar" class="l-navbar show-n">
+               <div _ngcontent-ng-c82967845="" id="nav-bar" class="l-navbar show-n">
                   <nav _ngcontent-ng-c82967845="" class="nav">
                      <div _ngcontent-ng-c82967845="">
-                        <a _ngcontent-ng-c82967845="" class="nav_logo" href="/en?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><img _ngcontent-ng-c82967845="" alt="Usability Performance Dashboard" src="img/upd-logo.png"></a>
+                        <a _ngcontent-ng-c82967845="" class="nav_logo" href="/en?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><img _ngcontent-ng-c82967845="" alt="" src="img/ca-logo.png"></a>
                         <div _ngcontent-ng-c82967845="" class="nav_list mt-5">
-                           <a _ngcontent-ng-c82967845="" id="active" class="nav_link" href="/en/overview?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">home</span><span _ngcontent-ng-c82967845="" data-i18n="menu-overview" class="nav_name">Overview</span></a><a _ngcontent-ng-c82967845="" class="nav_link" href="/en/pages?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">layers</span><span _ngcontent-ng-c82967845="" data-i18n="menu-pages" class="nav_name">Pages</span></a><a _ngcontent-ng-c82967845="" class="nav_link" href="/en/tasks?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">assignment</span><span _ngcontent-ng-c82967845="" data-i18n="menu-tasks" class="nav_name">Tasks</span></a><a _ngcontent-ng-c82967845="" class="nav_link" href="/en/projects?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">folder</span><span _ngcontent-ng-c82967845="" data-i18n="menu-projects" class="nav_name">UX projects</span></a><a _ngcontent-ng-c82967845="" class="nav_link" href="/en/documents"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">summarize</span><span _ngcontent-ng-c82967845="" data-i18n="menu-documents" class="nav_name">Documents</span></a>
+                           <a id="active" class="nav_link active" href="page-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">edit</span><span data-i18n="menu-overview" class="nav_name">Page assistant</span></a>
+                           <a class="nav_link" href="project-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">layers</span><span data-i18n="menu-pages" class="nav_name">Project assistant</span></a>
+                           <a class="nav_link" href="image-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">image</span><span data-i18n="menu-tasks" class="nav_name">Image assistant</span></a>
+                           <!-- <a class="nav_link" href="/en/projects?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><span aria-hidden="true" class="material-icons nav_icon">folder</span><span data-i18n="menu-projects" class="nav_name">UX projects</span></a> -->
+                           <!-- <a class="nav_link" href="/en/documents"><span aria-hidden="true" class="material-icons nav_icon">summarize</span><span data-i18n="menu-documents" class="nav_name">Documents</span></a>
 
 
                            <a _ngcontent-ng-c82967845="" class="nav_link" href="/en/custom-reports">
@@ -273,13 +277,15 @@
                                  <div _ngcontent-ng-c82967845="" id="menu-custom-report-label" class="col"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">dashboard</span></div>
                                  <div _ngcontent-ng-c82967845="" class="col ps-1"><span _ngcontent-ng-c82967845="" data-i18n="menu-custom-reports" class="nav_name">Custom reports</span></div>
                               </div>
-                           </a>
-                           <a _ngcontent-ng-c82967845="" class="nav_link active" href="#"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">summarize</span><span _ngcontent-ng-c82967845="" data-i18n="menu-documents" class="nav_name">GenAI page tool</span></a>
+                           </a> -->
+                           <!-- <a class="nav_link active" href="#"><span aria-hidden="true" class="material-icons nav_icon">edit document</span><span data-i18n="menu-documents" class="nav_name">Page assistant</span></a>
+                           <a class="nav_link" href="#"><span aria-hidden="true" class="material-icons nav_icon">stacks</span><span data-i18n="menu-documents" class="nav_name">Project assistant</span></a>
+                           <a class="nav_link" href="#"><span aria-hidden="true" class="material-icons nav_icon">image</span><span data-i18n="menu-documents" class="nav_name">Image assistant</span></a> -->
                         </div>
                      </div>
                      <div _ngcontent-ng-c82967845="" class="mb-4"><a _ngcontent-ng-c82967845="" class="nav_link" href="/en/about-us?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">web_asset</span><span _ngcontent-ng-c82967845="" data-i18n="about-us" class="nav_name">About Us</span></a><a _ngcontent-ng-c82967845="" class="nav_link" href="mailto:DUAADCG@cra-arc.gc.ca?subject=Feedback for UPD (Usability Performance Dashboard)&amp;body="><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">feedback</span><span _ngcontent-ng-c82967845="" data-i18n="menu-feedback" class="nav_name">Feedback</span></a></div>
                   </nav>
-               </div-->
+               </div>
             </upd-sidebar>
             <genai-sidebar class="r-navbar">
               <div>
