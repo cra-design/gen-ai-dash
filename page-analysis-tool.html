@@ -351,10 +351,10 @@
                   <button id="genai-run-report-btn" style="margin-top:15px;">Run report</button>
                 </fieldset>
 
-				<div id="loading-indicator" class="hidden">
-					<div class="spinner"></div>
-					<p>Generating reports...</p>
-				</div>
+        				<div id="loading-indicator" class="hidden">
+        					<div class="spinner"></div>
+        					<p>Generating reports...</p>
+        				</div>
                 <!--div id="genai-report-reset-options" class="hidden"-->
                 <button id="genai-open-report-btn" style="margin-top:15px;" class="hidden">Open report</button>
                 <br>
@@ -604,7 +604,11 @@
                                       </h3>
                                       <p id="word-invalid-msg" class="hidden">This feature currently only supports ".docx" files. .doc or other document file types are not compatible. Please try a .docx file or use the text input option to copy paste.</p>
                     									<p id="word-multiple-msg" class="hidden">We currently only accept uploading word documents files individually. Try again with 1 word document.</p>
-  	                                  <div id="word-preview">
+                                      <div id="word-upload-loading-spinner" class="hidden">
+                                        <div class="spinner"></div>
+                                        <p>Generating reports...</p>
+                                      </div>
+                                      <div id="word-preview" class="hidden">
                                           <upd-nav-tabs>
                                             <div class="tabs sticky" style="z-index: 0 !important;">
                                               <ul>
@@ -859,8 +863,11 @@
       						}
       					}
       				} else if (event.target.id == "word-file") {
+                $("#word-upload-preview").removeClass("hidden");
+                $("#word-upload-loading-spinner").removeClass("hidden");
       					$("#word-invalid-msg").addClass("hidden");
       					$("#word-multiple-msg").addClass("hidden");
+
       					var fileList = event.target.files;
                 if (!fileList || fileList.length === 0) return;
                 if (fileList.length > 1) {
@@ -890,7 +897,7 @@
                                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                                 <title>Preview</title>
                                 <link href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet">
-                                <link href="../css/custom.css" rel="stylesheet">
+
                             </head>
                             <body>
                                 <main>
@@ -927,6 +934,9 @@
                         }
                         // Show the raw HTML markup in the code tab
                         $("#word-html-code code").text(trimmedHtml);
+                        Prism.highlightElement(document.querySelector("#word-html-code code"));
+                        $("#word-upload-loading-spinner").addClass("hidden");
+                        $("#word-preview").removeClass("hidden");
                     } catch (err) {
                         console.error("Error extracting text:", err);
                         $("#word-invalid-msg").removeClass("hidden").text("Failed to parse document.");
@@ -935,10 +945,10 @@
                 };
                 reader.readAsArrayBuffer(wordFile);
                 // Re-apply syntax highlighting
-                Prism.highlightElement(document.querySelector("#word-html-code code"));
+
 
                 // Display the tabbed preview
-                $("#word-upload-preview").removeClass("hidden");
+
                 // if (!validTypes.includes(fileList[0].type)) {
                 //     $("#word-invalid-msg").removeClass("hidden");
                 //     return;
