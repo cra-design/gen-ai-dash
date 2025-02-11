@@ -1094,9 +1094,11 @@
                             </section>
                           </footer>
                         `;
-                        let trimmedHtml = aiWordResponse.replace(/^html|^```|```$/g, '');
+                        let trimmedHtml = aiWordResponse.replace(/^```|```$/g, '');
+                        trimmedHtml = trimmedHtml.replace(/^html/, '');
                         trimmedHtml = trimmedHtml.replace('<main>', newHeader);
                         trimmedHtml = trimmedHtml.replace('</main>', newFooter);
+                        trimmedHtml = trimmedHtml.replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">');
                         console.log(trimmedHtml);
                         // Insert the processed HTML into the iframe
                         let iframe = document.getElementById("word-preview-iframe");
