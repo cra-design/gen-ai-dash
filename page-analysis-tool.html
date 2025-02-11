@@ -901,7 +901,7 @@
                             </html>
                         `;
                         console.log(htmlHeader + extractedHtml + htmlFooter);
-                        if (!extractedText) {
+                        if (!extractedHtml) {
                             $("#word-invalid-msg").removeClass("hidden").text("The document is empty or could not be read.");
                             return;
                         }
