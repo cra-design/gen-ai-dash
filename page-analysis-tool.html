@@ -912,20 +912,21 @@
                         // Send it to the API
                         let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
                         let aiWordResponse = ORjson.choices[0].message.content.trim();
+                        // Remove leading and trailing backticks
+                        let trimmedHtml = aiWordResponse.replace(/^```|```$/g, '');
+                        console.log(trimmedHtml);
                         // Insert the processed HTML into the iframe
-                        console.log(aiWordResponse);
                         let iframe = document.getElementById("word-preview-iframe");
                         if (iframe) {
                           let iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
                           iframeDoc.open();
-                          iframeDoc.write(fullHtml);
+                          iframeDoc.write(trimmedHtml);
                           iframeDoc.close();
                         } else {
                             console.error("Iframe with id 'word-preview-iframe' not found.");
                         }
-
                         // Show the raw HTML markup in the code tab
-                        $("#word-html-code code").text(aiWordResponse);
+                        $("#word-html-code code").text(trimmedHtml);
                     } catch (err) {
                         console.error("Error extracting text:", err);
                         $("#word-invalid-msg").removeClass("hidden").text("Failed to parse document.");
@@ -933,8 +934,6 @@
                     }
                 };
                 reader.readAsArrayBuffer(wordFile);
-
-
                 // Re-apply syntax highlighting
                 Prism.highlightElement(document.querySelector("#word-html-code code"));
 
