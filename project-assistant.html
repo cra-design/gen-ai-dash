@@ -356,7 +356,7 @@
                <upd-projects _nghost-ng-c947851115="" class="ng-star-inserted" style="">
                   <router-outlet _ngcontent-ng-c947851115=""></router-outlet>
                   <upd-projects-home _nghost-ng-c1826793033="" class="ng-star-inserted">
-                     <h2 _ngcontent-ng-c1826793033="">GenAI Content aAsistant</h2>
+                     <h2 _ngcontent-ng-c1826793033="">Project Assistant (Not yet functional)</h2>
 
                      <upd-card _ngcontent-ng-c1826793033="" titlesize="h5">
                         <div tabindex="0" class="card pt-2">
@@ -397,12 +397,12 @@
                                     <!-- Radio buttons for URL analysis, HTML snippet upload, image upload -->
                                     <fieldset>
                                       <legend>What do you want to upload?</legend>
-                                      <input type="radio" id="url" name="upload-option" value="url" checked>
-                                      <label for="url">A page by URL</label><br>
-                                      <input type="radio" id="html" name="upload-option" value="html">
-                                      <label for="html">Content copy paste</label><br>
+                                      <input type="radio" id="live" name="upload-option" value="live" checked>
+                                      <label for="live">Live Canada.ca URLs</label><br>
+                                      <input type="radio" id="prototype" name="upload-option" value="prototype">
+                                      <label for="prototype">Github prototype URLs</label><br>
                                       <input type="radio" id="word" name="upload-option" value="word">
-                                      <label for="word">Word doc (converts to HTML)</label><br>
+                                      <label for="word">Word docs (such as for French content)</label><br>
                                       <!-- <input type="radio" id="image" name="upload-option" value="image">
                                       <label for="image">Image (for alt text; not yet available)</label><br> -->
                                       <!-- <button id="upload-chooser-btn">Continue</button> -->
@@ -411,7 +411,7 @@
                                 <div id="url-upload" class="hidden">
                                   <div id="url-upload-input" style="margin-top: 20px; margin-bottom:20px;">
                                     <fieldset>
-                                      <legend>Enter the URL of the github page</legend>
+                                      <legend>Enter the URLs of the github page</legend>
                                       <p class="small">Canada.ca is not yet supported. Use a github page! (for example: https://cra-design.github.io/gst-hst-business/en/topics/gst-hst-businesses.html)</p>
                                       <input id="url-input" type="text">
                                       <!--legend style="margin-top:20px;">(Not yet implemented) Enter the equivalent page on Canada.ca</legend>
