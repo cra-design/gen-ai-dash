@@ -934,6 +934,7 @@
                         }
                         // Show the raw HTML markup in the code tab
                         $("#word-html-code code").text(trimmedHtml);
+                        // Apply syntax highlighting
                         Prism.highlightElement(document.querySelector("#word-html-code code"));
                         $("#word-upload-loading-spinner").addClass("hidden");
                         $("#word-preview").removeClass("hidden");
@@ -944,19 +945,6 @@
                     }
                 };
                 reader.readAsArrayBuffer(wordFile);
-                // Re-apply syntax highlighting
-
-
-                // Display the tabbed preview
-
-                // if (!validTypes.includes(fileList[0].type)) {
-                //     $("#word-invalid-msg").removeClass("hidden");
-                //     return;
-                // } else {
-                //     // Preview the document (if applicable)
-                //     $("#word-preview").attr("src", URL.createObjectURL(fileList[0]));
-                //     $("#word-upload-preview").removeClass("hidden");
-                // }
       				}
             });
 
