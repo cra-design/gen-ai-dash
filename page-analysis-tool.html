@@ -515,11 +515,15 @@
                   									</fieldset>
                                     <button id="html-upload-btn" style="margin-top: 20px">Submit</button>
                                   </div>
-                                  <div id="html-upload-preview" class="hidden">
+                                  <div id="html-upload-loading-spinner" class="hidden">
+                                    <div class="spinner"></div>
+                                    <p>Converting content to HTML...</p>
+                                  </div>
+                                  <!-- <div id="html-upload-preview" class="hidden">
                   									<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
                   										<pre id="html-preview"></pre>
                   									</div>
-                                  </div>
+                                  </div> -->
                         				  <div id="html-upload-no-action-error" class="hidden">
                       					       <p>You must select an option for an action and model to run a report.</p>
                         				  </div>
@@ -597,7 +601,7 @@
                     									<p id="word-multiple-msg" class="hidden">We currently only accept uploading word documents files individually. Try again with 1 word document.</p>
                                       <div id="word-upload-loading-spinner" class="hidden">
                                         <div class="spinner"></div>
-                                        <p>Generating reports...</p>
+                                        <p>Converting word doc to HTML...</p>
                                       </div>
                                       <!-- <div id="word-preview" class="hidden">
                                           <upd-nav-tabs>
@@ -834,10 +838,13 @@
             });
 
             $("#html-upload-btn").click(function() {
-              $("#html-preview").html($("#html-input").html());
-              $("#html-upload-preview").removeClass("hidden");
-              $("#genai-upload-msg").addClass("hidden");
-              $("#genai-task-options").removeClass("hidden");
+              // $("#html-preview").html($("#html-input").html());
+              // $("#html-upload-preview").removeClass("hidden");
+              $("#html-upload-loading-spinner").removeClass("hidden");
+              let extractedHtml = convertTextToHTML($("#html-input").html());
+              RefineSyntax(extractedHtml);
+              $("#html-upload").addClass("hidden");
+              $("#html-upload-loading-spinner").addClass("hidden");
             });
 
 
@@ -883,239 +890,15 @@
                         // Extract raw text with Mammoth.js
                         let result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
                         let extractedHtml = result.value.trim();
-                        // Define the HTML header and footer
-                        let htmlHeader = `
-                            <!DOCTYPE html>
-                            <html lang="en">
-                            <head>
-                                <meta charset="UTF-8">
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                <title>Preview</title>
-                                <link href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet">
-                            </head>
-                            <body>
-                                <main>
-                        `;
-                        let htmlFooter = `
-                                </main>
-                            </body>
-                            </html>
-                        `;
                         if (!extractedHtml) {
                             $("#word-invalid-msg").removeClass("hidden").text("The document is empty or could not be read.");
                             return;
                         }
-                        let systemWord = { role: "system", content: "You are an expert in converting plain text into structured, semantic HTML. Only respond with html documents, never with explanations or plain text." }
-                        let userWord = { role: "user", content: 'Clean up the following conversion from text into HTML ensuring it has good, clean syntax with proper headings, paragraphs, and lists where applicable: ' + htmlHeader + extractedHtml + htmlFooter }
-                        // Create the JSON with the prompt and instructions
-                        let requestJson = [systemWord, userWord];
-                        // Send it to the API
-                        let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
-                        let aiWordResponse = ORjson.choices[0].message.content.trim();
-                        // Remove leading and trailing backticks
-                        let newHeader = `
-                          <link rel="stylesheet" href="https://www.canada.ca/etc/designs/canada/wet-boew/css/wet-boew.min.css"/>
-                          <link rel="stylesheet" href="https://www.canada.ca/etc/designs/canada/wet-boew/css/theme.css"/>
-                          <link href="https://test.canada.ca/covid-19-guidance/proto/css/alpha-beta-banner.css" rel="stylesheet">
-                          <body vocab="http://schema.org/" typeof="WebPage" resource="#wb-webpage">
-                          <nav>
-                            <ul id="wb-tphp">
-                             <li class="wb-slc"><a class="wb-sl" href="#wb-cont">Skip to main content</a></li>
-                             <li class="wb-slc visible-sm visible-md visible-lg"><a class="wb-sl" href="#wb-info">Skip to &#34;About this site&#34;</a></li>
-                            </ul>
-                          </nav>
-                          <header>
-                             <div id="wb-bnr" class="container">
-                              <div class="row">
-                                  <section id="wb-lng" class="col-xs-3 col-sm-12 pull-right text-right">
-                                      <h2 class="wb-inv">Language selection</h2>
-                                      <ul class="list-inline mrgn-bttm-0">
-                                          <li>
-                                              <a lang="fr" hreflang="fr" href="https://www.canada.ca/fr/agence-revenu/services/a-propos-agence-revenu-canada-arc/plaintes-differends/dispositions-allegement-contribuables.html">
-                                                <span class="hidden-xs">Français</span>
-                                                <abbr title="Français" class="visible-xs h3 mrgn-tp-sm mrgn-bttm-0 text-uppercase">fr</abbr>
-                                              </a>
-                                          </li>
-                                      </ul>
-                                  </section>
-                                  <div class="brand col-xs-9 col-sm-5 col-md-4" property="publisher" typeof="GovernmentOrganization">
-                                      <a href="https://www.canada.ca/en.html" property="URL">
-                                        <img src="https://www.canada.ca/etc/designs/canada/wet-boew/assets/sig-blk-en.svg" alt="Government of Canada" property="logo">
-                                        <span class="wb-inv"> /
-                                            <span lang="fr">Gouvernement du Canada</span>
-                                        </span>
-                                      </a>
-                                      <meta property="name" content="Government of Canada">
-                                      <meta property="areaServed" typeof="Country" content="Canada">
-                                      <link property="logo" href="https://www.canada.ca/etc/designs/canada/wet-boew/assets/wmms-blk.svg">
-                                  </div>
-                                  <section id="wb-srch" class="col-lg-offset-4 col-md-offset-4 col-sm-offset-2 col-xs-12 col-sm-5 col-md-4">
-                                      <h2>Search</h2>
-                                      <form action="https://www.canada.ca/en/revenue-agency/search.html" method="get" name="cse-search-box" role="search">
-                                        <div class="form-group wb-srch-qry">
-                                            <label for="wb-srch-q" class="wb-inv">Search Canada.ca</label>
-                                            <input name="cdn" value="canada" type="hidden"/>
-                                            <input name="st" value="s" type="hidden"/>
-                                            <input name="num" value="10" type="hidden"/>
-                                            <input name="langs" value="en" type="hidden"/>
-                                            <input name="st1rt" value="1" type="hidden"/>
-                                            <input name="s5bm3ts21rch" value="x" type="hidden"/>
-                                            <input id="wb-srch-q" list="wb-srch-q-ac" class="wb-srch-q form-control" name="q" type="search" value="" size="34" maxlength="170" placeholder="Search CRA"/>
-                                            <datalist id="wb-srch-q-ac"></datalist>
-                                        </div>
-                                        <div class="form-group submit">
-                                            <button type="submit" id="wb-srch-sub" class="btn btn-primary btn-small" name="wb-srch-sub">
-                                                <span class="glyphicon-search glyphicon"></span>
-                                                <span class="wb-inv">Search</span></button>
-                                        </div>
-                                      </form>
-                                  </section>
-                                </div>
-                              </div><hr/>
-                              <div class="container"><div class="row">
-                                <div class="col-md-8">
-                                  <nav class="gcweb-menu" typeof="SiteNavigationElement">
-                                    <h2 class="wb-inv">Menu</h2>
-                                    <button type="button" aria-haspopup="true" aria-expanded="false"><span class="wb-inv">Main </span>Menu <span class="expicon glyphicon glyphicon-chevron-down"></span></button>
-                                    <ul role="menu" aria-orientation="vertical" data-ajax-replace="/content/dam/canada/sitemenu/sitemenu-v2-en.html">
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/jobs.html">Jobs and the workplace</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/immigration-citizenship.html">Immigration and citizenship</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://travel.gc.ca/">Travel and tourism</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/business.html">Business and industry</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/benefits.html">Benefits</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/health.html">Health</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/taxes.html">Taxes</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/environment.html">Environment and natural resources</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/defence.html">National security and defence</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/culture.html">Culture, history and sport</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/policing.html">Policing, justice and emergencies</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/transport.html">Transport and infrastructure</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="http://international.gc.ca/world-monde/index.aspx?lang=eng">Canada and the world</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/finance.html">Money and finances</a></li>
-                                      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/science.html">Science and innovation</a></li>
-                                    </ul>
-                                  </nav>
-                                </div>
-                                <div class="col-xs-5 col-xs-offset-7 col-md-offset-0 col-md-4"><section id="wb-so"><h2 class="wb-inv">Sign in</h2><a class="btn btn-primary" href="https://www.canada.ca/en/revenue-agency/services/e-services/cra-login-services.html"><span class="visible-xs">Sign in</span><span class="hidden-xs">CRA sign in</span></a></section></div></div></div>
-                                <nav id="wb-bc" property="breadcrumb"><h2 class="wb-inv">You are here:</h2><div class="container"><ol class="breadcrumb">
-                                  <li><a href='https://www.canada.ca/en.html'>Canada.ca</a></li>
-                                  <li><a href='https://www.canada.ca/en/revenue-agency.html'>Canada Revenue Agency</a></li>
-                                  </ol></div>
-                                </nav>
-                                <main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement">
-                                <div class="container">
-                        `;
-                        let newFooter = `</div>
-                            <div class="container">
-                             <div class="pagedetails">
-                              <h2 class="wb-inv">Page details</h2>
-                              <div class="row">
-                               <div class="col-sm-8 col-md-9 col-lg-9">
-                                <div class="wb-disable-allow" data-ajax-replace="https://www.canada.ca/etc/designs/canada/wet-boew/assets/feedback/page-feedback-en.html" data-feedback-section="Section" data-feedback-theme="Theme">
-                                </div>
-                               </div>
-                              </div>
-                             </div>
-                            </div>
-                            <div class="container pagedetails">
-                          		<dl id="wb-dtmd">
-                          			<dt>Date modified:</dt>
-                          			<dd>
-                          				<time property="dateModified">2020-07-29</time>
-                          			</dd>
-                          		</dl>
-                          	</div>
-                          </main>
-                          <footer>
-                           <section id="wb-info">
-                  	        <h2 class="wb-inv">About this site</h2>
-                              <div class="gc-contextual">
-                            		<div class="container">
-                            			<nav>
-                            				<h3>Canada Revenue Agency (CRA)</h3>
-                            				<ul class="list-col-xs-1 list-col-sm-2 list-col-md-3"><li><a href="https://www.canada.ca/en/revenue-agency/corporate/contact-information.html">Contact the CRA</a></li><li><a href="https://www.canada.ca/en/revenue-agency/services/update-information-cra.html">Update your information</a></li><li><a href="https://www.canada.ca/en/revenue-agency/corporate/about-canada-revenue-agency-cra.html">About the CRA</a></li></ul>
-                            			</nav>
-                            		</div>
-                            	</div>
-                            	<div class="gc-main-footer">
-                            		<div class="container">
-                            			<nav>
-                            				<h3>Government of Canada</h3>
-                            				<ul class="list-col-xs-1 list-col-sm-2 list-col-md-3">
-                                      <li><a href="https://www.canada.ca/en/contact.html">All contacts</a></li>
-                            					<li><a href="https://www.canada.ca/en/government/dept.html">Departments and agencies</a></li>
-                            					<li><a href="https://www.canada.ca/en/government/system.html">About government</a></li>
-                                    </ul>
-                            				<h4><span class="wb-inv">Themes and topics</span></h4>
-                            				<ul class="list-unstyled colcount-sm-2 colcount-md-3"><li><a href="https://www.canada.ca/en/services/jobs.html">Jobs</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/immigration-citizenship.html">Immigration and citizenship</a></li>
-                            					<li><a href="https://travel.gc.ca/">Travel and tourism</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/business.html">Business</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/benefits.html">Benefits</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/health.html">Health</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/taxes.html">Taxes</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/environment.html">Environment and natural resources</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/defence.html">National security and defence</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/culture.html">Culture, history and sport</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/policing.html">Policing, justice and emergencies</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/transport.html">Transport and infrastructure</a></li>
-                            					<li><a href="https://www.international.gc.ca/world-monde/index.aspx?lang=eng">Canada and the world</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/finance.html">Money and finance</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/science.html">Science and innovation</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/indigenous-peoples.html">Indigenous peoples</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/veterans.html">Veterans and military</a></li>
-                            					<li><a href="https://www.canada.ca/en/services/youth.html">Youth</a></li></ul>
-                            			</nav>
-                            		</div>
-                            	</div>
-                            	<div class="gc-sub-footer">
-                            		<div class="container d-flex align-items-center">
-                            			<nav>
-                            				<h3 class="wb-inv">Government of Canada Corporate</h3>
-                            				<ul>
-                            					<li><a href="https://www.canada.ca/en/social.html">Social media</a></li>
-                            					<li><a href="https://www.canada.ca/en/mobile.html">Mobile applications</a></li>
-                            					<li><a href="https://www.canada.ca/en/government/about.html">About Canada.ca</a></li>
-                                      <li><a href="https://www.canada.ca/en/transparency/terms.html">Terms and conditions</a></li>
-                            					<li><a href="https://www.canada.ca/en/revenue-agency/corporate/privacy-notice.html">Privacy</a></li>
-                                    </ul>
-                            			</nav>
-                            			<div class="wtrmrk align-self-end">
-                            				<img src="https://wet-boew.github.io/themes-dist/GCWeb/GCWeb/assets/wmms-blk.svg" alt="Symbol of the Government of Canada"/>
-                            			</div>
-                            		</div>
-                            	</div>
-                            </section>
-                          </footer>
-                        `;
-                        let trimmedHtml = aiWordResponse.replace(/^```|```$/g, '');
-                        trimmedHtml = trimmedHtml.replace(/^html/, '');
-                        trimmedHtml = trimmedHtml.replace('<main>', newHeader);
-                        trimmedHtml = trimmedHtml.replace('</main>', newFooter);
-                        trimmedHtml = trimmedHtml.replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">');
-                        const formattedHTML = formatHTML(trimmedHtml);
-                        // Insert the processed HTML into the iframe
-                        let iframe = document.getElementById("url-frame");
-                        if (iframe) {
-                          let iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                          iframeDoc.open();
-                          iframeDoc.write(trimmedHtml);
-                          iframeDoc.close();
-                        } else {
-                          console.error("Iframe with id 'url-frame' not found.");
-                        }
-                        // Show the raw HTML markup in the code tab
-                        $("#fullHtml code").text(formattedHTML);
-                        // Apply syntax highlighting
-                        Prism.highlightElement(document.querySelector("#fullHtml code"));
+                        RefineSyntax(extractedHtml);
                         $("#word-upload-loading-spinner").addClass("hidden");
                         $("#upload-chooser").addClass("hidden");
                         $("#word-upload").addClass("hidden");
                         $("#word-upload-preview").addClass("hidden");
-                        $("#url-upload").removeClass("hidden");
-                        $("#url-upload-preview").removeClass("hidden");
-                        $("#genai-upload-msg").addClass("hidden");
-                        $("#genai-task-options").removeClass("hidden");
                     } catch (err) {
                         console.error("Error extracting text:", err);
                         $("#word-invalid-msg").removeClass("hidden").text("Failed to parse document.");
@@ -1147,14 +930,14 @@
 
 
       				//triage which content to feed to the AI for analysis if free content input
-      				if ($('#html-upload-preview').is(':visible')) {
-      					userContent.content += $("#html-input").html();
-      				} else if ($('#url-upload-preview').is(':visible')) {
+      				// if ($('#html-upload-preview').is(':visible')) {
+      					// userContent.content += $("#html-input").html();
+      				// } else if ($('#url-upload-preview').is(':visible')) {
       					userContent.content += $("#fullHtml").text(); //give it the full page html
       					userData.content += "Search terms: " + $("#search-terms-input").text(); //give it any data we have
       					userData.content += "Page feedback summary: " + $("#feedback-summary-input").text();
       					userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").text();
-      				}
+      				// }
 
       				//Gather selected tasks
       				$('input[name="html-upload-genai-analysis"]:checked').each(function () {
@@ -1194,12 +977,12 @@
           						$("#genai-open-report-btn").removeClass("hidden"); // Show report button
                     } catch (error) {
                         console.error(`Error generating report:`, error);
-                        $("#html-upload-preview").addClass("hidden");
+                        // $("#html-upload-preview").addClass("hidden");
                         $("#html-upload-no-action-error").removeClass("hidden");
                     }
                   }
           		} else {
-          			$("#html-upload-preview").addClass("hidden");
+          			// $("#html-upload-preview").addClass("hidden");
           			$("#html-upload-no-action-error").removeClass("hidden");
           		}
 
@@ -1251,7 +1034,7 @@
             $('#url-upload-preview').addClass("hidden");
             $('#html-upload').addClass("hidden");
             $('#html-upload-input').addClass("hidden");
-            $('#html-upload-preview').addClass("hidden");
+            // $('#html-upload-preview').addClass("hidden");
             $("#html-upload-no-action-error").addClass("hidden");
             $('#image-upload').addClass("hidden");
             $('#image-upload-input').addClass("hidden");
@@ -1421,7 +1204,253 @@
               return formattedHTML;
           }
 
+          function convertTextToHTML(text) {
+              // Split the text into paragraphs based on double newlines
+              const paragraphs = text.split(/\n\s*\n/);
 
+              // Wrap each paragraph with <p> tags and replace single newlines with <br>
+              const htmlParagraphs = paragraphs.map(paragraph => {
+                  const escapedParagraph = paragraph
+                      .replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#39;');
+                  const withLineBreaks = escapedParagraph.replace(/\n/g, '<br>');
+                  return `<p>${withLineBreaks}</p>`;
+              });
+
+              // Join all paragraphs into a single string
+              return htmlParagraphs.join('');
+          }
+
+          async function RefineSyntax(extractedHtml) {
+            // Define the HTML header and footer
+            let htmlHeader = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Preview</title>
+                    <link href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet">
+                </head>
+                <body>
+                    <main>
+            `;
+            let htmlFooter = `
+                    </main>
+                </body>
+                </html>
+            `;
+            let systemWord = { role: "system", content: "You are an expert in converting plain text into structured, semantic HTML. Only respond with html documents, never with explanations or plain text." }
+            let userWord = { role: "user", content: 'Clean up the following conversion from text into HTML ensuring it has good, clean syntax with proper headings, paragraphs, and lists where applicable: ' + htmlHeader + extractedHtml + htmlFooter }
+            // Create the JSON with the prompt and instructions
+            let requestJson = [systemWord, userWord];
+            // Send it to the API
+            let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
+            let aiWordResponse = ORjson.choices[0].message.content.trim();
+            // Remove leading and trailing backticks
+            let newHeader = `
+              <link rel="stylesheet" href="https://www.canada.ca/etc/designs/canada/wet-boew/css/wet-boew.min.css"/>
+              <link rel="stylesheet" href="https://www.canada.ca/etc/designs/canada/wet-boew/css/theme.css"/>
+              <link href="https://test.canada.ca/covid-19-guidance/proto/css/alpha-beta-banner.css" rel="stylesheet">
+              <body vocab="http://schema.org/" typeof="WebPage" resource="#wb-webpage">
+              <nav>
+                <ul id="wb-tphp">
+                 <li class="wb-slc"><a class="wb-sl" href="#wb-cont">Skip to main content</a></li>
+                 <li class="wb-slc visible-sm visible-md visible-lg"><a class="wb-sl" href="#wb-info">Skip to &#34;About this site&#34;</a></li>
+                </ul>
+              </nav>
+              <header>
+                 <div id="wb-bnr" class="container">
+                  <div class="row">
+                      <section id="wb-lng" class="col-xs-3 col-sm-12 pull-right text-right">
+                          <h2 class="wb-inv">Language selection</h2>
+                          <ul class="list-inline mrgn-bttm-0">
+                              <li>
+                                  <a lang="fr" hreflang="fr" href="https://www.canada.ca/fr/agence-revenu/services/a-propos-agence-revenu-canada-arc/plaintes-differends/dispositions-allegement-contribuables.html">
+                                    <span class="hidden-xs">Français</span>
+                                    <abbr title="Français" class="visible-xs h3 mrgn-tp-sm mrgn-bttm-0 text-uppercase">fr</abbr>
+                                  </a>
+                              </li>
+                          </ul>
+                      </section>
+                      <div class="brand col-xs-9 col-sm-5 col-md-4" property="publisher" typeof="GovernmentOrganization">
+                          <a href="https://www.canada.ca/en.html" property="URL">
+                            <img src="https://www.canada.ca/etc/designs/canada/wet-boew/assets/sig-blk-en.svg" alt="Government of Canada" property="logo">
+                            <span class="wb-inv"> /
+                                <span lang="fr">Gouvernement du Canada</span>
+                            </span>
+                          </a>
+                          <meta property="name" content="Government of Canada">
+                          <meta property="areaServed" typeof="Country" content="Canada">
+                          <link property="logo" href="https://www.canada.ca/etc/designs/canada/wet-boew/assets/wmms-blk.svg">
+                      </div>
+                      <section id="wb-srch" class="col-lg-offset-4 col-md-offset-4 col-sm-offset-2 col-xs-12 col-sm-5 col-md-4">
+                          <h2>Search</h2>
+                          <form action="https://www.canada.ca/en/revenue-agency/search.html" method="get" name="cse-search-box" role="search">
+                            <div class="form-group wb-srch-qry">
+                                <label for="wb-srch-q" class="wb-inv">Search Canada.ca</label>
+                                <input name="cdn" value="canada" type="hidden"/>
+                                <input name="st" value="s" type="hidden"/>
+                                <input name="num" value="10" type="hidden"/>
+                                <input name="langs" value="en" type="hidden"/>
+                                <input name="st1rt" value="1" type="hidden"/>
+                                <input name="s5bm3ts21rch" value="x" type="hidden"/>
+                                <input id="wb-srch-q" list="wb-srch-q-ac" class="wb-srch-q form-control" name="q" type="search" value="" size="34" maxlength="170" placeholder="Search CRA"/>
+                                <datalist id="wb-srch-q-ac"></datalist>
+                            </div>
+                            <div class="form-group submit">
+                                <button type="submit" id="wb-srch-sub" class="btn btn-primary btn-small" name="wb-srch-sub">
+                                    <span class="glyphicon-search glyphicon"></span>
+                                    <span class="wb-inv">Search</span></button>
+                            </div>
+                          </form>
+                      </section>
+                    </div>
+                  </div><hr/>
+                  <div class="container"><div class="row">
+                    <div class="col-md-8">
+                      <nav class="gcweb-menu" typeof="SiteNavigationElement">
+                        <h2 class="wb-inv">Menu</h2>
+                        <button type="button" aria-haspopup="true" aria-expanded="false"><span class="wb-inv">Main </span>Menu <span class="expicon glyphicon glyphicon-chevron-down"></span></button>
+                        <ul role="menu" aria-orientation="vertical" data-ajax-replace="/content/dam/canada/sitemenu/sitemenu-v2-en.html">
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/jobs.html">Jobs and the workplace</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/immigration-citizenship.html">Immigration and citizenship</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://travel.gc.ca/">Travel and tourism</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/business.html">Business and industry</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/benefits.html">Benefits</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/health.html">Health</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/taxes.html">Taxes</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/environment.html">Environment and natural resources</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/defence.html">National security and defence</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/culture.html">Culture, history and sport</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/policing.html">Policing, justice and emergencies</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/transport.html">Transport and infrastructure</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="http://international.gc.ca/world-monde/index.aspx?lang=eng">Canada and the world</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/finance.html">Money and finances</a></li>
+                          <li role="presentation"><a role="menuitem" tabindex="-1" href="https://www.canada.ca/en/services/science.html">Science and innovation</a></li>
+                        </ul>
+                      </nav>
+                    </div>
+                    <div class="col-xs-5 col-xs-offset-7 col-md-offset-0 col-md-4"><section id="wb-so"><h2 class="wb-inv">Sign in</h2><a class="btn btn-primary" href="https://www.canada.ca/en/revenue-agency/services/e-services/cra-login-services.html"><span class="visible-xs">Sign in</span><span class="hidden-xs">CRA sign in</span></a></section></div></div></div>
+                    <nav id="wb-bc" property="breadcrumb"><h2 class="wb-inv">You are here:</h2><div class="container"><ol class="breadcrumb">
+                      <li><a href='https://www.canada.ca/en.html'>Canada.ca</a></li>
+                      <li><a href='https://www.canada.ca/en/revenue-agency.html'>Canada Revenue Agency</a></li>
+                      </ol></div>
+                    </nav>
+                    <main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement">
+                    <div class="container">
+            `;
+            let newFooter = `</div>
+                <div class="container">
+                 <div class="pagedetails">
+                  <h2 class="wb-inv">Page details</h2>
+                  <div class="row">
+                   <div class="col-sm-8 col-md-9 col-lg-9">
+                    <div class="wb-disable-allow" data-ajax-replace="https://www.canada.ca/etc/designs/canada/wet-boew/assets/feedback/page-feedback-en.html" data-feedback-section="Section" data-feedback-theme="Theme">
+                    </div>
+                   </div>
+                  </div>
+                 </div>
+                </div>
+                <div class="container pagedetails">
+                  <dl id="wb-dtmd">
+                    <dt>Date modified:</dt>
+                    <dd>
+                      <time property="dateModified">2020-07-29</time>
+                    </dd>
+                  </dl>
+                </div>
+              </main>
+              <footer>
+               <section id="wb-info">
+                <h2 class="wb-inv">About this site</h2>
+                  <div class="gc-contextual">
+                    <div class="container">
+                      <nav>
+                        <h3>Canada Revenue Agency (CRA)</h3>
+                        <ul class="list-col-xs-1 list-col-sm-2 list-col-md-3"><li><a href="https://www.canada.ca/en/revenue-agency/corporate/contact-information.html">Contact the CRA</a></li><li><a href="https://www.canada.ca/en/revenue-agency/services/update-information-cra.html">Update your information</a></li><li><a href="https://www.canada.ca/en/revenue-agency/corporate/about-canada-revenue-agency-cra.html">About the CRA</a></li></ul>
+                      </nav>
+                    </div>
+                  </div>
+                  <div class="gc-main-footer">
+                    <div class="container">
+                      <nav>
+                        <h3>Government of Canada</h3>
+                        <ul class="list-col-xs-1 list-col-sm-2 list-col-md-3">
+                          <li><a href="https://www.canada.ca/en/contact.html">All contacts</a></li>
+                          <li><a href="https://www.canada.ca/en/government/dept.html">Departments and agencies</a></li>
+                          <li><a href="https://www.canada.ca/en/government/system.html">About government</a></li>
+                        </ul>
+                        <h4><span class="wb-inv">Themes and topics</span></h4>
+                        <ul class="list-unstyled colcount-sm-2 colcount-md-3"><li><a href="https://www.canada.ca/en/services/jobs.html">Jobs</a></li>
+                          <li><a href="https://www.canada.ca/en/services/immigration-citizenship.html">Immigration and citizenship</a></li>
+                          <li><a href="https://travel.gc.ca/">Travel and tourism</a></li>
+                          <li><a href="https://www.canada.ca/en/services/business.html">Business</a></li>
+                          <li><a href="https://www.canada.ca/en/services/benefits.html">Benefits</a></li>
+                          <li><a href="https://www.canada.ca/en/services/health.html">Health</a></li>
+                          <li><a href="https://www.canada.ca/en/services/taxes.html">Taxes</a></li>
+                          <li><a href="https://www.canada.ca/en/services/environment.html">Environment and natural resources</a></li>
+                          <li><a href="https://www.canada.ca/en/services/defence.html">National security and defence</a></li>
+                          <li><a href="https://www.canada.ca/en/services/culture.html">Culture, history and sport</a></li>
+                          <li><a href="https://www.canada.ca/en/services/policing.html">Policing, justice and emergencies</a></li>
+                          <li><a href="https://www.canada.ca/en/services/transport.html">Transport and infrastructure</a></li>
+                          <li><a href="https://www.international.gc.ca/world-monde/index.aspx?lang=eng">Canada and the world</a></li>
+                          <li><a href="https://www.canada.ca/en/services/finance.html">Money and finance</a></li>
+                          <li><a href="https://www.canada.ca/en/services/science.html">Science and innovation</a></li>
+                          <li><a href="https://www.canada.ca/en/services/indigenous-peoples.html">Indigenous peoples</a></li>
+                          <li><a href="https://www.canada.ca/en/services/veterans.html">Veterans and military</a></li>
+                          <li><a href="https://www.canada.ca/en/services/youth.html">Youth</a></li></ul>
+                      </nav>
+                    </div>
+                  </div>
+                  <div class="gc-sub-footer">
+                    <div class="container d-flex align-items-center">
+                      <nav>
+                        <h3 class="wb-inv">Government of Canada Corporate</h3>
+                        <ul>
+                          <li><a href="https://www.canada.ca/en/social.html">Social media</a></li>
+                          <li><a href="https://www.canada.ca/en/mobile.html">Mobile applications</a></li>
+                          <li><a href="https://www.canada.ca/en/government/about.html">About Canada.ca</a></li>
+                          <li><a href="https://www.canada.ca/en/transparency/terms.html">Terms and conditions</a></li>
+                          <li><a href="https://www.canada.ca/en/revenue-agency/corporate/privacy-notice.html">Privacy</a></li>
+                        </ul>
+                      </nav>
+                      <div class="wtrmrk align-self-end">
+                        <img src="https://wet-boew.github.io/themes-dist/GCWeb/GCWeb/assets/wmms-blk.svg" alt="Symbol of the Government of Canada"/>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </footer>
+            `;
+            let trimmedHtml = aiWordResponse.replace(/^```|```$/g, '');
+            trimmedHtml = trimmedHtml.replace(/^html/, '');
+            trimmedHtml = trimmedHtml.replace('<main>', newHeader);
+            trimmedHtml = trimmedHtml.replace('</main>', newFooter);
+            trimmedHtml = trimmedHtml.replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">');
+            const formattedHTML = formatHTML(trimmedHtml);
+            // Insert the processed HTML into the iframe
+            let iframe = document.getElementById("url-frame");
+            if (iframe) {
+              let iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+              iframeDoc.open();
+              iframeDoc.write(trimmedHtml);
+              iframeDoc.close();
+            } else {
+              console.error("Iframe with id 'url-frame' not found.");
+            }
+            // Show the raw HTML markup in the code tab
+            $("#fullHtml code").text(formattedHTML);
+            // Apply syntax highlighting
+            Prism.highlightElement(document.querySelector("#fullHtml code"));
+            $("#url-upload").removeClass("hidden");
+            $("#url-upload-preview").removeClass("hidden");
+            $("#genai-upload-msg").addClass("hidden");
+            $("#genai-task-options").removeClass("hidden");
+          }
       </script>
 
    </body>
