@@ -843,8 +843,6 @@
               $("#html-upload-loading-spinner").removeClass("hidden");
               let extractedHtml = convertTextToHTML($("#html-input").html());
               RefineSyntax(extractedHtml);
-              $("#html-upload").addClass("hidden");
-              $("#html-upload-loading-spinner").addClass("hidden");
             });
 
 
@@ -895,10 +893,6 @@
                             return;
                         }
                         RefineSyntax(extractedHtml);
-                        $("#word-upload-loading-spinner").addClass("hidden");
-                        $("#upload-chooser").addClass("hidden");
-                        $("#word-upload").addClass("hidden");
-                        $("#word-upload-preview").addClass("hidden");
                     } catch (err) {
                         console.error("Error extracting text:", err);
                         $("#word-invalid-msg").removeClass("hidden").text("Failed to parse document.");
@@ -1446,6 +1440,13 @@
             $("#fullHtml code").text(formattedHTML);
             // Apply syntax highlighting
             Prism.highlightElement(document.querySelector("#fullHtml code"));
+            $("#html-upload").addClass("hidden");
+            $("#html-upload-loading-spinner").addClass("hidden");
+            $("#word-upload-loading-spinner").addClass("hidden");
+            $("#upload-chooser").addClass("hidden");
+            $("#word-upload").addClass("hidden");
+            $("#word-upload-preview").addClass("hidden");
+
             $("#url-upload").removeClass("hidden");
             $("#url-upload-preview").removeClass("hidden");
             $("#genai-upload-msg").addClass("hidden");
