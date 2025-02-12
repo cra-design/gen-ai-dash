@@ -1070,6 +1070,12 @@
               // // Serialize the Document back to a string with indentation
               // const formattedHTML = doc.documentElement.outerHTML;
               // Assuming htmlString contains your unformatted HTML
+              if (typeof window.js_beatify === 'undefined') {
+                  console.error('Beautify is not loaded.');
+              } else {
+                  console.log('Beautify is loaded.');
+                  // Your existing code here...
+              }
               const formattedHTML = js_beautify(htmlString, { indent_size: 2, space_in_empty_paren: true });
               // Return the formatted HTML
               return formattedHTML;
