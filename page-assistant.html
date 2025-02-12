@@ -1044,7 +1044,7 @@
           // Function to render the full HTML and extracted fields
           function renderHTMLFields(fullHtml, fields) {
               // Display the full HTML in the <pre> tag
-              $('#fullHtml code').text(fullHtml);
+              $('#fullHtml code').text(formatHTML(fullHtml));
               Prism.highlightElement(document.querySelector("#fullHtml code"));
 
               // Display the extracted fields in the table
