@@ -861,6 +861,7 @@
                 if (!fileList || fileList.length === 0) return;
                 if (fileList.length > 1) {
                     $("#word-multiple-msg").removeClass("hidden");
+                    $("#word-upload-loading-spinner").addClass("hidden");
                     return;
                 }
                 var wordFile = fileList[0];
@@ -868,6 +869,7 @@
                 var fileExtension = wordFile.name.split('.').pop().toLowerCase();
                 if (wordFile.type !== validMimeType || fileExtension !== 'docx') {
                     $("#word-invalid-msg").removeClass("hidden");
+                    $("#word-upload-loading-spinner").addClass("hidden");
                     return;
                 }
                 var reader = new FileReader();
@@ -879,12 +881,14 @@
                         let extractedHtml = result.value.trim();
                         if (!extractedHtml) {
                             $("#word-invalid-msg").removeClass("hidden").text("The document is empty or could not be read.");
+                            $("#word-upload-loading-spinner").addClass("hidden");
                             return;
                         }
                         RefineSyntax(extractedHtml);
                     } catch (err) {
                         console.error("Error extracting text:", err);
                         $("#word-invalid-msg").removeClass("hidden").text("Failed to parse document.");
+                        $("#word-upload-loading-spinner").addClass("hidden");
                         return;
                     }
                 };
