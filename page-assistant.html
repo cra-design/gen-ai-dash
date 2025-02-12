@@ -559,13 +559,12 @@
       <link rel="modulepreload" href="chunk-GGWSDF3Q.js">
       <link rel="modulepreload" href="chunk-ODN5LVDJ.js"> -->
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.15.1/beautify.min.jss"></script>
+      <script src="js/beautify.js"></script>
       <script src="js/mammoth.js"></script>
       <!-- <script src="polyfills-VMRJL7IV.js" type="module"></script><script src="main-BEEWNT6W.js" type="module"></script> -->
 	    <script src="js/prism.js"></script>
       <script type="text/javascript">
           $(document).ready(function() {
-
 			/*
 			//$(function () {
 				var dropZoneId = "image-drop-upload-area";
@@ -1070,13 +1069,7 @@
               // // Serialize the Document back to a string with indentation
               // const formattedHTML = doc.documentElement.outerHTML;
               // Assuming htmlString contains your unformatted HTML
-              if (typeof window.js_beautify === 'undefined') {
-                  console.error('Beautify is not loaded.');
-              } else {
-                  console.log('Beautify is loaded.');
-                  // Your existing code here...
-              }
-              const formattedHTML = js_beautify(htmlString, { indent_size: 2, space_in_empty_paren: true });
+              const formattedHTML = html_beautify(htmlString, { indent_size: 2, space_in_empty_paren: true });
               // Return the formatted HTML
               return formattedHTML;
           }
