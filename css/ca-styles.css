@@ -1,0 +1,181 @@
+strong {
+  font-weight: bold;
+}
+.body-pd {
+    /*padding-left: calc(var(--nav-width) + 178px);*/
+    padding-right: calc(var(--nav-width) - 4px);
+}
+.r-navbar {
+  position: fixed;
+  top: 10%;
+  right: 0;
+  width: var(--nav-width) + 7;
+  /*height: 300px;*/
+  background-color: var(--first-color);
+  padding: .5rem 1rem 1rem;
+  transition: .5s;
+  z-index: var(--z-fixed);
+  background-color: #f8f9f8; /* Black fallback color */
+  border-left: 2px solid black;
+  border-top: 2px solid black;
+  border-bottom: 2px solid black;
+  border-radius: 25px 0 0 25px;
+}
+.r-navbar a {
+  padding: 8px;
+  text-decoration: none;
+  font-size: 15px;
+  color: #818181;
+  display: block; /* Display block instead of inline */
+  transition: 0.2s; /* Transition effects on hover (color) */
+}
+/* When you mouse over the navigation links, change their color */
+.r-navbar a:hover, .overlay a:focus {
+  color: #f1f1f1;
+}
+
+/* GenAI tools menu */
+.overlay {
+  /* Height & width depends on how you want to reveal the overlay (see JS below) */
+  height: 100%;
+  width: 0%;
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  right: 0;
+  top: 0;
+  background-color: rgb(255,255,255); /* Black fallback color */
+  background-color: rgba(255,255,255, 1); /* Black w/opacity */
+  overflow-x: hidden; /* Disable horizontal scroll */
+  transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+}
+
+/* Position the content inside the overlay */
+.overlay-content {
+  position: relative;
+  top: 25%; /* 25% from the top */
+  width: 100%; /* 100% width */
+  text-align: center; /* Centered text/links */
+  margin-top: 30px; /* 30px top margin to avoid conflict with the close button on smaller screens */
+}
+
+/* The navigation links inside the overlay */
+.overlay a {
+  padding: 8px;
+  text-decoration: none;
+  font-size: 36px;
+  color: #818181;
+  display: block; /* Display block instead of inline */
+  transition: 0.3s; /* Transition effects on hover (color) */
+}
+
+/* When you mouse over the navigation links, change their color */
+.overlay a:hover, .overlay a:focus {
+  color: #f1f1f1;
+}
+
+/* Position the close button (top right corner) */
+.overlay .closebtn {
+  position: absolute;
+  top: 20px;
+  right: 45px;
+  font-size: 60px;
+}
+
+/* When the height of the screen is less than 450 pixels, change the font-size of the links and position the close button again, so they don't overlap */
+@media screen and (max-height: 450px) {
+  .overlay a {font-size: 20px}
+  .overlay .closebtn {
+    font-size: 40px;
+    top: 15px;
+    right: 35px;
+  }
+}
+
+streamlit-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.streamlit-embed {
+    width: 100%;
+    height: 800px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .streamlit-embed {
+        height: 600px;
+    }
+}
+
+.generated-report {
+text-align: left;
+}
+
+#loading-indicator {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 10px;
+}
+
+.spinner {
+width: 24px;
+height: 24px;
+border: 4px solid #ccc;
+border-top-color: #007bff;
+border-radius: 50%;
+animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+from { transform: rotate(0deg); }
+to { transform: rotate(360deg); }
+}
+
+/* Container for radio button and label */
+.radio-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Hide the default radio button */
+input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 34px;
+    height: 34px;
+    border: 2px solid #000;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+/* Style the checked state */
+input[type="radio"]:checked::before {
+    content: '';
+    width: 26px;
+    height: 26px;
+    background-color: #a7a72e;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Label styling */
+label {
+    line-height: 40px;
+    font-size: 18px;
+    cursor: pointer;
+}
