@@ -1294,18 +1294,19 @@
                 </section>
               </footer>
             `;
-            let trimmedHtml = aiWordResponse.replace(/^```|```$/g, '');
-            trimmedHtml = trimmedHtml.replace(/^html/, '');
-            trimmedHtml = trimmedHtml.replace('<main>', newHeader);
-            trimmedHtml = trimmedHtml.replace('</main>', newFooter);
-            trimmedHtml = trimmedHtml.replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">');
+            let trimmedHtml = aiWordResponse
+                .replace(/^```|```$/g, '')
+                .replace(/^html/, '')
+                .replace('<main>', newHeader)
+                .replace('</main>', newFooter)
+                .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">');
             const formattedHTML = formatHTML(trimmedHtml);
             // Insert the processed HTML into the iframe
             let iframe = document.getElementById("url-frame");
             if (iframe) {
               let iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
               iframeDoc.open();
-              iframeDoc.write(trimmedHtml);
+              iframeDoc.write(formattedHTML);
               iframeDoc.close();
             } else {
               console.error("Iframe with id 'url-frame' not found.");
