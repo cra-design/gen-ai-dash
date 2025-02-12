@@ -1301,7 +1301,7 @@
                 .replace(/^html/, '')
                 .replace('<main>', newHeader)
                 .replace('</main>', newFooter)
-                .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">');
+                .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
 		.replace('<table>', '<table class="wb-tables table table-striped">');
             const formattedHTML = formatHTML(trimmedHtml);
             // Insert the processed HTML into the iframe
