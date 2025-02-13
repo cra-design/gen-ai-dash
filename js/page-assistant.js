@@ -637,12 +637,12 @@ async function RefineSyntax(extractedHtml) {
     let trimmedHtml = extractedHtml
       .replace(/^```|```$/g, '')
       .replace(/^html/, '');
-    const formattedHTML = formatHTML(trimmedHtml);
+    let formattedHTML = formatHTML(trimmedHtml);
     if (!$('#doc-exact-syntax').is(':checked')) {
       let trimmedAIHtml = aiWordResponse
         .replace(/^```|```$/g, '')
         .replace(/^html/, '');
-      const formattedAIHTML = formatHTML(trimmedAIHtml);
+      var formattedAIHTML = formatHTML(trimmedAIHtml);
     }
     // Insert the processed HTML into the iframe
     let iframe = document.getElementById("url-frame");
