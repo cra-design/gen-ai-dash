@@ -595,7 +595,7 @@ async function RefineSyntax(extractedHtml) {
         headerResponse.text(),
         footerResponse.text()
     ]);
-    extractedHtml = htmlHeader + extractedHtml + htmlFooter;
+    let extractedHtml = htmlHeader + extractedHtml + htmlFooter;
     if (!$('#doc-exact-syntax').is(':checked')) {
       // Define the HTML header and footer
       let systemWord = { role: "system", content: "You are an expert in converting plain text into structured, semantic HTML. Only respond with html documents, never with explanations or plain text." }
