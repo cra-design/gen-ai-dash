@@ -691,6 +691,8 @@ async function RefineSyntax(extractedHtml) {
     $("#genai-task-options").removeClass("hidden");
   } catch (error) {
       console.error('Error in RefineSyntax:', error);
+      $("#html-upload-loading-spinner").addClass("hidden");
+      $("#word-upload-loading-spinner").addClass("hidden");
   }
 }
 
@@ -698,29 +700,29 @@ function toggleComparisonIframe() {
     const iframe1 = document.getElementById('url-frame');
     const iframe2 = document.getElementById('url-frame-2');
 
-    if (iframe2.style.display === 'none') {
-        // Show the second iframe
-        iframe2.style.display = 'block';
-        iframe1.style.width = '50%';
-        iframe2.style.width = '50%';
+    if (iframe2.classList.contains('hidden')) {
+      // Show the second iframe
+      iframe2.classList.remove('hidden');
+      iframe1.style.width = '50%';
+      iframe2.style.width = '50%';
     } else {
-        // Hide the second iframe
-        iframe2.style.display = 'none';
-        iframe1.style.width = '100%';
+      // Hide the second iframe
+      iframe2.classList.add('hidden');
+      iframe1.style.width = '100%';
     }
 }
 function toggleComparisonFullHtml() {
     const pre1 = document.getElementById('fullHtml');
     const pre2 = document.getElementById('fullHtmlCompare');
 
-    if (pre2.style.display === 'none') {
-        // Show the second iframe
-        pre2.style.display = 'block';
-        pre1.style.width = '50%';
-        pre2.style.width = '50%';
+    if (pre2.classList.contains('hidden')) {
+      // Show the second iframe
+      pre2.classList.remove('hidden');
+      pre1.style.width = '50%';
+      pre2.style.width = '50%';
     } else {
-        // Hide the second iframe
-        pre2.style.display = 'none';
-        pre1.style.width = '100%';
+      // Hide the second iframe
+      pre2.classList.add('hidden');
+      pre1.style.width = '100%';
     }
 }
