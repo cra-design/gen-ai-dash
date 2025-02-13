@@ -596,6 +596,7 @@ async function RefineSyntax(extractedHtml) {
         footerResponse.text()
     ]);
     extractedHtml = htmlHeader + extractedHtml + htmlFooter;
+    let aiWordResponse = extractedHtml; // Default to extractedHtml in case API isn't used
     if (!$('#doc-exact-syntax').is(':checked')) {
       // Define the HTML header and footer
       let systemWord = { role: "system", content: "You are an expert in converting plain text into structured, semantic HTML. Only respond with html documents, never with explanations or plain text." }
@@ -604,7 +605,7 @@ async function RefineSyntax(extractedHtml) {
       let requestJson = [systemWord, userWord];
       // Send it to the API
       let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
-      let aiWordResponse = ORjson.choices[0].message.content.trim();
+      aiWordResponse = ORjson.choices[0].message.content.trim();
     }
     if (!$('#doc-basic-html').is(':checked')) {
       const [headerResponse2, footerResponse2] = await Promise.all([
@@ -636,13 +637,13 @@ async function RefineSyntax(extractedHtml) {
     let trimmedHtml = extractedHtml
       .replace(/^```|```$/g, '')
       .replace(/^html/, '');
+    const formattedHTML = formatHTML(trimmedHtml);
     if (!$('#doc-exact-syntax').is(':checked')) {
       let trimmedAIHtml = aiWordResponse
         .replace(/^```|```$/g, '')
         .replace(/^html/, '');
       const formattedAIHTML = formatHTML(trimmedAIHtml);
     }
-    const formattedHTML = formatHTML(trimmedHtml);
     // Insert the processed HTML into the iframe
     let iframe = document.getElementById("url-frame");
     if (iframe) {
