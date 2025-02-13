@@ -336,7 +336,17 @@
                                         <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                           Code preview
                                         </h3> -->
-                                        <pre id="fullHtml" class="language-markup" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap;"><code></code></pre>
+										<div class="toolbar">
+										  <button class="toolbar-button" id="url-refresh-button" title="Refresh">
+											<i class="fa fa-refresh"></i>
+										  </button>
+										  <button class="toolbar-button" id="url-copy-button" title="Copy Code">
+											<i class="fa fa-copy"></i>
+										  </button>
+										</div>
+                                        <pre id="fullHtml" class="language-markup" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap;">
+											<code contenteditable="true"></code>
+										</pre>
 
                                       </div>
                                       <div id="field-preview" class="tab-content hidden">
@@ -654,6 +664,30 @@
                 }
               }
             });
+
+			$("#url-refresh-button").click(function(){
+				var preview = $('#fullHtml code').value.contentDocument || $('#fullHtml code').value.contentWindow.document;
+				preview.open();
+				preview.write($('url- code').value);
+				preview.close();
+			});
+			
+			$("#url-copy-button").click(function(){
+				const codeBlock = document.getElementById('code-block');
+				const range = document.createRange();
+				range.selectNodeContents(codeBlock);
+				const selection = window.getSelection();
+				selection.removeAllRanges();
+				selection.addRange(range);
+				try {
+				document.execCommand('copy');
+				alert('Code copied to clipboard!');
+				} catch (err) {
+				alert('Failed to copy code.');
+				}
+				selection.removeAllRanges();
+			});
+
 
             $("#url-upload-btn").click(function(){
               $('#upload-chooser').addClass("hidden");
@@ -994,7 +1028,11 @@
               const introParagraph = $html.find('h1').first().nextAll('p').first().text().trim() || 'Not Found';
               // Extract full body content
               // Extract "doormats" sections into an array
-              const doormats = [];
+              const alerts = [];
+			  $html.find('.alert').each(function () {
+				alerts.push({$(this).prop('outerHTML')});
+			  });
+			  const doormats = [];
               $html.find('.gc-srvinfo section').each(function () {
                   const $section = $(this);
                   const link = $section.find('h3 a').attr('href') || 'No link';
@@ -1022,6 +1060,7 @@
                   h1,
                   metaDescription,
                   metaKeywords,
+				  // alerts: alertsResult
                   // introParagraph,
                   // doormats: doormatsResult,
                   // tables: tablesResult,
