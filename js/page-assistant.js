@@ -595,7 +595,7 @@ async function RefineSyntax(extractedHtml) {
         headerResponse.text(),
         footerResponse.text()
     ]);
-    let extractedHtml = htmlHeader + extractedHtml + htmlFooter;
+    extractedHtml = htmlHeader + extractedHtml + htmlFooter;
     if (!$('#doc-exact-syntax').is(':checked')) {
       // Define the HTML header and footer
       let systemWord = { role: "system", content: "You are an expert in converting plain text into structured, semantic HTML. Only respond with html documents, never with explanations or plain text." }
@@ -620,13 +620,13 @@ async function RefineSyntax(extractedHtml) {
           headerResponse2.text(),
           footerResponse2.text()
       ]);
-      let extractedHtml = extractedHtml
+      extractedHtml = extractedHtml
         .replace('<main>', newHeader)
         .replace('</main>', newFooter)
         .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
         .replace('<table>', '<table class="wb-tables table table-striped">');
       if (!$('#doc-exact-syntax').is(':checked')) {
-        let aiWordResponse = aiWordResponse
+        aiWordResponse = aiWordResponse
           .replace('<main>', newHeader)
           .replace('</main>', newFooter)
           .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
