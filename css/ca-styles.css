@@ -207,3 +207,9 @@ label {
 .toolbar-button:hover {
   color: #007BFF;
 }
+
+.inline-checkbox-container {
+    display: flex;
+    gap: 10px; /* Adds spacing between checkboxes */
+    align-items: center; /* Aligns items vertically */
+}
