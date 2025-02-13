@@ -638,7 +638,7 @@ async function RefineSyntax(extractedHtml) {
       .replace(/^```|```$/g, '')
       .replace(/^html/, '');
     let formattedHTML = formatHTML(trimmedHtml);
-    let formattedAIHTML = "";
+    var formattedAIHTML = "";
     if (!$('#doc-exact-syntax').is(':checked')) {
       let trimmedAIHtml = aiWordResponse
         .replace(/^```|```$/g, '')
