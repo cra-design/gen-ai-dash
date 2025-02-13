@@ -596,7 +596,8 @@ async function RefineSyntax(extractedHtml) {
         footerResponse.text()
     ]);
     extractedHtml = htmlHeader + extractedHtml + htmlFooter;
-    let aiWordResponse = extractedHtml; // Default to extractedHtml in case API isn't used
+    let formattedAIHTML = "";
+    let aiWordResponse = ""; // Default to extractedHtml in case API isn't used
     if (!$('#doc-exact-syntax').is(':checked')) {
       // Define the HTML header and footer
       let systemWord = { role: "system", content: "You are an expert in converting plain text into structured, semantic HTML. Only respond with html documents, never with explanations or plain text." }
@@ -638,7 +639,6 @@ async function RefineSyntax(extractedHtml) {
       .replace(/^```|```$/g, '')
       .replace(/^html/, '');
     let formattedHTML = formatHTML(trimmedHtml);
-    var formattedAIHTML = "";
     if (!$('#doc-exact-syntax').is(':checked')) {
       let trimmedAIHtml = aiWordResponse
         .replace(/^```|```$/g, '')
