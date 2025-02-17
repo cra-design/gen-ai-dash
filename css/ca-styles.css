@@ -1,6 +1,22 @@
 strong {
   font-weight: bold;
 }
+/* Button Styling */
+button {
+  background: #a7a72e;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin: 5px 0;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+button i {
+  font-size: 16px;
+}
 .body-pd {
     /*padding-left: calc(var(--nav-width) + 178px);*/
     padding-right: calc(var(--nav-width) - 4px);
@@ -225,19 +241,6 @@ label {
     align-items: center; /* Aligns items vertically */
 }
 
-/* Button Styling */
-button {
-  background: #a7a72e;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  margin: 5px 0;
-  border-radius: 5px;
-  cursor: pointer;
+#url-preview {
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-button i {
-  font-size: 16px;
 }
