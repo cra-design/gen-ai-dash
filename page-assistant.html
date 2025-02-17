@@ -331,9 +331,17 @@
 
                                         <!-- add some kind of tabbed interface with preview + code tabs? -->
 
-                                          <div id="iframe-toolbox"></div>
+                                          <div id="iframe-toolbox-A" class="toolbar sticky hidden" style="width:50%;">
+                                            <button class="toolbar-button" id="accept-option-a-btn" title="Accept A">
+                                              <i class="fa fa-checkmark"></i>
+                                            </button>
+                                          </div>
                                           <iframe id="url-frame" src="" name="targetframe" allowTransparency="true" width="100%" height="800px" style="border: 1px solid #ddd;"></iframe>
-                                          <div id="iframe-toolbox-2" class="hidden"></div>
+                                          <div id="iframe-toolbox-B" class="toolbar sticky hidden" style="width:50%;">
+                                            <button class="toolbar-button" id="accept-option-b-btn" title="Accept B">
+                                              <i class="fa fa-checkmark"></i>
+                                            </button>
+                                          </div>
                                           <iframe id="url-frame-2" src="" name="targetframe2" allowTransparency="true" width="100%" height="800px" style="border: 1px solid #ddd;" class="hidden"></iframe>
 
                                            <p id="url-invalid-msg" class="hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>

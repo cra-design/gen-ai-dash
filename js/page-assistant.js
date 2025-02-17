@@ -1,3 +1,5 @@
+//JS specifically for the page assistant
+
 $(document).ready(function() {
 /*
 //$(function () {
@@ -189,22 +191,23 @@ $("#" + dropZoneId).removeClass(mouseOverClass);
 
 
   $(document).on("change", "input", async function (event) {
-    if (event.target.id == "img-file") {
-      $("#image-invalid-msg").addClass("hidden");
-      $("#image-multiple-msg").addClass("hidden");
-      var fileList = event.target.files;
-      if (fileList.length > 0 && fileList != undefined) {
-        if (fileList.length > 1) { //uploaded more than 1 picture - could perhaps support this in the future
-          $("#image-multiple-msg").removeClass("hidden");
-        } else if (fileList[0].type.substring(0,5) != "image") {
-          $("#image-invalid-msg").removeClass("hidden");
-        } else {
-          //Preview the image
-          $("#image-preview").attr("src", URL.createObjectURL(fileList[0]));
-          $("#image-upload-preview").removeClass("hidden");
-        }
-      }
-    } else if (event.target.id == "word-file") {
+    // if (event.target.id == "img-file") {
+    //   $("#image-invalid-msg").addClass("hidden");
+    //   $("#image-multiple-msg").addClass("hidden");
+    //   var fileList = event.target.files;
+    //   if (fileList.length > 0 && fileList != undefined) {
+    //     if (fileList.length > 1) { //uploaded more than 1 picture - could perhaps support this in the future
+    //       $("#image-multiple-msg").removeClass("hidden");
+    //     } else if (fileList[0].type.substring(0,5) != "image") {
+    //       $("#image-invalid-msg").removeClass("hidden");
+    //     } else {
+    //       //Preview the image
+    //       $("#image-preview").attr("src", URL.createObjectURL(fileList[0]));
+    //       $("#image-upload-preview").removeClass("hidden");
+    //     }
+    //   }
+    // } else
+    if (event.target.id == "word-file") {
       $("#word-upload-preview").removeClass("hidden");
       $("#word-upload-loading-spinner").removeClass("hidden");
       $("#word-invalid-msg").addClass("hidden");
@@ -354,18 +357,6 @@ $("#" + dropZoneId).removeClass(mouseOverClass);
       document.getElementById("genai-nav").style.width = "0%";
   });
 
-  //tab interface - page/code preview for urls
-
-  $('.tabs ul li a').on('click', function (e) {
-    e.preventDefault();
-    $('.tabs ul li a').removeClass('active');
-    $(this).addClass('active');
-    $('.tab-content').addClass('hidden');
-    const target = $(this).data('target');
-    $(target).removeClass('hidden');
-
-  });
-
 }); //close document ready
 
 function resetHiddenUploadOptions() {
@@ -386,59 +377,6 @@ function resetHiddenUploadOptions() {
   $("#genai-task-options").addClass("hidden");
   $('input[name="html-upload-genai-analysis"]').prop('checked', false);
   $('input[name="html-upload-genai-model"]').prop('checked', false);
-}
-
-async function getORData(model, requestJson) {
-    let ORjson;
-    console.log(JSON.stringify({
-        "model": model,
-        "messages": requestJson
-    }));
-    try {
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + $("#api-key").val(),
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "model": model,
-                "messages": requestJson
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Response status: ${response.status}`);
-        }
-        ORjson = await response.json();
-
-    } catch (error) {
-        console.error("Error fetching from OpenRouter API:", error.message);
-        return undefined;
-    }
-  return ORjson;
-}
-
-const isValidUrl = urlString=> {
-    try {
-        return Boolean(new URL(urlString));
-    }
-    catch(e){
-        return false;
-    }
-}
-
-function parsePageHTML(url, callback) {
-    $.ajax({
-        url: url,
-        method: 'GET',
-        success: function (response) {
-            callback(null, response);
-        },
-        error: function (err) {
-            callback(err);
-        }
-    });
 }
 
 // Function to extract fields from the HTML
@@ -507,18 +445,6 @@ function extractFields(html) {
     };
 }
 
-function formatAIResponse(aiResponse) {
-  return aiResponse
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold (**text** → <strong>text</strong>)
-    .replace(/\*(.*?)\*/g, "<em>$1</em>") // Italics (*text* → <em>text</em>)
-    .replace(/\n\s*-\s*(.*?)(?=\n|$)/g, "<li>$1</li>") // Convert "- item" to list items
-    .replace(/(<li>.*<\/li>)/g, "<ul>$1</ul>") // Wrap list items in <ul>
-    .split("\n") // Split by line breaks
-    .filter(line => line.trim() !== "") // Remove empty lines
-    .map(line => `<p>${line}</p>`) // Wrap remaining text in <p> tags
-    .join(""); // Join everything back together
-}
-
 // Function to render the full HTML and extracted fields
 function renderHTMLFields(fullHtml, fields) {
     // Display the full HTML in the <pre> tag
@@ -537,19 +463,6 @@ function renderHTMLFields(fullHtml, fields) {
             </tr>
         `);
     });
-}
-
-function formatHTML(htmlString) {
-    // // Create a new DOMParser instance
-    // const parser = new DOMParser();
-    // // Parse the HTML string into a Document
-    // const doc = parser.parseFromString(htmlString, 'text/html');
-    // // Serialize the Document back to a string with indentation
-    // const formattedHTML = doc.documentElement.outerHTML;
-    // Assuming htmlString contains your unformatted HTML
-    const formattedHTML = html_beautify(htmlString, { indent_size: 2, space_in_empty_paren: true });
-    // Return the formatted HTML
-    return formattedHTML;
 }
 
 function convertTextToHTML(text) {
@@ -665,7 +578,9 @@ async function RefineSyntax(extractedHtml) {
       } else {
         console.error("Iframe with id 'url-frame' not found.");
       }
-      toggleComparisonIframe();
+      toggleComparisonElement($('#url-frame'), $('#url-frame-2'));
+      $('#iframe-toolbox-A').removeClass('hidden');
+      $('#iframe-toolbox-B').removeClass('hidden');
     }
 
     // Show the raw HTML markup in the code tab
@@ -675,7 +590,7 @@ async function RefineSyntax(extractedHtml) {
     if (!$('#doc-exact-syntax').is(':checked')) {
       $("#fullHtmlCompare code").text(formattedAIHTML);
       Prism.highlightElement(document.querySelector("#fullHtmlCompare code"));
-      toggleComparisonFullHtml();
+      toggleComparisonElement($('fullHtml'), $('fullHtmlCompare'));
     }
 
     $("#html-upload").addClass("hidden");
@@ -694,35 +609,4 @@ async function RefineSyntax(extractedHtml) {
       $("#html-upload-loading-spinner").addClass("hidden");
       $("#word-upload-loading-spinner").addClass("hidden");
   }
-}
-
-function toggleComparisonIframe() {
-    const iframe1 = document.getElementById('url-frame');
-    const iframe2 = document.getElementById('url-frame-2');
-
-    if (iframe2.classList.contains('hidden')) {
-      // Show the second iframe
-      iframe2.classList.remove('hidden');
-      iframe1.style.width = '50%';
-      iframe2.style.width = '50%';
-    } else {
-      // Hide the second iframe
-      iframe2.classList.add('hidden');
-      iframe1.style.width = '100%';
-    }
-}
-function toggleComparisonFullHtml() {
-    const pre1 = document.getElementById('fullHtml');
-    const pre2 = document.getElementById('fullHtmlCompare');
-
-    if (pre2.classList.contains('hidden')) {
-      // Show the second iframe
-      pre2.classList.remove('hidden');
-      pre1.style.width = '50%';
-      pre2.style.width = '50%';
-    } else {
-      // Hide the second iframe
-      pre2.classList.add('hidden');
-      pre1.style.width = '100%';
-    }
 }
