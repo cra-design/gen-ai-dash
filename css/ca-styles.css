@@ -223,7 +223,7 @@ label {
 /* Toolbar buttons */
 .toolbar-button {
   background: none;
-  border: none;
+  border: black 1px solid;
   cursor: pointer;
   font-size: 18px;
   margin-left: 10px;
