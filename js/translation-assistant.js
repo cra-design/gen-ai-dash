@@ -1,4 +1,4 @@
-//JS specifically for the page assistant
+//JS specifically for the translation assistant
 
 $(document).ready(function() {
 
