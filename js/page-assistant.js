@@ -165,7 +165,6 @@ $("#" + dropZoneId).removeClass(mouseOverClass);
       });
     } else if (urlInput.host == "www.canada.ca") { //canada.ca link
 
-
       //Maybe we can implement a iframe render of the HTML code for the canada.ca pages?
 
 
@@ -250,6 +249,13 @@ $("#" + dropZoneId).removeClass(mouseOverClass);
       };
       reader.readAsArrayBuffer(wordFile);
     }
+  });
+
+  $("#accept-iframe-a-btn").click(function() {
+    acceptIframe("a");
+  });
+  $("#accept-iframe-b-btn").click(function() {
+    acceptIframe("b");
   });
 
   $("#genai-select-tasks-btn").click(function () {
@@ -608,5 +614,28 @@ async function RefineSyntax(extractedHtml) {
       console.error('Error in RefineSyntax:', error);
       $("#html-upload-loading-spinner").addClass("hidden");
       $("#word-upload-loading-spinner").addClass("hidden");
+  }
+
+  function acceptIframe(option) {
+    $('#iframe-toolbox-A, #iframe-toolbox-B').addClass('hidden');
+    toggleComparisonElement($('fullHtml'), $('fullHtmlCompare'));
+    toggleComparisonElement($('#url-frame'), $('#url-frame-2'));
+
+    if (option == "b") {
+      //write iframe-2 to iframe + fullHtmlCompare to fullHtml
+      let iframeB = $("#url-frame-2").contentDocument || $("#url-frame-2").contentWindow.document;
+      let iframeA = $("#url-frame").contentDocument || $("#url-frame").contentWindow.document;
+      if (iframeB && iframeA) {
+          // Copy content from iframe-2 to iframe
+          iframeA.open();
+          iframeA.write(iframeB.body.innerHTML);
+          iframeA.close();
+      }
+
+      // Copy pre content from fullHtmlCompare to fullHtml
+      let fullHtmlCompareContent = $("#fullHtmlCompare code").text();
+      $("#fullHtml code").text(fullHtmlCompareContent);
+      Prism.highlightElement(document.querySelector("#fullHtml code"));
+    }
   }
 }
