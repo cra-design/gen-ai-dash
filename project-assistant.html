@@ -130,6 +130,11 @@
                            <a class="nav_link" href="page-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">edit</span><span data-i18n="menu-overview" class="nav_name">Page assistant</span></a>
                            <a id="active"  class="nav_link active" href="project-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">layers</span><span data-i18n="menu-pages" class="nav_name">Project assistant</span></a>
                            <a class="nav_link" href="image-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">image</span><span data-i18n="menu-tasks" class="nav_name">Image assistant</span></a>
+                           <a class="nav_link" href="translation-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">language</span><span data-i18n="menu-tasks" class="nav_name">Translation assistant</span></a>
+                           <a class="nav_link" href="wording-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">edit</span><span data-i18n="menu-tasks" class="nav_name">Wording assistant</span></a>
+                           <a class="nav_link" href="wizard-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">fork_left</span><span data-i18n="menu-tasks" class="nav_name">Wizard assistant</span></a>
+                           <a class="nav_link" href="task-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">adjust</span><span data-i18n="menu-tasks" class="nav_name">Task assistant</span></a>
+
                            <!-- <a class="nav_link" href="/en/projects?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><span aria-hidden="true" class="material-icons nav_icon">folder</span><span data-i18n="menu-projects" class="nav_name">UX projects</span></a> -->
                            <!-- <a class="nav_link" href="/en/documents"><span aria-hidden="true" class="material-icons nav_icon">summarize</span><span data-i18n="menu-documents" class="nav_name">Documents</span></a>
 
@@ -152,7 +157,10 @@
                   </nav>
                </div>
             </upd-sidebar>
-            <genai-sidebar class="r-navbar">
+            <genai-sidebar class="r-navbar expanded">
+              <div class="toggle-btn" id="toggle-btn">
+                  <i class="fa fa-angle-left"></i>
+              </div>
               <div>
                 <h3>GenAI reports</h3>
                 <div id="genai-upload-msg">
@@ -547,7 +555,7 @@
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
       <script src="js/mammoth.js"></script>
       <!-- <script src="polyfills-VMRJL7IV.js" type="module"></script><script src="main-BEEWNT6W.js" type="module"></script> -->
-	  <script src="js/prism.js"></script>
+      <script src="js/prism.js"></script>
       <script type="text/javascript">
           $(document).ready(function() {
 

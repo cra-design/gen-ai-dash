@@ -32,7 +32,69 @@
       <style>@layer primeng{.p-overlay{position:absolute;top:0;left:0}.p-overlay-modal{display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%}.p-overlay-content{transform-origin:inherit}.p-overlay-modal>.p-overlay-content{z-index:1;width:90%}.p-overlay-top{align-items:flex-start}.p-overlay-top-start{align-items:flex-start;justify-content:flex-start}.p-overlay-top-end{align-items:flex-start;justify-content:flex-end}.p-overlay-bottom{align-items:flex-end}.p-overlay-bottom-start{align-items:flex-end;justify-content:flex-start}.p-overlay-bottom-end{align-items:flex-end;justify-content:flex-end}.p-overlay-left{justify-content:flex-start}.p-overlay-left-start{justify-content:flex-start;align-items:flex-start}.p-overlay-left-end{justify-content:flex-start;align-items:flex-end}.p-overlay-right{justify-content:flex-end}.p-overlay-right-start{justify-content:flex-end;align-items:flex-start}.p-overlay-right-end{justify-content:flex-end;align-items:flex-end}}</style>
       <style>.material-icon-wysiwyg[_ngcontent-ng-c948301949]{font-size:18px;vertical-align:middle}.bg-planned[_ngcontent-ng-c948301949]{background-color:#cee5ff;color:#262928}.bg-inProgress[_ngcontent-ng-c948301949]{background-color:#f7c2f4;color:#262928}.bg-completed[_ngcontent-ng-c948301949]{background-color:#b3e7bd;color:#262928}.bg-delayed[_ngcontent-ng-c948301949]{background-color:#eda7a7;color:#262928}.bg-unknown[_ngcontent-ng-c948301949]{background-color:gray;color:#fff}.text-success[_ngcontent-ng-c948301949]{color:#1d8177!important}</style>
       <!-- for left nav styles -->
+      <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 10%;
+            width: 60px;
+            height: auto;
+            background: #f8f9f8;
+            border-left: 2px solid black;
+            border-top: 2px solid black;
+            border-bottom: 2px solid black;
+            border-radius: 25px 0 0 25px;
+            transition: width 0.3s;
+            /* overflow: hidden; */
+            padding: 10px;
+            z-index: var(--z-fixed);
+        }
+        .sidebar.expanded {
+            width: 250px;
+        }
+        .sidebar .icon-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar .icon-container i {
+            font-size: 24px;
+            margin: 15px 0;
+            cursor: pointer;
+        }
+        .sidebar .menu-content {
+            display: none;
+            margin-top: 20px;
+        }
+        .sidebar.expanded .menu-content {
+            display: block;
+        }
+        .sidebar-toggle {
+          z-index: 1000; /* Ensure it's above the sidebar */
+        }
+        .toggle-btn {
+            position: absolute;
+            left: -31px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 60px;
+            background: black;
+            color: white;
+            border-radius: 10px 0 0 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
+        
+      </style>
 	  <!--style>
 		#image-drop-upload-area {
 			/*Sort of important*/
@@ -126,13 +188,9 @@
                      <div _ngcontent-ng-c82967845="">
                         <a _ngcontent-ng-c82967845="" class="nav_logo" href=""><img _ngcontent-ng-c82967845="" alt="" src="img/ca-logo.png"></a>
                         <div _ngcontent-ng-c82967845="" class="nav_list mt-5">
-                           <a id="active" class="nav_link active" href="page-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">article</span><span data-i18n="menu-overview" class="nav_name">Page assistant</span></a>
+                           <a id="active" class="nav_link active" href="page-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">edit</span><span data-i18n="menu-overview" class="nav_name">Page assistant</span></a>
                            <a class="nav_link" href="project-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">layers</span><span data-i18n="menu-pages" class="nav_name">Project assistant</span></a>
                            <a class="nav_link" href="image-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">image</span><span data-i18n="menu-tasks" class="nav_name">Image assistant</span></a>
-                           <a class="nav_link" href="translation-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">language</span><span data-i18n="menu-tasks" class="nav_name">Translation assistant</span></a>
-                           <a class="nav_link" href="wording-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">edit</span><span data-i18n="menu-tasks" class="nav_name">Wording assistant</span></a>
-                           <a class="nav_link" href="wizard-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">fork_left</span><span data-i18n="menu-tasks" class="nav_name">Wizard assistant</span></a>
-                           <a class="nav_link" href="task-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">adjust</span><span data-i18n="menu-tasks" class="nav_name">Task assistant</span></a>
                            <!-- <a class="nav_link" href="/en/projects?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><span aria-hidden="true" class="material-icons nav_icon">folder</span><span data-i18n="menu-projects" class="nav_name">UX projects</span></a> -->
                            <!-- <a class="nav_link" href="/en/documents"><span aria-hidden="true" class="material-icons nav_icon">summarize</span><span data-i18n="menu-documents" class="nav_name">Documents</span></a>
 
@@ -155,89 +213,31 @@
                   </nav>
                </div>
             </upd-sidebar>
-            <genai-sidebar class="r-navbar expanded">
-              <div class="toggle-btn" id="toggle-btn">
-                  <i class="fa fa-angle-left"></i>
-              </div>
-              <div>
-                <h3>GenAI reports</h3>
-                <div id="genai-upload-msg">
-                  <p>Upload content to enable GenAI</p>
+            <div class="sidebar" id="sidebar">
+                <div class="toggle-btn" id="toggle-btn">
+                    <i class="fa fa-angle-left"></i>
                 </div>
-                <fieldset id="genai-task-options" class="hidden">
-                  <legend>Select task</legend>
-                  <input type="checkbox" id="html-upload-genai-analysis-title" name="html-upload-genai-analysis" value="custom-instructions/metadata/title-en.txt">
-                  <label for="html-upload-genai-analysis-title"> Suggest a SEOed title</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
-                  <label for="html-upload-genai-analysis-description"> Suggest a metadata description</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-keywords" name="html-upload-genai-analysis" value="custom-instructions/metadata/keywords-en.txt">
-                  <label for="html-upload-genai-analysis-keywords"> Suggest metadata keywords</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-metadata" name="html-upload-genai-analysis" value="custom-instructions/metadata/metadata-review.txt">
-                  <label for="html-upload-genai-analysis-metadata"> Metadata review</label><br>
-
-                  <input type="checkbox" id="html-upload-genai-analysis-comprehension" name="html-upload-genai-analysis" value="custom-instructions/content/comprehension.txt">
-                  <label for="html-upload-genai-analysis-comprehension"> Rewrite for easy comprehension</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-consistency" name="html-upload-genai-analysis" value="custom-instructions/content/consistency.txt">
-                  <label for="html-upload-genai-analysis-consistency"> Rewrite for consistency</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-conversational" name="html-upload-genai-analysis" value="custom-instructions/content/conversational.txt">
-                  <label for="html-upload-genai-analysis-conversational"> Rewrite for conversational tone</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-inclusivity" name="html-upload-genai-analysis" value="custom-instructions/content/inclusivity.txt">
-                  <label for="html-upload-genai-analysis-inclusivity"> Rewrite for inclusivity</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-jargon" name="html-upload-genai-analysis" value="custom-instructions/content/jargon-remover.txt">
-                  <label for="html-upload-genai-analysis-jargon"> Rewrite to simplify jargon</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-trim" name="html-upload-genai-analysis" value="custom-instructions/content/trimmer.txt">
-                  <label for="html-upload-genai-analysis-trim"> Trim the content to be more concise</label><br>
-
-                  <input type="checkbox" id="html-upload-genai-analysis-bullets" name="html-upload-genai-analysis" value="custom-instructions/content/bulleted-lists.txt">
-                  <label for="html-upload-genai-analysis-bullets"> Restructure with bulleted lists</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-grid" name="html-upload-genai-analysis" value="custom-instructions/content/columns-and-rows.txt">
-                  <label for="html-upload-genai-analysis-grid"> Restructure with columns and rows</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-headings" name="html-upload-genai-analysis" value="custom-instructions/content/headings.txt">
-                  <label for="html-upload-genai-analysis-headings"> Propose a better heading structure</label><br>
+                <!-- <div class="icon-container">
+                    <i class="fa fa-key" id="api-key-icon" title="API Key"></i>
+                    <i class="fa fa-microchip" id="genai-model-icon" title="Select AI Model"></i>
+                    <i class="fa fa-file-alt" id="genai-report-icon" title="Generate Report"></i>
+                </div> -->
+                <div class="menu-content">
+                    <h3>GenAI Tools</h3>
+                    <label><input type="text" placeholder="Enter API Key"></label>
+                    <h4>Select Model</h4>
+                    <select>
+                        <option>Gemini 2.0 Flash</option>
+                        <option>Llama 3.2 90B</option>
+                        <option>Microsoft Phi-3 Medium</option>
+                        <option>Qwen 2 7B</option>
+                    </select>
+                    <h4>Generate Report</h4>
+                    <button>Run Report</button>
+                </div>
+            </div>
 
 
-                  <!--<input type="checkbox" id="genai-reports-title" name="genai-reports" value="Title">
-                  <label for="genai-reports-title">Optimize title for search</label><br>
-                  <input type="checkbox" id="genai-reports-validation" name="genai-reports" value="Validation">
-                  <label for="genai-reports-validation">Validate accessibility</label><br>
-                  <input type="checkbox" id="genai-reports-content" name="genai-reports" value="Content">
-                  <label for="genai-reports-content">Simplify language</label><br>
-                  <input type="checkbox" id="genai-reports-jargon" name="genai-reports" value="Jargon">
-                  <label for="genai-reports-jargon">Identify jargon</label><br>
-                  <input type="checkbox" id="genai-reports-structure" name="genai-reports" value="Structure">
-                  <label for="genai-reports-structure">Improve structure</label><br>
-                  <input type="checkbox" id="genai-reports-redundancies" name="genai-reports" value="Redundancies">
-                  <label for="genai-reports-redundancies">Remove redundancies</label><br>
-                  <input type="checkbox" id="genai-reports-metadata" name="genai-reports" value="Metadata">
-                  <label for="genai-reports-metadata">Description and keywords</label><br>
-                  <input type="checkbox" id="genai-reports-alt" name="genai-reports" value="Alt">
-                  <label for="genai-reports-alt">Alt text for images</label><br>-->
-                  <!-- Use any element to open/show the overlay navigation menu -->
-                  <button id="genai-select-tasks-btn" style="margin-top:15px;">Continue</button>
-                </fieldset>
-                <fieldset id="genai-model-options" class="hidden">
-                  <legend>Select model</legend>
-                  <input type="radio" id="html-upload-genai-model-gemini" name="html-upload-genai-model" value="google/gemini-2.0-flash-exp:free">
-                  <label for="html-upload-genai-model-gemini"> Gemini 2.0 Flash</label><br>
-                  <input type="radio" id="html-upload-genai-model-llama" name="html-upload-genai-model" value="meta-llama/llama-3.2-90b-vision-instruct:free">
-                  <label for="html-upload-genai-model-llama"> Llama 3.2 90B</label><br>
-                  <input type="radio" id="html-upload-genai-model-phi" name="html-upload-genai-model" value="microsoft/phi-3-medium-128k-instruct:free">
-                  <label for="html-upload-genai-model-phi"> Microsoft Phi-3 Medium</label><br>
-                  <input type="radio" id="html-upload-genai-model-qwen" name="html-upload-genai-model" value="qwen/qwen-2-7b-instruct:free">
-                  <label for="html-upload-genai-model-qwen"> Qwen 2 7B</label><br>
-                  <button id="genai-run-report-btn" style="margin-top:15px;">Run report</button>
-                </fieldset>
-
-        				<div id="loading-indicator" class="hidden">
-        					<div class="spinner"></div>
-        					<p>Generating reports...</p>
-        				</div>
-                <!--div id="genai-report-reset-options" class="hidden"-->
-                <button id="genai-open-report-btn" style="margin-top:15px;" class="hidden">Open report</button>
-                <br>
-                <button id="genai-reset-report-btn" style="margin-top:15px;">Reset</button>
-              </div>
-            </genai-sidebar>
             <h1 _ngcontent-ng-c3392822675="" class="visually-hidden ng-tns-c3392822675-0">GCA | Page Assistant</h1>
             <main _ngcontent-ng-c3392822675="" style="min-height: 100%;" class="ng-tns-c3392822675-0 ng-trigger ng-trigger-routeAnimations">
                <router-outlet _ngcontent-ng-c3392822675="" class="ng-tns-c3392822675-0"></router-outlet>
@@ -598,7 +598,17 @@
       <script src="js/mammoth.js"></script>
       <!-- <script src="polyfills-VMRJL7IV.js" type="module"></script><script src="main-BEEWNT6W.js" type="module"></script> -->
 	    <script src="js/prism.js"></script>
-      <script src="js/content-assistant.js"></script>
       <script src="js/page-assistant.js"></script>
+      <script>
+        $('#toggle-btn').click(function() {
+            $('#sidebar').toggleClass('expanded');
+            $('#toggle-btn i').toggleClass('fa-angle-left fa-angle-right');
+        });
+
+        $('.icon-container i').click(function() {
+            $('#sidebar').addClass('expanded');
+            $('#toggle-btn i').toggleClass('fa-angle-left fa-angle-right');
+        });
+      </script>
    </body>
 </html>
