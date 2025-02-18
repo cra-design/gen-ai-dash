@@ -268,7 +268,7 @@ label {
 .iframe-container {
   display: flex;
   flex-direction: column; /* Stack toolbar and iframe vertically */
-  width: 50%; /* Ensure each iframe + toolbar takes half the space */
+  width: 100%; /* Ensure each iframe + toolbar takes half the space */
 }
 
 /* Iframe styling */
