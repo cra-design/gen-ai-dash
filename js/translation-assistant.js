@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    // Toggle input fields for French content selection
+    console.log("Translation Assistant Loaded");
+
+    // Function to toggle between French text input methods
     function toggleFrenchInput(option) {
         const textareaContainer = document.getElementById('french-textarea-container');
         const fileContainer = document.getElementById('french-file-container');
@@ -14,11 +16,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Ensure toggle works when user selects an option
     document.querySelectorAll("input[name='french-input-option']").forEach(input => {
         input.addEventListener("change", function () {
             toggleFrenchInput(this.value);
         });
     });
+
+    // Initialize toggleFrenchInput based on default selection
+    toggleFrenchInput(document.querySelector("input[name='french-input-option']:checked")?.value || 'textarea');
 
     // File validation function
     function validateFile(input, errorElementId) {
@@ -41,11 +47,18 @@ document.addEventListener("DOMContentLoaded", function () {
         return true;
     }
 
-    // Load Word document
+    // Load Word document using Mammoth.js
     function loadWordFile(file, callback) {
         const reader = new FileReader();
         reader.onload = function (event) {
             const arrayBuffer = event.target.result;
+
+            // Ensure Mammoth.js is loaded
+            if (typeof mammoth === 'undefined') {
+                console.error("Mammoth.js is not loaded.");
+                return;
+            }
+
             mammoth.extractRawText({ arrayBuffer: arrayBuffer })
                 .then(function (result) {
                     callback(result.value);
@@ -72,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (frenchValid) {
                 loadWordFile(frenchFileInput.files[0], function (text) {
                     frenchContent = text;
-                    processDocuments();
+                    processTranslation(englishFileInput.files[0], frenchContent);
                 });
             }
         } else {
@@ -82,20 +95,19 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 document.getElementById("french-text-error").style.display = "none";
                 frenchValid = true;
+                processTranslation(englishFileInput.files[0], frenchContent);
             }
-        }
-
-        if (englishValid && frenchValid && frenchContent.length > 0) {
-            loadWordFile(englishFileInput.files[0], function (englishText) {
-                generateFrenchDoc(englishText, frenchContent);
-            });
         }
     });
 
-    function generateFrenchDoc(englishText, frenchText) {
-        const zip = new PizZip();
-        const doc = new window.docx.Document();
+    function processTranslation(englishFile, frenchContent) {
+        loadWordFile(englishFile, function (englishText) {
+            generateFrenchDoc(englishText, frenchContent);
+        });
+    }
 
+    function generateFrenchDoc(englishText, frenchText) {
+        const doc = new window.docx.Document();
         const englishSections = englishText.split("\n\n");
         const frenchSections = frenchText.split("\n\n");
 
@@ -105,22 +117,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         for (let i = 0; i < englishSections.length; i++) {
             doc.addSection({
-                properties: {},
                 children: [
                     new window.docx.Paragraph({
-                        text: frenchSections[i] || "", // Use English as fallback if French section is missing
+                        text: frenchSections[i] || "", 
                         style: "Normal",
                     }),
                 ],
             });
         }
 
-        docx.Packer.toBlob(doc).then(blob => {
+        window.docx.Packer.toBlob(doc).then(blob => {
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
             link.download = "Translated_French_Document.docx";
             link.textContent = "Download Translated French Document";
-            document.body.appendChild(link);
+
+            document.getElementById("download-container").style.display = "block";
+            document.getElementById("download-container").innerHTML = "";
+            document.getElementById("download-container").appendChild(link);
         });
     }
 });
