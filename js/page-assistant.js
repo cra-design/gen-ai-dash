@@ -568,8 +568,8 @@ async function RefineSyntax(extractedHtml) {
 function acceptIframe(option) {
   if (option == "b") {
     //write iframe-2 to iframe + fullHtmlCompare to fullHtml
-    let iframeB = $("#url-frame-2").contentDocument || $("#url-frame-2").contentWindow.document;
-    let iframeA = $("#url-frame").contentDocument || $("#url-frame").contentWindow.document;
+    let iframeB = $("#url-frame-2")[0].contentDocument || $("#url-frame-2")[0].contentWindow.document;
+    let iframeA = $("#url-frame")[0].contentDocument || $("#url-frame")[0].contentWindow.document;
     if (iframeB && iframeA) {
         // Copy content from iframe-2 to iframe
         iframeA.open();
