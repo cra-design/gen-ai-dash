@@ -40,11 +40,13 @@ $(document).ready(function() {
   });
 
   $("#code-refresh-button").click(function(){
+    let rawCode = getRawCodeFromHighlighted($('#fullHtml code'));
     let preview = $("#url-frame")[0].contentDocument || $("#url-frame")[0].contentWindow.document;
     preview.open();
-    preview.write($('#fullHtml code').value);
+    preview.write(rawCode);
     preview.close();
   });
+
   $("#code-copy-button").click(function(){
     // Select the content of the <code> element
     var codeContent = $('#fullHtml code').text();
@@ -585,4 +587,10 @@ function acceptIframe(option) {
   $('#iframe-toolbox-A, #iframe-toolbox-B').addClass('hidden');
   toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
   toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
+}
+
+function getRawCodeFromHighlighted(codeBlock) {
+  // Assuming the code block has the class 'language-*' or similar for syntax highlighting
+  var rawCode = codeBlock.textContent || codeBlock.innerText; // Get the raw code (without syntax highlighting)
+  return rawCode;
 }
