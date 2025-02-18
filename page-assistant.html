@@ -166,13 +166,13 @@
                 </div>
                 <fieldset id="genai-task-options" class="hidden">
                   <legend>Select task</legend>
-                  <input type="checkbox" id="html-upload-genai-analysis-title" name="html-upload-genai-analysis" value="custom-instructions/metadata/title-en.txt">
+                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-title" name="html-upload-genai-analysis" value="custom-instructions/metadata/title-en.txt">
                   <label class="label-small" for="html-upload-genai-analysis-title"> Suggest a SEOed title</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
+                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
                   <label class="label-small" for="html-upload-genai-analysis-description"> Suggest a metadata description</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-keywords" name="html-upload-genai-analysis" value="custom-instructions/metadata/keywords-en.txt">
+                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-keywords" name="html-upload-genai-analysis" value="custom-instructions/metadata/keywords-en.txt">
                   <label class="label-small" for="html-upload-genai-analysis-keywords"> Suggest metadata keywords</label><br>
-                  <input type="checkbox" id="html-upload-genai-analysis-metadata" name="html-upload-genai-analysis" value="custom-instructions/metadata/metadata-review.txt">
+                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-metadata" name="html-upload-genai-analysis" value="custom-instructions/metadata/metadata-review.txt">
                   <label class="label-small" for="html-upload-genai-analysis-metadata"> Metadata review</label><br>
 
                   <input type="checkbox" id="html-upload-genai-analysis-comprehension" name="html-upload-genai-analysis" value="custom-instructions/content/comprehension.txt">
@@ -330,7 +330,7 @@
                                         <!-- <div style="border:black solid 1px;" -->
 
                                         <!-- add some kind of tabbed interface with preview + code tabs? -->
-                                        <div class="iframe-container">
+                                        <div id="iframe-container-A" class="iframe-container">
                                           <div id="iframe-toolbox-A" class="toolbar sticky hidden" style="width:50%;">
                                             <button class="toolbar-button" id="accept-iframe-a-btn" title="Accept A">
                                               <i class="fa fa-check"></i>
@@ -338,7 +338,7 @@
                                           </div>
                                           <iframe id="url-frame" src="" name="targetframe" allowTransparency="true" width="100%" height="800px" style="border: 1px solid #ddd;"></iframe>
                                         </div>
-                                        <div class="iframe-container">
+                                        <div id="iframe-container-B" class="iframe-container">
                                           <div id="iframe-toolbox-B" class="toolbar sticky hidden" style="width:50%;">
                                             <button class="toolbar-button" id="accept-iframe-b-btn" title="Accept B">
                                               <i class="fa fa-check"></i>
