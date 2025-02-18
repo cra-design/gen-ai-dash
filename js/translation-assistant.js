@@ -119,7 +119,6 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Generating French Doc...");
 
     const { Document, Packer, Paragraph } = window.docx;
-
     const doc = new Document();
     const englishSections = englishText.split("\n\n");
     const frenchSections = frenchText.split("\n\n");
