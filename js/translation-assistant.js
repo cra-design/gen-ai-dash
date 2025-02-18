@@ -1,36 +1,24 @@
 document.addEventListener("DOMContentLoaded", function () {
-
     console.log("Translation Assistant Loaded");
-     // Ensure docx library is available before proceeding
+
     if (typeof window.docx === "undefined") {
         console.error("Error: docx library is not loaded.");
         return;
     }
-    // Function to toggle between French text input methods
-    function toggleFrenchInput(option) {
-        const textareaContainer = document.getElementById('french-textarea-container');
-        const fileContainer = document.getElementById('french-file-container');
 
-        if (option === 'textarea') {
-            textareaContainer.style.display = 'block';
-            fileContainer.style.display = 'none';
-        } else {
-            textareaContainer.style.display = 'none';
-            fileContainer.style.display = 'block';
-        }
+    function toggleFrenchInput(option) {
+        document.getElementById('french-textarea-container').style.display = option === 'textarea' ? 'block' : 'none';
+        document.getElementById('french-file-container').style.display = option === 'file' ? 'block' : 'none';
     }
 
-    // Ensure toggle works when user selects an option
     document.querySelectorAll("input[name='french-input-option']").forEach(input => {
         input.addEventListener("change", function () {
             toggleFrenchInput(this.value);
         });
     });
 
-    // Initialize toggleFrenchInput based on default selection
     toggleFrenchInput(document.querySelector("input[name='french-input-option']:checked")?.value || 'textarea');
 
-    // File validation function
     function validateFile(input, errorElementId) {
         const file = input.files[0];
         const errorElement = document.getElementById(errorElementId);
@@ -51,19 +39,17 @@ document.addEventListener("DOMContentLoaded", function () {
         return true;
     }
 
-    // Load Word document using Mammoth.js
     function loadWordFile(file, callback) {
         const reader = new FileReader();
         reader.onload = function (event) {
             const arrayBuffer = event.target.result;
 
-            // Ensure Mammoth.js is loaded
             if (typeof mammoth === 'undefined') {
                 console.error("Mammoth.js is not loaded.");
                 return;
             }
 
-            mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+            mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
                 .then(function (result) {
                     callback(result.value);
                 })
@@ -110,45 +96,50 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-   function generateFrenchDoc(englishText, frenchText) {
-    if (!window.docx || !window.docx.Document) {
-        console.error("docx.js is not correctly loaded.");
-        return;
-    }
+    function generateFrenchDoc(englishHtml, frenchHtml) {
+        if (!window.docx || !window.docx.Document) {
+            console.error("docx.js is not correctly loaded.");
+            return;
+        }
 
-    console.log("Generating French Doc...");
+        console.log("Generating French Doc...");
 
-    const { Document, Packer, Paragraph } = window.docx;
-    const doc = new Document();
-    const englishSections = englishText.split("\n\n");
-    const frenchSections = frenchText.split("\n\n");
+        const { Document, Packer, Paragraph, TextRun } = window.docx;
+        const doc = new Document();
 
-    if (englishSections.length !== frenchSections.length) {
-        alert("Warning: English and French section counts do not match.");
-    }
+        const englishSections = englishHtml.split("</p>");
+        const frenchSections = frenchHtml.split("</p>");
 
-    for (let i = 0; i < englishSections.length; i++) {
-        doc.addSection({
-            children: [
-                new Paragraph({
-                    text: frenchSections[i] || "", 
-                    style: "Normal",
-                }),
-            ],
+        if (englishSections.length !== frenchSections.length) {
+            alert("Warning: English and French section counts do not match. Adjusting accordingly.");
+        }
+
+        for (let i = 0; i < englishSections.length; i++) {
+            const englishText = englishSections[i].replace(/<[^>]*>/g, "").trim();
+            const frenchText = frenchSections[i] ? frenchSections[i].replace(/<[^>]*>/g, "").trim() : "";
+
+            doc.addSection({
+                children: [
+                    new Paragraph({
+                        children: [
+                            new TextRun({ text: frenchText, bold: /<strong>/.test(englishSections[i]) }),
+                        ],
+                    }),
+                ],
+            });
+        }
+
+        Packer.toBlob(doc).then(blob => {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Formatted_French_Document.docx";
+            link.textContent = "Download Translated French Document";
+
+            document.getElementById("download-container").style.display = "block";
+            document.getElementById("download-container").innerHTML = "";
+            document.getElementById("download-container").appendChild(link);
+        }).catch(err => {
+            console.error("Error generating document:", err);
         });
     }
-
-    Packer.toBlob(doc).then(blob => {
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "Translated_French_Document.docx";
-        link.textContent = "Download Translated French Document";
-
-        document.getElementById("download-container").style.display = "block";
-        document.getElementById("download-container").innerHTML = "";
-        document.getElementById("download-container").appendChild(link);
-    }).catch(err => {
-        console.error("Error generating document:", err);
-    });
-}
 });
