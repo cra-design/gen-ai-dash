@@ -244,3 +244,14 @@ label {
 #url-preview {
   display: flex;
 }
+
+.inputbox {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    resize: vertical; /* Allows user to resize */
+}
