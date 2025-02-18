@@ -261,7 +261,6 @@ label {
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
   width: 100%; /* Ensure it spans the full width */
-  position: sticky; /* Keeps it above the iframe */
 }
 
 /* Wrapper to ensure the toolbar is stacked above the iframe */
