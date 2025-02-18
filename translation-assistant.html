@@ -271,26 +271,31 @@
     </fieldset>
     <br>
     <!-- Section 2: French Content Entry -->
-    <fieldset>
-        <legend>Provide the French Content</legend>
-        <p>Select one option below to provide the French content.</p>
-        
-        <div>
-            <label><input type="radio" name="french-input-option" value="textarea" checked>Paste French text</label>
-            
-            <label><input type="radio" name="french-input-option" value="file">Upload a French Word document</label>
-        </div>
-        
-        <div id="french-textarea-container">
-            <textarea id="french-text" name="french-text" placeholder="Paste your French text here" rows="6" style="width:100%;"></textarea>
-            <p id="french-text-error" style="color: red; display: none;">French content cannot be empty.</p>
-        </div>
-        
-        <div id="french-file-container" style="display:none;">
-            <input type="file" id="french-file" name="french-file" accept=".docx">
-            <p id="french-error" style="color: red; display: none;">Only one .docx file is allowed.</p>
-        </div>
-    </fieldset>
+<fieldset>
+    <legend>Provide the French Content</legend>
+    <p>Select one option below to provide the French content.</p>
+    
+    <div class="radio-group">
+        <label>
+            <input type="radio" name="french-input-option" value="textarea" checked> Paste French text
+        </label>
+        <label>
+            <input type="radio" name="french-input-option" value="file"> Upload a French Word document
+        </label>
+    </div>
+
+    <!-- French Text Input (Initially Visible) -->
+    <div id="french-textarea-container">
+        <textarea id="french-text" name="french-text" placeholder="Paste your French text here" rows="6" style="width:100%;"></textarea>
+        <p id="french-text-error" style="color: red; display: none;">French content cannot be empty.</p>
+    </div>
+
+    <!-- French File Upload (Initially Hidden) -->
+    <div id="french-file-container" style="display:none;">
+        <input type="file" id="french-file" name="french-file" accept=".docx">
+        <p id="french-error" style="color: red; display: none;">Only .docx files are allowed.</p>
+    </div>
+</fieldset>
     
     <!-- Submit Button -->
     <button id="submit-btn" style="margin-top: 20px">Submit</button>
