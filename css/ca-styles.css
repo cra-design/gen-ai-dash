@@ -281,17 +281,34 @@ iframe {
 /* Toolbar buttons */
 .toolbar-button {
   background: none;
-  border: black 1px solid;
+  border: 1px solid black;
   cursor: pointer;
   font-size: 18px;
   margin-left: 10px;
   color: #333;
-  transition: color 0.3s;
+  transition: all 0.3s ease;
   width: 41px;
+  padding: 8px; /* Add padding to improve clickability */
+  border-radius: 4px; /* Slight rounding for the corners */
 }
 
+/* Hover effect */
 .toolbar-button:hover {
-  color: #007BFF;
+  background-color: #f0f0f0; /* Light gray background on hover */
+  color: #000; /* Darker text color on hover */
+  transform: scale(1.1); /* Slightly enlarge the button */
+}
+
+/* Active (click) effect */
+.toolbar-button:active {
+  background-color: #d3d3d3; /* Slightly darker gray when clicked */
+  transform: scale(0.95); /* Shrink the button when clicked for tactile feedback */
+}
+
+/* Focus (keyboard or mouse focus) effect */
+.toolbar-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 121, 166, 0.6); /* Add a soft blue outline when focused */
 }
 
 .inline-checkbox-container {
