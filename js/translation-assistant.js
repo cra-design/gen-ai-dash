@@ -1,7 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
     function toggleFrenchInput(option) {
-        document.getElementById('french-textarea-container').style.display = option === 'textarea' ? 'block' : 'none';
-        document.getElementById('french-file-container').style.display = option === 'file' ? 'block' : 'none';
+        const textareaContainer = document.getElementById('french-textarea-container');
+        const fileContainer = document.getElementById('french-file-container');
+
+        if (option === 'textarea') {
+            textareaContainer.style.display = 'block';
+            fileContainer.style.display = 'none';
+        } else {
+            textareaContainer.style.display = 'none';
+            fileContainer.style.display = 'block';
+        }
     }
 
     document.querySelectorAll("input[name='french-input-option']").forEach(input => {
@@ -98,4 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("download-container").style.display = "block";
         });
     }
+
+    // Ensure the correct input is displayed on page load
+    toggleFrenchInput(document.querySelector("input[name='french-input-option']:checked").value);
 });
