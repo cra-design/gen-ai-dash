@@ -2,7 +2,7 @@
    <head>
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <title>Content Assistant | Page Assistant</title>
+      <title>Content Assistant | Translation Assistant</title>
       <!--base href="./"-->
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="icon" type="image/x-icon" href="img/favicon.ico">
@@ -143,7 +143,7 @@
                                  <div _ngcontent-ng-c82967845="" class="col ps-1"><span _ngcontent-ng-c82967845="" data-i18n="menu-custom-reports" class="nav_name">Custom reports</span></div>
                               </div>
                            </a> -->
-                           <!-- <a class="nav_link active" href="#"><span aria-hidden="true" class="material-icons nav_icon">edit document</span><span data-i18n="menu-documents" class="nav_name">Page assistant</span></a>
+                           <!-- <a class="nav_link active" href="#"><span aria-hidden="true" class="material-icons nav_icon">edit document</span><span data-i18n="menu-documents" class="nav_name">Translation assistant</span></a>
                            <a class="nav_link" href="#"><span aria-hidden="true" class="material-icons nav_icon">stacks</span><span data-i18n="menu-documents" class="nav_name">Project assistant</span></a>
                            <a class="nav_link" href="#"><span aria-hidden="true" class="material-icons nav_icon">image</span><span data-i18n="menu-documents" class="nav_name">Image assistant</span></a> -->
                         </div>
@@ -238,13 +238,13 @@
                 <button id="genai-reset-report-btn" style="margin-top:15px;">Reset</button>
               </div>
             </genai-sidebar>
-            <h1 _ngcontent-ng-c3392822675="" class="visually-hidden ng-tns-c3392822675-0">GCA | Page Assistant</h1>
+	            <h1 _ngcontent-ng-c3392822675="" class="visually-hidden ng-tns-c3392822675-0">GCA | Translation Assistant</h1>
             <main _ngcontent-ng-c3392822675="" style="min-height: 100%;" class="ng-tns-c3392822675-0 ng-trigger ng-trigger-routeAnimations">
                <router-outlet _ngcontent-ng-c3392822675="" class="ng-tns-c3392822675-0"></router-outlet>
                <upd-projects _nghost-ng-c947851115="" class="ng-star-inserted" style="">
                   <router-outlet _ngcontent-ng-c947851115=""></router-outlet>
                   <upd-projects-home _nghost-ng-c1826793033="" class="ng-star-inserted">
-                     <h2 _ngcontent-ng-c1826793033="">Page Assistant</h2>
+                     <h2 _ngcontent-ng-c1826793033="">Translation Assistant</h2>
 
                      <upd-card _ngcontent-ng-c1826793033="" titlesize="h5">
                         <div tabindex="0" class="card pt-2">
@@ -278,262 +278,58 @@
                                     <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
                                   </ol>
 
-                                </div>
+                                </div> 
+	 <!-- END API Key Entry Section --> 
 
-                                <div id="upload-chooser" class="hidden">
-                                    <!--h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Choose a genAI tool</h3-->
-                                    <!-- Radio buttons for URL analysis, HTML snippet upload, image upload -->
+                               <div id="document-upload-container">
+                                    <!-- Section 1: English Document Upload -->
                                     <fieldset>
-                                      <legend>What do you want to upload?</legend>
-                                      <input type="radio" id="url" name="upload-option" value="url" checked>
-                                      <label for="url">A page by URL</label><br>
-                                      <input type="radio" id="html" name="upload-option" value="html">
-                                      <label for="html">Content copy paste</label><br>
-                                      <input type="radio" id="word" name="upload-option" value="word">
-                                      <label for="word">Word doc (converts to HTML)</label><br>
-                                      <!-- <input type="radio" id="image" name="upload-option" value="image">
-                                      <label for="image">Image (for alt text; not yet available)</label><br> -->
-                                      <!-- <button id="upload-chooser-btn">Continue</button> -->
+                                        <legend>Upload the English Word Document</legend>
+                                        <p>Please upload the English document you want to translate.</p>
+                                        <input type="file" id="english-file" name="english-file" accept=".docx">
                                     </fieldset>
-                                </div>
-                                <div id="url-upload" class="hidden">
-                                  <div id="url-upload-input" style="margin-top: 20px; margin-bottom:20px;">
+                                    
+                                    <!-- Section 2: French Content Entry -->
                                     <fieldset>
-                                      <legend>Enter the URL of the github page</legend>
-                                      <p class="small">Canada.ca is not yet supported. Use a github page! (for example: https://cra-design.github.io/gst-hst-business/en/topics/gst-hst-businesses.html)</p>
-                                      <input id="url-input" type="text">
-                                      <!--legend style="margin-top:20px;">(Not yet implemented) Enter the equivalent page on Canada.ca</legend>
-                                      <p class="small">This will help pull relevant analytics or feedback to enrich your GenAI recommendations</p>
-                                      <input id="url-input-source" type="text"-->
-                                      <br>
-                                      <button id="url-upload-btn" style="margin-top:40px;">Continue</button>
+                                        <legend>Provide the French Content</legend>
+                                        <p>Select one option below to provide the French content.</p>
+                                        
+                                        <div>
+                                            <label>
+                                                <input type="radio" name="french-input-option" value="textarea" onclick="toggleFrenchInput('textarea')" checked>
+                                                Paste French text
+                                            </label>
+                                            
+                                            <label>
+                                                <input type="radio" name="french-input-option" value="file" onclick="toggleFrenchInput('file')">
+                                                Upload a French Word document
+                                            </label>
+                                        </div>
+                                        
+                                        <div id="french-textarea-container">
+                                            <textarea id="french-text" name="french-text" placeholder="Paste your French text here" rows="6" style="width:100%;"></textarea>
+                                        </div>
+                                        
+                                        <div id="french-file-container" style="display:none;">
+                                            <input type="file" id="french-file" name="french-file" accept=".docx">
+                                        </div>
                                     </fieldset>
-                                  </div>
-                                  <div id="url-upload-preview" class="hidden">
-                                    <upd-nav-tabs>
-                                      <div class="tabs sticky" style="z-index: 0 !important;">
-                                         <ul>
-                                            <li><a href="#" class="active" data-target="#url-preview"> Page</a></li>
-                                            <li><a href="#" data-target="#code-preview"> Code</a></li>
-                                            <li><a href="#" data-target="#field-preview"> Fields</a></li>
-                                            <li><a href="#" data-target="#data-tab"> Data</a></li>
-                                          </ul>
-                                        </div>
-                                     </upd-nav-tabs>
-
-                                     <div id="url-preview" class="tab-content">
-
-                                          <div id="iframe-toolbox"></div>
-                                          <iframe id="url-frame" src="" name="targetframe" allowTransparency="true" width="100%" height="800px" style="border: 1px solid #ddd;"></iframe>
-                                          <div id="iframe-toolbox-2" class="hidden"></div>
-                                          <iframe id="url-frame-2" src="" name="targetframe2" allowTransparency="true" width="100%" height="800px" style="border: 1px solid #ddd;" class="hidden"></iframe>
-
-                                           <p id="url-invalid-msg" class="hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>
-                                           <p id="canada-ca-msg" class="hidden">Due to technical limitations, Canada.ca pages are not yet compatible with this tool. Try a Github URL to test it out!</p>
-                                           <p id="other-site-msg" class="hidden">The tool is only for validation of Canada.ca design work. If you believe this URL should be in scope, please reach out to the tool adminstrators to whitelist the domain.</p>
-</div>
-                                <div id="code-preview" class="tab-content hidden">
-                                        <div class="toolbar">
-                                          <button class="toolbar-button" id="code-refresh-button" title="Refresh">
-                                            <i class="fa fa-refresh"></i>
-                                          </button>
-                                          <button class="toolbar-button" id="code-copy-button" title="Copy Code">
-                                            <i class="fa fa-copy"></i>
-                                          </button>
-                                          <button class="toolbar-button" id="code-edit-button" title="Edit Code">
-                                            <i class="fa fa-edit"></i>
-                                          </button>
-                                        </div>
-                                        <pre id="fullHtml" class="language-markup" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap;">
-                                          <code></code>
-                                        </pre>
-                                        <pre id="fullHtmlCompare" class="language-markup hidden" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap;">
-                                          <code></code>
-                                        </pre>
-
-                                      </div>
-                                      <div id="field-preview" class="tab-content hidden">
-                                         <div id="fields"> 
-                                            <table border="1">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Field</th>
-                                                        <th>Value</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="extractedFields"></tbody>
-                                            </table>
-                                         </div>
-                                       </div>
-                                       <div id="data-tab" class="tab-content hidden">
-                                         <p>Add data to these fields to help the AI give meaningful recommendations based on pain points it can identify. Once you complete these fields, rerun your genAI report.</p>
-                                         <p>Search terms</p>
-                                         <div id="search-terms-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
-                     										  <span id="search-terms-input" class="input" role="textbox" contenteditable></span>
-             										         </div>
-                                         <p style="margin-top:20px;">Page feedback summary</p>
-                                         <div id="feedback-summary-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
-                     										  <span id="feedback-summary-input" class="input" role="textbox" contenteditable></span>
-             										         </div>
-                                         <p style="margin-top:20px;">UX test findings (or heuristic commentary)</p>
-                                         <div id="heuristic-commentary-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
-                     										  <span id="heuristic-commentary-input" class="input" role="textbox" contenteditable></span>
-             										         </div>
-                                       </div>
-                                    </div>
+                                    
+                                    <!-- Submit Button -->
+                                    <button id="submit-btn" style="margin-top: 20px">Submit</button>
                                 </div>
-                                <div id="html-upload" class="hidden">
-                                  <div id="html-upload-input" style="margin-top:20px">
-                  									<fieldset>
-                  										<legend>Write or paste in your content or HTML to analyze</legend>
-                  										<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
-                  										  <span id="html-input" class="input" role="textbox" contenteditable></span>
-                  										</div>
-                  									</fieldset>
-                                    <button id="html-upload-btn" style="margin-top: 20px">Submit</button>
-                                  </div>
-                                  <div id="html-upload-loading-spinner" class="hidden">
-                                    <div class="spinner"></div>
-                                    <p>Converting content to HTML...</p>
-                                  </div>
-                                  <!-- <div id="html-upload-preview" class="hidden">
-                  									<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
-                  										<pre id="html-preview"></pre>
-                  									</div>
-                                  </div> -->
-                        				  <div id="html-upload-no-action-error" class="hidden">
-                      					       <p>You must select an option for an action and model to run a report.</p>
-                        				  </div>
-                                </div>
-                                  <div id="word-upload" class="hidden">
-                                    <div id="word-upload-input" class="" style="margin-top:20px">
-                                      <div class="inline-checkbox-container">
-                                        <fieldset>
-                                          <input type="checkbox" id="doc-exact-syntax" name="doc-formatting" value="exact-syntax">
-                                          <label for="doc-exact-syntax">Use doc formatting exactly (faster)</label><br>
-                                        </fieldset>
-                                        <fieldset>
-                                          <input type="checkbox" id="doc-basic-html" name="doc-canada" value="basic-html">
-                                          <label for="doc-basic-html">Basic html only</label><br>
-                                        </fieldset>
-                                      </div>
-                    									<fieldset>
-                    										<legend>Upload .docx word documents to generate HTML markup</legend>
-  						                          <input type="file" id="word-file" name="word-file">
-                    										<!--div id="image-drop-upload-area">
-            															<i class="fas fa-upload"></i>
-            															Drag and drop files here
-            															<span id="file-upload-btn">Browse files
-            																<input type="file" id="img-file" name="img-file">
-            															</span>
-            														</div>-->
-
-
-                    										<!-- <input type="submit" id="word-upload-btn"> -->
-
-                                        <!--Streamlit embed for alt text-->
-
-                                      <!--/fieldset-->
-                                      <!--div class="streamlit-container">
-                                          <iframe
-                                              src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
-                                              class="streamlit-embed"
-                                              allow="camera;microphone"
-                                              scrolling="yes">
-                                          </iframe-->
-                                      </div>
-                                    </div>
-                                    <div id="word-upload-preview" class="hidden" style="margin-top:20px;">
-  			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                        Word document preview
-                                      </h3>
-                                      <p id="word-invalid-msg" class="hidden">This feature currently only supports ".docx" files. .doc or other document file types are not compatible. Please try a .docx file or use the text input option to copy paste.</p>
-                    									<p id="word-multiple-msg" class="hidden">We currently only accept uploading word documents files individually. Try again with 1 word document.</p>
-                                      <div id="word-upload-loading-spinner" class="hidden">
-                                        <div class="spinner"></div>
-                                        <p>Converting word doc to HTML...</p>
-                                      </div>
-                                      <!-- <div id="word-preview" class="hidden">
-                                          <upd-nav-tabs>
-                                            <div class="tabs sticky" style="z-index: 0 !important;">
-                                              <ul>
-                                                <li><a href="#" class="active" data-target="#word-render-preview"> Rendered preview</a></li>
-                                                <li><a href="#" data-target="#word-code-preview"> Markup</a></li>
-                                                <li><a href="#" data-target="#field-word-preview"> Fields</a></li>
-                                              </ul>
-                                            </div>
-                                          </upd-nav-tabs>
-
-                                          <div id="word-render-preview" class="tab-content">
-                                            <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                            Rendered HTML preview
-                                            </h3>
-                                            <iframe id="word-preview-iframe" style="width: 100%; height: 800px; border: 1px solid #ddd;"></iframe>
-                                          </div>
-
-                                          <div id="word-code-preview" class="tab-content hidden">
-
-                                            <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                            HTML markup preview
-                                            </h3>
-                                            <pre id="word-html-code" class="language-markup" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap;"><code></code></pre>
-                                          </div>
-                                      </div> -->
-
-                                    </div>
-                                    <div id="image-upload" class="hidden">
-                                      <div id="image-upload-input" class="" style="margin-top:20px">
-                      									<fieldset>
-                      										<legend>Upload images or PDFs to create image alt text</legend>
-    						                          <input type="file" id="img-file" name="img-file">
-                      										<!--div id="image-drop-upload-area">
-              															<i class="fas fa-upload"></i>
-              															Drag and drop files here
-              															<span id="file-upload-btn">Browse files
-              																<input type="file" id="img-file" name="img-file">
-              															</span>
-              														</div-->
-
-
-                      										<input type="submit" id="img-upload-btn">
-
-                                          <!--Streamlit embed for alt text-->
-
-                                        <!--/fieldset-->
-                                        <!--div class="streamlit-container">
-                                            <iframe
-                                                src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
-                                                class="streamlit-embed"
-                                                allow="camera;microphone"
-                                                scrolling="yes">
-                                            </iframe-->
-                                        </div>
-                                      </div>
-                                      <div id="image-upload-preview" class="hidden" style="margin-top:20px;">
-    			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                          Image preview
-                                        </h3>
-    	                                  <img id="image-preview"></img>
-                      									<p id="image-invalid-msg" class="hidden">The image you uploaded isn't in a recognized format. Please try a JPG or PNG. If you think the image format should be accepted, please reach out to the administrator.</p>
-                      									<p id="image-multiple-msg" class="hidden">We currently only accept uploading image files individually. Try again with 1 image.</p>
-
-                                      </div>
-                                </div>
-
-                                 <!---->
-                                 <upd-card-secondary-title _nghost-ng-c334178256="">
-                                    <!----><!---->
-                                 </upd-card-secondary-title>
-                              </div>
-
-                           </div>
-                        </div>
-                     </upd-card>
-                  </upd-projects-home>
-                  <!---->
-               </upd-projects>
-               <!---->
-               <!-- Creating the right-hand nav -->
+                                
+                                <script>
+                                    function toggleFrenchInput(option) {
+                                        if (option === 'textarea') {
+                                            document.getElementById('french-textarea-container').style.display = 'block';
+                                            document.getElementById('french-file-container').style.display = 'none';
+                                        } else {
+                                            document.getElementById('french-textarea-container').style.display = 'none';
+                                            document.getElementById('french-file-container').style.display = 'block';
+                                        }
+                                    }
+                                </script>
 
             </main>
             <footer _ngcontent-ng-c3392822675="" class="mt-4 ng-tns-c3392822675-0">
