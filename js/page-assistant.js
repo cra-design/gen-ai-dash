@@ -41,6 +41,7 @@ $(document).ready(function() {
 
   $("#code-refresh-button").click(function(){
     let rawCode = getRawCodeFromHighlighted($('#fullHtml code'));
+    console.log(rawCode);
     let preview = $("#url-frame")[0].contentDocument || $("#url-frame")[0].contentWindow.document;
     preview.open();
     preview.write(rawCode);
