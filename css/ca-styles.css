@@ -253,5 +253,5 @@ label {
     border-radius: 5px;
     font-size: 14px;
     font-family: Arial, sans-serif;
-    resize: vertical; /* Allows user to resize */
+    resize: auto; /* Allows user to resize */
 }
