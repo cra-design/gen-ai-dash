@@ -563,27 +563,27 @@ async function RefineSyntax(extractedHtml) {
       $("#html-upload-loading-spinner").addClass("hidden");
       $("#word-upload-loading-spinner").addClass("hidden");
   }
+}
 
-  function acceptIframe(option) {
-    $('#iframe-toolbox-A, #iframe-toolbox-B').addClass('hidden');
-    toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
-    toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
+function acceptIframe(option) {
+  $('#iframe-toolbox-A, #iframe-toolbox-B').addClass('hidden');
+  toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
+  toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
 
-    if (option == "b") {
-      //write iframe-2 to iframe + fullHtmlCompare to fullHtml
-      let iframeB = $("#url-frame-2").contentDocument || $("#url-frame-2").contentWindow.document;
-      let iframeA = $("#url-frame").contentDocument || $("#url-frame").contentWindow.document;
-      if (iframeB && iframeA) {
-          // Copy content from iframe-2 to iframe
-          iframeA.open();
-          iframeA.write(iframeB.body.innerHTML);
-          iframeA.close();
-      }
-
-      // Copy pre content from fullHtmlCompare to fullHtml
-      let fullHtmlCompareContent = $("#fullHtmlCompare code").text();
-      $("#fullHtml code").text(fullHtmlCompareContent);
-      Prism.highlightElement(document.querySelector("#fullHtml code"));
+  if (option == "b") {
+    //write iframe-2 to iframe + fullHtmlCompare to fullHtml
+    let iframeB = $("#url-frame-2").contentDocument || $("#url-frame-2").contentWindow.document;
+    let iframeA = $("#url-frame").contentDocument || $("#url-frame").contentWindow.document;
+    if (iframeB && iframeA) {
+        // Copy content from iframe-2 to iframe
+        iframeA.open();
+        iframeA.write(iframeB.body.innerHTML);
+        iframeA.close();
     }
+
+    // Copy pre content from fullHtmlCompare to fullHtml
+    let fullHtmlCompareContent = $("#fullHtmlCompare code").text();
+    $("#fullHtml code").text(fullHtmlCompareContent);
+    Prism.highlightElement(document.querySelector("#fullHtml code"));
   }
 }
