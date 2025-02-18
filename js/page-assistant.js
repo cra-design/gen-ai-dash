@@ -40,7 +40,7 @@ $(document).ready(function() {
   });
 
   $("#code-refresh-button").click(function(){
-    let iframeB = $("#url-frame")[0].contentDocument || $("#url-frame")[0].contentWindow.document;
+    let preview = $("#url-frame")[0].contentDocument || $("#url-frame")[0].contentWindow.document;
     preview.open();
     preview.write($('#fullHtml code').value);
     preview.close();
