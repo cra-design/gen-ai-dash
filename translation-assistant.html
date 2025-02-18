@@ -281,54 +281,54 @@
                                 </div> 
 	 <!-- END API Key Entry Section --> 
 
-                               <div id="document-upload-container">
-                                    <!-- Section 1: English Document Upload -->
-                                    <fieldset>
-                                        <legend>Upload the English Word Document</legend>
-                                        <input type="file" id="english-file" name="english-file" accept=".docx">
-                                    </fieldset>
-                                    <br>
-                                    <!-- Section 2: French Content Entry -->
-                                    <fieldset>
-                                        <legend>Provide the French Content</legend>
-                                        <p>Select one option below to provide the French content.</p>
-                                        
-                                        <div>
-                                            <label>
-                                                <input type="radio" name="french-input-option" value="textarea" onclick="toggleFrenchInput('textarea')" checked>
-                                                Paste French text
-                                            </label>
-                                            
-                                            <label>
-                                                <input type="radio" name="french-input-option" value="file" onclick="toggleFrenchInput('file')">
-                                                Upload a French Word document
-                                            </label>
-                                        </div>
-                                        
-                                        <div id="french-textarea-container">
-                                            <textarea id="french-text" name="french-text" placeholder="Paste your French text here" rows="6" style="width:100%;"></textarea>
-                                        </div>
-                                        
-                                        <div id="french-file-container" style="display:none;">
-                                            <input type="file" id="french-file" name="french-file" accept=".docx">
-                                        </div>
-                                    </fieldset>
-                                    
-                                    <!-- Submit Button -->
-                                    <button id="submit-btn" style="margin-top: 20px">Submit</button>
-                                </div>
-                                
-                                <script>
-                                    function toggleFrenchInput(option) {
-                                        if (option === 'textarea') {
-                                            document.getElementById('french-textarea-container').style.display = 'block';
-                                            document.getElementById('french-file-container').style.display = 'none';
-                                        } else {
-                                            document.getElementById('french-textarea-container').style.display = 'none';
-                                            document.getElementById('french-file-container').style.display = 'block';
-                                        }
-                                    }
-                                </script>
+                              <div id="document-upload-container">
+    <!-- Section 1: English Document Upload -->
+    <fieldset>
+        <legend>Upload the English Word Document</legend>
+        <p>Please upload the English document you want to translate.</p>
+        <input type="file" id="english-file" name="english-file" accept=".docx">
+        <p id="english-error" style="color: red; display: none;">Only one .docx file is allowed.</p>
+    </fieldset>
+    
+    <!-- Section 2: French Content Entry -->
+    <fieldset>
+        <legend>Provide the French Content</legend>
+        <p>Select one option below to provide the French content.</p>
+        
+        <div>
+            <label>
+                <input type="radio" name="french-input-option" value="textarea" onclick="toggleFrenchInput('textarea')" checked>
+                Paste French text
+            </label>
+            
+            <label>
+                <input type="radio" name="french-input-option" value="file" onclick="toggleFrenchInput('file')">
+                Upload a French Word document
+            </label>
+        </div>
+        
+        <div id="french-textarea-container">
+            <textarea id="french-text" name="french-text" placeholder="Paste your French text here" rows="6" style="width:100%;"></textarea>
+            <p id="french-text-error" style="color: red; display: none;">French content cannot be empty.</p>
+        </div>
+        
+        <div id="french-file-container" style="display:none;">
+            <input type="file" id="french-file" name="french-file" accept=".docx">
+            <p id="french-error" style="color: red; display: none;">Only one .docx file is allowed.</p>
+        </div>
+    </fieldset>
+    
+    <!-- Submit Button -->
+    <button id="submit-btn" style="margin-top: 20px">Submit</button>
+    
+    <!-- Download Button -->
+    <div id="download-container" style="display:none; margin-top: 20px;">
+        <a id="download-link" href="#" download="formatted_french.docx">Download French Document</a>
+    </div>
+</div>
+
+<script src="js/document-processing.js"></script>
+
 
             </main>
             <footer _ngcontent-ng-c3392822675="" class="mt-4 ng-tns-c3392822675-0">
