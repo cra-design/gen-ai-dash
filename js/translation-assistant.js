@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("submit-btn").addEventListener("click", async function () {
         const englishFile = document.getElementById("english-file").files[0];
         const frenchFile = document.getElementById("french-file").files[0];
-        const frenchText = document.getElementById("french-text").value;
+        const frenchText = document.getElementById("french-text").value.trim();
         const englishError = document.getElementById("english-error");
         const frenchError = document.getElementById("french-error");
         const frenchTextError = document.getElementById("french-text-error");
@@ -29,14 +29,16 @@ document.addEventListener("DOMContentLoaded", function () {
             hasError = true;
         }
         
-        if (frenchFile && frenchFile.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-            frenchError.style.display = "block";
-            hasError = true;
-        }
-        
-        if (!frenchFile && !frenchText.trim()) {
-            frenchTextError.style.display = "block";
-            hasError = true;
+        if (document.querySelector("input[name='french-input-option']:checked").value === 'file') {
+            if (!frenchFile || frenchFile.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+                frenchError.style.display = "block";
+                hasError = true;
+            }
+        } else {
+            if (!frenchText) {
+                frenchTextError.style.display = "block";
+                hasError = true;
+            }
         }
         
         if (hasError) return;
