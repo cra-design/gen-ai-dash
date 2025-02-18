@@ -566,10 +566,6 @@ async function RefineSyntax(extractedHtml) {
 }
 
 function acceptIframe(option) {
-  $('#iframe-toolbox-A, #iframe-toolbox-B').addClass('hidden');
-  toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
-  toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
-
   if (option == "b") {
     //write iframe-2 to iframe + fullHtmlCompare to fullHtml
     let iframeB = $("#url-frame-2").contentDocument || $("#url-frame-2").contentWindow.document;
@@ -586,4 +582,7 @@ function acceptIframe(option) {
     $("#fullHtml code").text(fullHtmlCompareContent);
     Prism.highlightElement(document.querySelector("#fullHtml code"));
   }
+  $('#iframe-toolbox-A, #iframe-toolbox-B').addClass('hidden');
+  toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
+  toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
 }
