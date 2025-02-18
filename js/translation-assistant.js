@@ -1,7 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     console.log("Translation Assistant Loaded");
-
+     // Ensure docx library is available before proceeding
+    if (typeof window.docx === "undefined") {
+        console.error("Error: docx library is not loaded.");
+        return;
+    }
     // Function to toggle between French text input methods
     function toggleFrenchInput(option) {
         const textareaContainer = document.getElementById('french-textarea-container');
