@@ -592,6 +592,6 @@ function acceptIframe(option) {
 
 function getRawCodeFromHighlighted(codeBlock) {
   // Assuming the code block has the class 'language-*' or similar for syntax highlighting
-  var rawCode = codeBlock.textContent || codeBlock.innerText; // Get the raw code (without syntax highlighting)
+  let rawCode = codeBlock.text(); // Get the raw code (without syntax highlighting)
   return rawCode;
 }
