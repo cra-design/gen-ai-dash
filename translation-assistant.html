@@ -194,25 +194,6 @@
                   <label for="html-upload-genai-analysis-grid"> Restructure with columns and rows</label><br>
                   <input type="checkbox" id="html-upload-genai-analysis-headings" name="html-upload-genai-analysis" value="custom-instructions/content/headings.txt">
                   <label for="html-upload-genai-analysis-headings"> Propose a better heading structure</label><br>
-
-
-                  <!--<input type="checkbox" id="genai-reports-title" name="genai-reports" value="Title">
-                  <label for="genai-reports-title">Optimize title for search</label><br>
-                  <input type="checkbox" id="genai-reports-validation" name="genai-reports" value="Validation">
-                  <label for="genai-reports-validation">Validate accessibility</label><br>
-                  <input type="checkbox" id="genai-reports-content" name="genai-reports" value="Content">
-                  <label for="genai-reports-content">Simplify language</label><br>
-                  <input type="checkbox" id="genai-reports-jargon" name="genai-reports" value="Jargon">
-                  <label for="genai-reports-jargon">Identify jargon</label><br>
-                  <input type="checkbox" id="genai-reports-structure" name="genai-reports" value="Structure">
-                  <label for="genai-reports-structure">Improve structure</label><br>
-                  <input type="checkbox" id="genai-reports-redundancies" name="genai-reports" value="Redundancies">
-                  <label for="genai-reports-redundancies">Remove redundancies</label><br>
-                  <input type="checkbox" id="genai-reports-metadata" name="genai-reports" value="Metadata">
-                  <label for="genai-reports-metadata">Description and keywords</label><br>
-                  <input type="checkbox" id="genai-reports-alt" name="genai-reports" value="Alt">
-                  <label for="genai-reports-alt">Alt text for images</label><br>-->
-                  <!-- Use any element to open/show the overlay navigation menu -->
                   <button id="genai-select-tasks-btn" style="margin-top:15px;">Continue</button>
                 </fieldset>
                 <fieldset id="genai-model-options" class="hidden">
@@ -296,15 +277,9 @@
         <p>Select one option below to provide the French content.</p>
         
         <div>
-            <label>
-                <input type="radio" name="french-input-option" value="textarea" onclick="toggleFrenchInput('textarea')" checked>
-                Paste French text
-            </label>
+            <label><input type="radio" name="french-input-option" value="textarea" onclick="toggleFrenchInput('textarea')" checked>Paste French text</label>
             
-            <label>
-                <input type="radio" name="french-input-option" value="file" onclick="toggleFrenchInput('file')">
-                Upload a French Word document
-            </label>
+            <label><input type="radio" name="french-input-option" value="file" onclick="toggleFrenchInput('file')">Upload a French Word document</label>
         </div>
         
         <div id="french-textarea-container">
