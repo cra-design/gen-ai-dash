@@ -165,29 +165,38 @@ from { transform: rotate(0deg); }
 to { transform: rotate(360deg); }
 }
 
+/*Checkbox and radio styles*/
+/*Includes a "checkbox-small" and "label-small" variation to give smaller versions*/
 /* Container for radio button and label */
-.radio-container {
+.radio-container,
+.checkbox-container {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
 }
 
-/* Hide the default radio button */
-input[type="radio"] {
+/* Hide the default radio and checkbox */
+input[type="radio"],
+input[type="checkbox"] {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     width: 34px;
     height: 34px;
     border: 2px solid #000;
-    border-radius: 50%;
+    border-radius: 50%; /* Default to circular for radios */
     position: relative;
     cursor: pointer;
     margin-right: 10px;
     vertical-align: middle;
 }
 
-/* Style the checked state */
+/* Change checkboxes to square */
+input[type="checkbox"] {
+    border-radius: 6px;
+}
+
+/* Style the checked state for radio buttons */
 input[type="radio"]:checked::before {
     content: '';
     width: 26px;
@@ -200,12 +209,45 @@ input[type="radio"]:checked::before {
     transform: translate(-50%, -50%);
 }
 
+/* Style the checked state for checkboxes */
+input[type="checkbox"]:checked::before {
+    content: '\2713'; /* Unicode checkmark */
+    font-size: 24px;
+    font-weight: bold;
+    color: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 /* Label styling */
 label {
     line-height: 40px;
     font-size: 18px;
     cursor: pointer;
 }
+
+/* Smaller checkbox variant */
+.checkbox-small {
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid #000;
+    margin-right: 5px;
+}
+
+/* Adjust checked state for smaller checkboxes */
+.checkbox-small:checked::before {
+    font-size: 14px; /* Smaller checkmark */
+}
+
+/* Smaller label variant */
+.label-small {
+    font-size: 14px;
+    line-height: normal;
+}
+
+
 
 
 /* Toolbar container */
