@@ -110,35 +110,45 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function generateFrenchDoc(englishText, frenchText) {
-        const doc = new window.docx.Document();
-        const englishSections = englishText.split("\n\n");
-        const frenchSections = frenchText.split("\n\n");
+   function generateFrenchDoc(englishText, frenchText) {
+    if (!window.docx || !window.docx.Document) {
+        console.error("docx.js is not correctly loaded.");
+        return;
+    }
 
-        if (englishSections.length !== frenchSections.length) {
-            alert("Warning: The English and French documents have different section counts. Some formatting might be incorrect.");
-        }
+    console.log("Generating French Doc...");
 
-        for (let i = 0; i < englishSections.length; i++) {
-            doc.addSection({
-                children: [
-                    new window.docx.Paragraph({
-                        text: frenchSections[i] || "", 
-                        style: "Normal",
-                    }),
-                ],
-            });
-        }
+    const { Document, Packer, Paragraph } = window.docx;
 
-        window.docx.Packer.toBlob(doc).then(blob => {
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "Translated_French_Document.docx";
-            link.textContent = "Download Translated French Document";
+    const doc = new Document();
+    const englishSections = englishText.split("\n\n");
+    const frenchSections = frenchText.split("\n\n");
 
-            document.getElementById("download-container").style.display = "block";
-            document.getElementById("download-container").innerHTML = "";
-            document.getElementById("download-container").appendChild(link);
+    if (englishSections.length !== frenchSections.length) {
+        alert("Warning: English and French section counts do not match.");
+    }
+
+    for (let i = 0; i < englishSections.length; i++) {
+        doc.addSection({
+            children: [
+                new Paragraph({
+                    text: frenchSections[i] || "", 
+                    style: "Normal",
+                }),
+            ],
         });
     }
-});
+
+    Packer.toBlob(doc).then(blob => {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "Translated_French_Document.docx";
+        link.textContent = "Download Translated French Document";
+
+        document.getElementById("download-container").style.display = "block";
+        document.getElementById("download-container").innerHTML = "";
+        document.getElementById("download-container").appendChild(link);
+    }).catch(err => {
+        console.error("Error generating document:", err);
+    });
+}
