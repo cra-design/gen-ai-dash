@@ -532,7 +532,7 @@ async function RefineSyntax(extractedHtml) {
       } else {
         console.error("Iframe with id 'url-frame' not found.");
       }
-      toggleComparisonElement("#url-frame", "#url-frame-2");
+      toggleComparisonElement($('#url-frame'), $('#url-frame-2'));
       $('#iframe-toolbox-A').removeClass('hidden');
       $('#iframe-toolbox-B').removeClass('hidden');
     }
@@ -544,7 +544,7 @@ async function RefineSyntax(extractedHtml) {
     if (!$('#doc-exact-syntax').is(':checked')) {
       $("#fullHtmlCompare code").text(formattedAIHTML);
       Prism.highlightElement(document.querySelector("#fullHtmlCompare code"));
-      toggleComparisonElement("#fullHtml", "#fullHtmlCompare");
+      toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
     }
 
     $("#html-upload").addClass("hidden");
@@ -566,7 +566,7 @@ async function RefineSyntax(extractedHtml) {
 
   function acceptIframe(option) {
     $('#iframe-toolbox-A, #iframe-toolbox-B').addClass('hidden');
-    toggleComparisonElement($('fullHtml'), $('fullHtmlCompare'));
+    toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
     toggleComparisonElement($('#url-frame'), $('#url-frame-2'));
 
     if (option == "b") {

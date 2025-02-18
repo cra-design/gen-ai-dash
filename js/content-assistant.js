@@ -154,16 +154,14 @@ function formatAIResponse(aiResponse) {
 
 //Displays a side-by-side element for comparison and changes both to 50% width, or toggles the 2nd off and eleA back to 100% width
 function toggleComparisonElement(eleA, eleB) {
-  console.log(eleA + eleB);
-  console.log($(eleA).classList + $(eleB).classList);
-    if ($(eleB).classList.contains('hidden')) {
+    if (eleB.hasClass('hidden')) {
       // Show the second iframe
-      $(eleB).classList.remove('hidden');
-      $(eleA).style.width = '50%';
-      $(eleB).style.width = '50%';
+      eleB.removeClass('hidden');
+      eleA.css('width', '50%');
+      eleB.css('width', '50%');
     } else {
       // Hide the second iframe
-      $(eleB).classList.add('hidden');
-      $(eleA).style.width = '100%';
+      eleB.addClass('hidden');
+      eleA.css('width', '100%');
     }
 }
