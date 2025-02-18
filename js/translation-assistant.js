@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+
+    // Toggle input fields for French content selection
     function toggleFrenchInput(option) {
         const textareaContainer = document.getElementById('french-textarea-container');
         const fileContainer = document.getElementById('french-file-container');
@@ -18,95 +20,107 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    document.getElementById("submit-btn").addEventListener("click", async function () {
-        const englishFile = document.getElementById("english-file").files[0];
-        const frenchFile = document.getElementById("french-file").files[0];
-        const frenchText = document.getElementById("french-text").value.trim();
-        const englishError = document.getElementById("english-error");
-        const frenchError = document.getElementById("french-error");
-        const frenchTextError = document.getElementById("french-text-error");
-        
-        englishError.style.display = "none";
-        frenchError.style.display = "none";
-        frenchTextError.style.display = "none";
-        
-        let hasError = false;
+    // File validation function
+    function validateFile(input, errorElementId) {
+        const file = input.files[0];
+        const errorElement = document.getElementById(errorElementId);
 
-        if (!englishFile || englishFile.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-            englishError.style.display = "block";
-            hasError = true;
+        if (!file) {
+            errorElement.textContent = "No file selected.";
+            errorElement.style.display = "block";
+            return false;
         }
-        
-        if (document.querySelector("input[name='french-input-option']:checked").value === 'file') {
-            if (!frenchFile || frenchFile.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-                frenchError.style.display = "block";
-                hasError = true;
+
+        if (file.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+            errorElement.textContent = "Only .docx files are allowed.";
+            errorElement.style.display = "block";
+            return false;
+        }
+
+        errorElement.style.display = "none";
+        return true;
+    }
+
+    // Load Word document
+    function loadWordFile(file, callback) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            const arrayBuffer = event.target.result;
+            mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                .then(function (result) {
+                    callback(result.value);
+                })
+                .catch(function (err) {
+                    console.error("Error extracting text:", err);
+                });
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    document.getElementById("submit-btn").addEventListener("click", function () {
+        const englishFileInput = document.getElementById("english-file");
+        const frenchFileInput = document.getElementById("french-file");
+        const frenchTextArea = document.getElementById("french-text");
+        const frenchOption = document.querySelector("input[name='french-input-option']:checked").value;
+
+        const englishValid = validateFile(englishFileInput, "english-error");
+        let frenchValid = false;
+        let frenchContent = "";
+
+        if (frenchOption === "file") {
+            frenchValid = validateFile(frenchFileInput, "french-error");
+            if (frenchValid) {
+                loadWordFile(frenchFileInput.files[0], function (text) {
+                    frenchContent = text;
+                    processDocuments();
+                });
             }
         } else {
-            if (!frenchText) {
-                frenchTextError.style.display = "block";
-                hasError = true;
+            frenchContent = frenchTextArea.value.trim();
+            if (frenchContent.length === 0) {
+                document.getElementById("french-text-error").style.display = "block";
+            } else {
+                document.getElementById("french-text-error").style.display = "none";
+                frenchValid = true;
             }
         }
-        
-        if (hasError) return;
-        
-        try {
-            const englishDoc = await extractTextFromDocx(englishFile);
-            let frenchContent = frenchFile ? await extractTextFromDocx(frenchFile) : frenchText;
-            
-            const formattedFrenchDoc = replaceEnglishWithFrench(englishDoc, frenchContent);
-            
-            generateDownloadableDocx(formattedFrenchDoc);
-        } catch (error) {
-            console.error("Error processing document:", error);
+
+        if (englishValid && frenchValid && frenchContent.length > 0) {
+            loadWordFile(englishFileInput.files[0], function (englishText) {
+                generateFrenchDoc(englishText, frenchContent);
+            });
         }
     });
 
-    async function extractTextFromDocx(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = async function (event) {
-                const arrayBuffer = reader.result;
-                try {
-                    const result = await mammoth.extractRawText({ arrayBuffer });
-                    resolve(result.value.trim());
-                } catch (err) {
-                    reject("Failed to extract text from document.");
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        });
-    }
+    function generateFrenchDoc(englishText, frenchText) {
+        const zip = new PizZip();
+        const doc = new window.docx.Document();
 
-    function replaceEnglishWithFrench(englishText, frenchText) {
-        const englishLines = englishText.split("\n");
-        const frenchLines = frenchText.split("\n");
-        let formattedText = "";
-        
-        for (let i = 0; i < englishLines.length; i++) {
-            formattedText += frenchLines[i] ? frenchLines[i] + "\n" : "\n";
+        const englishSections = englishText.split("\n\n");
+        const frenchSections = frenchText.split("\n\n");
+
+        if (englishSections.length !== frenchSections.length) {
+            alert("Warning: The English and French documents have different section counts. Some formatting might be incorrect.");
         }
-        return formattedText;
-    }
 
-    function generateDownloadableDocx(content) {
-        const doc = new docx.Document({
-            sections: [
-                {
-                    properties: {},
-                    children: [new docx.Paragraph(content)],
-                },
-            ],
-        });
-        
+        for (let i = 0; i < englishSections.length; i++) {
+            doc.addSection({
+                properties: {},
+                children: [
+                    new window.docx.Paragraph({
+                        text: frenchSections[i] || "", // Use English as fallback if French section is missing
+                        style: "Normal",
+                    }),
+                ],
+            });
+        }
+
         docx.Packer.toBlob(doc).then(blob => {
-            const downloadLink = document.getElementById("download-link");
-            downloadLink.href = URL.createObjectURL(blob);
-            document.getElementById("download-container").style.display = "block";
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Translated_French_Document.docx";
+            link.textContent = "Download Translated French Document";
+            document.body.appendChild(link);
         });
     }
-
-    // Ensure the correct input is displayed on page load
-    toggleFrenchInput(document.querySelector("input[name='french-input-option']:checked").value);
 });
