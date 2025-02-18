@@ -250,7 +250,7 @@ label {
 
 
 
-/* Toolbar container */
+/* Toolbar container - ensure it stays on top */
 .toolbar {
   display: flex;
   justify-content: flex-end;
@@ -260,6 +260,22 @@ label {
   border-bottom: none;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
+  width: 100%; /* Ensure it spans the full width */
+  position: relative; /* Keeps it above the iframe */
+}
+
+/* Wrapper to ensure the toolbar is stacked above the iframe */
+.iframe-container {
+  display: flex;
+  flex-direction: column; /* Stack toolbar and iframe vertically */
+  width: 50%; /* Ensure each iframe + toolbar takes half the space */
+}
+
+/* Iframe styling */
+iframe {
+  width: 100%; /* Ensure the iframe stretches within its container */
+  height: 800px;
+  border: 1px solid #ddd;
 }
 
 /* Toolbar buttons */
