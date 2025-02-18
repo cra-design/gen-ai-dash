@@ -212,9 +212,9 @@ input[type="radio"]:checked::before {
 /* Style the checked state for checkboxes */
 input[type="checkbox"]:checked::before {
     content: '\2713'; /* Unicode checkmark */
+    color: green;
     font-size: 24px;
     font-weight: bold;
-    color: black;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -228,25 +228,54 @@ label {
     cursor: pointer;
 }
 
-/* Smaller checkbox variant */
+/* Container for custom checkbox */
 .checkbox-small {
-    width: 20px;
-    height: 20px;
-    border: 1.5px solid #000;
-    margin-right: 5px;
+    display: none; /* Hide the default checkbox */
 }
 
-/* Adjust checked state for smaller checkboxes */
-.checkbox-small:checked::before {
-    font-size: 14px; /* Smaller checkmark */
+/* Style for the custom checkbox when unchecked */
+.checkbox-small + .label-small {
+    position: relative;
+    padding-left: 25px; /* Space for custom checkbox */
+    cursor: pointer;
+    font-size: 14px; /* Adjust label size as needed */
 }
+
+/* Custom checkbox (using the label's pseudo-element) */
+.checkbox-small + .label-small::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px; /* Size of the custom checkbox */
+    height: 20px;
+    border: 1.5px solid #000;
+    border-radius: 3px; /* Optional: rounded corners */
+    background-color: white;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Style for when the checkbox is checked */
+.checkbox-small:checked + .label-small::before {
+    content: '\2713'; /* Unicode checkmark character */
+    color: green; /* Color for checkmark */
+    text-align: center;
+    line-height: 20px; /* Center the checkmark vertically */
+    font-size: 14px; /* Adjust checkmark size */
+}
+
+/* Optional: Hover effect */
+.checkbox-small + .label-small:hover::before {
+    border-color: #666; /* Darker border on hover */
+}
+
 
 /* Smaller label variant */
 .label-small {
     font-size: 14px;
     line-height: normal;
+    margin-top: 5px;
 }
-
 
 
 
