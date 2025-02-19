@@ -505,7 +505,7 @@ async function RefineSyntax(extractedHtml) {
     extractedHtml = htmlHeader + extractedHtml + htmlFooter;
     let formattedAIHTML = "";
     let aiWordResponse = ""; // Default to extractedHtml in case API isn't used
-    if (!$('#doc-exact-syntax').is(':checked')) {
+    if (!$('#doc-exact-syntax').is(':checked') || $("#html").prop("checked")) {
       // Define the HTML header and footer
       let systemWord = { role: "system", content: "You are an expert in converting plain text into structured, semantic HTML. Only respond with html documents, never with explanations or plain text." }
       let userWord = { role: "user", content: 'Clean up the following conversion from text into HTML ensuring it has good, clean syntax with proper headings, paragraphs, and lists where applicable: ' + extractedHtml }
@@ -514,8 +514,13 @@ async function RefineSyntax(extractedHtml) {
       // Send it to the API
       let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
       aiWordResponse = ORjson.choices[0].message.content.trim();
+	  if ($("#html").prop("checked")) {
+		//We need to reassign the aiWordResponse to the basic text for content upload, since there is no mammoth version
+		extractedHtml = aiWordResponse; 
+		//From now on, treat #html as the same thing as doc-exact-syntax checked
+	  }
     }
-    if (!$('#doc-basic-html').is(':checked')) {
+    if (!$('#doc-basic-html').is(':checked') && !$('#doc-basic-html-2').is(':checked')) {
       const [headerResponse2, footerResponse2] = await Promise.all([
           fetch('html-templates/canada-header-additions.html'),
           fetch('html-templates/canada-footer-additions.html')
@@ -546,7 +551,7 @@ async function RefineSyntax(extractedHtml) {
       .replace(/^```|```$/g, '')
       .replace(/^html/, '');
     let formattedHTML = formatHTML(trimmedHtml);
-    if (!$('#doc-exact-syntax').is(':checked')) {
+    if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
       let trimmedAIHtml = aiWordResponse
         .replace(/^```|```$/g, '')
         .replace(/^html/, '');
@@ -562,7 +567,7 @@ async function RefineSyntax(extractedHtml) {
     } else {
       console.error("Iframe with id 'url-frame' not found.");
     }
-    if (!$('#doc-exact-syntax').is(':checked')) {
+    if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
       let iframe2 = document.getElementById("url-frame-2");
       if (iframe2) {
         let iframeDoc2 = iframe2.contentDocument || iframe2.contentWindow.document;
@@ -581,7 +586,7 @@ async function RefineSyntax(extractedHtml) {
     $("#fullHtml code").text(formattedHTML);
     // Apply syntax highlighting
     Prism.highlightElement(document.querySelector("#fullHtml code"));
-    if (!$('#doc-exact-syntax').is(':checked')) {
+    if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
       $("#fullHtmlCompare code").text(formattedAIHTML);
       Prism.highlightElement(document.querySelector("#fullHtmlCompare code"));
       toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
