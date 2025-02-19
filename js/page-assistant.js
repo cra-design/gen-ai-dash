@@ -97,6 +97,7 @@ $(document).ready(function() {
       return;
     }
     const urlInput = new URL($('#url-input').val());
+    console.log(urlInput.host);
     // Currently configuring it to specific github organizations:
     if (urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
       $("#url-frame").attr("src", urlInput.href);
@@ -109,20 +110,31 @@ $(document).ready(function() {
               alert('Failed to fetch the webpage. Check the console for details.');
               return;
           }
+          console.log(html);
           // Extract fields from the HTML
           const fields = extractFields(html);
           // Render results to the page
           renderHTMLFields(html, fields);
       });
     } else if (urlInput.host == "www.canada.ca") { //canada.ca link
-
+      parsePageHTML(urlInput.href, function (err, html) {
+          if (err) {
+              console.error('Failed to fetch the webpage:', err);
+              alert('Failed to fetch the webpage. Check the console for details.');
+              return;
+          }
+          // Extract fields from the HTML
+          const fields = extractFields(html);
+          // Render results to the page
+          renderHTMLFields(html, fields);
+      });
       //Maybe we can implement a iframe render of the HTML code for the canada.ca pages?
 
 
 
-      //unhide Canada.ca not yet supported message
-      $("#canada-ca-msg").removeClass("hidden");
-      $('#url-upload-input').removeClass("hidden");
+      // //unhide Canada.ca not yet supported message
+      // $("#canada-ca-msg").removeClass("hidden");
+      // $('#url-upload-input').removeClass("hidden");
     } else { //unsupported site
       //unhide unsupported site message
       $("#other-site-msg").removeClass("hidden");
