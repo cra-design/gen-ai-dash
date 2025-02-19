@@ -243,6 +243,15 @@ $(document).ready(function() {
     let reportContainer = $(".overlay-content");
     let reportList = $(".report-list");
     reportContainer.find(".generated-report").remove();
+    let newReportListContainer = $(
+      '<ul class="generated-report"></ul>'
+    );
+    // Append to the report container with unordered list
+    reportList.append(newReportListContainer);
+    //declare the reportListContainer ul to append list items later
+    let reportListContainer = $(".report-list .generated-report");
+
+
     //fetching the systemGeneral instructions from file
     try {
       systemGeneral.content = await $.get("custom-instructions/system/no-html-report.txt");
@@ -294,14 +303,10 @@ $(document).ready(function() {
                 '<p>' + formattedText + '</p>' +
               '</div>'
             );
-            let newReportListItem = $(
-            '<div class="generated-report">' +
-              '<p>' + labelText + '</p>' +
-            '</div>'
-          );
+            let newReportListItem = $('<li>' + labelText + '</li>');
             // Append to the report container
             reportContainer.append(newReport);
-            reportList.append(newReportListItem);
+            reportListContainer.append(newReportListItem);
             $("#genai-open-report-btn").removeClass("hidden"); // Show report button
           } catch (error) {
               console.error(`Error generating report:`, error);
