@@ -97,7 +97,6 @@ $(document).ready(function() {
       return;
     }
     const urlInput = new URL($('#url-input').val());
-    console.log(urlInput.host);
     // Currently configuring it to specific github organizations:
     if (urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
       $("#url-frame").attr("src", urlInput.href);
@@ -117,6 +116,10 @@ $(document).ready(function() {
           renderHTMLFields(html, fields);
       });
     } else if (urlInput.host == "www.canada.ca") { //canada.ca link
+      $("#url-frame").attr("src", urlInput.href);
+      $("#url-frame").removeClass("hidden");
+      $("#genai-upload-msg").addClass("hidden");
+      $("#genai-task-options").removeClass("hidden");
       parsePageHTML(urlInput.href, function (err, html) {
           if (err) {
               console.error('Failed to fetch the webpage:', err);
