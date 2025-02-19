@@ -98,7 +98,7 @@ $(document).ready(function() {
     }
     const urlInput = new URL($('#url-input').val());
     // Currently configuring it to specific github organizations:
-    if (urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
+    if (urlInput.host == "www.canada.ca" || urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
       $("#url-frame").attr("src", urlInput.href);
       $("#url-frame").removeClass("hidden");
       $("#genai-upload-msg").addClass("hidden");
@@ -115,29 +115,29 @@ $(document).ready(function() {
           // Render results to the page
           renderHTMLFields(html, fields);
       });
-    } else if (urlInput.host == "www.canada.ca") { //canada.ca link
-      $("#url-frame").attr("src", urlInput.href);
-      $("#url-frame").removeClass("hidden");
-      $("#genai-upload-msg").addClass("hidden");
-      $("#genai-task-options").removeClass("hidden");
-      parsePageHTML(urlInput.href, function (err, html) {
-          if (err) {
-              console.error('Failed to fetch the webpage:', err);
-              alert('Failed to fetch the webpage. Check the console for details.');
-              return;
-          }
-          // Extract fields from the HTML
-          const fields = extractFields(html);
-          // Render results to the page
-          renderHTMLFields(html, fields);
-      });
-      //Maybe we can implement a iframe render of the HTML code for the canada.ca pages?
-
-
-
-      // //unhide Canada.ca not yet supported message
-      // $("#canada-ca-msg").removeClass("hidden");
-      // $('#url-upload-input').removeClass("hidden");
+    // } else if (urlInput.host == "www.canada.ca") { //canada.ca link
+    //   $("#url-frame").attr("src", urlInput.href);
+    //   $("#url-frame").removeClass("hidden");
+    //   $("#genai-upload-msg").addClass("hidden");
+    //   $("#genai-task-options").removeClass("hidden");
+    //   parsePageHTML(urlInput.href, function (err, html) {
+    //       if (err) {
+    //           console.error('Failed to fetch the webpage:', err);
+    //           alert('Failed to fetch the webpage. Check the console for details.');
+    //           return;
+    //       }
+    //       // Extract fields from the HTML
+    //       const fields = extractFields(html);
+    //       // Render results to the page
+    //       renderHTMLFields(html, fields);
+    //   });
+    //   //Maybe we can implement a iframe render of the HTML code for the canada.ca pages?
+    //
+    //
+    //
+    //   // //unhide Canada.ca not yet supported message
+    //   // $("#canada-ca-msg").removeClass("hidden");
+    //   // $('#url-upload-input').removeClass("hidden");
     } else { //unsupported site
       //unhide unsupported site message
       $("#other-site-msg").removeClass("hidden");
