@@ -241,6 +241,7 @@ $(document).ready(function() {
     let userContent = { role: "user", content: "Web page content: "}
     let userData = { role: "user", content: "Contextual data: " }
     let reportContainer = $(".overlay-content");
+    let reportList = $(".report-list");
     reportContainer.find(".generated-report").remove();
 
 
@@ -287,8 +288,14 @@ $(document).ready(function() {
                 '<p>' + formattedText + '</p>' +
               '</div>'
             );
+            let newReportListItem = $(
+            '<div class="generated-report">' +
+              '<p>' + labelText + '</p>' +
+            '</div>'
+          );
             // Append to the report container
             reportContainer.append(newReport);
+            reportList.append(newReportListItem);
             $("#genai-open-report-btn").removeClass("hidden"); // Show report button
           } catch (error) {
               console.error(`Error generating report:`, error);
@@ -323,6 +330,8 @@ $(document).ready(function() {
     $("#genai-task-options").removeClass("hidden");
     $('input[name="html-upload-genai-analysis"]').prop('checked', false);
     $('input[name="html-upload-genai-model"]').prop('checked', false);
+    let reportList = $(".report-list");
+    reportList.find(".generated-report").remove();
   });
   $("#close-report-btn").click(function(){
     /* Open when someone clicks on the span element */
