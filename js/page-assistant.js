@@ -488,6 +488,7 @@ function loadTemplate(filePath, targetSelector) {
 }
 
 async function RefineSyntax(extractedHtml) {
+	console.log(extractedHtml);
   try {
     const [headerResponse, footerResponse] = await Promise.all([
         fetch('html-templates/simple-header.html'),
