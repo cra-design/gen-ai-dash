@@ -236,14 +236,21 @@ $(document).ready(function() {
     //$("#genai-report-reset-options").removeClass("hidden");
     let selectedTasks = [];
     let model = $('input[name="html-upload-genai-model"]:checked').val();
-    let systemGeneral = { role: "system", content: "You are an expert web editor. Analyze the provided web page content according to the guidelines in the following system prompt to provide actionable recommendations in plain text. Never include code or HTML in your response. The contextual data may include search terms, user feedback or ux test findings to help you understand the pain points or user behaviour your recommendations should address." }
+    let systemGeneral = { role: "system", content: "" }
     let systemTask = { role: "system", content: "" }
     let userContent = { role: "user", content: "Web page content: "}
     let userData = { role: "user", content: "Contextual data: " }
     let reportContainer = $(".overlay-content");
     let reportList = $(".report-list");
     reportContainer.find(".generated-report").remove();
-
+    //fetching the systemGeneral instructions from file
+    try {
+      let systemGeneralInstructions = await $.get("custom-instructions/system/no-html-report.txt");
+      systemGeneral.content = systemGeneralInstructions;
+    } catch (error) {
+        console.error(`Error getting systemGeneral instructions:`, error);
+        $("#html-upload-no-action-error").removeClass("hidden");
+    }
 
     //triage which content to feed to the AI for analysis if free content input
     // if ($('#html-upload-preview').is(':visible')) {
