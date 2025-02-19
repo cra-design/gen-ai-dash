@@ -521,7 +521,7 @@ async function RefineSyntax(extractedHtml) {
 		//From now on, treat #html as the same thing as doc-exact-syntax checked
 	  }
     }
-    if (!$('#doc-basic-html').is(':checked') && !$('#doc-basic-html-2').is(':checked')) {
+    if (!$('#doc-basic-html').is(':checked') && !$('#html-basic-html').is(':checked')) {
       const [headerResponse2, footerResponse2] = await Promise.all([
           fetch('html-templates/canada-header-additions.html'),
           fetch('html-templates/canada-footer-additions.html')
@@ -540,7 +540,7 @@ async function RefineSyntax(extractedHtml) {
         .replace('</main>', newFooter)
         .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
         .replace('<table>', '<table class="wb-tables table table-striped">');
-      if (!$('#doc-exact-syntax').is(':checked')) {
+      if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
         aiWordResponse = aiWordResponse
           .replace('<main>', newHeader)
           .replace('</main>', newFooter)
