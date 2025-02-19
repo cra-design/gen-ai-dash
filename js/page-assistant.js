@@ -245,8 +245,7 @@ $(document).ready(function() {
     reportContainer.find(".generated-report").remove();
     //fetching the systemGeneral instructions from file
     try {
-      let systemGeneralInstructions = await $.get("custom-instructions/system/no-html-report.txt");
-      systemGeneral.content = systemGeneralInstructions;
+      systemGeneral.content = await $.get("custom-instructions/system/no-html-report.txt");
     } catch (error) {
         console.error(`Error getting systemGeneral instructions:`, error);
         $("#html-upload-no-action-error").removeClass("hidden");
