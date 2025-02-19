@@ -150,7 +150,9 @@ $(document).ready(function() {
     // $("#html-preview").html($("#html-input").html());
     // $("#html-upload-preview").removeClass("hidden");
     $("#html-upload-loading-spinner").removeClass("hidden");
+    console.log($("#html-input").html());
     let extractedHtml = convertTextToHTML($("#html-input").html());
+    console.log(extractedHtml);
     RefineSyntax(extractedHtml);
   });
 
