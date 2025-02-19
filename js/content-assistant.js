@@ -165,3 +165,41 @@ function toggleComparisonElement(eleA, eleB) {
       eleA.css('width', '100%');
     }
 }
+
+//For large documents, they may exceed the token limit of the API, so we need to break them down
+function estimateTokens(text) {
+    // Roughly estimate token count based on word count
+    let words = text.match(/\b\w+\b/g) || [];
+    return Math.ceil(words.length / 0.75); // Approximate word-to-token ratio
+}
+
+function chunkText(text, maxTokens) {
+    let words = text.match(/\b\w+\b/g) || [];
+    let chunks = [];
+    let currentChunk = [];
+    let tokenCount = 0;
+
+    words.forEach(word => {
+        let wordTokens = Math.ceil(word.length / 4); // Rough estimate of token count per word
+        if (tokenCount + wordTokens > maxTokens) {
+            chunks.push(currentChunk.join(" "));
+            currentChunk = [];
+            tokenCount = 0;
+        }
+        currentChunk.push(word);
+        tokenCount += wordTokens;
+    });
+
+    if (currentChunk.length > 0) {
+        chunks.push(currentChunk.join(" "));
+    }
+
+    return chunks;
+}
+
+// // Example usage:
+// let text = "Your long document content goes here...";
+// let maxTokens = 1000; // Adjust token limit as needed
+// let chunks = chunkText(text, maxTokens);
+//
+// console.log(chunks);
