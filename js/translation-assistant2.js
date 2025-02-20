@@ -6,10 +6,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const documentUploadContainer = document.getElementById("document-upload-container"); // Upload section
 
     // Ensure elements exist before proceeding
-    if (!apiKeyEntry || !apiKeyInput || !apiKeySubmitBtn || !documentUploadContainer) {
-        console.error("One or more required elements are missing. Check your HTML structure.");
-        return; // Stop execution if elements are missing
-    }
+   // if (!apiKeyEntry || !apiKeyInput || !apiKeySubmitBtn || !documentUploadContainer) {
+        //console.error("One or more required elements are missing. Check your HTML structure.");
+       // return; // Stop execution if elements are missing
+    //}
 
     // Show API key input section first, hide document upload section
     apiKeyEntry.style.display = "block";
