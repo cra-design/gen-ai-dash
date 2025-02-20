@@ -1,3 +1,34 @@
+document.addEventListener("DOMContentLoaded", function () {
+    const apiKeyInput = document.getElementById("api-key");
+    const apiKeySubmitBtn = document.getElementById("api-key-submit-btn");
+    const documentUploadContainer = document.getElementById("document-upload-container");
+
+    // Ensure document upload section is hidden initially
+    documentUploadContainer.classList.add("hidden");
+
+    // API Key Submission Handling
+    apiKeySubmitBtn.addEventListener("click", function () {
+        const apiKey = apiKeyInput.value.trim();
+        if (apiKey) {
+            localStorage.setItem("openRouterApiKey", apiKey);
+            apiKeyInput.disabled = true;
+            apiKeySubmitBtn.disabled = true;
+            documentUploadContainer.classList.remove("hidden");
+        } else {
+            alert("Please enter a valid API key.");
+        }
+    });
+
+    // Load stored API key if available
+    const storedApiKey = localStorage.getItem("openRouterApiKey");
+    if (storedApiKey) {
+        apiKeyInput.value = storedApiKey;
+        apiKeyInput.disabled = true;
+        apiKeySubmitBtn.disabled = true;
+        documentUploadContainer.classList.remove("hidden");
+    }
+});
+
 // Grab DOM elements for English & French input, errors, and download link
 const englishFileInput = document.getElementById("english-file");
 const frenchFileInput = document.getElementById("french-file");
@@ -5,7 +36,7 @@ const frenchTextarea = document.getElementById("french-text");
 const frenchFileContainer = document.getElementById("french-file-container");
 const frenchTextareaContainer = document.getElementById("french-textarea-container");
 const submitBtn = document.getElementById("submit-btn");
-const downloadLink = document.getElementById("downloadLink"); 
+const downloadLink = document.getElementById("downloadLink");
 
 // Global variables to store the binary contents of the uploaded DOCX files
 let englishDocxData = null;
@@ -142,6 +173,7 @@ submitBtn.addEventListener("click", async () => {
     alert("An error occurred while processing the documents: " + error.message);
   }
 });
+
 
 // Function to send request to OpenRouter API
 async function getORData(model, requestJson) {
