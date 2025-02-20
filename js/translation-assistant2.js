@@ -62,28 +62,38 @@ radioOptions.forEach(radio => {
   });
 });
 
-// Ensure only .docx files are uploaded
-function handleFileInput(fileInput, errorElementId, dataVariable) {
-  fileInput.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      if (!file.name.toLowerCase().endsWith(".docx")) {
-        showError(errorElementId, "Only .docx files are allowed.");
-        dataVariable = null;
-      } else {
-        hideError(errorElementId);
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          dataVariable = e.target.result;
-        };
-        reader.readAsBinaryString(file);
-      }
-    }
-  });
+// Ensure only .docx files are uploaded and update global variables correctly
+function handleFileInput(fileInput, errorElementId, fileType) {
+    fileInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            if (!file.name.toLowerCase().endsWith(".docx")) {
+                showError(errorElementId, "Only .docx files are allowed.");
+                if (fileType === "english") englishDocxData = null;
+                if (fileType === "french") frenchDocxData = null;
+            } else {
+                hideError(errorElementId);
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (fileType === "english") {
+                        englishDocxData = e.target.result; 
+                        console.log("English file loaded successfully."); // Debugging
+                    }
+                    if (fileType === "french") {
+                        frenchDocxData = e.target.result; 
+                        console.log("French file loaded successfully."); // Debugging
+                    }
+                };
+                reader.readAsBinaryString(file);
+            }
+        }
+    });
 }
 
-handleFileInput(englishFileInput, "english-error", englishDocxData);
-handleFileInput(frenchFileInput, "french-error", frenchDocxData);
+// Attach event listeners for file inputs
+handleFileInput(englishFileInput, "english-error", "english");
+handleFileInput(frenchFileInput, "french-error", "french");
+
 
 // Ensure OpenRouter API Key is provided
 function getApiKey() {
