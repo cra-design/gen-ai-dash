@@ -128,7 +128,7 @@ submitBtn.addEventListener("click", async () => {
     // 7. Serialize the updated English DOM back to a string
     const serializer = new XMLSerializer();
     enDocumentXml = serializer.serializeToString(enDoc);
-    
+    console.log(enDocumentXml);
     // 8. Replace the old document.xml with the updated version
     zipEN.file("word/document.xml", enDocumentXml);
     
