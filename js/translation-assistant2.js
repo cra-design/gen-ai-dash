@@ -40,7 +40,25 @@ const downloadLink = document.getElementById("downloadLink");
 
 // Global variables to store the binary contents of the uploaded DOCX files
 let englishDocxData = null;
-let frenchDocxData = null;
+let frenchDocxData = null; 
+
+//Upload English file
+englishFileInput.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    if (!file.name.toLowerCase().endsWith(".docx")) {
+      showError("english-error", "Only .docx files are allowed.");
+      englishDocxData = null;
+    } else {
+      hideError("english-error");
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        englishDocxData = e.target.result;
+      };
+      reader.readAsBinaryString(file);
+    }
+  }
+});
 
 // Radio button logic: toggle display of French text area or file upload field
 const radioOptions = document.getElementsByName("french-input-option");
@@ -56,28 +74,24 @@ radioOptions.forEach(radio => {
   });
 });
 
-// Ensure only .docx files are uploaded
-function handleFileInput(fileInput, errorElementId, dataVariable) {
-  fileInput.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      if (!file.name.toLowerCase().endsWith(".docx")) {
-        showError(errorElementId, "Only .docx files are allowed.");
-        dataVariable = null;
-      } else {
-        hideError(errorElementId);
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          dataVariable = e.target.result;
-        };
-        reader.readAsBinaryString(file);
-      }
+//Upload Fr File
+frenchFileInput.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    if (!file.name.toLowerCase().endsWith(".docx")) {
+      showError("french-error", "Only .docx files are allowed.");
+      frenchDocxData = null;
+    } else {
+      hideError("french-error");
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        frenchDocxData = e.target.result;
+      };
+      reader.readAsBinaryString(file);
     }
-  });
-}
+  }
+});
 
-handleFileInput(englishFileInput, "english-error", englishDocxData);
-handleFileInput(frenchFileInput, "french-error", frenchDocxData);
 
 // Ensure OpenRouter API Key is provided
 function getApiKey() {
