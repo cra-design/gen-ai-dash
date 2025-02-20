@@ -221,20 +221,35 @@ function escapeXml(str) {
   });
 }
 
-/**
- * Dummy implementation of getORData.
- * Replace this function with your actual GenAI API call logic.
- */
 async function getORData(model, requestJson) {
-  // Example: using fetch to send the request to your API endpoint.
-  // Note: In production, ensure your API key and URL are handled securely.
-  const response = await fetch("https://gemini.google.com/app?hl=en-IN", {
-    method: "POST", 
-    
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model: model, messages: requestJson.messages })
-  });
-  return response.json();
+    let ORjson;
+    console.log(JSON.stringify({
+        "model": model,
+        "messages": requestJson
+    }));
+    try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + document.getElementById("api-key").value,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "model": model,
+                "messages": requestJson
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`);
+        }
+        ORjson = await response.json();
+
+    } catch (error) {
+        console.error("Error fetching from OpenRouter API:", error.message);
+        return undefined;
+    }
+  return ORjson;
 }
 
 /**
