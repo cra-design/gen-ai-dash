@@ -1,7 +1,3 @@
-// Global variables to store the binary contents of the uploaded DOCX files
-let englishDocxData = null;
-let frenchDocxData = null;
-
 // Grab DOM elements for English & French input, errors, and download link
 const englishFileInput = document.getElementById("english-file");
 const frenchFileInput = document.getElementById("french-file");
@@ -9,7 +5,11 @@ const frenchTextarea = document.getElementById("french-text");
 const frenchFileContainer = document.getElementById("french-file-container");
 const frenchTextareaContainer = document.getElementById("french-textarea-container");
 const submitBtn = document.getElementById("submit-btn");
-const downloadLink = document.getElementById("downloadLink");
+const downloadLink = document.getElementById("downloadLink"); 
+
+// Global variables to store the binary contents of the uploaded DOCX files
+let englishDocxData = null;
+let frenchDocxData = null;
 
 // Radio button logic: toggle display of French text area or file upload field
 const radioOptions = document.getElementsByName("french-input-option");
