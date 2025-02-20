@@ -1,26 +1,32 @@
-
 document.addEventListener("DOMContentLoaded", function () {
-    const apiKeyContainer = document.getElementById("api-key-container");
-    const apiKeyInput = document.getElementById("api-key");
-    const apiKeySubmitBtn = document.getElementById("api-key-submit-btn");
-    const documentUploadContainer = document.getElementById("document-upload-container");
+    // Selecting elements based on your provided HTML
+    const apiKeyEntry = document.getElementById("api-key-entry"); // API key section
+    const apiKeyInput = document.getElementById("api-key"); // Input field
+    const apiKeySubmitBtn = document.getElementById("api-key-submit-btn"); // Submit button
+    const documentUploadContainer = document.getElementById("document-upload-container"); // Upload section
 
-    // Ensure the API Key input is always shown first
-    apiKeyContainer.style.display = "block";
+    // Ensure elements exist before proceeding
+    if (!apiKeyEntry || !apiKeyInput || !apiKeySubmitBtn || !documentUploadContainer) {
+        console.error("One or more required elements are missing. Check your HTML structure.");
+        return; // Stop execution if elements are missing
+    }
+
+    // Show API key input section first, hide document upload section
+    apiKeyEntry.style.display = "block";
     documentUploadContainer.style.display = "none";
 
-    // Remove any previously stored API key to force users to enter it every time
+    // Ensure API key is not stored persistently (forces re-entry each time)
     sessionStorage.removeItem("openRouterApiKey");
 
-    // API Key Submission Handling
+    // Handle API Key submission
     apiKeySubmitBtn.addEventListener("click", function () {
         const apiKey = apiKeyInput.value.trim();
         if (apiKey) {
-            // Store API key temporarily for the session (optional, can be removed)
+            // Temporarily store API key for this session (not persistent)
             sessionStorage.setItem("openRouterApiKey", apiKey);
 
-            // Hide API key input and show the upload screen
-            apiKeyContainer.style.display = "none";
+            // Hide API key entry section and show document upload section
+            apiKeyEntry.style.display = "none";
             documentUploadContainer.style.display = "block";
         } else {
             alert("Please enter a valid API key.");
