@@ -1,34 +1,33 @@
 
 document.addEventListener("DOMContentLoaded", function () {
+    const apiKeyContainer = document.getElementById("api-key-container");
     const apiKeyInput = document.getElementById("api-key");
     const apiKeySubmitBtn = document.getElementById("api-key-submit-btn");
     const documentUploadContainer = document.getElementById("document-upload-container");
 
-    // Ensure document upload section is hidden initially
-    documentUploadContainer.classList.add("hidden");
+    // Ensure the API Key input is always shown first
+    apiKeyContainer.style.display = "block";
+    documentUploadContainer.style.display = "none";
+
+    // Remove any previously stored API key to force users to enter it every time
+    sessionStorage.removeItem("openRouterApiKey");
 
     // API Key Submission Handling
     apiKeySubmitBtn.addEventListener("click", function () {
         const apiKey = apiKeyInput.value.trim();
         if (apiKey) {
-            localStorage.setItem("openRouterApiKey", apiKey);
-            apiKeyInput.disabled = true;
-            apiKeySubmitBtn.disabled = true;
-            documentUploadContainer.classList.remove("hidden");
+            // Store API key temporarily for the session (optional, can be removed)
+            sessionStorage.setItem("openRouterApiKey", apiKey);
+
+            // Hide API key input and show the upload screen
+            apiKeyContainer.style.display = "none";
+            documentUploadContainer.style.display = "block";
         } else {
             alert("Please enter a valid API key.");
         }
     });
-
-    // Load stored API key if available
-    const storedApiKey = localStorage.getItem("openRouterApiKey");
-    if (storedApiKey) {
-        apiKeyInput.value = storedApiKey;
-        apiKeyInput.disabled = true;
-        apiKeySubmitBtn.disabled = true;
-        documentUploadContainer.classList.remove("hidden");
-    }
 });
+
 
 // Grab DOM elements for English & French input, errors, and download link
 const englishFileInput = document.getElementById("english-file");
