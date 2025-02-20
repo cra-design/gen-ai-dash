@@ -117,7 +117,7 @@ submitBtn.addEventListener("click", async () => {
     // 5. Retrieve all <w:t> nodes (text elements) from both documents
     const enTextNodes = enDoc.getElementsByTagName("w:t");
     const frTextNodes = frDoc.getElementsByTagName("w:t");
-    
+    console.log(frTextNodes);
     // 6. Replace text content: perform a 1:1 replacement so that all formatting (bullets,
     //    numbering, bold, italic, etc.) in the English DOCX is retained.
     const loopLength = Math.min(enTextNodes.length, frTextNodes.length);
