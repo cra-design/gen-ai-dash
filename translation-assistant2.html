@@ -223,7 +223,7 @@
                                   <p>Before we start, add an openrouter API key to make your requests.</p>
                                   <fieldset style="margin-bottom:20px;">
                                     <legend>OpenRouter API key</legend>
-                                    <input id="api-key" type="text"></span>
+                                    <input id="api-key" type="text" required placeholder="Enter OpenRouter API Key">
                                     <button id="api-key-submit-btn" style="margin-top: 20px">Submit</button>
                                   </fieldset>
 
@@ -245,7 +245,7 @@
                                 </div>
 	 <!-- END API Key Entry Section --> 
 
-  <div id="document-upload-container">
+  <div id="document-upload-container" class="hidden">
     <!-- Section 1: English Document Upload -->
    <fieldset>
         <legend>Upload the English Word Document</legend>
@@ -277,7 +277,7 @@
 
     <!-- French File Upload (Initially Hidden) -->
      <div id="french-file-container" style="display:none;">
-          <input type="file" id="french-file" name="french-file" accept=".docx">
+          <input type="file" id="french-file" accept=".docx">
           <p id="french-error" style="color: red; display: none;">Only .docx files are allowed.</p>
         </div>
       </fieldset>
