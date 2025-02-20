@@ -130,7 +130,7 @@ submitBtn.addEventListener("click", async () => {
     let requestJson = { messages: [systemGeneral, systemTask, userContent, userData] };
 
     // Send it to the GenAI API – this function should be implemented to call your GenAI endpoint.
-    let ORjson = await getORData(model, requestJson);
+    let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
     let aiResponse = ORjson.choices[0].message.content;
     let formattedText = formatAIResponse(aiResponse);
     console.log("Formatted document.xml from GenAI:", formattedText);
