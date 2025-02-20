@@ -194,7 +194,8 @@ submitBtn.addEventListener("click", async () => {
 // Function to send request to OpenRouter API
 async function getORData(model, requestJson) {
   let ORjson;
-  const apiKey = getApiKey();
+  const apiKey = getApiKey(); 
+ console.log("Sending API request with:", JSON.stringify(requestJson, null, 2));
 
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
