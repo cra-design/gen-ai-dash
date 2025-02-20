@@ -130,7 +130,7 @@ submitBtn.addEventListener("click", async () => {
     let requestJson = { messages: [systemGeneral, systemTask, userContent, userData] };
 
     // Send it to the GenAI API – this function should be implemented to call your GenAI endpoint.
-    let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
+    let ORjson = await getORData("openai/gpt-4", requestJson);
     let aiResponse = ORjson.choices[0].message.content;
     let formattedText = formatAIResponse(aiResponse);
     console.log("Formatted document.xml from GenAI:", formattedText);
@@ -229,7 +229,8 @@ async function getORData(model, requestJson) {
   // Example: using fetch to send the request to your API endpoint.
   // Note: In production, ensure your API key and URL are handled securely.
   const response = await fetch("https://gemini.google.com/app?hl=en-IN", {
-    method: "POST",
+    method: "POST", 
+    
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ model: model, messages: requestJson.messages })
   });
