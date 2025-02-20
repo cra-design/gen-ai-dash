@@ -228,7 +228,7 @@ function escapeXml(str) {
 async function getORData(model, requestJson) {
   // Example: using fetch to send the request to your API endpoint.
   // Note: In production, ensure your API key and URL are handled securely.
-  const response = await fetch("https://api.example.com/genai", {
+  const response = await fetch("https://gemini.google.com/app?hl=en-IN", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ model: model, messages: requestJson.messages })
