@@ -107,9 +107,8 @@ submitBtn.addEventListener("click", async () => {
     } else {
       // Generate minimal DOCX XML from pasted French text (each newline becomes a paragraph)
       frDocumentXml = generateSimpleDocXml(frenchTextData);
-      console.log(frDocumentXml);
     }
-    
+    console.log(frDocumentXml);
     // 4. Parse both XML strings into DOM objects
     const parser = new DOMParser();
     const enDoc = parser.parseFromString(enDocumentXml, "application/xml");
