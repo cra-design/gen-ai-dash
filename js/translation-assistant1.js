@@ -98,7 +98,7 @@ submitBtn.addEventListener("click", async () => {
     const zipEN = new PizZip(englishDocxData);
     // 2. Extract the main document.xml (contains the document’s text and formatting)
     let enDocumentXml = zipEN.file("word/document.xml").asText();
-    
+    console.log(enDocumentXml);
     // 3. Get French document XML either from the uploaded French DOCX or from the pasted text
     let frDocumentXml = null;
     if (frenchContentMode === "file") {
