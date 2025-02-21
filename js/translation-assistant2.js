@@ -182,9 +182,14 @@ submitBtn.addEventListener("click", async () => {
     let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
     if (!ORjson) return;
 
-    let aiResponse = ORjson.choices[0]?.message?.content || "";
+    let aiResponse = ORjson.choices[0]?.message?.content || "";  
+    // DEBUGGING: Log raw AI response before processing
+    console.log("Raw AI Response (Before Formatting):", aiResponse); 
+   
+    
     let formattedText = formatAIResponse(aiResponse);  
-    console.log("Original English DOCX XML:", formattedText);
+     // DEBUGGING: Log formatted XML before inserting into DOCX
+    console.log("Formatted XML Output Before DOCX Save:", formattedText);
 
     zipEN.file("word/document.xml", formattedText);
     zipEN.file("word/_rels/document.xml.rels", enDocumentRels);
