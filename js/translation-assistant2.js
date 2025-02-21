@@ -171,7 +171,7 @@ submitBtn.addEventListener("click", async () => {
             generateSimpleDocXml(frenchTextData); 
     let requestJson = {
     messages: [
-        { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting, including XML namespaces and attributes." },
+        { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting, including XML namespaces and attributes. Return only valid XML. Do not add any text outside the XML. Do not add code blocks or backticks" },
         { role: "system", content: "Do not remove or modify any XML tags. Only replace text inside <w:t> tags while keeping the structure unchanged." },
         { role: "user", content: "English DOCX XML: " + escapeXML(enDocumentXml) },
         { role: "user", content: "French content: " + escapeXML(frDocumentXml) }
@@ -268,11 +268,18 @@ function hideError(elementId) {
   if (el) {
     el.style.display = "none";
   }
-}
+} 
 
+function removeCodeFences(str) {
+  // This removes any leading or trailing triple-backtick fences
+  return str
+    .replace(/^```[a-zA-Z]*\s*/, '') // remove starting ``` optionally with language
+    .replace(/```$/, '')             // remove ending ```
+    .trim();
+}
 function formatAIResponse(aiResponse) {
-    let formattedText = aiResponse ? aiResponse.trim() : "";
-    
+    if (!aiResponse) return "";
+    let raw = removeCodeFences(aiResponse);
     // Ensure AI response starts with valid XML declaration
     if (!formattedText.startsWith('<?xml')) {
         console.error("Invalid AI response: XML format is incorrect.");
@@ -287,7 +294,7 @@ function formatAIResponse(aiResponse) {
         return "";
     }
 
-    return formattedText;
+    return raw.trim();
 }
 
 
