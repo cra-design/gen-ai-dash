@@ -155,7 +155,8 @@ submitBtn.addEventListener("click", async () => {
   try {
     // Open the English DOCX using PizZip
     const zipEN = new PizZip(englishDocxData);
-    let enDocumentXml = zipEN.file("word/document.xml").asText(); 
+    let enDocumentXml = zipEN.file("word/document.xml").asText();  
+     console.log("Original English DOCX XML:", enDocumentXml);
     let enDocumentRels = zipEN.file("word/_rels/document.xml.rels").asText();
     if (!enDocumentRels) {
     console.error("Missing relationships file (_rels/document.xml.rels)");
