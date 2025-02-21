@@ -281,14 +281,14 @@ function formatAIResponse(aiResponse) {
     if (!aiResponse) return "";
     let raw = removeCodeFences(aiResponse);
     // Ensure AI response starts with valid XML declaration
-    if (!formattedText.startsWith('<?xml')) {
+    if (!raw.startsWith('<?xml')) {
         console.error("Invalid AI response: XML format is incorrect.");
         alert("The AI response is not in the correct XML format.");
         return "";
     }
 
     // Ensure all Word document tags are properly closed
-    if (!formattedText.includes("</w:document>")) {
+    if (!raw.includes("</w:document>")) {
         console.error("Invalid AI response: Missing closing </w:document> tag.");
         alert("The AI response is missing required XML structure.");
         return "";
