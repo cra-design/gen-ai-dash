@@ -183,7 +183,8 @@ submitBtn.addEventListener("click", async () => {
     if (!ORjson) return;
 
     let aiResponse = ORjson.choices[0]?.message?.content || "";
-    let formattedText = formatAIResponse(aiResponse); 
+    let formattedText = formatAIResponse(aiResponse);  
+    console.log("Original English DOCX XML:", formattedText);
 
     zipEN.file("word/document.xml", formattedText);
     zipEN.file("word/_rels/document.xml.rels", enDocumentRels);
