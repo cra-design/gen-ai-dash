@@ -1,10 +1,3 @@
-function removeCodeFences(str) {
-  // This removes any leading or trailing triple-backtick fences
-  return str
-    .replace(/^```[a-zA-Z]*\s*/, '') // remove starting ``` optionally with language
-    .replace(/```$/, '')             // remove ending ```
-    .trim();
-}
 document.addEventListener("DOMContentLoaded", function () {
     // Selecting elements based on your provided HTML
     const apiKeyEntry = document.getElementById("api-key-entry"); // API key section
