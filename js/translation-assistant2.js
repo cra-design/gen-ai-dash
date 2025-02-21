@@ -183,13 +183,12 @@ submitBtn.addEventListener("click", async () => {
     if (!ORjson) return;
 
     let aiResponse = ORjson.choices[0]?.message?.content || "";  
-    // DEBUGGING: Log raw AI response before processing
-    console.log("Raw AI Response (Before Formatting):", aiResponse); 
    
     
     let formattedText = formatAIResponse(aiResponse);  
-     // DEBUGGING: Log formatted XML before inserting into DOCX
-    console.log("Formatted XML Output Before DOCX Save:", formattedText);
+    if (!formattedText) {
+      // If formatting failed, we stop here.
+      return;}
 
     zipEN.file("word/document.xml", formattedText);
     zipEN.file("word/_rels/document.xml.rels", enDocumentRels);
