@@ -294,7 +294,8 @@ function formatAIResponse(aiResponse) {
         return "";
     }
 
-    return raw.trim();
+    let formattedText = raw.trim();
+    return formattedText;
 }
 
 
