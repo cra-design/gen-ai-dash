@@ -160,7 +160,7 @@ submitBtn.addEventListener("click", async () => {
     }
 
     // Select AI model (default: GPT-4)
-    let model = "google/gemini-2.0-flash-lite-preview-02-05:free";
+    let model = "google/gemini-2.0-flash-exp:free";
     let requestJson = {
       messages: [
         { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting." },
@@ -172,7 +172,7 @@ submitBtn.addEventListener("click", async () => {
     };
 
     // Send request to AI
-    let ORjson = await getORData(model, requestJson);
+    let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
     if (!ORjson) return;
 
     let aiResponse = ORjson.choices[0]?.message?.content || "";
