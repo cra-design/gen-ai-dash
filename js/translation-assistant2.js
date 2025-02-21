@@ -178,7 +178,7 @@ submitBtn.addEventListener("click", async () => {
             generateSimpleDocXml(frenchTextData); 
     let requestJson = {
     messages: [
-        { role: "system", content: ""You are a DOCX formatting assistant. Preserve all formatting, including XML namespaces and attributes. Return only valid XML. Do not add any text outside the XML. Do not add code blocks or backticks." },
+        { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting, including XML namespaces and attributes. Return only valid XML. Do not add any text outside the XML. Do not add code blocks or backticks." },
         { role: "system", content: "Do not remove or modify any XML tags except for the text inside <w:t>. Only replace the English text inside <w:t> tags with the given French text." },
         { role: "user", content: "English DOCX XML: " + escapeXML(enDocumentXml) },
         { role: "user", content: "French content: " + escapeXML(frDocumentXml) }
