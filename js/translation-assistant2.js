@@ -5,12 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const apiKeySubmitBtn = document.getElementById("api-key-submit-btn"); // Submit button
     const documentUploadContainer = document.getElementById("document-upload-container"); // Upload section
 
-    // Ensure elements exist before proceeding
-   // if (!apiKeyEntry || !apiKeyInput || !apiKeySubmitBtn || !documentUploadContainer) {
-        //console.error("One or more required elements are missing. Check your HTML structure.");
-       // return; // Stop execution if elements are missing
-    //}
-
     // Show API key input section first, hide document upload section
     apiKeyEntry.style.display = "block";
     documentUploadContainer.style.display = "none";
@@ -107,6 +101,19 @@ function escapeXML(xml) {
               .replace(/>/g, "&gt;")
               .replace(/"/g, "&quot;")
               .replace(/'/g, "&apos;");
+} 
+// Function to generate simple DOCX XML if using textarea input
+function generateSimpleDocXml(text) {
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+      <w:body>
+        <w:p>
+          <w:r>
+            <w:t>${escapeXML(text)}</w:t>
+          </w:r>
+        </w:p>
+      </w:body>
+    </w:document>`;
 }
 // Submit button logic: process files and replace English text with French text using AI
 submitBtn.addEventListener("click", async () => {
@@ -148,50 +155,44 @@ submitBtn.addEventListener("click", async () => {
   try {
     // Open the English DOCX using PizZip
     const zipEN = new PizZip(englishDocxData);
-    let enDocumentXml = zipEN.file("word/document.xml").asText();
+    let enDocumentXml = zipEN.file("word/document.xml").asText(); 
+    let enDocumentRels = zipEN.file("word/_rels/document.xml.rels").asText();
 
-    // Get French document XML from uploaded DOCX or text area
-    let frDocumentXml = null;
-    if (frenchContentMode === "file") {
-      const zipFR = new PizZip(frenchDocxData);
-      frDocumentXml = zipFR.file("word/document.xml").asText();
-    } else {
-      frDocumentXml = generateSimpleDocXml(frenchTextData);
-    }
-
-    // Select AI model (default: GPT-4)
-    let model = "google/gemini-2.0-flash-exp:free";
+    let frDocumentXml = frenchContentMode === "file" ? 
+            new PizZip(frenchDocxData).file("word/document.xml").asText() : 
+            generateSimpleDocXml(frenchTextData); 
     let requestJson = {
-      messages: [
-        { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting." },
-        { role: "system", content: "Replace the English text with the following French content while keeping the XML structure intact." },
-        { role: "user", content: "English DOCX XML: " + escapeXML(enDocumentXml) },
-        { role: "user", content: "French content: " + (frenchContentMode === "textarea" ? escapeXML(frenchTextData) : escapeXML(extractFrenchText(frDocumentXml))) }
-
-      ]
-    };
+            messages: [
+                { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting." },
+                { role: "system", content: "Replace the English text with the following French content while keeping the XML structure intact." },
+                { role: "user", content: "English DOCX XML: " + escapeXML(enDocumentXml) },
+                { role: "user", content: "French content: " + escapeXML(frDocumentXml) }
+            ]
+        };
 
     // Send request to AI
     let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
     if (!ORjson) return;
 
     let aiResponse = ORjson.choices[0]?.message?.content || "";
-    let formattedText = formatAIResponse(aiResponse);
+    let formattedText = formatAIResponse(aiResponse); 
 
-    if (!formattedText) {
-      alert("AI response was empty or invalid.");
-      return;
-    }
-
-    // Replace content in DOCX and create download link
     zipEN.file("word/document.xml", formattedText);
-    const newDocxBlob = zipEN.generate({ type: "blob" });
+    zipEN.file("word/_rels/document.xml.rels", enDocumentRels);
+
+     let contentTypes = zipEN.file("[Content_Types].xml")?.asText();
+        if (!contentTypes.includes("word/document.xml")) {
+            contentTypes = contentTypes.replace("</Types>", 
+            `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`);
+        }
+        zipEN.file("[Content_Types].xml", contentTypes); 
+      
+    const newDocxBlob = zipEN.generate({ type: "blob", compression: "DEFLATE" });
     const newDocUrl = URL.createObjectURL(newDocxBlob);
     downloadLink.href = newDocUrl;
     downloadLink.download = "french-translated.docx";
     downloadLink.style.display = "inline";
     downloadLink.textContent = "Download Formatted French Document";
-
     alert("Success! Your formatted French DOCX is ready to download.");
   } catch (error) {
     console.error("Error during DOCX processing:", error);
@@ -202,9 +203,8 @@ submitBtn.addEventListener("click", async () => {
 
 // Function to send request to OpenRouter API
 async function getORData(model, requestJson) {
-  let ORjson;
   const apiKey = getApiKey(); 
- console.log("Sending API request with:", JSON.stringify(requestJson, null, 2));
+  console.log("Sending API request:", requestJson);
 
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
