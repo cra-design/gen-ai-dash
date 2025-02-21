@@ -212,13 +212,15 @@ async function getORData(model, requestJson) {
       headers: {
         "Authorization": "Bearer " + apiKey,
         "Content-Type": "application/json"
-      },
+      }, 
       body: JSON.stringify({
         "model": model,
         "messages": requestJson.messages
-      })
+      }) 
+   
     });
-
+    console.log("API Response Status:", response.status); // Debugging line 
+      
     if (!response.ok) {
       throw new Error(`Response status: ${response.status} - ${response.statusText}`);
     }
