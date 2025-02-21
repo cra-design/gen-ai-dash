@@ -157,18 +157,25 @@ submitBtn.addEventListener("click", async () => {
     const zipEN = new PizZip(englishDocxData);
     let enDocumentXml = zipEN.file("word/document.xml").asText(); 
     let enDocumentRels = zipEN.file("word/_rels/document.xml.rels").asText();
+    if (!enDocumentRels) {
+    console.error("Missing relationships file (_rels/document.xml.rels)");
+    alert("Invalid DOCX: Missing relationships file.");
+    return;
+    }
 
+   // Preserve _rels/document.xml.rels
+    zipEN.file("word/_rels/document.xml.rels", enDocumentRels);
     let frDocumentXml = frenchContentMode === "file" ? 
             new PizZip(frenchDocxData).file("word/document.xml").asText() : 
             generateSimpleDocXml(frenchTextData); 
     let requestJson = {
-            messages: [
-                { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting." },
-                { role: "system", content: "Replace the English text with the following French content while keeping the XML structure intact." },
-                { role: "user", content: "English DOCX XML: " + escapeXML(enDocumentXml) },
-                { role: "user", content: "French content: " + escapeXML(frDocumentXml) }
-            ]
-        };
+    messages: [
+        { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting, including XML namespaces and attributes." },
+        { role: "system", content: "Do not remove or modify any XML tags. Only replace text inside <w:t> tags while keeping the structure unchanged." },
+        { role: "user", content: "English DOCX XML: " + escapeXML(enDocumentXml) },
+        { role: "user", content: "French content: " + escapeXML(frDocumentXml) }
+              ]
+       };
 
     // Send request to AI
     let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
@@ -181,11 +188,11 @@ submitBtn.addEventListener("click", async () => {
     zipEN.file("word/_rels/document.xml.rels", enDocumentRels);
 
      let contentTypes = zipEN.file("[Content_Types].xml")?.asText();
-        if (!contentTypes.includes("word/document.xml")) {
-            contentTypes = contentTypes.replace("</Types>", 
-            `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`);
-        }
-        zipEN.file("[Content_Types].xml", contentTypes); 
+         if (!contentTypes.includes("word/document.xml")) {
+        contentTypes = contentTypes.replace("</Types>", 
+    `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`);
+    }
+    zipEN.file("[Content_Types].xml", contentTypes);
       
     const newDocxBlob = zipEN.generate({ type: "blob", compression: "DEFLATE" });
     const newDocUrl = URL.createObjectURL(newDocxBlob);
@@ -257,8 +264,25 @@ function hideError(elementId) {
 }
 
 function formatAIResponse(aiResponse) {
-  return aiResponse ? aiResponse.trim() : "";
+    let formattedText = aiResponse ? aiResponse.trim() : "";
+    
+    // Ensure AI response starts with valid XML declaration
+    if (!formattedText.startsWith('<?xml')) {
+        console.error("Invalid AI response: XML format is incorrect.");
+        alert("The AI response is not in the correct XML format.");
+        return "";
+    }
+
+    // Ensure all Word document tags are properly closed
+    if (!formattedText.includes("</w:document>")) {
+        console.error("Invalid AI response: Missing closing </w:document> tag.");
+        alert("The AI response is missing required XML structure.");
+        return "";
+    }
+
+    return formattedText;
 }
+
 
 function extractFrenchText(docXml) {
   const parser = new DOMParser();
