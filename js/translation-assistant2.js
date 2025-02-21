@@ -98,8 +98,16 @@ handleFileInput(frenchFileInput, "french-error", "french");
 // Ensure OpenRouter API Key is provided
 function getApiKey() {
   return document.getElementById("api-key").value.trim();
-}
+} 
 
+// Function to escape XML special characters to prevent API errors
+function escapeXML(xml) {
+    return xml.replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&apos;");
+}
 // Submit button logic: process files and replace English text with French text using AI
 submitBtn.addEventListener("click", async () => {
   // Ensure API Key is present
@@ -157,8 +165,9 @@ submitBtn.addEventListener("click", async () => {
       messages: [
         { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting." },
         { role: "system", content: "Replace the English text with the following French content while keeping the XML structure intact." },
-        { role: "user", content: "English DOCX XML: " + enDocumentXml },
-        { role: "user", content: "French content: " + (frenchContentMode === "textarea" ? frenchTextData : extractFrenchText(frDocumentXml)) }
+        { role: "user", content: "English DOCX XML: " + escapeXML(enDocumentXml) },
+        { role: "user", content: "French content: " + (frenchContentMode === "textarea" ? escapeXML(frenchTextData) : escapeXML(extractFrenchText(frDocumentXml))) }
+
       ]
     };
 
@@ -206,7 +215,7 @@ async function getORData(model, requestJson) {
       },
       body: JSON.stringify({
         "model": model,
-        "messages": requestJson
+        "messages": requestJson.messages
       })
     });
 
