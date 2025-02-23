@@ -260,6 +260,9 @@ function updateLinks(queryString) {
             // Remove any existing key parameter
             href = href.replace(/([?&])key=[^&#]*/, '');
 
+            // Remove any trailing ? or & if they exist
+            href = href.replace(/[?&]$/, '');
+
             // Check if the link already has query parameters
             if (href.indexOf('?') > -1) {
                 href += '&' + queryString;
@@ -271,6 +274,7 @@ function updateLinks(queryString) {
         }
     });
 }
+
 
 
 // Function to update URL without reloading the page
