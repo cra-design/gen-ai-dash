@@ -252,36 +252,40 @@ function getUrlParameter(name) {
 
 // Function to update all relative links with the new query string
 function updateLinks(queryString) {
-  $('a[href^="/"], a[href^="./"], a[href^="../"], a[href^="#"]').each(function() {
-      var href = $(this).attr('href');
+    $('a[href]').each(function() {
+        var href = $(this).attr('href');
 
-      // Remove any existing key parameter
-      href = href.replace(/([?&])key=[^&#]*/, '');
+        // Check if the link is a relative URL (does not start with http, https, mailto, tel, or #)
+        if (!href.match(/^(https?:|mailto:|tel:|#)/)) {
+            // Remove any existing key parameter
+            href = href.replace(/([?&])key=[^&#]*/, '');
 
-      // Check if the link already has query parameters
-      if (href.indexOf('?') > -1) {
-          href += '&' + queryString;
-      } else {
-          href += '?' + queryString;
-      }
+            // Check if the link already has query parameters
+            if (href.indexOf('?') > -1) {
+                href += '&' + queryString;
+            } else {
+                href += '?' + queryString;
+            }
 
-      $(this).attr('href', href);
-  });
+            $(this).attr('href', href);
+        }
+    });
 }
 
+
 // Function to update URL without reloading the page
-    function updateUrlParameter(param, value) {
-        var baseUrl = window.location.pathname;
-        var urlParams = new URLSearchParams(window.location.search);
-        // Update or set the parameter
-        urlParams.set(param, value);
-        // Construct the new URL
-        var newUrl = baseUrl + '?' + urlParams.toString();
-        // Update the browser's URL without refreshing
-        window.history.replaceState(null, '', newUrl);
-        // Return the new query string
-        return urlParams.toString();
-    }
+function updateUrlParameter(param, value) {
+    var baseUrl = window.location.pathname;
+    var urlParams = new URLSearchParams(window.location.search);
+    // Update or set the parameter
+    urlParams.set(param, value);
+    // Construct the new URL
+    var newUrl = baseUrl + '?' + urlParams.toString();
+    // Update the browser's URL without refreshing
+    window.history.replaceState(null, '', newUrl);
+    // Return the new query string
+    return urlParams.toString();
+}
 
 // // Example usage:
 // let text = "Your long document content goes here...";
