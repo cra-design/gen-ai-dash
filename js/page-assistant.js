@@ -68,7 +68,7 @@ $(document).ready(function() {
       }
   });
 
-  $("#url-upload-btn").click(function(){
+  $("#url-upload-btn").click(async function(){
     $('#upload-chooser').addClass("hidden");
     $('#url-upload-input').addClass("hidden");
     $('#url-upload-preview').removeClass("hidden");
@@ -113,16 +113,13 @@ $(document).ready(function() {
               alert('Failed to fetch the webpage. Check the console for details.');
               return;
           }
-          console.log(html);
           // Extract fields from the HTML
           const fields = extractFields(html);
           // Render results to the page
           renderHTMLFields(html, fields);
           //Process HTML to replace header/footer
-          applySimpleHtmlTemplate(html);
-          console.log(html);
-          applyCanadaHtmlTemplate(html);
-          console.log(html);
+          html = await applySimpleHtmlTemplate(html);
+          html = await applyCanadaHtmlTemplate(html);
           // Insert the processed HTML into the iframe
           refreshIframe("url-frame", html);
       });
