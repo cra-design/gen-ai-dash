@@ -113,13 +113,16 @@ $(document).ready(function() {
               alert('Failed to fetch the webpage. Check the console for details.');
               return;
           }
+          console.log(html);
           // Extract fields from the HTML
           const fields = extractFields(html);
           // Render results to the page
           renderHTMLFields(html, fields);
           //Process HTML to replace header/footer
           applySimpleHtmlTemplate(html);
+          console.log(html);
           applyCanadaHtmlTemplate(html);
+          console.log(html);
           // Insert the processed HTML into the iframe
           refreshIframe("url-frame", html);
       });
