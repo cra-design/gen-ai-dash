@@ -297,3 +297,21 @@ function updateUrlParameter(param, value) {
 // let chunks = chunkText(text, maxTokens);
 //
 // console.log(chunks);
+
+function refreshIframe(id, html) {
+  // Insert the processed HTML into the iframe
+  let iframe = document.getElementById(id);
+  if (iframe) {
+    let iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(html);
+    iframeDoc.close();
+  } else {
+    console.error("Iframe with id " + id + " not found.");
+    hideAllSpinners(); // Consolidated UI hiding
+  }
+}
+
+function hideAllSpinners() {
+  $(".spinner").closest('div').addClass("hidden");
+}

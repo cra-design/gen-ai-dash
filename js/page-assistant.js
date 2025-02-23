@@ -33,11 +33,7 @@ $(document).ready(function() {
 
   $("#code-refresh-button").click(function(){
     let rawCode = getRawCodeFromHighlighted($('#fullHtml code'));
-    console.log(rawCode);
-    let preview = $("#url-frame")[0].contentDocument || $("#url-frame")[0].contentWindow.document;
-    preview.open();
-    preview.write(rawCode);
-    preview.close();
+    refreshIframe("url-frame", rawCode);
   });
 
   $("#code-copy-button").click(function(){
@@ -90,7 +86,7 @@ $(document).ready(function() {
     }
     const urlInput = new URL($('#url-input').val());
     // Currently configuring it to specific github organizations:
-    if (urlInput.host == "www.canada.ca" || urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
+    if (urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
       $("#url-frame").attr("src", urlInput.href);
       $("#url-frame").removeClass("hidden");
       $("#genai-upload-msg").addClass("hidden");
@@ -107,29 +103,26 @@ $(document).ready(function() {
           // Render results to the page
           renderHTMLFields(html, fields);
       });
-    // } else if (urlInput.host == "www.canada.ca") { //canada.ca link
-    //   $("#url-frame").attr("src", urlInput.href);
-    //   $("#url-frame").removeClass("hidden");
-    //   $("#genai-upload-msg").addClass("hidden");
-    //   $("#genai-task-options").removeClass("hidden");
-    //   parsePageHTML(urlInput.href, function (err, html) {
-    //       if (err) {
-    //           console.error('Failed to fetch the webpage:', err);
-    //           alert('Failed to fetch the webpage. Check the console for details.');
-    //           return;
-    //       }
-    //       // Extract fields from the HTML
-    //       const fields = extractFields(html);
-    //       // Render results to the page
-    //       renderHTMLFields(html, fields);
-    //   });
-    //   //Maybe we can implement a iframe render of the HTML code for the canada.ca pages?
-    //
-    //
-    //
-    //   // //unhide Canada.ca not yet supported message
-    //   // $("#canada-ca-msg").removeClass("hidden");
-    //   // $('#url-upload-input').removeClass("hidden");
+    } else if (urlInput.host == "www.canada.ca") { //canada.ca link
+      $("#url-frame").removeClass("hidden");
+      $("#genai-upload-msg").addClass("hidden");
+      $("#genai-task-options").removeClass("hidden");
+      parsePageHTML(urlInput.href, function (err, html) {
+          if (err) {
+              console.error('Failed to fetch the webpage:', err);
+              alert('Failed to fetch the webpage. Check the console for details.');
+              return;
+          }
+          // Extract fields from the HTML
+          const fields = extractFields(html);
+          // Render results to the page
+          renderHTMLFields(html, fields);
+          //Process HTML to replace header/footer
+          applySimpleHtmlTemplate(html);
+          applyCanadaHtmlTemplate(html);
+          // Insert the processed HTML into the iframe
+          refreshIframe("url-frame", html);
+      });
     } else { //unsupported site
       //unhide unsupported site message
       $("#other-site-msg").removeClass("hidden");
@@ -480,7 +473,69 @@ function loadTemplate(filePath, targetSelector) {
 }
 
 async function RefineSyntax(extractedHtml) {
-	console.log(extractedHtml);
+  //Part 1: Get simple templates
+  extractedHtml = await applySimpleHtmlTemplate(extractedHtml);
+  let formattedAIHTML = "";
+  let aiWordResponse = ""; // Default to extractedHtml in case API isn't used
+  if (!$('#doc-exact-syntax').is(':checked') || $("#html").prop("checked")) {
+    try {
+      // Define the HTML header and footer
+      let systemWord = { role: "system", content: "" }
+      systemWord.content = await $.get("custom-instructions/system/semantic-html-rewrite.txt");
+      let userWord = { role: "user", content: extractedHtml }
+      // Create the JSON with the prompt and instructions
+      let requestJson = [systemWord, userWord];
+      // Send it to the API
+      let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
+      aiWordResponse = ORjson.choices[0].message.content.trim();
+    } catch (error) {
+      console.error('Error fetching enhanced HTML syntax from GenAI:', error);
+      hideAllSpinners();
+    }
+	  if ($("#html").prop("checked")) {
+		//We need to reassign the aiWordResponse to the basic text for content upload, since there is no mammoth version
+		extractedHtml = aiWordResponse;
+		//From now on, treat #html as the same thing as doc-exact-syntax checked
+	  }
+  }
+  if (!$('#doc-basic-html').is(':checked') && !$('#html-basic-html').is(':checked')) {
+    extractedHtml = await applyCanadaHtmlTemplate(extractedHtml);
+    if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
+      aiWordResponse = await applyCanadaHtmlTemplate(aiWordResponse);
+    }
+  }
+  //For Rosa to merge with other trimming function
+  let trimmedHtml = extractedHtml
+    .replace(/^```|```$/g, '')
+    .replace(/^html/, '');
+  let formattedHTML = formatHTML(trimmedHtml);
+  if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
+    let trimmedAIHtml = aiWordResponse
+      .replace(/^```|```$/g, '')
+      .replace(/^html/, '');
+    formattedAIHTML = formatHTML(trimmedAIHtml);
+  }
+  refreshIframe("url-frame", formattedHTML);
+  if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
+    refreshIframe("url-frame-2", formattedAIHTML);
+  }
+  toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
+  $('#iframe-toolbox-A').removeClass('hidden');
+  $('#iframe-toolbox-B').removeClass('hidden');
+  // Show the raw HTML markup in the code tab
+  $("#fullHtml code").text(formattedHTML);
+  // Apply syntax highlighting
+  Prism.highlightElement(document.querySelector("#fullHtml code"));
+  if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
+    $("#fullHtmlCompare code").text(formattedAIHTML);
+    Prism.highlightElement(document.querySelector("#fullHtmlCompare code"));
+    toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
+  }
+  //UI visibility updates
+  showUIAfterDocUpload();
+}
+
+async function applySimpleHtmlTemplate(extractedHtml) {
   try {
     const [headerResponse, footerResponse] = await Promise.all([
         fetch('html-templates/simple-header.html'),
@@ -495,125 +550,68 @@ async function RefineSyntax(extractedHtml) {
         headerResponse.text(),
         footerResponse.text()
     ]);
-    extractedHtml = htmlHeader + extractedHtml + htmlFooter;
-    let formattedAIHTML = "";
-    let aiWordResponse = ""; // Default to extractedHtml in case API isn't used
-    if (!$('#doc-exact-syntax').is(':checked') || $("#html").prop("checked")) {
-      // Define the HTML header and footer
-      let systemWord = { role: "system", content: "You are an expert in converting plain text into structured, semantic HTML. Only respond with html documents, never with explanations or plain text." }
-      let userWord = { role: "user", content: 'Clean up the following conversion from text into HTML ensuring it has good, clean syntax with proper headings, paragraphs, and lists where applicable: ' + extractedHtml }
-      // Create the JSON with the prompt and instructions
-      let requestJson = [systemWord, userWord];
-      // Send it to the API
-      let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
-      aiWordResponse = ORjson.choices[0].message.content.trim();
-	  if ($("#html").prop("checked")) {
-		//We need to reassign the aiWordResponse to the basic text for content upload, since there is no mammoth version
-		extractedHtml = aiWordResponse;
-		//From now on, treat #html as the same thing as doc-exact-syntax checked
-	  }
-    }
-    if (!$('#doc-basic-html').is(':checked') && !$('#html-basic-html').is(':checked')) {
-      const [headerResponse2, footerResponse2] = await Promise.all([
-          fetch('html-templates/canada-header-additions.html'),
-          fetch('html-templates/canada-footer-additions.html')
-      ]);
-      // Check if both fetch operations were successful
-      if (!headerResponse2.ok || !footerResponse2.ok) {
-          throw new Error('Failed to load new header or footer');
-      }
-      // Retrieve the text content of the responses
-      const [newHeader, newFooter] = await Promise.all([
-          headerResponse2.text(),
-          footerResponse2.text()
-      ]);
-      extractedHtml = extractedHtml
-        .replace('<main>', newHeader)
-        .replace('</main>', newFooter)
-        .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
-        .replace('<table>', '<table class="wb-tables table table-striped">');
-      if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
-        aiWordResponse = aiWordResponse
-          .replace('<main>', newHeader)
-          .replace('</main>', newFooter)
-          .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
-          .replace('<table>', '<table class="wb-tables table table-striped">');
-      }
-    }
-    let trimmedHtml = extractedHtml
-      .replace(/^```|```$/g, '')
-      .replace(/^html/, '');
-    let formattedHTML = formatHTML(trimmedHtml);
-    if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
-      let trimmedAIHtml = aiWordResponse
-        .replace(/^```|```$/g, '')
-        .replace(/^html/, '');
-      formattedAIHTML = formatHTML(trimmedAIHtml);
-    }
-    // Insert the processed HTML into the iframe
-    let iframe = document.getElementById("url-frame");
-    if (iframe) {
-      let iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-      iframeDoc.open();
-      iframeDoc.write(formattedHTML);
-      iframeDoc.close();
-    } else {
-      console.error("Iframe with id 'url-frame' not found.");
-    }
-    if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
-      let iframe2 = document.getElementById("url-frame-2");
-      if (iframe2) {
-        let iframeDoc2 = iframe2.contentDocument || iframe2.contentWindow.document;
-        iframeDoc2.open();
-        iframeDoc2.write(formattedAIHTML);
-        iframeDoc2.close();
-      } else {
-        console.error("Iframe with id 'url-frame' not found.");
-      }
-      toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
-      $('#iframe-toolbox-A').removeClass('hidden');
-      $('#iframe-toolbox-B').removeClass('hidden');
-    }
-
-    // Show the raw HTML markup in the code tab
-    $("#fullHtml code").text(formattedHTML);
-    // Apply syntax highlighting
-    Prism.highlightElement(document.querySelector("#fullHtml code"));
-    if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
-      $("#fullHtmlCompare code").text(formattedAIHTML);
-      Prism.highlightElement(document.querySelector("#fullHtmlCompare code"));
-      toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
-    }
-
-    $("#html-upload").addClass("hidden");
-    $("#html-upload-loading-spinner").addClass("hidden");
-    $("#word-upload-loading-spinner").addClass("hidden");
-    $("#upload-chooser").addClass("hidden");
-    $("#word-upload").addClass("hidden");
-    $("#word-upload-preview").addClass("hidden");
-
-    $("#url-upload").removeClass("hidden");
-    $("#url-upload-preview").removeClass("hidden");
-    $("#genai-upload-msg").addClass("hidden");
-    $("#genai-task-options").removeClass("hidden");
+    // Extract metadata fields from the original extractedHtml (if any)
+    const metadataMatches = extractedHtml.match(/<meta[^>]*>|<title[^>]*>.*?<\/title>|<link[^>]*>/g) || [];
+    const metadata = metadataMatches.join("\n");
+    // Remove content before the <h1> tag (if any)
+    extractedHtml = extractedHtml.replace(/.*?(<h1[^>]*>.*?<\/h1>)/s, '$1');
+    // Remove content after the closing </main> tag
+    extractedHtml = extractedHtml.replace(/<\/main>[\s\S]*$/, '');
+    // Replace the original header with the new one, re-inserting metadata
+    extractedHtml = htmlHeader.replace('</head>', `${metadata}</head>`) + extractedHtml + htmlFooter;
+    return extractedHtml;
   } catch (error) {
-      console.error('Error in RefineSyntax:', error);
-      $("#html-upload-loading-spinner").addClass("hidden");
-      $("#word-upload-loading-spinner").addClass("hidden");
+    console.error('Error applying simple HTML template:', error);
+    hideAllSpinners(); // Consolidated UI hiding
   }
+}
+
+async function applyCanadaHtmlTemplate(extractedHtml) {
+  try {
+    const [headerResponse2, footerResponse2] = await Promise.all([
+        fetch('html-templates/canada-header-additions.html'),
+        fetch('html-templates/canada-footer-additions.html')
+    ]);
+    // Check if both fetch operations were successful
+    if (!headerResponse2.ok || !footerResponse2.ok) {
+        throw new Error('Failed to load new header or footer');
+    }
+    // Retrieve the text content of the responses
+    const [newHeader, newFooter] = await Promise.all([
+        headerResponse2.text(),
+        footerResponse2.text()
+    ]);
+    extractedHtml = extractedHtml
+      .replace('<main>', newHeader)
+      .replace('</main>', newFooter)
+      .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
+      .replace('<table>', '<table class="wb-tables table table-striped">');
+    return extractedHtml;
+  } catch (error) {
+    console.error('Error applying Canada.ca HTML template:', error);
+    hideAllSpinners(); // Consolidated UI hiding
+  }
+}
+
+function showUIAfterDocUpload() {
+  $("#html-upload").addClass("hidden");
+  $("#html-upload-loading-spinner").addClass("hidden");
+  $("#word-upload-loading-spinner").addClass("hidden");
+  $("#upload-chooser").addClass("hidden");
+  $("#word-upload").addClass("hidden");
+  $("#word-upload-preview").addClass("hidden");
+
+  $("#url-upload").removeClass("hidden");
+  $("#url-upload-preview").removeClass("hidden");
+  $("#genai-upload-msg").addClass("hidden");
+  $("#genai-task-options").removeClass("hidden");
 }
 
 function acceptIframe(option) {
   if (option == "b") {
     //write iframe-2 to iframe + fullHtmlCompare to fullHtml
     let iframeB = $("#url-frame-2")[0].contentDocument || $("#url-frame-2")[0].contentWindow.document;
-    let iframeA = $("#url-frame")[0].contentDocument || $("#url-frame")[0].contentWindow.document;
-    if (iframeB && iframeA) {
-        // Copy content from iframe-2 to iframe
-        iframeA.open();
-        iframeA.write(iframeB.body.innerHTML);
-        iframeA.close();
-    }
+    refreshIframe("url-frame", iframeB.body.innerHTML);
 
     // Copy pre content from fullHtmlCompare to fullHtml
     let fullHtmlCompareContent = $("#fullHtmlCompare code").text();
