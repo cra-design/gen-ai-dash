@@ -112,13 +112,13 @@ $(document).ready(function() {
               alert('Failed to fetch the webpage. Check the console for details.');
               return;
           }
-          // Extract fields from the HTML
-          const fields = extractFields(html);
-          // Render results to the page
-          renderHTMLFields(html, fields);
           //Process HTML to replace header/footer
           html = await applySimpleHtmlTemplate(html);
           html = await applyCanadaHtmlTemplate(html);
+          // Extract fields from the HTML
+          const fields = extractFields(html);
+          // Render fields and page code
+          renderHTMLFields(html, fields);
           // Insert the processed HTML into the iframe
           refreshIframe("url-frame", html);
       });
