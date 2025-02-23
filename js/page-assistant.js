@@ -97,7 +97,6 @@ $(document).ready(function() {
               alert('Failed to fetch the webpage. Check the console for details.');
               return;
           }
-          console.log(html);
           // Extract fields from the HTML
           const fields = extractFields(html);
           // Render results to the page
@@ -135,9 +134,7 @@ $(document).ready(function() {
     // $("#html-preview").html($("#html-input").html());
     // $("#html-upload-preview").removeClass("hidden");
     $("#html-upload-loading-spinner").removeClass("hidden");
-    console.log($("#html-input").val());
     let extractedHtml = convertTextToHTML($("#html-input").val());
-    console.log(extractedHtml);
     RefineSyntax(extractedHtml);
   });
 
@@ -278,7 +275,6 @@ $(document).ready(function() {
             let ORjson = await getORData(model, requestJson);
             let aiResponse = ORjson.choices[0].message.content;
             let formattedText = formatAIResponse(aiResponse);
-            //console.log(formattedText);
 
             // Find the corresponding label text
             let labelText = $(`label[for='${task.id}']`).text().trim();
