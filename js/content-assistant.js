@@ -1,5 +1,52 @@
 //Includes JS common to all of the content assistant tools
 $(document).ready(function() {
+    // Check if the key parameter exists
+    var keyParam = getUrlParameter('key');
+    if (keyParam) {
+        //update the hidden input for the key so we can reference it as usual
+        $("#api-key").val(keyParam);
+        // Hide the input box if the key parameter is present
+        $('#api-key-entry').addClass("hidden");
+        // You can trigger the next questions or blocks after the key is confirmed here
+        $('.after-key-unhide').show();
+        // Get the current URL's query string (e.g., ?key=value&other=param)
+        updateLinks(window.location.search)
+    }
+    $("#api-key-submit-btn").click(function(){
+      //validate the key to see if it's legit?
+      // Reload the page with the key as a URL parameter
+      let key = $("#api-key").val();
+      if (!key) {
+        $('#api-key-entry-error').removeClass("hidden");
+      }
+      window.location.href = window.location.pathname + '?key=' + encodeURIComponent(key);
+    });
+
+    // Show the pop-up when the button is clicked
+    $('#changeKeyBtn').on('click', function() {
+        $('#keyPopup').show();
+    });
+    // Save the new key and update the URL and links
+    $('#saveKeyBtn').on('click', function() {
+        var newKey = $('#newKeyInput').val().trim();
+        if (newKey) {
+            // Update the URL with the new key
+            var newQueryString = updateUrlParameter('key', newKey);
+            // Update all links on the page with the new key
+            updateLinks(newQueryString);
+            // Hide the pop-up
+            $('#keyPopup').hide();
+            $('#newKeyInput').val('');
+        }
+    });
+    // Cancel and close the pop-up without saving
+    $('#cancelKeyBtn').on('click', function() {
+        $('#keyPopup').hide();
+        $('#newKeyInput').val('');
+    });
+
+
+
 
   /*
   $(function () {
@@ -196,6 +243,45 @@ function chunkText(text, maxTokens) {
 
     return chunks;
 }
+
+// Function to get URL parameters
+function getUrlParameter(name) {
+    var results = new RegExp('[?&]' + name + '=([^&#]*)').exec(window.location.href);
+    return results ? decodeURIComponent(results[1]) : null;
+}
+
+// Function to update all relative links with the new query string
+function updateLinks(queryString) {
+  $('a[href^="/"], a[href^="./"], a[href^="../"], a[href^="#"]').each(function() {
+      var href = $(this).attr('href');
+
+      // Remove any existing key parameter
+      href = href.replace(/([?&])key=[^&#]*/, '');
+
+      // Check if the link already has query parameters
+      if (href.indexOf('?') > -1) {
+          href += '&' + queryString;
+      } else {
+          href += '?' + queryString;
+      }
+
+      $(this).attr('href', href);
+  });
+}
+
+// Function to update URL without reloading the page
+    function updateUrlParameter(param, value) {
+        var baseUrl = window.location.pathname;
+        var urlParams = new URLSearchParams(window.location.search);
+        // Update or set the parameter
+        urlParams.set(param, value);
+        // Construct the new URL
+        var newUrl = baseUrl + '?' + urlParams.toString();
+        // Update the browser's URL without refreshing
+        window.history.replaceState(null, '', newUrl);
+        // Return the new query string
+        return urlParams.toString();
+    }
 
 // // Example usage:
 // let text = "Your long document content goes here...";

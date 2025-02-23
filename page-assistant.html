@@ -147,7 +147,15 @@
                   <i class="fa fa-angle-right"></i>
               </div>
               <div>
-                <h3>GenAI reports</h3>
+                <div class="flex-2-col">
+                  <h3>GenAI</h3>
+                  <button id="changeKeyBtn"><i class="fa fa-solid fa-key"></i></button>
+                </div>
+                <div id="keyPopup" style="display:none;">
+                    <input type="text" id="newKeyInput" placeholder="Enter new key">
+                    <button id="saveKeyBtn">Save</button>
+                    <button id="cancelKeyBtn">Cancel</button>
+                </div>
                 <div id="genai-upload-msg">
                   <p>Upload content to enable GenAI</p>
                 </div>
@@ -214,7 +222,7 @@
                 <!--div id="genai-report-reset-options" class="hidden"-->
                 <button id="genai-open-report-btn" style="margin-top:15px;" class="hidden">Open report</button>
                 <br>
-                <button id="genai-reset-report-btn" style="margin-top:15px;">Reset</button>
+                <button id="genai-reset-report-btn" style="margin-top:15px;" class="hidden">Reset</button>
               </div>
             </genai-sidebar>
             <h1 _ngcontent-ng-c3392822675="" class="visually-hidden ng-tns-c3392822675-0">GCA | Page Assistant</h1>
@@ -239,6 +247,7 @@
                                   <fieldset style="margin-bottom:20px;">
                                     <legend>OpenRouter API key</legend>
                                     <input id="api-key" type="text"></span>
+                                    <p id="api-key-entry-error" class="error-msg hidden">Please enter a value for the API key. It can be a placeholder, but if so GenAI reports will not function.</p>
                                     <button id="api-key-submit-btn" style="margin-top: 20px">Submit</button>
                                   </fieldset>
 
@@ -256,10 +265,9 @@
                                     </li>
                                     <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
                                   </ol>
-
                                 </div>
 
-                                <div id="upload-chooser" class="hidden">
+                                <div id="upload-chooser" class="after-key-unhide hidden">
                                     <!--h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Choose a genAI tool</h3-->
                                     <!-- Radio buttons for URL analysis, HTML snippet upload, image upload -->
                                     <fieldset>
@@ -275,7 +283,7 @@
                                       <!-- <button id="upload-chooser-btn">Continue</button> -->
                                     </fieldset>
                                 </div>
-                                <div id="url-upload" class="hidden">
+                                <div id="url-upload" class="after-key-unhide hidden">
                                   <div id="url-upload-input" style="margin-top: 20px; margin-bottom:20px;">
                                     <fieldset>
                                       <legend>Enter the URL of the github page</legend>
@@ -325,9 +333,9 @@
                                           </div>
                                           <iframe id="url-frame-2" src="" name="targetframe2" allowTransparency="true"></iframe>
                                         </div>
-                                        <p id="url-invalid-msg" class="hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>
-                                        <p id="canada-ca-msg" class="hidden">Due to technical limitations, Canada.ca pages are not yet compatible with this tool. Try a Github URL to test it out!</p>
-                                        <p id="other-site-msg" class="hidden">The tool is only for validation of Canada.ca design work. If you believe this URL should be in scope, please reach out to the tool adminstrators to whitelist the domain.</p>
+                                        <p id="url-invalid-msg" class="error-msg hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>
+                                        <p id="canada-ca-msg" class="error-msg hidden">Due to technical limitations, Canada.ca pages are not yet compatible with this tool. Try a Github URL to test it out!</p>
+                                        <p id="other-site-msg" class="error-msg hidden">The tool is only for validation of Canada.ca design work. If you believe this URL should be in scope, please reach out to the tool adminstrators to whitelist the domain.</p>
                                          <!-- </div> -->
                                      </div>
                                      <div id="code-preview" class="tab-content hidden">
@@ -394,12 +402,12 @@
                                 <div id="html-upload" class="hidden">
                                   <div id="html-upload-input" style="margin-top:20px">
                                     <div class="inline-checkbox-container">
-					<fieldset>
-					  <input type="checkbox" id="html-basic-html" name="html-canada" value="basic-html">
-					  <label for="html-basic-html">Basic html only</label><br>
-					</fieldset>
-				    </div>
-				    <fieldset>
+                            					<fieldset>
+                            					  <input type="checkbox" id="html-basic-html" name="html-canada" value="basic-html">
+                            					  <label for="html-basic-html">Basic html only</label><br>
+                            					</fieldset>
+                        				    </div>
+                        				    <fieldset>
                                         <legend>Write or paste in your content or HTML to analyze</legend>
                                         <textarea id="html-input" class="inputbox"></textarea>
                                     </fieldset>
@@ -420,7 +428,7 @@
                   										<pre id="html-preview"></pre>
                   									</div>
                                   </div> -->
-                        				  <div id="html-upload-no-action-error" class="hidden">
+                        				  <div id="html-upload-no-action-error" class="error-msg hidden">
                       					       <p>You must select an option for an action and model to run a report.</p>
                         				  </div>
                                 </div>
@@ -466,8 +474,8 @@
   			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                         Word document preview
                                       </h3>
-                                      <p id="word-invalid-msg" class="hidden">This feature currently only supports ".docx" files. .doc or other document file types are not compatible. Please try a .docx file or use the text input option to copy paste.</p>
-                    									<p id="word-multiple-msg" class="hidden">We currently only accept uploading word documents files individually. Try again with 1 word document.</p>
+                                      <p id="word-invalid-msg" class="error-msg hidden">This feature currently only supports ".docx" files. .doc or other document file types are not compatible. Please try a .docx file or use the text input option to copy paste.</p>
+                    									<p id="word-multiple-msg" class="error-msg hidden">We currently only accept uploading word documents files individually. Try again with 1 word document.</p>
                                       <div id="word-upload-loading-spinner" class="hidden">
                                         <div class="spinner"></div>
                                         <p>Converting word doc to HTML...</p>
@@ -533,8 +541,8 @@
                                           Image preview
                                         </h3>
     	                                  <img id="image-preview"></img>
-                      									<p id="image-invalid-msg" class="hidden">The image you uploaded isn't in a recognized format. Please try a JPG or PNG. If you think the image format should be accepted, please reach out to the administrator.</p>
-                      									<p id="image-multiple-msg" class="hidden">We currently only accept uploading image files individually. Try again with 1 image.</p>
+                      									<p id="image-invalid-msg" class="error-msg hidden">The image you uploaded isn't in a recognized format. Please try a JPG or PNG. If you think the image format should be accepted, please reach out to the administrator.</p>
+                      									<p id="image-multiple-msg" class="error-msg hidden">We currently only accept uploading image files individually. Try again with 1 image.</p>
 
                                       </div>
                                 </div>

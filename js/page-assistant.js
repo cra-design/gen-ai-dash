@@ -8,14 +8,6 @@ $(document).ready(function() {
     $('#upload-chooser').addClass("hidden");
   });
 
-  $("#api-key-submit-btn").click(function(){
-    //validate the key to see if it's legit?
-
-    $('#api-key-entry').addClass("hidden");
-    $('#upload-chooser').removeClass("hidden");
-    $('#url-upload').removeClass("hidden");
-  });
-
   $(document).on("click", "input[type=radio]", function (event) {
     var target = event.target;
     // var parts = target.name.split("-");
@@ -517,7 +509,7 @@ async function RefineSyntax(extractedHtml) {
       aiWordResponse = ORjson.choices[0].message.content.trim();
 	  if ($("#html").prop("checked")) {
 		//We need to reassign the aiWordResponse to the basic text for content upload, since there is no mammoth version
-		extractedHtml = aiWordResponse; 
+		extractedHtml = aiWordResponse;
 		//From now on, treat #html as the same thing as doc-exact-syntax checked
 	  }
     }
