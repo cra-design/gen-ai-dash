@@ -91,7 +91,7 @@ $(document).ready(function() {
       $("#url-frame").removeClass("hidden");
       $("#genai-upload-msg").addClass("hidden");
       $("#genai-task-options").removeClass("hidden");
-      parsePageHTML(urlInput.href, function (err, html) {
+      parsePageHTML(urlInput.href, async function (err, html) {
           if (err) {
               console.error('Failed to fetch the webpage:', err);
               alert('Failed to fetch the webpage. Check the console for details.');
@@ -107,7 +107,7 @@ $(document).ready(function() {
       $("#url-frame").removeClass("hidden");
       $("#genai-upload-msg").addClass("hidden");
       $("#genai-task-options").removeClass("hidden");
-      parsePageHTML(urlInput.href, function (err, html) {
+      parsePageHTML(urlInput.href, async function (err, html) {
           if (err) {
               console.error('Failed to fetch the webpage:', err);
               alert('Failed to fetch the webpage. Check the console for details.');
