@@ -1,28 +1,36 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Selecting elements based on your provided HTML
+    // Selecting elements
     const apiKeyEntry = document.getElementById("api-key-entry"); // API key section
     const apiKeyInput = document.getElementById("api-key"); // Input field
     const apiKeySubmitBtn = document.getElementById("api-key-submit-btn"); // Submit button
     const documentUploadContainer = document.getElementById("document-upload-container"); // Upload section
 
-    // Show API key input section first, hide document upload section
-    apiKeyEntry.style.display = "block";
-    documentUploadContainer.style.display = "none";
+    // Check if an API key exists in sessionStorage (this prevents re-entering on refresh)
+    const savedApiKey = sessionStorage.getItem("openRouterApiKey");
+
+    if (savedApiKey) {
+        // If API key is already stored, show the upload page directly
+        apiKeyEntry.style.display = "none";
+        documentUploadContainer.style.display = "block";
+    } else {
+        // Otherwise, show the API key entry section
+        apiKeyEntry.style.display = "block";
+        documentUploadContainer.style.display = "none";
+    }
 
     // Handle API Key submission
     apiKeySubmitBtn.addEventListener("click", function () {
         const apiKey = apiKeyInput.value.trim();
         if (apiKey) {
-            // Temporarily store API key for this session
+            // Store API key in sessionStorage
             sessionStorage.setItem("openRouterApiKey", apiKey);
 
-            // Immediately hide API key section and show the upload page
+            // Hide API key entry and show upload section
             apiKeyEntry.style.display = "none";
             documentUploadContainer.style.display = "block";
 
-            // Scroll to the document upload section for better UX
+            // Scroll to the document upload section
             documentUploadContainer.scrollIntoView({ behavior: "smooth" });
-
         } else {
             alert("Please enter a valid API key.");
         }
