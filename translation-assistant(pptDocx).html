@@ -246,42 +246,43 @@
 	 <!-- END API Key Entry Section --> 
 
   <div id="document-upload-container" sytle="display:none">
-    <!-- Section 1: English Document Upload -->
-   <fieldset>
-        <legend>Upload the English Word Document</legend>
-        <input type="file" id="english-file" name="english-file" accept=".docx">
-        <p id="english-error" style="color: red; display: none;">Only one .docx file is allowed.</p>
-      </fieldset>
+  <!-- English Document Upload Section -->
+<fieldset>
+  <legend>Upload the English Document (DOCX, PPTX, or XLSX)</legend>
+  <input type="file" id="english-file" name="english-file" accept=".docx,.pptx,.xlsx">
+  <p id="english-error" style="color: red; display: none;">Only one DOCX, PPTX, or XLSX file is allowed.</p>
+</fieldset>
       <br>
     <!-- Section 2: French Content Entry -->
+<!-- French Content Entry Section -->
 <fieldset>
-        <legend>Provide the French Content</legend>
-        <p>Select one option below to provide the French content.</p>
-        
-        <div class="radio-group">
-          <label>
-            <input type="radio" name="french-input-option" value="textarea" checked>
-            Paste French text
-          </label>
-          <label>
-            <input type="radio" name="french-input-option" value="file">
-            Upload a French Word document
-          </label>
-        </div>
+  <legend>Provide the French Content</legend>
+  <p>Select one option below to provide the French content.</p>
+  
+  <div class="radio-group">
+    <label>
+      <input type="radio" name="french-input-option" value="textarea" checked>
+      Paste French text
+    </label>
+    <label>
+      <input type="radio" name="french-input-option" value="file">
+      Upload a French Word document
+    </label>
+  </div>
 
-    <!-- French Text Input (Initially Visible) -->
-     <div id="french-textarea-container">
-          <textarea id="french-text" name="french-text" placeholder="Paste your French text here" rows="6" style="width:100%;"></textarea>
-          <p id="french-text-error" style="color: red; display: none;">French content cannot be empty.</p>
-        </div>
+  <!-- French Text Input (Initially Visible) -->
+  <div id="french-textarea-container">
+    <textarea id="french-text" name="french-text" placeholder="Paste your French text here" rows="6" style="width:100%;"></textarea>
+    <p id="french-text-error" style="color: red; display: none;">French content cannot be empty.</p>
+  </div>
 
-    <!-- French File Upload (Initially Hidden) -->
-     <div id="french-file-container" style="display:none;">
-          <input type="file" id="french-file" accept=".docx">
-          <p id="french-error" style="color: red; display: none;">Only .docx files are allowed.</p>
-        </div>
-      </fieldset>
-    
+  <!-- French File Upload (Initially Hidden) -->
+  <div id="french-file-container" style="display:none;">
+    <input type="file" id="french-file" accept=".docx">
+    <p id="french-error" style="color: red; display: none;">Only .docx files are allowed.</p>
+  </div>
+</fieldset> 
+	<div id="document-upload-container" style="display:none">
     <!-- Submit Button -->
     <button id="submit-btn" style="margin-top: 20px">Submit</button>
     
