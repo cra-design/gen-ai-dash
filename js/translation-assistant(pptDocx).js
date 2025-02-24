@@ -287,7 +287,7 @@ submitBtn.addEventListener("click", async () => {
       messages: [
         {
           role: "system",
-          content: "You are a PowerPoint formatting assistant. You will be given the complete XML of a PowerPoint slide (which contains one or more <a:t> tags where text is stored) and a French text string. Your task is to replace every instance of text inside each <a:t> tag with the provided French text. Do not change any other XML elements, attributes, or namespaces. Return the entire updated slide XML exactly as a valid XML document, with no extra commentary, code fences, or text outside the XML."
+          content: "You are a PowerPoint formatting assistant. You will be given the complete XML of a PowerPoint slide (which contains one or more <a:t> tags where text is stored) and a French text string. Your task is to replace every instance of text inside each <a:t> tag with the provided French text. Do not change any other XML elements, attributes, or namespaces. Return only the valid XML (without any extra commentary, code fences, or text) that starts with an XML declaration or a valid root tag."
         },
         {
           role: "user",
@@ -441,7 +441,8 @@ function removeCodeFences(str) {
 /* Validates the AI response to ensure it returns valid XML */
 function formatAIResponse(aiResponse) {
   if (!aiResponse) return "";
-  let raw = removeCodeFences(aiResponse);
+  let raw = removeCodeFences(aiResponse).trim(); 
+  console.log("Raw AI response after removing code fences:", raw);
   // Basic check for an XML declaration or expected closing tags (for DOCX, PPTX, or XLSX)
   if (!raw.startsWith("<?xml") && raw.indexOf("<") !== 0) {
     console.error("Invalid AI response: XML does not start with an XML tag.");
