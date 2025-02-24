@@ -336,7 +336,7 @@ function createSideBySideReport(counter, labelText, formattedText) {
   const titleIdB = `report-B-title-${counter}`;
 
   return $(`
-    <div class="sidebyside-wrapper">
+    <div class="sidebyside-wrapper generated-report">
       <div id="${reportIdA}" class="report-container-A sidebyside-container">
         <div id="${toolboxIdA}" class="toolbar">
           <button class="toolbar-button" id="accept-report-a-btn-${counter}" title="Accept A">

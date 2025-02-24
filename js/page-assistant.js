@@ -346,6 +346,30 @@ $(document).ready(function() {
       document.getElementById("genai-nav").style.width = "0%";
   });
 
+  $(document).on('click', '.toolbar-button', function() {
+      const counter = $(this).attr('id').split('-').pop();
+      let selectedOption = "";
+      // Check which button was clicked
+      if ($(this).is(`#accept-report-a-btn-${counter}`)) {
+          // Accept A: Remove B and expand A to full width
+          $(`#report-container-B-${counter}`).remove();
+          $(`#report-container-A-${counter}`).css('width', '100%');
+          selectedOption = "A";
+      } else if ($(this).is(`#accept-report-b-btn-${counter}`)) {
+          // Accept B: Remove A and expand B to full width
+          $(`#report-container-A-${counter}`).remove();
+          $(`#report-container-B-${counter}`).css('width', '100%');
+          selectedOption = "B";
+      }
+      // Grab the report type from the <h4> element within the sidebyside-report
+      let reportType = $(this).closest('.sidebyside-report').find('h4').text().trim();
+      // Redirect to Google Form with prefilled data
+      const googleFormURL = `https://docs.google.com/forms/d/e/1FAIpQLSfI_DBkkIXN1SJh0OECZt3HUztsBNzD4sm_jaL7odGbH7Awqg/viewform?usp=pp_url` +
+                            `&entry.984404841=${selectedOption}` +
+                            `&entry.1414644752=${encodeURIComponent(reportType)}`;
+      window.location.href = googleFormURL;
+  });
+
 }); //close document ready
 
 function resetHiddenUploadOptions() {
