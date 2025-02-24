@@ -348,7 +348,7 @@ function createSideBySideReport(counter, labelText, formattedText) {
           <p>${formattedText.a}</p>
         </div>
       </div>
-      <div id="${reportIdB}" class="report-container-B sidebyside-container hidden">
+      <div id="${reportIdB}" class="report-container-B sidebyside-container">
         <div id="${toolboxIdB}" class="toolbar">
           <button class="toolbar-button" id="accept-report-b-btn-${counter}" title="Accept B">
             <i class="fa fa-check"></i>
