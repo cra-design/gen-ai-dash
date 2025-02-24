@@ -528,10 +528,10 @@ async function RefineSyntax(extractedHtml) {
   refreshIframe("url-frame", formattedHTML);
   if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
     refreshIframe("url-frame-2", formattedAIHTML);
+    toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
+    $('#iframe-toolbox-A').removeClass('hidden');
+    $('#iframe-toolbox-B').removeClass('hidden');
   }
-  toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
-  $('#iframe-toolbox-A').removeClass('hidden');
-  $('#iframe-toolbox-B').removeClass('hidden');
   // Show the raw HTML markup in the code tab
   $("#fullHtml code").text(formattedHTML);
   // Apply syntax highlighting
