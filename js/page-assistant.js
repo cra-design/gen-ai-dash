@@ -290,14 +290,12 @@ $(document).ready(function() {
             // Send it to the API
             let formattedText = { a: await formatORResponse(model[0], requestJson), b: "" };
             if ($("#genai-analysis-llm-compare").is(':checked')) {
-              formattedText.b = formatORResponse(model[1], requestJson);
+              formattedText.b = await formatORResponse(model[1], requestJson);
             } else if (fileContentB) {
               systemTask.content = "Custom instruction: " + fileContentB;
               requestJson = [systemGeneral, systemTask, userContent, userData];
-              formattedText.b = formatORResponse(model[0], requestJson);
+              formattedText.b = await formatORResponse(model[0], requestJson);
             }
-            console.log("A: " + formattedText.a);
-            console.log("B: " + formattedText.b);
             let labelText = $(`label[for='${task.id}']`).text().trim();
             let reportCount = 0; // Counter to ensure unique IDs
             if (formattedText.b != "") {
