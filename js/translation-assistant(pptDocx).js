@@ -224,22 +224,22 @@ submitBtn.addEventListener("click", async () => {
       }
 
       // --- Build AI Prompt for DOCX ---
-      let requestJson = {
-        messages: [
-          {
-            role: "system",
-            content: "You are a DOCX formatting assistant. Your task is to update a Word document's XML by replacing the English text with the provided French content. Replace only the text inside <w:t> tags while leaving all XML tags, namespaces, and attributes unchanged. Return only valid XML without any extra commentary or code fences."
-          },
-          {
-            role: "user",
-            content: "English DOCX XML: " + escapeXML(enDocumentXml)
-          },
-          {
-            role: "user",
-            content: "French content: " + escapeXML(frDocumentXml)
-          }
-        ]
-      };
+    let requestJson = {
+    messages: [
+      {
+        role: "system",
+        content: "You are a DOCX formatting assistant. Your task is to update a Word document's XML by replacing the English text with the provided French content. Replace only the text inside <w:t> tags while leaving all other XML tags, namespaces, and attributes unchanged. Return only the updated valid XML without any extra commentary or code fences."
+      },
+      {
+        role: "user",
+        content: "English DOCX XML: " + escapeXML(enDocumentXml)
+      },
+      {
+        role: "user",
+        content: "French content: " + escapeXML(frDocumentXml)
+      }
+    ]
+  };
 
       let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
       if (!ORjson) return;
@@ -260,19 +260,20 @@ submitBtn.addEventListener("click", async () => {
         );
         zipEN.file("[Content_Types].xml", contentTypes);
       }
-
+// --------------------
+// PPTX Processing Branch
+// --------------------
     } else if (englishFileType === "pptx") {
       // PPTX Processing:
       // For PPTX, we update each slide's XML (located in ppt/slides/)
       // Use French content from plain text or, if available, extract text from a French DOCX.
       let frenchContent = "";
       if (frenchContentMode === "file" && frenchFileType === "docx") {
-        let frenchDocXml = new PizZip(frenchFileData).file("word/document.xml").asText();
-        // Extract text from the DOCX XML (assumes text is in <w:t> tags)
-        frenchContent = extractFrenchText(frenchDocXml);
-      } else {
-        frenchContent = frenchTextData;
-      }
+      let frenchDocXml = new PizZip(frenchFileData).file("word/document.xml").asText();
+      frenchContent = extractFrenchText(frenchDocXml);
+    } else {
+      frenchContent = frenchTextData;
+    }
 
       // Find all slide XML files (e.g., slide1.xml, slide2.xml, etc.)
       let slideFiles = zipEN.file(/ppt\/slides\/slide\d+\.xml/);
@@ -283,30 +284,34 @@ submitBtn.addEventListener("click", async () => {
       for (let i = 0; i < slideFiles.length; i++) {
         let slideXml = slideFiles[i].asText();
         let requestJson = {
-          messages: [
-            {
-              role: "system",
-              content: "You are a PowerPoint formatting assistant. Your task is to update a slide's XML by replacing the English text with the provided French content. Replace only the text inside <a:t> tags while leaving all XML tags, namespaces, and attributes unchanged. Return only valid XML without any extra commentary or code fences."
-            },
-            {
-              role: "user",
-              content: "English slide XML: " + escapeXML(slideXml)
-            },
-            {
-              role: "user",
-              content: "French content: " + escapeXML(frenchContent)
-            }
-          ]
-        };
+      messages: [
+        {
+          role: "system",
+          content: "You are a PowerPoint formatting assistant. You will be given the complete XML of a PowerPoint slide (which contains one or more <a:t> tags where text is stored) and a French text string. Your task is to replace every instance of text inside each <a:t> tag with the provided French text. Do not change any other XML elements, attributes, or namespaces. Return the entire updated slide XML exactly as a valid XML document, with no extra commentary, code fences, or text outside the XML."
+        },
+        {
+          role: "user",
+          content: "English slide XML: " + escapeXML(slideXml)
+        },
+        {
+          role: "user",
+          content: "French content (plain text): " + escapeXML(frenchContent)
+        }
+      ]
+    }; 
+        console.log("Sending PPTX prompt for slide", slideFiles[i].name);
         let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
         if (!ORjson) return;
-        let aiResponse = ORjson.choices[0]?.message?.content || "";
+        let aiResponse = ORjson.choices[0]?.message?.content || ""; 
+        console.log("Raw AI Response for slide", slideFiles[i].name, ":", aiResponse);
         let formattedSlideXml = formatAIResponse(aiResponse);
         if (!formattedSlideXml) return;
         // Update the slide file in the PPTX zip
         zipEN.file(slideFiles[i].name, formattedSlideXml);
       }
-
+    // --------------------
+   // XLSX Processing Branch
+   // --------------------
     } else if (englishFileType === "xlsx") {
       // XLSX (Excel) Processing:
       // For Excel, update the shared strings in xl/sharedStrings.xml (text is in <t> tags)
@@ -427,7 +432,9 @@ function hideError(elementId) {
 function removeCodeFences(str) {
   return str
     .replace(/^```[a-zA-Z]*\s*/, '')
-    .replace(/```$/, '')
+    .replace(/```$/, '') 
+    .replace(/```[^\n]*\n?/g, "") 
+    .replace(/```/g, "")
     .trim();
 }
 
@@ -436,8 +443,8 @@ function formatAIResponse(aiResponse) {
   if (!aiResponse) return "";
   let raw = removeCodeFences(aiResponse);
   // Basic check for an XML declaration or expected closing tags (for DOCX, PPTX, or XLSX)
-  if (!raw.startsWith("<?xml")) {
-    console.error("Invalid AI response: XML format is incorrect.");
+  if (!raw.startsWith("<?xml") && raw.indexOf("<") !== 0) {
+    console.error("Invalid AI response: XML does not start with an XML tag.");
     alert("The AI response is not in the correct XML format.");
     return "";
   }
