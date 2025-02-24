@@ -334,6 +334,10 @@ label {
   width: 100%; /* Ensure it spans the full width */
 }
 
+.full-width {
+  width: 100%;
+}
+
 .overlay-content {
   padding-left: 100px;
   padding-right: 15px;

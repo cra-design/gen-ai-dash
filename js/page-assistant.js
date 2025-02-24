@@ -237,6 +237,7 @@ $(document).ready(function() {
     let systemTask = { role: "system", content: "" }
     let userContent = { role: "user", content: "Web page content: "}
     let userData = { role: "user", content: "Contextual data: " }
+    let reportCount = 0; // Counter to ensure unique IDs
     let reportContainer = $(".overlay-content");
     reportContainer.find(".generated-report").remove();
     let reportList = $(".report-list");
@@ -297,7 +298,6 @@ $(document).ready(function() {
               formattedText.b = await formatORResponse(model[0], requestJson);
             }
             let labelText = $(`label[for='${task.id}']`).text().trim();
-            let reportCount = 0; // Counter to ensure unique IDs
             if (formattedText.b != "") {
               // Side-by-side comparison needed
               reportCount++;
@@ -308,8 +308,9 @@ $(document).ready(function() {
             }
             // Append the report to the desired container in your DOM
             $('#report-section').append(newReport);
-            console.log('#report-container-A-' + reportCount);
-            toggleComparisonElement($('#report-container-A-' + reportCount), $('#report-container-B-' + reportCount));
+            if (formattedText.b != "") {
+              toggleComparisonElement($('#report-container-A-' + reportCount), $('#report-container-B-' + reportCount));
+            }
             let newReportListItem = $('<li>' + labelText + '</li>');
             // Append to the report container
             reportContainer.append(newReport);
