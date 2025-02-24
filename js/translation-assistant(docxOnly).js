@@ -9,25 +9,25 @@ document.addEventListener("DOMContentLoaded", function () {
     apiKeyEntry.style.display = "block";
     documentUploadContainer.style.display = "none";
 
-    // Ensure API key is not stored persistently (forces re-entry each time)
-    sessionStorage.removeItem("openRouterApiKey");
-
     // Handle API Key submission
     apiKeySubmitBtn.addEventListener("click", function () {
         const apiKey = apiKeyInput.value.trim();
         if (apiKey) {
-            // Temporarily store API key for this session (not persistent)
+            // Temporarily store API key for this session
             sessionStorage.setItem("openRouterApiKey", apiKey);
 
-            // Hide API key entry section and show document upload section
+            // Immediately hide API key section and show the upload page
             apiKeyEntry.style.display = "none";
             documentUploadContainer.style.display = "block";
+
+            // Scroll to the document upload section for better UX
+            documentUploadContainer.scrollIntoView({ behavior: "smooth" });
+
         } else {
             alert("Please enter a valid API key.");
         }
     });
 });
-
 
 // Grab DOM elements for English & French input, errors, and download link
 const englishFileInput = document.getElementById("english-file");
