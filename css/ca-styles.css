@@ -21,6 +21,11 @@ button i {
   font-size: 16px;
 }
 
+.strong {
+  font-weight: bold;
+}
+
+
 .error-msg {
     display: flex;
     align-items: center;
@@ -329,11 +334,20 @@ label {
   width: 100%; /* Ensure it spans the full width */
 }
 
+.sidebyside-wrapper {
+  display: flex;
+}
+
+.sidebyside-label {
+  text-align: left;
+}
+
 /* Wrapper to ensure the toolbar is stacked above the iframe */
 .sidebyside-container {
   display: flex;
   flex-direction: column; /* Stack toolbar and iframe vertically */
   width: 100%; /*Default full, but js to toggle 50%*/
+  border: 1px solid black;
 }
 
 /* Iframe styling */
