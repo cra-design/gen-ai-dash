@@ -308,6 +308,7 @@ $(document).ready(function() {
             }
             // Append the report to the desired container in your DOM
             $('#report-section').append(newReport);
+            console.log('#report-container-A-' + reportCount);
             toggleComparisonElement($('#report-container-A-' + reportCount), $('#report-container-B-' + reportCount));
             let newReportListItem = $('<li>' + labelText + '</li>');
             // Append to the report container

@@ -338,16 +338,16 @@ function createSideBySideReport(counter, labelText, formattedText) {
   return $(`
     <div class="sidebyside-wrapper">
       <div id="${reportIdA}" class="report-container-A sidebyside-container">
-        <div id="${toolboxIdA}" class="toolbar hidden">
+        <div id="${toolboxIdA}" class="toolbar">
           <button class="toolbar-button" id="accept-report-a-btn-${counter}" title="Accept A">
             <i class="fa fa-check"></i>
           </button>
         </div>
-        <p id="${titleIdA}" class="strong">${labelText} (A)</p>
+        <p id="${titleIdA}" class="strong sidebyside-label">${labelText} (A)</p>
         <p>${formattedText.a}</p>
       </div>
       <div id="${reportIdB}" class="report-container-B sidebyside-container hidden">
-        <div id="${toolboxIdB}" class="toolbar hidden">
+        <div id="${toolboxIdB}" class="toolbar">
           <button class="toolbar-button" id="accept-report-b-btn-${counter}" title="Accept B">
             <i class="fa fa-check"></i>
           </button>
