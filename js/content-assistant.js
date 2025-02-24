@@ -315,3 +315,46 @@ function refreshIframe(id, html) {
 function hideAllSpinners() {
   $(".spinner").closest('div').addClass("hidden");
 }
+
+// Function to create a basic report
+function createBasicReport(labelText, formattedText) {
+  return $(
+    '<div class="generated-report">' +
+      '<h4>' + labelText + '</h4>' +
+      '<p>' + formattedText.a + '</p>' +
+    '</div>'
+  );
+}
+
+// Function to create a side-by-side report
+function createSideBySideReport(counter, labelText, formattedText) {
+  const reportIdA = `report-container-A-${counter}`;
+  const reportIdB = `report-container-B-${counter}`;
+  const toolboxIdA = `report-toolbox-A-${counter}`;
+  const toolboxIdB = `report-toolbox-B-${counter}`;
+  const titleIdA = `report-A-title-${counter}`;
+  const titleIdB = `report-B-title-${counter}`;
+
+  return $(`
+    <div class="sidebyside-wrapper">
+      <div id="${reportIdA}" class="report-container-A sidebyside-container">
+        <div id="${toolboxIdA}" class="toolbar hidden">
+          <button class="toolbar-button" id="accept-report-a-btn-${counter}" title="Accept A">
+            <i class="fa fa-check"></i>
+          </button>
+        </div>
+        <p id="${titleIdA}" class="strong">${labelText} (A)</p>
+        <p>${formattedText.a}</p>
+      </div>
+      <div id="${reportIdB}" class="report-container-B sidebyside-container hidden">
+        <div id="${toolboxIdB}" class="toolbar hidden">
+          <button class="toolbar-button" id="accept-report-b-btn-${counter}" title="Accept B">
+            <i class="fa fa-check"></i>
+          </button>
+        </div>
+        <p id="${titleIdB}" class="strong">${labelText} (B)</p>
+        <p>${formattedText.b}</p>
+      </div>
+    </div>
+  `);
+}

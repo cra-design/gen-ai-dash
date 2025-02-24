@@ -14,6 +14,9 @@ button {
   align-items: center;
   gap: 8px;
 }
+button:hover {
+    background: #78782f;
+}
 button i {
   font-size: 16px;
 }
@@ -327,10 +330,10 @@ label {
 }
 
 /* Wrapper to ensure the toolbar is stacked above the iframe */
-.iframe-container {
+.sidebyside-container {
   display: flex;
   flex-direction: column; /* Stack toolbar and iframe vertically */
-  width: 100%; /* Ensure each iframe + toolbar takes half the space */
+  width: 100%; /*Default full, but js to toggle 50%*/
 }
 
 /* Iframe styling */
@@ -419,10 +422,6 @@ iframe {
 
 #changeKeyBtn i {
     margin-right: 0;
-}
-
-#changeKeyBtn:hover {
-    background: #0056b3;
 }
 
 #keyPopup {

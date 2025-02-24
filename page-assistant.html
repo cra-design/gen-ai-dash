@@ -160,7 +160,7 @@
                   <p>Upload content to enable GenAI</p>
                 </div>
                 <fieldset id="genai-task-options" class="hidden">
-                  <legend>Select task</legend>
+                  <legend>Select report</legend>
                   <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-title" name="html-upload-genai-analysis" value="custom-instructions/metadata/title-en.txt">
                   <label class="label-small" for="html-upload-genai-analysis-title"> Suggest a SEOed title</label><br>
                   <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
@@ -191,10 +191,14 @@
                   <label class="label-small" for="html-upload-genai-analysis-headings"> Propose a better heading structure</label><br>
 
                   <!-- Use any element to open/show the overlay navigation menu -->
-                  <button id="genai-select-tasks-btn" style="margin-top:15px;">Continue</button>
+                  <div class="flex-2-col">
+                    <button id="genai-select-tasks-btn" style="margin-top:15px; margin-right:5px;">Continue</button>
+                    <input class="checkbox-small" type="checkbox" id="genai-analysis-llm-compare" name="genai-analysis-llm-compare" value="genai-analysis-llm-compare">
+                    <label class="label-small" for="genai-analysis-llm-compare"> Compare models</label>
+                  </div>
                 </fieldset>
                 <fieldset id="genai-model-options" class="hidden">
-                  <legend>Select model</legend>
+                  <legend>Select <span id="model-compare-1">1 model</span><span id="model-compare-2" class="hidden">2 models</span></legend>
                   <input type="radio" id="html-upload-genai-model-gemini" name="html-upload-genai-model" value="google/gemini-2.0-flash-exp:free">
                   <label for="html-upload-genai-model-gemini"> Gemini 2.0 Flash</label><br>
                   <input type="radio" id="html-upload-genai-model-llama" name="html-upload-genai-model" value="meta-llama/llama-3.3-70b-instruct:free">
@@ -317,7 +321,7 @@
                                         <!-- <div style="border:black solid 1px;" -->
 
                                         <!-- add some kind of tabbed interface with preview + code tabs? -->
-                                        <div id="iframe-container-A" class="iframe-container">
+                                        <div id="iframe-container-A" class="sidebyside-container">
                                           <div id="iframe-toolbox-A" class="toolbar hidden">
                                             <button class="toolbar-button" id="accept-iframe-a-btn" title="Accept A">
                                               <i class="fa fa-check"></i>
@@ -325,7 +329,7 @@
                                           </div>
                                           <iframe id="url-frame" src="" name="targetframe" allowTransparency="true"></iframe>
                                         </div>
-                                        <div id="iframe-container-B" class="iframe-container hidden">
+                                        <div id="iframe-container-B" class="sidebyside-container hidden">
                                           <div id="iframe-toolbox-B" class="toolbar hidden">
                                             <button class="toolbar-button" id="accept-iframe-b-btn" title="Accept B">
                                               <i class="fa fa-check"></i>
@@ -574,12 +578,10 @@
 
               <!-- Button to close the overlay navigation -->
               <a href="javascript:void(0)" class="closebtn" id="close-report-btn">&times;</a>
-
-              <h3>GenAI reports</h3>
               <div class="overlay-content" style="padding-left:300px;">
+                <h3>GenAI reports</h3>
 
               </div>
-
             </div>
          </div>
       </upd-root>

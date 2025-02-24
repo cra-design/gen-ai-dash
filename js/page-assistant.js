@@ -211,6 +211,15 @@ $(document).ready(function() {
   $("#genai-select-tasks-btn").click(function () {
     $("#genai-task-options").addClass("hidden");
     $("#genai-model-options").removeClass("hidden");
+    if ($("#genai-analysis-llm-compare").is(':checked') && $('#model-compare-2').hasClass("hidden")) {
+      $('#model-compare-1').addClass("hidden");
+      $('#model-compare-2').removeClass("hidden");
+      toggleRadioCheckbox();
+    } else if (!$("#genai-analysis-llm-compare").is(':checked') && $('#model-compare-1').hasClass("hidden")) {
+      $('#model-compare-1').removeClass("hidden");
+      $('#model-compare-2').addClass("hidden");
+      toggleRadioCheckbox();
+    }
   });
 
   $("#genai-run-report-btn").click(async function () {
@@ -219,22 +228,26 @@ $(document).ready(function() {
     $("#loading-indicator").removeClass("hidden"); // Show spinner
     //$("#genai-report-reset-options").removeClass("hidden");
     let selectedTasks = [];
-    let model = $('input[name="html-upload-genai-model"]:checked').val();
+    // Get all checked checkboxes and store their values in an array
+    const model = $('input[name="html-upload-genai-model"]:checked').map(function() {
+      return $(this).val();
+    }).get();
+    $('input[name="html-upload-genai-model"]:checked').val();
     let systemGeneral = { role: "system", content: "" }
     let systemTask = { role: "system", content: "" }
     let userContent = { role: "user", content: "Web page content: "}
     let userData = { role: "user", content: "Contextual data: " }
     let reportContainer = $(".overlay-content");
-    let reportList = $(".report-list");
     reportContainer.find(".generated-report").remove();
+    let reportList = $(".report-list");
     let newReportListContainer = $(
       '<ul class="generated-report"></ul>'
     );
+
     // Append to the report container with unordered list
     reportList.append(newReportListContainer);
     //declare the reportListContainer ul to append list items later
     let reportListContainer = $(".report-list .generated-report");
-
 
     //fetching the systemGeneral instructions from file
     try {
@@ -267,25 +280,34 @@ $(document).ready(function() {
         for (const task of selectedTasks) {
           try {
             let fileContent = await $.get(task.value);
+            let fileContentB = "";
+            if (!$("#genai-analysis-llm-compare").is(':checked')) {
+              fileContentB = await $.get(task.value + "-B");
+            }
             systemTask.content = "Custom instruction: " + fileContent;
             // Create the JSON with the prompt and instructions
             let requestJson = [systemGeneral, systemTask, userContent, userData];
-
             // Send it to the API
-            let ORjson = await getORData(model, requestJson);
-            let aiResponse = ORjson.choices[0].message.content;
-            let formattedText = formatAIResponse(aiResponse);
-
-            // Find the corresponding label text
-            let labelText = $(`label[for='${task.id}']`).text().trim();
-
-            // Create new report section dynamically
-            let newReport = $(
-              '<div class="generated-report">' +
-                '<h4>' + labelText + '</h4>' +
-                '<p>' + formattedText + '</p>' +
-              '</div>'
-            );
+            let formattedText = { a: await formatORResponse(model[0], requestJson), b: "" };
+            if ($("#genai-analysis-llm-compare").is(':checked')) {
+              formattedText.b = formatORResponse(model[1], requestJson);
+            } else if (fileContentB) {
+              systemTask.content = "Custom instruction: " + fileContentB;
+              requestJson = [systemGeneral, systemTask, userContent, userData];
+              formattedText.b = formatORResponse(model[0], requestJson);
+            }
+            let reportCount = 0; // Counter to ensure unique IDs
+            if (formattedText.b != "") {
+              // Side-by-side comparison needed
+              reportCount++;
+              newReport = createSideBySideReport(reportCount, labelText, formattedText);
+            } else {
+              // No side-by-side, just show the single report
+              newReport = createBasicReport(labelText, formattedText);
+            }
+            // Append the report to the desired container in your DOM
+            $('#report-section').append(newReport);
+            toggleComparisonElement($('#report-container-A-' + reportCount), $('#report-container-B-' + reportCount));
             let newReportListItem = $('<li>' + labelText + '</li>');
             // Append to the report container
             reportContainer.append(newReport);
@@ -301,14 +323,6 @@ $(document).ready(function() {
       // $("#html-upload-preview").addClass("hidden");
       $("#html-upload-no-action-error").removeClass("hidden");
     }
-
-    /*var htmlObject = ;
-    if (.length < 1 || fileList == undefined) {
-      $("#html-invalid-msg").removeClass("hidden");
-    }
-    $("#image-preview").attr("data-src", URL.createObjectURL(htmlObject));
-    $("#image-upload-preview").removeClass("hidden");
-    */
     $("#loading-indicator").addClass("hidden"); // Hide spinner when done
   });
 
@@ -623,4 +637,63 @@ function getRawCodeFromHighlighted(codeBlock) {
   // Assuming the code block has the class 'language-*' or similar for syntax highlighting
   let rawCode = codeBlock.text(); // Get the raw code (without syntax highlighting)
   return rawCode;
+}
+
+// Function to toggle radio buttons to checkboxes and vice versa
+function toggleRadioCheckbox() {
+  $("input[name='html-upload-genai-model']").each(function() {
+    var $input = $(this);
+    var $label = $input.next("label");
+
+    // Check if it's a radio button
+    if ($input.attr("type") === "radio") {
+      // Convert radio button to checkbox
+      var $checkbox = $("<input>", {
+        type: "checkbox",
+        class: "checkbox-small", // Add the "checkbox-small" class
+        id: $input.attr("id"), // Preserve the ID
+        name: $input.attr("name"), // Preserve the name
+        value: $input.val() // Preserve the value
+      });
+
+      // Create a label for the checkbox with the same text
+      var $newLabel = $("<label>", {
+        class: "label-small", // Add the "label-small" class
+        for: $input.attr("id"),
+        text: $label.text() // Copy the label text from the radio button
+      });
+
+      // Replace the radio button and label with the checkbox and new label
+      $input.replaceWith($checkbox);
+      $label.replaceWith($newLabel);
+    }
+    // If it's a checkbox, convert it back to a radio button
+    else if ($input.attr("type") === "checkbox") {
+      // Create a radio button from the checkbox
+      var $radioButton = $("<input>", {
+        type: "radio",
+        class: "radio-small", // Add the "radio-small" class
+        id: $input.attr("id"), // Preserve the ID
+        name: $input.attr("name"), // Preserve the name
+        value: $input.val() // Preserve the value
+      });
+
+      // Create a label for the radio button with the same text
+      var $newLabel = $("<label>", {
+        for: $input.attr("id"),
+        text: $label.text() // Copy the label text from the checkbox
+      });
+
+      // Replace the checkbox and label with the radio button and new label
+      $input.replaceWith($radioButton);
+      $label.replaceWith($newLabel);
+    }
+  });
+}
+
+async function formatORResponse(model, requestJson) {
+  let ORjson = await getORData(model, requestJson);
+  let aiResponse = ORjson.choices[0].message.content;
+  let formattedText = formatAIResponse(aiResponse);
+  return formattedText;
 }
