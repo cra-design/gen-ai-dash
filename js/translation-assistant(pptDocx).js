@@ -8,18 +8,28 @@ document.addEventListener("DOMContentLoaded", function () {
   const apiKeySubmitBtn = document.getElementById("api-key-submit-btn"); // API key submit button
   const documentUploadContainer = document.getElementById("document-upload-container"); // Upload section
 
-  // Show API key input first and hide the upload section
-  apiKeyEntry.style.display = "block";
-  documentUploadContainer.style.display = "none";
+  // *** NEW: Check if the URL has a 'key' parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has("key")) {
+    // If a key is provided in the URL, hide the API key entry and show the upload screen immediately.
+    apiKeyEntry.style.display = "none";
+    documentUploadContainer.style.display = "block";
+  } else {
+    // Otherwise, show the API key entry and hide the upload section.
+    apiKeyEntry.style.display = "block";
+    documentUploadContainer.style.display = "none";
+  }
 
-  // Clear any previously stored API key (forcing re-entry each time)
+  // Clear any previously stored API key (if desired)
   sessionStorage.removeItem("openRouterApiKey");
 
-  // When the API key is submitted, store it in session and show the upload section
+  // When the API key is submitted, store it in session and show the upload section.
+  // Note: Your content-assistant code also reloads the page with the key parameter.
   apiKeySubmitBtn.addEventListener("click", function () {
     const apiKey = apiKeyInput.value.trim();
     if (apiKey) {
       sessionStorage.setItem("openRouterApiKey", apiKey);
+      // Hide the API key section and show the upload container.
       apiKeyEntry.style.display = "none";
       documentUploadContainer.style.display = "block";
     } else {
@@ -27,6 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
 
 // --------------------
 // Global Variables & File Type Detection
