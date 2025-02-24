@@ -296,6 +296,8 @@ $(document).ready(function() {
               requestJson = [systemGeneral, systemTask, userContent, userData];
               formattedText.b = formatORResponse(model[0], requestJson);
             }
+            console.log("A: " + formattedText.a);
+            console.log("B: " + formattedText.b);
             let labelText = $(`label[for='${task.id}']`).text().trim();
             let reportCount = 0; // Counter to ensure unique IDs
             if (formattedText.b != "") {
