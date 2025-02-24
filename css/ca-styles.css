@@ -338,16 +338,17 @@ label {
   display: flex;
 }
 
-.sidebyside-label {
-  text-align: left;
-}
-
 /* Wrapper to ensure the toolbar is stacked above the iframe */
 .sidebyside-container {
   display: flex;
   flex-direction: column; /* Stack toolbar and iframe vertically */
   width: 100%; /*Default full, but js to toggle 50%*/
   border: 1px solid black;
+  text-align: left;
+}
+
+.sidebyside-report {
+  padding: 10px;
 }
 
 /* Iframe styling */

@@ -319,7 +319,7 @@ function hideAllSpinners() {
 // Function to create a basic report
 function createBasicReport(labelText, formattedText) {
   return $(
-    '<div class="generated-report">' +
+    '<div class="generated-report sidebyside-container">' +
       '<h4>' + labelText + '</h4>' +
       '<p>' + formattedText.a + '</p>' +
     '</div>'
@@ -343,8 +343,10 @@ function createSideBySideReport(counter, labelText, formattedText) {
             <i class="fa fa-check"></i>
           </button>
         </div>
-        <p id="${titleIdA}" class="strong sidebyside-label">${labelText} (A)</p>
-        <p>${formattedText.a}</p>
+        <div class="sidebyside-report">
+          <h4 id="${titleIdA}">${labelText} (A)</h4>
+          <p>${formattedText.a}</p>
+        </div>
       </div>
       <div id="${reportIdB}" class="report-container-B sidebyside-container hidden">
         <div id="${toolboxIdB}" class="toolbar">
@@ -352,8 +354,10 @@ function createSideBySideReport(counter, labelText, formattedText) {
             <i class="fa fa-check"></i>
           </button>
         </div>
-        <p id="${titleIdB}" class="strong">${labelText} (B)</p>
-        <p>${formattedText.b}</p>
+        <div class="sidebyside-report">
+          <h4 id="${titleIdB}">${labelText} (B)</h4>
+          <p>${formattedText.b}</p>
+        </div>
       </div>
     </div>
   `);
