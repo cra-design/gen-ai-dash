@@ -334,6 +334,11 @@ label {
   width: 100%; /* Ensure it spans the full width */
 }
 
+.overlay-content {
+  padding-left: 100px;
+  padding-right: 15px;
+}
+
 .sidebyside-wrapper {
   display: flex;
 }
