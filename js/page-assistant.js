@@ -350,7 +350,7 @@ $(document).ready(function() {
       document.getElementById("genai-nav").style.width = "0%";
   });
 
-  $(document).on('click', '.toolbar-button', function() {
+  $(document).on('click', '#genai-nav .toolbar-button', function() {
       const counter = $(this).attr('id').split('-').pop();
       let selectedOption = "";
       // Check which button was clicked
