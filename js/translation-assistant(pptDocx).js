@@ -481,20 +481,30 @@ function formatAIResponse(aiResponse, fileType) {
   if (!aiResponse) return "";
   let raw = removeCodeFences(aiResponse).trim();
   raw = unescapeHTMLEntities(raw);
-  console.log("Unescaped AI response:", raw);
+  console.log("Full AI Response:\n", raw); // Debugging step
 
   if (fileType === "pptx") {
-    // Ensure the AI response contains the slide tag
-    if (!raw.includes("<p:sld") || !raw.includes("</p:sld>")) {
-      console.error("Invalid AI response for PPTX: Expected <p:sld> structure. Raw output:", raw);
+   // Allow variations in whitespace and XML headers
+    const normalizedRaw = raw.replace(/\s+/g, " ");  // Normalize spaces
+
+    // Check if it contains the necessary structure
+    if (!normalizedRaw.includes("<p:sld")) {
+      console.error("DEBUG: AI response does not contain <p:sld>. Raw output:", raw);
       alert("The AI response for PPTX is missing the <p:sld> structure.");
       return "";
     }
 
-    // Ensure it contains at least one text placeholder
-    if (!raw.includes("<a:t>")) {
-      console.error("Invalid AI response for PPTX: Missing text placeholders (<a:t>). Raw output:", raw);
+    // Ensure it has text placeholders (<a:t>)
+    if (!normalizedRaw.includes("<a:t>")) {
+      console.error("DEBUG: AI response does not contain <a:t>. Raw output:", raw);
       alert("The AI response for PPTX is missing text placeholders.");
+      return "";
+    }
+
+    // Ensure a proper closing tag
+    if (!normalizedRaw.includes("</p:sld>")) {
+      console.error("DEBUG: AI response may be truncated. Missing </p:sld>. Raw output:", raw);
+      alert("The AI response appears to be truncated or incomplete.");
       return "";
     }
   } else {
@@ -504,13 +514,6 @@ function formatAIResponse(aiResponse, fileType) {
       alert("The AI response is not in the correct XML format.");
       return "";
     }
-  }
-
-  // Ensure the response is properly closed
-  if (!raw.includes("</")) {
-    console.error("Invalid AI response: Missing closing XML tags. Raw output:", raw);
-    alert("The AI response is missing closing XML structure.");
-    return "";
   }
 
   return raw;
