@@ -655,6 +655,8 @@ async function applyCanadaHtmlTemplate(extractedHtml) {
       // If no class="container", just add it and include the <div class="main"> below it
       newHeader = newHeader.replace('<main>', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement"><div class="container">');
     }
+    console.log(newHeader);
+    console.log(extractedHtml.replace(/<main[^>]*/, "hi"));
     extractedHtml = extractedHtml
       .replace(/<main[^>]*/, newHeader)
       .replace('</main>', newFooter)
