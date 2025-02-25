@@ -372,7 +372,7 @@ $(document).ready(function() {
                             `&entry.984404841=${selectedOption}` +
                             `&entry.510997766=${model[0]}` +
                             `&entry.999305171=${model[1]}`;
-      window.location.href = googleFormURL;
+      window.open(googleFormURL, '_blank');
   });
 
 }); //close document ready
