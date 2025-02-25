@@ -424,25 +424,28 @@ function hideError(elementId) {
     el.style.display = "none";
   }
 }
-
+// Utility: Unescape HTML entities (converts &lt; to <, etc.)
+function unescapeHTMLEntities(str) {
+  const txt = document.createElement("textarea");
+  txt.innerHTML = str;
+  return txt.value;
+}
 // --------------------
 // Utility Functions: removeCodeFences and formatAIResponse
 // --------------------
 /* Removes any triple-backtick code fences from the AI response */
 function removeCodeFences(str) {
-  return str
-    .replace(/^```[a-zA-Z]*\s*/, '')
-    .replace(/```$/, '') 
-    .replace(/```[^\n]*\n?/g, "") 
-    .replace(/```/g, "")
-    .trim();
+  // Remove any triple-backticks (with or without language specifiers)
+  return str.replace(/```[^\n]*\n?/g, "").replace(/```/g, "").trim();
 }
 
 /* Validates the AI response to ensure it returns valid XML */
 function formatAIResponse(aiResponse) {
   if (!aiResponse) return "";
-  let raw = removeCodeFences(aiResponse).trim();  // Ensure extra whitespace is removed
-  console.log("Raw AI response after removing code fences:", raw);
+  let raw = removeCodeFences(aiResponse).trim();  // Ensure extra whitespace is removed 
+    // Unescape HTML entities (so &lt; becomes <, etc.)
+  raw = unescapeHTMLEntities(raw);
+  console.log("Unescaped AI response:", raw);
 
   // Check if the response starts with an XML tag
   if (!raw.startsWith("<?xml") && raw.indexOf("<") !== 0) {
