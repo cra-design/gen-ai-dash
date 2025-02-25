@@ -332,7 +332,7 @@ submitBtn.addEventListener("click", async () => {
         2️. DO NOT modify any other XML structure, attributes, or formatting. 
         3️. ALWAYS return a complete and valid XML file.
         4️. Do NOT include markdown, comments, or extra formatting.
-        5️. Ensure that the entire slide XML is returned, including the closing </p:sld> tag, with no truncation.`
+        5️. Ensure the complete XML is returned with all opening and closing tags, including </p:sld>, and no truncation occurs.(most important thing!)`
     },
     {
       role: "user",
