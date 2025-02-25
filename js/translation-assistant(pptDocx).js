@@ -323,22 +323,28 @@ submitBtn.addEventListener("click", async () => {
 
       for (let i = 0; i < slideFiles.length; i++) {
         let slideXml = slideFiles[i].asText();
-        let requestJson = {
-          messages: [
-            {
-              role: "system",
-              content: "You are a PowerPoint formatting assistant. Replace only the text inside <a:t> tags with the provided French text. Preserve all XML tags, attributes, and relationships exactly as they are. Return only the updated valid XML with no extra commentary or code fences."
-            },
-            {
-              role: "user",
-              content: "English slide XML: " + escapeXML(slideXml)
-            },
-            {
-              role: "user",
-              content: "French content (plain text): " + escapeXML(frenchContent)
-            }
-          ]
-        };
+       let requestJson = {
+  messages: [
+    {
+      role: "system",
+      content: `You are a PowerPoint XML processing assistant. 
+        1️. Replace ONLY the text inside <a:t> tags with the provided French text. 
+        2️. DO NOT modify any other XML structure, attributes, or formatting. 
+        3️. ALWAYS return a complete and valid XML file.
+        4️. Do NOT include markdown, comments, or extra formatting.
+        5️. Ensure that the entire slide XML is returned, including the closing </p:sld> tag, with no truncation.`
+    },
+    {
+      role: "user",
+      content: `English slide XML:\n${escapeXML(slideXml)}`
+    },
+    {
+      role: "user",
+      content: `French content (plain text):\n${escapeXML(frenchContent)}`
+    }
+  ]
+};
+
 
         console.log("Sending PPTX prompt for slide", slideFiles[i].name);
         let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
