@@ -8,28 +8,24 @@ document.addEventListener("DOMContentLoaded", function () {
   const apiKeySubmitBtn = document.getElementById("api-key-submit-btn"); // API key submit button
   const documentUploadContainer = document.getElementById("document-upload-container"); // Upload section
 
-  // *** NEW: Check if the URL has a 'key' parameter
+  // Check if the URL has a 'key' parameter; if yes, show upload screen immediately
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has("key")) {
-    // If a key is provided in the URL, hide the API key entry and show the upload screen immediately.
     apiKeyEntry.style.display = "none";
     documentUploadContainer.style.display = "block";
   } else {
-    // Otherwise, show the API key entry and hide the upload section.
     apiKeyEntry.style.display = "block";
     documentUploadContainer.style.display = "none";
   }
 
-  // Clear any previously stored API key (if desired)
+  // Clear any previously stored API key
   sessionStorage.removeItem("openRouterApiKey");
 
-  // When the API key is submitted, store it in session and show the upload section.
-  // Note: Your content-assistant code also reloads the page with the key parameter.
+  // When the API key is submitted, store it and show the upload section
   apiKeySubmitBtn.addEventListener("click", function () {
     const apiKey = apiKeyInput.value.trim();
     if (apiKey) {
       sessionStorage.setItem("openRouterApiKey", apiKey);
-      // Hide the API key section and show the upload container.
       apiKeyEntry.style.display = "none";
       documentUploadContainer.style.display = "block";
     } else {
@@ -38,17 +34,14 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-
 // --------------------
 // Global Variables & File Type Detection
 // --------------------
-/* Global variables to store the binary data and file type of the uploaded files */
 let englishFileData = null;
 let englishFileType = null;
 let frenchFileData = null;
 let frenchFileType = null;
 
-/* *** UPDATE: Function to detect file type based on file extension */
 function getFileType(file) {
   const name = file.name.toLowerCase();
   if (name.endsWith(".docx")) return "docx";
@@ -69,7 +62,7 @@ const submitBtn = document.getElementById("submit-btn");
 const downloadLink = document.getElementById("downloadLink");
 
 // --------------------
-// Radio Button Logic: Toggle Between Plain Text and File Upload for French Content
+// Radio Button Logic: Toggle Between Plain Text & File for French
 // --------------------
 const radioOptions = document.getElementsByName("french-input-option");
 radioOptions.forEach(radio => {
@@ -91,15 +84,13 @@ function handleFileInput(fileInput, errorElementId, fileRole) {
   fileInput.addEventListener("change", (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Determine the file type using the extension
       const type = getFileType(file);
       if (!type) {
         showError(errorElementId, "Only DOCX, PPTX, or XLSX files are allowed for English, and DOCX for French.");
         if (fileRole === "english") {
           englishFileData = null;
           englishFileType = null;
-        }
-        if (fileRole === "french") {
+        } else {
           frenchFileData = null;
           frenchFileType = null;
         }
@@ -112,8 +103,7 @@ function handleFileInput(fileInput, errorElementId, fileRole) {
           englishFileData = e.target.result;
           englishFileType = type;
           console.log("English file loaded. Type:", type);
-        }
-        if (fileRole === "french") {
+        } else {
           frenchFileData = e.target.result;
           frenchFileType = type;
           console.log("French file loaded. Type:", type);
@@ -124,7 +114,6 @@ function handleFileInput(fileInput, errorElementId, fileRole) {
   });
 }
 
-// Attach file input listeners for both English and French file inputs
 handleFileInput(englishFileInput, "english-error", "english");
 handleFileInput(frenchFileInput, "french-error", "french");
 
@@ -135,34 +124,32 @@ function getApiKey() {
   return document.getElementById("api-key").value.trim();
 }
 
-/* Escapes XML special characters to prevent errors in the API request */
 function escapeXML(xml) {
-  return xml.replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&apos;");
+  return xml
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
-/* Generates a simple DOCX XML structure from plain text (used when French content is provided as text) */
 function generateSimpleDocXml(text) {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-  <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-    <w:body>
-      <w:p>
-        <w:r>
-          <w:t>${escapeXML(text)}</w:t>
-        </w:r>
-      </w:p>
-    </w:body>
-  </w:document>`;
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:t>${escapeXML(text)}</w:t>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>`;
 }
 
 // --------------------
 // Submit Button Handler: Processes English File Based on Its Type
 // --------------------
 submitBtn.addEventListener("click", async () => {
-  // Check for API key and that an English file is provided
   const apiKey = getApiKey();
   if (!apiKey) {
     alert("Please enter a valid OpenRouter API key before proceeding.");
@@ -173,8 +160,7 @@ submitBtn.addEventListener("click", async () => {
     return;
   }
 
-  // Determine French content mode: plain text (textarea) or file
-  let frenchContentMode = "textarea"; // default mode
+  let frenchContentMode = "textarea";
   radioOptions.forEach(radio => {
     if (radio.checked) frenchContentMode = radio.value;
   });
@@ -189,7 +175,6 @@ submitBtn.addEventListener("click", async () => {
       hideError("french-text-error");
     }
   } else {
-    // If using file mode, ensure a French file is provided (must be DOCX)
     if (!frenchFileData) {
       alert("Please upload the French document or select 'Paste French text'.");
       return;
@@ -197,12 +182,11 @@ submitBtn.addEventListener("click", async () => {
   }
 
   try {
-    // Open the English file using PizZip
     const zipEN = new PizZip(englishFileData);
 
-    // --- Branch Processing Based on English File Type ---
+    // Branch based on English file type
     if (englishFileType === "docx") {
-      // DOCX Processing:
+      // DOCX Processing: Let the AI rewrite the document.xml
       let enDocumentXml = zipEN.file("word/document.xml").asText();
       console.log("Original DOCX XML:", enDocumentXml);
       let enDocumentRels = zipEN.file("word/_rels/document.xml.rels")?.asText();
@@ -211,11 +195,8 @@ submitBtn.addEventListener("click", async () => {
         alert("Invalid DOCX: Missing relationships file.");
         return;
       }
-      // Preserve the relationships file
       zipEN.file("word/_rels/document.xml.rels", enDocumentRels);
 
-      // Determine French XML:
-      // If French file is provided (and is DOCX), extract its XML; otherwise, generate a simple XML from plain text.
       let frDocumentXml = "";
       if (frenchContentMode === "file" && frenchFileType === "docx") {
         frDocumentXml = new PizZip(frenchFileData).file("word/document.xml").asText();
@@ -223,35 +204,30 @@ submitBtn.addEventListener("click", async () => {
         frDocumentXml = generateSimpleDocXml(frenchTextData);
       }
 
-      // --- Build AI Prompt for DOCX ---
-    let requestJson = {
-    messages: [
-      {
-        role: "system",
-        content: "You are a DOCX formatting assistant. Your task is to update a Word document's XML by replacing the English text with the provided French content. Replace only the text inside <w:t> tags while leaving all other XML tags, namespaces, and attributes unchanged. Return only the updated valid XML without any extra commentary or code fences."
-      },
-      {
-        role: "user",
-        content: "English DOCX XML: " + escapeXML(enDocumentXml)
-      },
-      {
-        role: "user",
-        content: "French content: " + escapeXML(frDocumentXml)
-      }
-    ]
-  };
+      let requestJson = {
+        messages: [
+          {
+            role: "system",
+            content: "You are a DOCX formatting assistant. Replace only the text inside <w:t> tags with the provided French text. Preserve all other XML tags, namespaces, and attributes. Return only valid XML with no extra commentary or code fences."
+          },
+          {
+            role: "user",
+            content: "English DOCX XML: " + escapeXML(enDocumentXml)
+          },
+          {
+            role: "user",
+            content: "French content: " + escapeXML(frDocumentXml)
+          }
+        ]
+      };
 
       let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
       if (!ORjson) return;
       let aiResponse = ORjson.choices[0]?.message?.content || "";
       let formattedText = formatAIResponse(aiResponse);
       if (!formattedText) return;
-
-      // Write the updated XML back into the DOCX zip
       zipEN.file("word/document.xml", formattedText);
-      zipEN.file("word/_rels/document.xml.rels", enDocumentRels);
 
-      // Update [Content_Types].xml if necessary
       let contentTypes = zipEN.file("[Content_Types].xml")?.asText();
       if (contentTypes && !contentTypes.includes("word/document.xml")) {
         contentTypes = contentTypes.replace(
@@ -260,61 +236,53 @@ submitBtn.addEventListener("click", async () => {
         );
         zipEN.file("[Content_Types].xml", contentTypes);
       }
-// --------------------
-// PPTX Processing Branch
-// --------------------
+
     } else if (englishFileType === "pptx") {
-      // PPTX Processing:
-      // For PPTX, we update each slide's XML (located in ppt/slides/)
-      // Use French content from plain text or, if available, extract text from a French DOCX.
+      // PPTX Processing: Let the AI rewrite each slide's XML, then unescape its output.
       let frenchContent = "";
       if (frenchContentMode === "file" && frenchFileType === "docx") {
-      let frenchDocXml = new PizZip(frenchFileData).file("word/document.xml").asText();
-      frenchContent = extractFrenchText(frenchDocXml);
-    } else {
-      frenchContent = frenchTextData;
-    }
+        let frenchDocXml = new PizZip(frenchFileData).file("word/document.xml").asText();
+        frenchContent = extractFrenchText(frenchDocXml);
+      } else {
+        frenchContent = frenchTextData;
+      }
 
-      // Find all slide XML files (e.g., slide1.xml, slide2.xml, etc.)
-      let slideFiles = zipEN.file(/ppt\/slides\/slide\d+\.xml/);
+      const slideFiles = zipEN.file(/ppt\/slides\/slide\d+\.xml/);
       if (!slideFiles || slideFiles.length === 0) {
         throw new Error("No slide files found in PPTX.");
       }
-      // Process each slide file using an AI prompt tailored for PowerPoint
+
       for (let i = 0; i < slideFiles.length; i++) {
         let slideXml = slideFiles[i].asText();
         let requestJson = {
-      messages: [
-        {
-          role: "system",
-          content: "You are a PowerPoint formatting assistant. Keep every XML tag, attribute, relationship, and   shape placeholder exactly the same. Only replace the English text inside <a:t> tags with the provided French text. Return valid XML that PowerPoint can open without repair. Do not remove or alter any other XML elements, attributes, or references."
-        },
-        {
-          role: "user",
-          content: "English slide XML: " + escapeXML(slideXml)
-        },
-        {
-          role: "user",
-          content: "French content (plain text): " + escapeXML(frenchContent)
-        }
-      ]
-    }; 
+          messages: [
+            {
+              role: "system",
+              content: "You are a PowerPoint formatting assistant. Replace only the text inside <a:t> tags with the provided French text. Preserve all XML tags, attributes, and relationships exactly as they are. Return only the updated valid XML with no extra commentary or code fences."
+            },
+            {
+              role: "user",
+              content: "English slide XML: " + escapeXML(slideXml)
+            },
+            {
+              role: "user",
+              content: "French content (plain text): " + escapeXML(frenchContent)
+            }
+          ]
+        };
+
         console.log("Sending PPTX prompt for slide", slideFiles[i].name);
         let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
         if (!ORjson) return;
-        let aiResponse = ORjson.choices[0]?.message?.content || ""; 
+        let aiResponse = ORjson.choices[0]?.message?.content || "";
         console.log("Raw AI Response for slide", slideFiles[i].name, ":", aiResponse);
         let formattedSlideXml = formatAIResponse(aiResponse);
         if (!formattedSlideXml) return;
-        // Update the slide file in the PPTX zip
         zipEN.file(slideFiles[i].name, formattedSlideXml);
       }
-    // --------------------
-   // XLSX Processing Branch
-   // --------------------
+
     } else if (englishFileType === "xlsx") {
-      // XLSX (Excel) Processing:
-      // For Excel, update the shared strings in xl/sharedStrings.xml (text is in <t> tags)
+      // XLSX Processing: Let the AI rewrite the sharedStrings.xml
       let sharedStringsXml = zipEN.file("xl/sharedStrings.xml")?.asText();
       if (!sharedStringsXml) {
         throw new Error("No sharedStrings.xml found in XLSX.");
@@ -330,7 +298,7 @@ submitBtn.addEventListener("click", async () => {
         messages: [
           {
             role: "system",
-            content: "You are an Excel formatting assistant. Your task is to update an Excel file's sharedStrings XML by replacing the English text with the provided French content. Replace only the text inside <t> tags while leaving all XML tags, namespaces, and attributes unchanged. Return only valid XML without any extra commentary or code fences."
+            content: "You are an Excel formatting assistant. Replace only the text inside <t> tags in the sharedStrings XML with the provided French text, preserving all other XML structure. Return only valid XML with no extra commentary or code fences."
           },
           {
             role: "user",
@@ -342,31 +310,29 @@ submitBtn.addEventListener("click", async () => {
           }
         ]
       };
+
       let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
       if (!ORjson) return;
       let aiResponse = ORjson.choices[0]?.message?.content || "";
       let formattedSharedStringsXml = formatAIResponse(aiResponse);
       if (!formattedSharedStringsXml) return;
-      // Write the updated shared strings back to the XLSX zip
       zipEN.file("xl/sharedStrings.xml", formattedSharedStringsXml);
+
     } else {
       alert("Unsupported English file type.");
       return;
     }
 
-    // --------------------
-    // Generate the New File and Set Up Download Link
-    // --------------------
+    // Generate the new file and set up the download link
     const newFileBlob = zipEN.generate({ type: "blob", compression: "DEFLATE" });
     const newFileUrl = URL.createObjectURL(newFileBlob);
     downloadLink.href = newFileUrl;
-    // Set the download file extension to match the English file type
     let ext = (englishFileType === "docx") ? "docx" : (englishFileType === "pptx") ? "pptx" : (englishFileType === "xlsx") ? "xlsx" : "out";
     downloadLink.download = `french-translated.${ext}`;
     downloadLink.style.display = "inline";
     downloadLink.textContent = "Download Formatted Document";
     alert("Success! Your formatted document is ready to download.");
-
+    
   } catch (error) {
     console.error("Error during processing:", error);
     alert("An error occurred while processing the document: " + error.message);
@@ -374,7 +340,7 @@ submitBtn.addEventListener("click", async () => {
 });
 
 // --------------------
-// Function to Send Request to OpenRouter API
+// getORData: Send Request to OpenRouter API
 // --------------------
 async function getORData(model, requestJson) {
   const apiKey = getApiKey();
@@ -408,7 +374,7 @@ async function getORData(model, requestJson) {
 }
 
 // --------------------
-// Utility Functions: showError and hideError
+// showError & hideError
 // --------------------
 function showError(elementId, message) {
   const el = document.getElementById(elementId);
@@ -417,57 +383,42 @@ function showError(elementId, message) {
     el.style.display = "block";
   }
 }
-
 function hideError(elementId) {
   const el = document.getElementById(elementId);
   if (el) {
     el.style.display = "none";
   }
 }
-// Utility: Unescape HTML entities (converts &lt; to <, etc.)
+
+// --------------------
+// Utility: Unescape HTML Entities, removeCodeFences, and formatAIResponse
+// --------------------
 function unescapeHTMLEntities(str) {
   const txt = document.createElement("textarea");
   txt.innerHTML = str;
   return txt.value;
 }
-// --------------------
-// Utility Functions: removeCodeFences and formatAIResponse
-// --------------------
-/* Removes any triple-backtick code fences from the AI response */
 function removeCodeFences(str) {
-  // Remove any triple-backticks (with or without language specifiers)
   return str.replace(/```[^\n]*\n?/g, "").replace(/```/g, "").trim();
 }
-
-/* Validates the AI response to ensure it returns valid XML */
 function formatAIResponse(aiResponse) {
   if (!aiResponse) return "";
-  let raw = removeCodeFences(aiResponse).trim();  // Ensure extra whitespace is removed 
-    // Unescape HTML entities (so &lt; becomes <, etc.)
+  let raw = removeCodeFences(aiResponse).trim();
   raw = unescapeHTMLEntities(raw);
   console.log("Unescaped AI response:", raw);
-
-  // Check if the response starts with an XML tag
   if (!raw.startsWith("<?xml") && raw.indexOf("<") !== 0) {
     console.error("Invalid AI response: XML does not start with an XML tag. Raw output:", raw);
     alert("The AI response is not in the correct XML format.");
     return "";
   }
-  
-  // Optionally, check if there is at least one closing tag
   if (raw.indexOf("</") === -1) {
     console.error("Invalid AI response: Missing closing XML tags. Raw output:", raw);
     alert("The AI response is missing closing XML structure.");
     return "";
   }
-  
   return raw;
 }
 
-// --------------------
-// Optional Utility Function: extractFrenchText (for DOCX XML)
-// --------------------
-/* Extracts text from all <w:t> tags within DOCX XML */
 function extractFrenchText(docXml) {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(docXml, "application/xml");
