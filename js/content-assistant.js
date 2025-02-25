@@ -15,7 +15,7 @@ $(document).ready(async function() {
         updateLinks('key=' + keyParam); // Passing only the key param here
         if (urlParam && currentPath.includes('page-assistant.html')) {
           //preload the page
-          updateIframeFromURL(urlParam);
+          await updateIframeFromURL(urlParam);
         }
     }
     $("#api-key-submit-btn").click(function(){
