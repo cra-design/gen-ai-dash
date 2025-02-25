@@ -167,17 +167,21 @@ function removeCodeFences(str) {
 */
 function formatAIResponse(aiResponse, fileType) {
   if (!aiResponse) return "";
-  // Remove any code fences and trim whitespace
   let raw = removeCodeFences(aiResponse).trim();
-  // Unescape HTML entities and trim again to remove any leading whitespace introduced by unescaping
-  raw = unescapeHTMLEntities(raw).trim();
+  raw = unescapeHTMLEntities(raw);
   console.log("Unescaped AI response:", raw);
-  
+
   if (fileType === "pptx") {
-    // Instead of strictly checking startsWith, use indexOf to allow leading whitespace
-    if (raw.indexOf("<p:sld") === -1 || raw.indexOf('xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"') === -1) {
+    // Ensure it contains <p:sld> which represents a valid PowerPoint slide structure
+    if (!raw.includes("<p:sld")) {
       console.error("Invalid AI response for PPTX: Expected PPTX slide structure. Raw output:", raw);
       alert("The AI response for PPTX is not in the correct XML format.");
+      return "";
+    }
+    // Ensure it has at least one <a:t> tag, which is where text is stored
+    if (!raw.includes("<a:t>")) {
+      console.error("Invalid AI response for PPTX: Missing text placeholders (<a:t>). Raw output:", raw);
+      alert("The AI response for PPTX is missing text placeholders.");
       return "";
     }
   } else {
@@ -187,13 +191,13 @@ function formatAIResponse(aiResponse, fileType) {
       return "";
     }
   }
-  
+
   if (raw.indexOf("</") === -1) {
     console.error("Invalid AI response: Missing closing XML tags. Raw output:", raw);
     alert("The AI response is missing closing XML structure.");
     return "";
   }
-  
+
   return raw;
 }
 
