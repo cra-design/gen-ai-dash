@@ -350,15 +350,6 @@ function extractFields(html) {
 
     const $html = $('<div>').append(html); // Wrap in a parent container
 
-    //const metaTags = $html.find('meta'); // Now `.find()` will catch everything
-    //console.log(metaTags);
-
-    // const $html = $(html);
-    // console.log($html);
-    //
-    // const metaTags = $html.find('meta');
-    // console.log(metaTags);
-
     // Extract specific fields
     const h1 = $html.find('h1').first().text().trim() || 'Not Found';
     const metaKeywords = $html.find('meta[name="keywords"]').attr('content') || 'Not Found';
@@ -366,50 +357,74 @@ function extractFields(html) {
     const metaDescription = metaDescriptionTag.length && metaDescriptionTag.attr('content')
         ? metaDescriptionTag.attr('content').trim()
         : 'Not Found';
-    // Extract the first <p> after the <h1>
-    const introParagraph = $html.find('h1').first().nextAll('p').first().text().trim() || 'Not Found';
-    // Extract full body content
-    // Extract "doormats" sections into an array
-    const alerts = [];
-    $html.find('.alert').each(function () {
-        const alertHTML = $(this).prop('outerHTML');
-        alerts.push(alertHTML ? alertHTML.trim() : 'Not Found');
-    });
-    const doormats = [];
-    $html.find('.gc-srvinfo section').each(function () {
-        const $section = $(this);
-        const link = $section.find('h3 a').attr('href') || 'No link';
-        const title = $section.find('h3 a').text().trim() || 'No title';
-        const description = $section.find('p').text().trim() || 'No description';
-        doormats.push({ link, title, description });
-    });
-    // Assign "Not Found" if no doormats were extracted
-    const doormatsResult = doormats.length > 0 ? doormats : 'Not Found';
-    // Extract all tables as an array
-    const tables = [];
-    $html.find('table').each(function () {
-        const tableHTML = $(this).prop('outerHTML');
-        tables.push(tableHTML ? tableHTML.trim() : 'Not Found');
-    });
-    // Assign "Not Found" if no tables were extracted
-    const tablesResult = tables.length > 0 ? tables : 'Not Found';
-    // Extract full body content
-    const bodyContentRaw = $html.find('body').html(); // Untrimmed content
-    const bodyContent = bodyContentRaw ? bodyContentRaw.trim() : 'Not Found'; // Trimmed content
-
+    // const introParagraph = $html.find('h1').first().nextAll('p').first().text().trim() || 'Not Found';
+    //
+    // // Extract alerts
+    // const alerts = [];
+    // $html.find('.alert').each(function () {
+    //     const alertHTML = $(this).prop('outerHTML');
+    //     alerts.push(alertHTML ? alertHTML.trim() : 'Not Found');
+    // });
+    // const alertsResult = alerts.length > 0 ? alerts : 'Not Found';
+    //
+    // // Extract doormats
+    // const doormats = [];
+    // $html.find('.gc-srvinfo').find('.col-lg-4.col-md-6').each(function () {
+    //     const $section = $(this);
+    //     const link = $section.find('h3 a').attr('href') || 'No link';
+    //     const title = $section.find('h3 a').text().trim() || 'No title';
+    //     const description = $section.find('p').text().trim() || 'No description';
+    //     doormats.push({ link, title, description });
+    // });
+    // const doormatsResult = doormats.length > 0 ? doormats : 'Not Found';
+    //
+    // // Extract tables
+    // const tables = [];
+    // $html.find('table').each(function () {
+    //     const tableHTML = $(this).prop('outerHTML');
+    //     tables.push(tableHTML ? tableHTML.trim() : 'Not Found');
+    // });
+    // const tablesResult = tables.length > 0 ? tables : 'Not Found';
+    //
+    // // Extract full body content
+    // const bodyContentRaw = $html.find('body').html();
+    // const bodyContent = bodyContentRaw ? bodyContentRaw.trim() : 'Not Found';
+    //
+    // // Extract H2 sections
+    // const h2Sections = [];
+    // $html.find('h2').each(function () {
+    //     const $h2 = $(this);
+    //     const title = $h2.text().trim();
+    //     let $content = $('<div></div>');
+    //     let $next = $h2.next();
+    //
+    //     // Collect all sibling elements until the next <h2> or end of container
+    //     while ($next.length && $next.prop('tagName') !== 'H2') {
+    //         $content.append($next.clone());
+    //         $next = $next.next();
+    //     }
+    //
+    //     // Store the section data
+    //     h2Sections.push({
+    //         title: title,
+    //         content: $content.html().trim()
+    //     });
+    // });
 
     // Return extracted fields
     return {
         h1,
         metaDescription,
         metaKeywords,
-        // alerts: alertsResult
+        // alerts: alertsResult,
         // introParagraph,
         // doormats: doormatsResult,
         // tables: tablesResult,
-        // bodyContent,
+        // h2Sections // Add this to the return object
+        // bodyContent
     };
 }
+
 
 // Function to render the full HTML and extracted fields
 function renderHTMLFields(fullHtml, fields) {
@@ -418,7 +433,7 @@ function renderHTMLFields(fullHtml, fields) {
     Prism.highlightElement(document.querySelector("#fullHtml code"));
 
     // Display the extracted fields in the table
-    const $tableBody = $('#extractedFields');
+    const $tableBody = $('#extractedMetadataFields');
     $tableBody.empty(); // Clear any previous data
 
     Object.keys(fields).forEach(field => {
@@ -429,6 +444,8 @@ function renderHTMLFields(fullHtml, fields) {
             </tr>
         `);
     });
+
+
 }
 
 function convertTextToHTML(text) {
