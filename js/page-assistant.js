@@ -70,7 +70,7 @@ $(document).ready(function() {
 
   $("#url-upload-btn").click(async function(){
     updateIframeFromURL($('#url-input').val());
-  }
+  });
 
   $("#html-upload-btn").click(function() {
     // $("#html-preview").html($("#html-input").html());
