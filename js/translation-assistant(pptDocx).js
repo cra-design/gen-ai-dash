@@ -167,12 +167,15 @@ function removeCodeFences(str) {
 */
 function formatAIResponse(aiResponse, fileType) {
   if (!aiResponse) return "";
+  // Remove any code fences and trim whitespace
   let raw = removeCodeFences(aiResponse).trim();
-  raw = unescapeHTMLEntities(raw);
+  // Unescape HTML entities and trim again to remove any leading whitespace introduced by unescaping
+  raw = unescapeHTMLEntities(raw).trim();
   console.log("Unescaped AI response:", raw);
   
   if (fileType === "pptx") {
-    if (!raw.startsWith("<p:sld") || raw.indexOf('xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"') === -1) {
+    // Instead of strictly checking startsWith, use indexOf to allow leading whitespace
+    if (raw.indexOf("<p:sld") === -1 || raw.indexOf('xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"') === -1) {
       console.error("Invalid AI response for PPTX: Expected PPTX slide structure. Raw output:", raw);
       alert("The AI response for PPTX is not in the correct XML format.");
       return "";
