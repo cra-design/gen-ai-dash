@@ -13,10 +13,10 @@ $(document).ready(function() {
         $('.after-key-unhide').removeClass("hidden");
         // Get the current URL's query string (e.g., ?key=value&other=param)
         updateLinks('key=' + keyParam); // Passing only the key param here
-        // if (urlParam && currentPath.includes('page-assistant.html')) {
-        //   //preload the page
-        //   await updateIframeFromURL(urlParam);
-        // }
+        if (urlParam && currentPath.includes('page-assistant.html')) {
+          //preload the page
+          updateIframeFromURL(urlParam);
+        }
     }
     $("#api-key-submit-btn").click(function(){
       //validate the key to see if it's legit?
