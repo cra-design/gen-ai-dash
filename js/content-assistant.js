@@ -1,5 +1,5 @@
 //Includes JS common to all of the content assistant tools
-$(document).ready(function() {
+$(document).ready(async function() {
     // Check if the key parameter exists
     var keyParam = getUrlParameter('key');
     var currentPath = window.location.pathname;
@@ -15,7 +15,7 @@ $(document).ready(function() {
         updateLinks('key=' + keyParam); // Passing only the key param here
         if (urlParam && currentPath.includes('page-assistant.html')) {
           //preload the page
-          await updateIframeFromURL(urlParam);
+          updateIframeFromURL(urlParam);
         }
     }
     $("#api-key-submit-btn").click(function(){
