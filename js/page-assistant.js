@@ -631,19 +631,26 @@ function showUIAfterDocUpload() {
 }
 
 function acceptIframe(option) {
+  let html = "";
   if (option == "b") {
     //write iframe-2 to iframe + fullHtmlCompare to fullHtml
     let iframeB = $("#url-frame-2")[0].contentDocument || $("#url-frame-2")[0].contentWindow.document;
     refreshIframe("url-frame", iframeB.body.innerHTML);
 
     // Copy pre content from fullHtmlCompare to fullHtml
-    let fullHtmlCompareContent = $("#fullHtmlCompare code").text();
-    $("#fullHtml code").text(fullHtmlCompareContent);
+    html = $("#fullHtmlCompare code").text();
+    $("#fullHtml code").text(html);
     Prism.highlightElement(document.querySelector("#fullHtml code"));
+  } else {
+    html = $("#fullHtml code").text();
   }
   $('#iframe-toolbox-A, #iframe-toolbox-B').addClass('hidden');
   toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
   toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
+  // Extract fields from the HTML
+  const fields = extractFields(html);
+  // Render results to the page
+  renderHTMLFields(html, fields);
 }
 
 function getRawCodeFromHighlighted(codeBlock) {
