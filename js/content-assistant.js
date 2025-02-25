@@ -250,31 +250,31 @@ function getUrlParameter(name) {
     return results ? decodeURIComponent(results[1]) : null;
 }
 
-// Function to update all relative links with the new query string
 function updateLinks(queryString) {
     $('a[href]').each(function() {
         var href = $(this).attr('href');
-
         // Check if the link is a relative URL (does not start with http, https, mailto, tel, or #)
         if (!href.match(/^(https?:|mailto:|tel:|#)/)) {
-            // Remove any existing key parameter
-            href = href.replace(/([?&])key=[^&#]*/, '');
-
-            // Remove any trailing ? or & if they exist
-            href = href.replace(/[?&]$/, '');
-
-            // Check if the link already has query parameters
-            if (href.indexOf('?') > -1) {
-                href += '&' + queryString;
-            } else {
-                href += '?' + queryString;
+            // Separate the base URL and the anchor (if exists)
+            var baseUrl = href.split('#')[0];
+            var anchor = href.indexOf('#') !== -1 ? href.split('#')[1] : '';
+            // Replace the existing 'key' parameter or add the new 'key' parameter
+            baseUrl = baseUrl.replace(/([?&])key=[^&#]*/, '$1' + queryString);
+            // If no 'key' parameter exists, append the new 'key' parameter
+            if (!baseUrl.match(/([?&])key=[^&#]*/)) {
+                // Check if there are already query parameters
+                if (baseUrl.indexOf('?') > -1) {
+                    baseUrl += '&' + queryString;
+                } else {
+                    baseUrl += '?' + queryString;
+                }
             }
-
+            // Reattach the anchor (if it existed)
+            href = baseUrl + (anchor ? '#' + anchor : '');
             $(this).attr('href', href);
         }
     });
 }
-
 
 
 // Function to update URL without reloading the page
