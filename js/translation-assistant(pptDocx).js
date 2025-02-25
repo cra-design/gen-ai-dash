@@ -2,13 +2,12 @@
 // DOMContentLoaded: API Key Screen & Initial Setup
 // --------------------
 document.addEventListener("DOMContentLoaded", function () {
-  // Select elements for API key input and document upload screen
   const apiKeyEntry = document.getElementById("api-key-entry"); // API key section
   const apiKeyInput = document.getElementById("api-key");         // API key input field
   const apiKeySubmitBtn = document.getElementById("api-key-submit-btn"); // API key submit button
   const documentUploadContainer = document.getElementById("document-upload-container"); // Upload section
 
-  // Check if the URL has a 'key' parameter; if yes, show upload screen immediately
+  // Check if the URL has a 'key' parameter
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has("key")) {
     apiKeyEntry.style.display = "none";
@@ -18,10 +17,8 @@ document.addEventListener("DOMContentLoaded", function () {
     documentUploadContainer.style.display = "none";
   }
 
-  // Clear any previously stored API key
   sessionStorage.removeItem("openRouterApiKey");
 
-  // When the API key is submitted, store it and show the upload section
   apiKeySubmitBtn.addEventListener("click", function () {
     const apiKey = apiKeyInput.value.trim();
     if (apiKey) {
@@ -62,7 +59,7 @@ const submitBtn = document.getElementById("submit-btn");
 const downloadLink = document.getElementById("downloadLink");
 
 // --------------------
-// Radio Button Logic: Toggle Between Plain Text & File for French
+// Radio Button Logic: Toggle Between Plain Text & File for French Content
 // --------------------
 const radioOptions = document.getElementsByName("french-input-option");
 radioOptions.forEach(radio => {
@@ -147,6 +144,71 @@ function generateSimpleDocXml(text) {
 }
 
 // --------------------
+// Utility Functions for AI Response Processing
+// --------------------
+
+// Unescape HTML entities (converts &lt; to <, etc.)
+function unescapeHTMLEntities(str) {
+  const txt = document.createElement("textarea");
+  txt.innerHTML = str;
+  return txt.value;
+}
+
+// Remove triple-backtick code fences
+function removeCodeFences(str) {
+  return str.replace(/```[^\n]*\n?/g, "").replace(/```/g, "").trim();
+}
+
+/* 
+  Validates the AI response and unescapes HTML entities.
+  Additionally, it performs a file-type–specific check:
+  - For PPTX: ensures the output starts with <p:sld and contains the PPTX namespace.
+  - For DOCX/XLSX: ensures it starts with <?xml or a tag.
+*/
+function formatAIResponse(aiResponse, fileType) {
+  if (!aiResponse) return "";
+  let raw = removeCodeFences(aiResponse).trim();
+  raw = unescapeHTMLEntities(raw);
+  console.log("Unescaped AI response:", raw);
+  
+  if (fileType === "pptx") {
+    if (!raw.startsWith("<p:sld") || raw.indexOf('xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"') === -1) {
+      console.error("Invalid AI response for PPTX: Expected PPTX slide structure. Raw output:", raw);
+      alert("The AI response for PPTX is not in the correct XML format.");
+      return "";
+    }
+  } else {
+    if (!raw.startsWith("<?xml") && raw.indexOf("<") !== 0) {
+      console.error("Invalid AI response: XML does not start with an XML tag. Raw output:", raw);
+      alert("The AI response is not in the correct XML format.");
+      return "";
+    }
+  }
+  
+  if (raw.indexOf("</") === -1) {
+    console.error("Invalid AI response: Missing closing XML tags. Raw output:", raw);
+    alert("The AI response is missing closing XML structure.");
+    return "";
+  }
+  
+  return raw;
+}
+
+// --------------------
+// Optional Utility: extractFrenchText (for DOCX XML)
+// --------------------
+function extractFrenchText(docXml) {
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(docXml, "application/xml");
+  const textNodes = xmlDoc.getElementsByTagName("w:t");
+  let extractedText = "";
+  for (let i = 0; i < textNodes.length; i++) {
+    extractedText += textNodes[i].textContent + " ";
+  }
+  return extractedText.trim();
+}
+
+// --------------------
 // Submit Button Handler: Processes English File Based on Its Type
 // --------------------
 submitBtn.addEventListener("click", async () => {
@@ -160,7 +222,7 @@ submitBtn.addEventListener("click", async () => {
     return;
   }
 
-  let frenchContentMode = "textarea";
+  let frenchContentMode = "textarea"; // default mode
   radioOptions.forEach(radio => {
     if (radio.checked) frenchContentMode = radio.value;
   });
@@ -186,7 +248,7 @@ submitBtn.addEventListener("click", async () => {
 
     // Branch based on English file type
     if (englishFileType === "docx") {
-      // DOCX Processing: Let the AI rewrite the document.xml
+      // DOCX Processing: Let AI rewrite the document.xml
       let enDocumentXml = zipEN.file("word/document.xml").asText();
       console.log("Original DOCX XML:", enDocumentXml);
       let enDocumentRels = zipEN.file("word/_rels/document.xml.rels")?.asText();
@@ -224,7 +286,7 @@ submitBtn.addEventListener("click", async () => {
       let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
       if (!ORjson) return;
       let aiResponse = ORjson.choices[0]?.message?.content || "";
-      let formattedText = formatAIResponse(aiResponse);
+      let formattedText = formatAIResponse(aiResponse, "docx");
       if (!formattedText) return;
       zipEN.file("word/document.xml", formattedText);
 
@@ -238,7 +300,7 @@ submitBtn.addEventListener("click", async () => {
       }
 
     } else if (englishFileType === "pptx") {
-      // PPTX Processing: Let the AI rewrite each slide's XML, then unescape its output.
+      // PPTX Processing: Let AI rewrite each slide's XML for PPTX
       let frenchContent = "";
       if (frenchContentMode === "file" && frenchFileType === "docx") {
         let frenchDocXml = new PizZip(frenchFileData).file("word/document.xml").asText();
@@ -276,13 +338,13 @@ submitBtn.addEventListener("click", async () => {
         if (!ORjson) return;
         let aiResponse = ORjson.choices[0]?.message?.content || "";
         console.log("Raw AI Response for slide", slideFiles[i].name, ":", aiResponse);
-        let formattedSlideXml = formatAIResponse(aiResponse);
+        let formattedSlideXml = formatAIResponse(aiResponse, "pptx");
         if (!formattedSlideXml) return;
         zipEN.file(slideFiles[i].name, formattedSlideXml);
       }
 
     } else if (englishFileType === "xlsx") {
-      // XLSX Processing: Let the AI rewrite the sharedStrings.xml
+      // XLSX Processing: Let AI rewrite the sharedStrings.xml
       let sharedStringsXml = zipEN.file("xl/sharedStrings.xml")?.asText();
       if (!sharedStringsXml) {
         throw new Error("No sharedStrings.xml found in XLSX.");
@@ -314,7 +376,7 @@ submitBtn.addEventListener("click", async () => {
       let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
       if (!ORjson) return;
       let aiResponse = ORjson.choices[0]?.message?.content || "";
-      let formattedSharedStringsXml = formatAIResponse(aiResponse);
+      let formattedSharedStringsXml = formatAIResponse(aiResponse, "xlsx");
       if (!formattedSharedStringsXml) return;
       zipEN.file("xl/sharedStrings.xml", formattedSharedStringsXml);
 
@@ -383,6 +445,7 @@ function showError(elementId, message) {
     el.style.display = "block";
   }
 }
+
 function hideError(elementId) {
   const el = document.getElementById(elementId);
   if (el) {
@@ -391,34 +454,54 @@ function hideError(elementId) {
 }
 
 // --------------------
-// Utility: Unescape HTML Entities, removeCodeFences, and formatAIResponse
+// Utility Functions: unescapeHTMLEntities, removeCodeFences, formatAIResponse
 // --------------------
 function unescapeHTMLEntities(str) {
   const txt = document.createElement("textarea");
   txt.innerHTML = str;
   return txt.value;
 }
+
 function removeCodeFences(str) {
   return str.replace(/```[^\n]*\n?/g, "").replace(/```/g, "").trim();
 }
-function formatAIResponse(aiResponse) {
+
+/* 
+  Validates and unescapes the AI response.
+  Uses fileType (docx, pptx, xlsx) to apply file-specific checks.
+*/
+function formatAIResponse(aiResponse, fileType) {
   if (!aiResponse) return "";
   let raw = removeCodeFences(aiResponse).trim();
   raw = unescapeHTMLEntities(raw);
   console.log("Unescaped AI response:", raw);
-  if (!raw.startsWith("<?xml") && raw.indexOf("<") !== 0) {
-    console.error("Invalid AI response: XML does not start with an XML tag. Raw output:", raw);
-    alert("The AI response is not in the correct XML format.");
-    return "";
+  
+  if (fileType === "pptx") {
+    if (!raw.startsWith("<p:sld") || raw.indexOf('xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"') === -1) {
+      console.error("Invalid AI response for PPTX: Expected PPTX slide structure. Raw output:", raw);
+      alert("The AI response for PPTX is not in the correct XML format.");
+      return "";
+    }
+  } else {
+    if (!raw.startsWith("<?xml") && raw.indexOf("<") !== 0) {
+      console.error("Invalid AI response: XML does not start with an XML tag. Raw output:", raw);
+      alert("The AI response is not in the correct XML format.");
+      return "";
+    }
   }
+  
   if (raw.indexOf("</") === -1) {
     console.error("Invalid AI response: Missing closing XML tags. Raw output:", raw);
     alert("The AI response is missing closing XML structure.");
     return "";
   }
+  
   return raw;
 }
 
+// --------------------
+// Optional Utility: extractFrenchText (for DOCX XML)
+// --------------------
 function extractFrenchText(docXml) {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(docXml, "application/xml");
