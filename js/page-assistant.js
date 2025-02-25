@@ -361,12 +361,17 @@ $(document).ready(function() {
           $(`#report-container-B-${counter}`).css('width', '100%');
           selectedOption = "B";
       }
+      const model = $('input[name="html-upload-genai-model"]:checked').map(function() {
+        return $(this).val();
+      }).get();
       // Grab the report type from the <h4> element within the sidebyside-report
       let reportType = $(this).closest('.sidebyside-report').find('h4').text().trim();
       // Redirect to Google Form with prefilled data
       const googleFormURL = `https://docs.google.com/forms/d/e/1FAIpQLSfI_DBkkIXN1SJh0OECZt3HUztsBNzD4sm_jaL7odGbH7Awqg/viewform?usp=pp_url` +
+                            `&entry.1414644752=${encodeURIComponent(reportType)}` +
                             `&entry.984404841=${selectedOption}` +
-                            `&entry.1414644752=${encodeURIComponent(reportType)}`;
+                            `&entry.510997766=${model[0]}` +
+                            `&entry.999305171=${model[1]}`;
       window.location.href = googleFormURL;
   });
 
