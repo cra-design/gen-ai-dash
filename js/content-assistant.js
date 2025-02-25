@@ -10,7 +10,7 @@ $(document).ready(function() {
         // You can trigger the next questions or blocks after the key is confirmed here
         $('.after-key-unhide').removeClass("hidden");
         // Get the current URL's query string (e.g., ?key=value&other=param)
-        updateLinks(window.location.search)
+        updateLinks('key=' + keyParam); // Passing only the key param here
     }
     $("#api-key-submit-btn").click(function(){
       //validate the key to see if it's legit?
