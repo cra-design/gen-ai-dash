@@ -482,29 +482,40 @@ function formatAIResponse(aiResponse, fileType) {
   let raw = removeCodeFences(aiResponse).trim();
   raw = unescapeHTMLEntities(raw);
   console.log("Unescaped AI response:", raw);
-  
+
   if (fileType === "pptx") {
-    if (!raw.startsWith("<p:sld") || raw.indexOf('xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"') === -1) {
-      console.error("Invalid AI response for PPTX: Expected PPTX slide structure. Raw output:", raw);
-      alert("The AI response for PPTX is not in the correct XML format.");
+    // Ensure the AI response contains the slide tag
+    if (!raw.includes("<p:sld") || !raw.includes("</p:sld>")) {
+      console.error("Invalid AI response for PPTX: Expected <p:sld> structure. Raw output:", raw);
+      alert("The AI response for PPTX is missing the <p:sld> structure.");
+      return "";
+    }
+
+    // Ensure it contains at least one text placeholder
+    if (!raw.includes("<a:t>")) {
+      console.error("Invalid AI response for PPTX: Missing text placeholders (<a:t>). Raw output:", raw);
+      alert("The AI response for PPTX is missing text placeholders.");
       return "";
     }
   } else {
+    // Ensure it's a valid XML structure for DOCX/XLSX
     if (!raw.startsWith("<?xml") && raw.indexOf("<") !== 0) {
       console.error("Invalid AI response: XML does not start with an XML tag. Raw output:", raw);
       alert("The AI response is not in the correct XML format.");
       return "";
     }
   }
-  
-  if (raw.indexOf("</") === -1) {
+
+  // Ensure the response is properly closed
+  if (!raw.includes("</")) {
     console.error("Invalid AI response: Missing closing XML tags. Raw output:", raw);
     alert("The AI response is missing closing XML structure.");
     return "";
   }
-  
+
   return raw;
 }
+
 
 // --------------------
 // Optional Utility: extractFrenchText (for DOCX XML)
