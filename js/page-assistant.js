@@ -650,13 +650,13 @@ async function applyCanadaHtmlTemplate(extractedHtml) {
     // If the class="container" exists, use it; otherwise, we'll add the class and the <div class="main">
     if (mainClassMatch) {
       // If class="container" exists, replace the <main> tag in the newHeader file with the class included
-      newHeader = newHeader.replace('<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement">', `<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement" class="container">`);
+      newHeader = newHeader.replace('<main>', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement" class="container">');
     } else {
       // If no class="container", just add it and include the <div class="main"> below it
-      newHeader = newHeader.replace('<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement">', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement">\n<div class="container">');
+      newHeader = newHeader.replace('<main>', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement"><div class="container">');
     }
     extractedHtml = extractedHtml
-      .replace('<main>', newHeader)
+      .replace(/<main[^>]*/, newHeader)
       .replace('</main>', newFooter)
       .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
       .replace('<table>', '<table class="wb-tables table table-striped">');
