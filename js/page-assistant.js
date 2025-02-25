@@ -628,14 +628,12 @@ async function applyCanadaHtmlTemplate(extractedHtml) {
         throw new Error('Failed to load new header or footer');
     }
     // Retrieve the text content of the responses
-    const [newHeader, newFooter] = await Promise.all([
+    let [newHeader, newFooter] = await Promise.all([
         headerResponse2.text(),
         footerResponse2.text()
     ]);
-
     // Check if the original HTML <main> tag contains the class "container"
     const mainClassMatch = extractedHtml.match(/<main[^>]*class=["'][^"']*container[^"']*["'][^>]*>/);
-
     // If the class="container" exists, use it; otherwise, we'll add the class and the <div class="main">
     if (mainClassMatch) {
       // If class="container" exists, replace the <main> tag in the newHeader file with the class included
@@ -644,13 +642,11 @@ async function applyCanadaHtmlTemplate(extractedHtml) {
       // If no class="container", just add it and include the <div class="main"> below it
       newHeader = newHeader.replace('<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement">', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement">\n<div class="container">');
     }
-
     extractedHtml = extractedHtml
       .replace('<main>', newHeader)
       .replace('</main>', newFooter)
       .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
       .replace('<table>', '<table class="wb-tables table table-striped">');
-
     return extractedHtml;
   } catch (error) {
     console.error('Error applying Canada.ca HTML template:', error);
