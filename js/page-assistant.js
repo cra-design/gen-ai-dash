@@ -357,11 +357,13 @@ $(document).ready(function() {
       if ($(this).is(`#accept-report-a-btn-${counter}`)) {
           // Accept A: Remove B and expand A to full width
           $(`#report-container-B-${counter}`).remove();
+          $(`#report-toolbox-A-${counter}`).remove();
           $(`#report-container-A-${counter}`).css('width', '100%');
           selectedOption = "A";
       } else if ($(this).is(`#accept-report-b-btn-${counter}`)) {
           // Accept B: Remove A and expand B to full width
           $(`#report-container-A-${counter}`).remove();
+          $(`#report-toolbox-B-${counter}`).remove();
           $(`#report-container-B-${counter}`).css('width', '100%');
           selectedOption = "B";
       }
