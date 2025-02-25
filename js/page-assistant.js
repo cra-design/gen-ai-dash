@@ -283,7 +283,7 @@ $(document).ready(function() {
             let fileContent = await $.get(task.value);
             let fileContentB = "";
             if (!$("#genai-analysis-llm-compare").is(':checked')) {
-              fileContentB = await $.get(task.value + "-B");
+              fileContentB = await $.get(task.value.replace('.txt', '-B.txt'));
             }
             systemTask.content = "Custom instruction: " + fileContent;
             // Create the JSON with the prompt and instructions
