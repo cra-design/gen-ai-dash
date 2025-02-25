@@ -595,15 +595,25 @@ async function applySimpleHtmlTemplate(extractedHtml) {
         headerResponse.text(),
         footerResponse.text()
     ]);
+
     // Extract metadata fields from the original extractedHtml (if any)
     const metadataMatches = extractedHtml.match(/<meta[^>]*>|<title[^>]*>.*?<\/title>|<link[^>]*>/g) || [];
     const metadata = metadataMatches.join("\n");
+
+    // Check if <main> has class="container"
+    const mainClassMatch = extractedHtml.match(/<main[^>]*class=["']([^"']*container[^"']*)["'][^>]*>/);
+    const mainClass = mainClassMatch ? ` class="${mainClassMatch[1]}"` : '';
+
     // Remove content before the <h1> tag (if any)
     extractedHtml = extractedHtml.replace(/.*?(<h1[^>]*>.*?<\/h1>)/s, '$1');
     // Remove content after the closing </main> tag
     extractedHtml = extractedHtml.replace(/<\/main>[\s\S]*$/, '');
-    // Replace the original header with the new one, re-inserting metadata
-    extractedHtml = htmlHeader.replace('</head>', `${metadata}</head>`) + extractedHtml + htmlFooter;
+    // Reconstruct the HTML with the new header and footer
+    extractedHtml = htmlHeader.replace('</head>', `${metadata}</head>`)
+                     + `<main${mainClass}>`
+                     + extractedHtml
+                     + `</main>`
+                     + htmlFooter;
     return extractedHtml;
   } catch (error) {
     console.error('Error applying simple HTML template:', error);
@@ -626,11 +636,17 @@ async function applyCanadaHtmlTemplate(extractedHtml) {
         headerResponse2.text(),
         footerResponse2.text()
     ]);
+
+    // Check if <main> has class="container"
+    const mainClassMatch = extractedHtml.match(/<main[^>]*class=["']([^"']*container[^"']*)["'][^>]*>/);
+    const mainClass = mainClassMatch ? ` class="${mainClassMatch[1]}"` : '';
+
     extractedHtml = extractedHtml
-      .replace('<main>', newHeader)
+      .replace(/<main[^>]*>/, `<main${mainClass}>`)
       .replace('</main>', newFooter)
       .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
       .replace('<table>', '<table class="wb-tables table table-striped">');
+
     return extractedHtml;
   } catch (error) {
     console.error('Error applying Canada.ca HTML template:', error);
