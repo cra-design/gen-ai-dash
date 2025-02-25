@@ -220,6 +220,7 @@ $(document).ready(function() {
       $('#model-compare-2').addClass("hidden");
       toggleRadioCheckbox();
     }
+    $("#genai-reset-report-btn").removeClass("hidden");
   });
 
   $("#genai-run-report-btn").click(async function () {
@@ -239,7 +240,6 @@ $(document).ready(function() {
     let userData = { role: "user", content: "Contextual data: " }
     let reportCount = 0; // Counter to ensure unique IDs
     let reportContainer = $(".overlay-content");
-    reportContainer.find(".generated-report").remove();
     let reportList = $(".report-list");
     let newReportListContainer = $(
       '<ul class="generated-report"></ul>'
@@ -334,10 +334,13 @@ $(document).ready(function() {
     //}
   });
   $("#genai-reset-report-btn").click(function(){
+    $("#genai-reset-report-btn").addClass("hidden");
     $("#genai-model-options").addClass("hidden");
     $("#genai-task-options").removeClass("hidden");
     $('input[name="html-upload-genai-analysis"]').prop('checked', false);
     $('input[name="html-upload-genai-model"]').prop('checked', false);
+    let reportContainer = $(".overlay-content");
+    reportContainer.find(".generated-report").remove();
     let reportList = $(".report-list");
     reportList.find(".generated-report").remove();
   });
