@@ -609,11 +609,7 @@ async function applySimpleHtmlTemplate(extractedHtml) {
     // Remove content after the closing </main> tag
     extractedHtml = extractedHtml.replace(/<\/main>[\s\S]*$/, '');
     // Reconstruct the HTML with the new header and footer
-    extractedHtml = htmlHeader.replace('</head>', `${metadata}</head>`)
-                     + `<main${mainClass}>`
-                     + extractedHtml
-                     + `</main>`
-                     + htmlFooter;
+    extractedHtml = htmlHeader.replace('</head>', `${metadata}</head>`).replace(`<main>`, `<main${mainClass}>`) + extractedHtml + htmlFooter;
     return extractedHtml;
   } catch (error) {
     console.error('Error applying simple HTML template:', error);
@@ -637,12 +633,20 @@ async function applyCanadaHtmlTemplate(extractedHtml) {
         footerResponse2.text()
     ]);
 
-    // Check if <main> has class="container"
-    const mainClassMatch = extractedHtml.match(/<main[^>]*class=["']([^"']*container[^"']*)["'][^>]*>/);
-    const mainClass = mainClassMatch ? ` class="${mainClassMatch[1]}"` : '';
+    // Check if the original HTML <main> tag contains the class "container"
+    const mainClassMatch = extractedHtml.match(/<main[^>]*class=["'][^"']*container[^"']*["'][^>]*>/);
+
+    // If the class="container" exists, use it; otherwise, we'll add the class and the <div class="main">
+    if (mainClassMatch) {
+      // If class="container" exists, replace the <main> tag in the newHeader file with the class included
+      newHeader = newHeader.replace('<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement">', `<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement" class="container">`);
+    } else {
+      // If no class="container", just add it and include the <div class="main"> below it
+      newHeader = newHeader.replace('<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement">', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement">\n<div class="container">');
+    }
 
     extractedHtml = extractedHtml
-      .replace(/<main[^>]*>/, `<main${mainClass}>`)
+      .replace('<main>', newHeader)
       .replace('</main>', newFooter)
       .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
       .replace('<table>', '<table class="wb-tables table table-striped">');
