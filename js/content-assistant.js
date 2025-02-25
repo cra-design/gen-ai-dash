@@ -2,7 +2,9 @@
 $(document).ready(function() {
     // Check if the key parameter exists
     var keyParam = getUrlParameter('key');
+    var currentPath = window.location.pathname;
     if (keyParam) {
+        var urlParam = getUrlParameter('url');
         //update the hidden input for the key so we can reference it as usual
         $("#api-key").val(keyParam);
         // Hide the input box if the key parameter is present
@@ -11,6 +13,10 @@ $(document).ready(function() {
         $('.after-key-unhide').removeClass("hidden");
         // Get the current URL's query string (e.g., ?key=value&other=param)
         updateLinks('key=' + keyParam); // Passing only the key param here
+        if (urlParam && currentPath.includes('page-assistant.html')) {
+          //preload the page
+          await updateIframeFromURL(urlParam);
+        }
     }
     $("#api-key-submit-btn").click(function(){
       //validate the key to see if it's legit?

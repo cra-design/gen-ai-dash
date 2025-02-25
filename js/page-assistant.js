@@ -69,66 +69,8 @@ $(document).ready(function() {
   });
 
   $("#url-upload-btn").click(async function(){
-    $('#upload-chooser').addClass("hidden");
-    $('#url-upload-input').addClass("hidden");
-    $('#url-upload-preview').removeClass("hidden");
-    $("#url-frame").addClass("hidden"); //reset iframe hidden
-    $("#url-invalid-msg").addClass("hidden");
-    $("#canada-ca-msg").addClass("hidden");
-    $("#other-site-msg").addClass("hidden");
-    //load the iframe with the html preview
-    var bUrlInput = isValidUrl($('#url-input').val());
-    if (bUrlInput == false) { //invalid url
-      //unhide URL invalid message
-      $("#url-invalid-msg").removeClass("hidden");
-      $('#url-upload-input').removeClass("hidden");
-      return;
-    }
-    const urlInput = new URL($('#url-input').val());
-    // Currently configuring it to specific github organizations:
-    if (urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
-      $("#url-frame").attr("src", urlInput.href);
-      $("#url-frame").removeClass("hidden");
-      $("#genai-upload-msg").addClass("hidden");
-      $("#genai-task-options").removeClass("hidden");
-      parsePageHTML(urlInput.href, async function (err, html) {
-          if (err) {
-              console.error('Failed to fetch the webpage:', err);
-              alert('Failed to fetch the webpage. Check the console for details.');
-              return;
-          }
-          // Extract fields from the HTML
-          const fields = extractFields(html);
-          // Render results to the page
-          renderHTMLFields(html, fields);
-      });
-    } else if (urlInput.host == "www.canada.ca") { //canada.ca link
-      $("#url-frame").removeClass("hidden");
-      $("#genai-upload-msg").addClass("hidden");
-      $("#genai-task-options").removeClass("hidden");
-      parsePageHTML(urlInput.href, async function (err, html) {
-          if (err) {
-              console.error('Failed to fetch the webpage:', err);
-              alert('Failed to fetch the webpage. Check the console for details.');
-              return;
-          }
-          //Process HTML to replace header/footer
-          html = await applySimpleHtmlTemplate(html);
-          html = await applyCanadaHtmlTemplate(html);
-          // Extract fields from the HTML
-          const fields = extractFields(html);
-          // Render fields and page code
-          renderHTMLFields(html, fields);
-          // Insert the processed HTML into the iframe
-          refreshIframe("url-frame", html);
-      });
-    } else { //unsupported site
-      //unhide unsupported site message
-      $("#other-site-msg").removeClass("hidden");
-      $('#url-upload-input').removeClass("hidden");
-    }
-    //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
-  });
+    updateIframeFromURL($('#url-input').val());
+  }
 
   $("#html-upload-btn").click(function() {
     // $("#html-preview").html($("#html-input").html());
@@ -632,19 +574,26 @@ async function applySimpleHtmlTemplate(extractedHtml) {
 
 async function applyCanadaHtmlTemplate(extractedHtml) {
   try {
-    const [headerResponse2, footerResponse2] = await Promise.all([
+    const [headerResponse2, footerResponse2, dateResponse2] = await Promise.all([
         fetch('html-templates/canada-header-additions.html'),
-        fetch('html-templates/canada-footer-additions.html')
+        fetch('html-templates/canada-footer-additions.html'),
+        fetch('html-templates/canada-date-additions.html')
     ]);
     // Check if both fetch operations were successful
-    if (!headerResponse2.ok || !footerResponse2.ok) {
+    if (!headerResponse2.ok || !footerResponse2.ok || !dateResponse2.ok) {
         throw new Error('Failed to load new header or footer');
     }
     // Retrieve the text content of the responses
-    let [newHeader, newFooter] = await Promise.all([
+    let [newHeader, newFooter, newDate] = await Promise.all([
         headerResponse2.text(),
-        footerResponse2.text()
+        footerResponse2.text(),
+        dateResponse2.text()
     ]);
+    // Check if the extractedHtml already has a date modified section
+    const hasDateModifiedSection = /<dl id="wb-dtmd">/.test(extractedHtml);
+    if (!hasDateModifiedSection) {
+      newFooter.replace('</main>', newDate);
+    }
     // Check if the original HTML <main> tag contains the class "container"
     const mainClassMatch = extractedHtml.match(/<main[^>]*class=["'][^"']*container[^"']*["'][^>]*>/);
     // If the class="container" exists, use it; otherwise, we'll add the class and the <div class="main">
@@ -760,4 +709,65 @@ async function formatORResponse(model, requestJson) {
   let aiResponse = ORjson.choices[0].message.content;
   let formattedText = formatAIResponse(aiResponse);
   return formattedText;
+}
+
+async function updateIframeFromURL(url) {
+  $('#upload-chooser').addClass("hidden");
+  $('#url-upload-input').addClass("hidden");
+  $('#url-upload-preview').removeClass("hidden");
+  $("#url-frame").addClass("hidden"); //reset iframe hidden
+  $("#url-invalid-msg").addClass("hidden");
+  $("#canada-ca-msg").addClass("hidden");
+  $("#other-site-msg").addClass("hidden");
+  var bUrlInput = isValidUrl(url);
+  if (bUrlInput == false) { //invalid url
+    //unhide URL invalid message
+    $("#url-invalid-msg").removeClass("hidden");
+    $('#url-upload-input').removeClass("hidden");
+    return;
+  }
+  const urlInput = new URL(url);
+  // Currently configuring it to specific github organizations:
+  if (urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
+    $("#url-frame").attr("src", urlInput.href);
+    $("#url-frame").removeClass("hidden");
+    $("#genai-upload-msg").addClass("hidden");
+    $("#genai-task-options").removeClass("hidden");
+    parsePageHTML(urlInput.href, async function (err, html) {
+        if (err) {
+            console.error('Failed to fetch the webpage:', err);
+            alert('Failed to fetch the webpage. Check the console for details.');
+            return;
+        }
+        // Extract fields from the HTML
+        const fields = extractFields(html);
+        // Render results to the page
+        renderHTMLFields(html, fields);
+    });
+  } else if (urlInput.host == "www.canada.ca") { //canada.ca link
+    $("#url-frame").removeClass("hidden");
+    $("#genai-upload-msg").addClass("hidden");
+    $("#genai-task-options").removeClass("hidden");
+    parsePageHTML(urlInput.href, async function (err, html) {
+        if (err) {
+            console.error('Failed to fetch the webpage:', err);
+            alert('Failed to fetch the webpage. Check the console for details.');
+            return;
+        }
+        //Process HTML to replace header/footer
+        html = await applySimpleHtmlTemplate(html);
+        html = await applyCanadaHtmlTemplate(html);
+        // Extract fields from the HTML
+        const fields = extractFields(html);
+        // Render fields and page code
+        renderHTMLFields(html, fields);
+        // Insert the processed HTML into the iframe
+        refreshIframe("url-frame", html);
+    });
+  } else { //unsupported site
+    //unhide unsupported site message
+    $("#other-site-msg").removeClass("hidden");
+    $('#url-upload-input').removeClass("hidden");
+  }
+  //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
 }
