@@ -335,6 +335,7 @@ $(document).ready(function() {
   });
   $("#genai-reset-report-btn").click(function(){
     $("#genai-reset-report-btn").addClass("hidden");
+    $("#genai-open-report-btn").addClass("hidden");
     $("#genai-model-options").addClass("hidden");
     $("#genai-task-options").removeClass("hidden");
     $('input[name="html-upload-genai-analysis"]').prop('checked', false);
