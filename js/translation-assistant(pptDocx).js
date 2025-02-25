@@ -287,7 +287,7 @@ submitBtn.addEventListener("click", async () => {
       messages: [
         {
           role: "system",
-          content: "You are a PowerPoint formatting assistant. You will be given the complete XML of a PowerPoint slide (which contains one or more <a:t> tags where text is stored) and a French text string. Your task is to replace every instance of text inside each <a:t> tag with the provided French text. Do not change any other XML elements, attributes, or namespaces. Return only the valid XML (without any extra commentary, code fences, or text) that starts with an XML declaration or a valid root tag."
+          content: "You are a PowerPoint formatting assistant. Keep every XML tag, attribute, relationship, and   shape placeholder exactly the same. Only replace the English text inside <a:t> tags with the provided French text. Return valid XML that PowerPoint can open without repair. Do not remove or alter any other XML elements, attributes, or references."
         },
         {
           role: "user",
