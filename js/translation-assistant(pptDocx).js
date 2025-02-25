@@ -441,24 +441,24 @@ function removeCodeFences(str) {
 /* Validates the AI response to ensure it returns valid XML */
 function formatAIResponse(aiResponse) {
   if (!aiResponse) return "";
-  let raw = removeCodeFences(aiResponse).trim(); 
+  let raw = removeCodeFences(aiResponse).trim();  // Ensure extra whitespace is removed
   console.log("Raw AI response after removing code fences:", raw);
-  // Basic check for an XML declaration or expected closing tags (for DOCX, PPTX, or XLSX)
+
+  // Check if the response starts with an XML tag
   if (!raw.startsWith("<?xml") && raw.indexOf("<") !== 0) {
-    console.error("Invalid AI response: XML does not start with an XML tag.");
+    console.error("Invalid AI response: XML does not start with an XML tag. Raw output:", raw);
     alert("The AI response is not in the correct XML format.");
     return "";
   }
-  if (
-    raw.indexOf("</w:document>") === -1 &&
-    raw.indexOf("</p:sld>") === -1 &&
-    raw.indexOf("</sst>") === -1
-  ) {
-    console.error("Invalid AI response: Missing expected closing XML tag.");
-    alert("The AI response is missing required XML structure.");
+  
+  // Optionally, check if there is at least one closing tag
+  if (raw.indexOf("</") === -1) {
+    console.error("Invalid AI response: Missing closing XML tags. Raw output:", raw);
+    alert("The AI response is missing closing XML structure.");
     return "";
   }
-  return raw.trim();
+  
+  return raw;
 }
 
 // --------------------
