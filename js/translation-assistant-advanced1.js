@@ -8,7 +8,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // French text and file input elements
     const frenchTextareaContainer = document.getElementById("french-textarea-container");
     const frenchFileContainer = document.getElementById("french-file-container");
-
+     
+    const loadingIndicator = document.createElement("p");
+    loadingIndicator.innerText = "Processing...";
+    loadingIndicator.style.display = "none";
+    loadingIndicator.style.color = "blue";
+    loadingIndicator.style.fontWeight = "bold";
+    document.body.appendChild(loadingIndicator);
     const savedApiKey = sessionStorage.getItem("openRouterApiKey") || "";
 
     if (savedApiKey.trim() !== "") {
@@ -49,6 +55,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
+const loadingIndicator = document.createElement("p");
+loadingIndicator.innerText = "Processing...";
+loadingIndicator.style.display = "none";
+loadingIndicator.style.color = "blue";
+loadingIndicator.style.fontWeight = "bold";
+document.body.appendChild(loadingIndicator); 
 
 const submitBtn = document.getElementById("submit-btn");
 const downloadLink = document.getElementById("downloadLink");
