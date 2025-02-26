@@ -4,13 +4,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const apiKeyInput = document.getElementById("api-key");
     const apiKeySubmitBtn = document.getElementById("api-key-submit-btn");
     const documentUploadContainer = document.getElementById("document-upload-container");
-    const loadingIndicator = document.createElement("p");
-    loadingIndicator.innerText = "Processing...";
-    loadingIndicator.style.display = "none";
-    loadingIndicator.style.color = "blue";
-    document.body.appendChild(loadingIndicator);
+
+    // French text and file input elements
+    const frenchTextareaContainer = document.getElementById("french-textarea-container");
+    const frenchFileContainer = document.getElementById("french-file-container");
 
     const savedApiKey = sessionStorage.getItem("openRouterApiKey") || "";
+
     if (savedApiKey.trim() !== "") {
         apiKeyEntry.style.display = "none";
         documentUploadContainer.style.display = "block";
@@ -30,7 +30,25 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Please enter a valid API key.");
         }
     });
+
+    const radioOptions = document.getElementsByName("french-input-option");
+
+    radioOptions.forEach(radio => {
+        radio.addEventListener("change", function () {
+            console.log("French input option selected:", this.value); // Debugging log
+
+            if (this.value === "textarea") {
+                frenchTextareaContainer.style.display = "block";
+                frenchFileContainer.style.display = "none";
+            } else if (this.value === "file") {
+                frenchTextareaContainer.style.display = "none";
+                frenchFileContainer.style.display = "block";
+            }
+        });
+    });
+
 });
+
 
 const submitBtn = document.getElementById("submit-btn");
 const downloadLink = document.getElementById("downloadLink");
