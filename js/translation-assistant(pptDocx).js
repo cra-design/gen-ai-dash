@@ -327,12 +327,7 @@ submitBtn.addEventListener("click", async () => {
   messages: [
     {
       role: "system",
-      content: `You are a PowerPoint XML processing assistant. 
-        1️. Replace ONLY the text inside <a:t> tags with the provided French text. 
-        2️. DO NOT modify any other XML structure, attributes, or formatting. 
-        3️. ALWAYS return a complete and valid XML file.
-        4️. Do NOT include markdown, comments, or extra formatting.
-        5️. Ensure the complete XML is returned with all opening and closing tags, including </p:sld>, and no truncation occurs.(most important thing!)`
+      content: 'You are a PowerPoint XML processing assistant. Replace only the text in <a:t> tags with the provided French text. Do not change any other XML structure, attributes, or formatting. Return a complete, valid XML file with all opening and closing tags (including </p:sld>), without markdown or comments.'
     },
     {
       role: "user",
