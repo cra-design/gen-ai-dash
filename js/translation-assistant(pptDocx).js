@@ -347,7 +347,7 @@ submitBtn.addEventListener("click", async () => {
 
 
         console.log("Sending PPTX prompt for slide", slideFiles[i].name);
-        let ORjson = await getORData("deepseek/deepseek-r1-distill-llama-70b:free", requestJson);
+        let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
         if (!ORjson) return;
         let aiResponse = ORjson.choices[0]?.message?.content || "";
         console.log("Raw AI Response for slide", slideFiles[i].name, ":", aiResponse);
