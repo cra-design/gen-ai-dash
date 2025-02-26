@@ -126,20 +126,26 @@ function removeCodeFences(str) {
 }
 
 function formatAIResponse(aiResponse) {
-  if (!aiResponse) return "";
-  let raw = removeCodeFences(aiResponse);
-  if (!raw.startsWith('<?xml')) {
-    console.error("Invalid AI response: XML format is incorrect.");
-    alert("The AI response is not in the correct XML format.");
-    return "";
-  }
-  if (!raw.includes("</w:document>")) {
-    console.error("Invalid AI response: Missing closing </w:document> tag.");
-    alert("The AI response is missing required XML structure.");
-    return "";
-  }
-  return raw.trim();
+    if (!aiResponse) return "";
+    let raw = removeCodeFences(aiResponse);
+    if (!raw.startsWith('<?xml')) {
+        console.error("Invalid AI response: XML format is incorrect.");
+        alert("The AI response is not in the correct XML format.");
+        return "";
+    }
+    if (!raw.includes("</w:document>")) {
+        console.warn("AI response missing closing </w:document> tag. Attempting to append it.");
+        raw = raw.trim() + "\n</w:document>";
+        // Verify again if it now includes the closing tag
+        if (!raw.includes("</w:document>")) {
+            console.error("Unable to fix the missing closing tag.");
+            alert("The AI response is missing required XML structure and could not be fixed.");
+            return "";
+        }
+    }
+    return raw.trim();
 }
+
 
 // Extract French text from a DOCX XML (for file-based French content)
 function extractFrenchText(docXml) {
@@ -221,7 +227,7 @@ submitBtn.addEventListener("click", async () => {
   try {
     let requestJson = {
       messages: [
-        { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting, including XML namespaces and attributes. Return only valid XML. Do not add any text outside the XML. Do not add code blocks or backticks." },
+        { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting, including XML namespaces and attributes. Return only complete, valid DOCX XML that starts with ‘<?xml …?>’ and ends with ‘</w:document>’. Do not omit any tags or add any extra text." },
         { role: "system", content: "Do not remove or modify any XML tags. Only replace text inside <w:t> tags while keeping the structure unchanged." },
         { role: "user", content: "Substituted DOCX XML: " + escapeXML(substitutedXml) }
       ]
