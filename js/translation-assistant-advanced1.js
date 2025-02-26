@@ -70,27 +70,39 @@ submitBtn.addEventListener("click", async () => {
     let textChunks = chunkText(bodyContent, 500);
     console.log(`Total chunks to process: ${textChunks.length}`);
 
-    let formattedChunks = [];
-    for (let i = 0; i < textChunks.length; i++) {
-        console.log(`Processing chunk ${i + 1}/${textChunks.length}...`);
+   let formattedChunks = [];
 
-        let requestJson = {
-            messages: [
-                { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting. Return only valid DOCX XML." },
-                { role: "user", content: "English DOCX chunk: " + escapeXML(textChunks[i]) }
-            ]
-        };
+for (let i = 0; i < textChunks.length; i++) {
+    console.log(`Processing chunk ${i + 1}/${textChunks.length}...`);
 
-        let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
-        if (!ORjson) {
-            console.error("API request failed for chunk", i + 1);
-            continue;
-        }
+    let requestJson = {
+        messages: [
+            { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting. Return only valid DOCX XML." },
+            { role: "user", content: "English DOCX chunk: " + escapeXML(textChunks[i]) }
+        ]
+    };
 
-        let aiResponse = ORjson.choices[0]?.message?.content || "";
-        console.log(`Chunk ${i + 1} response received.`);
-        formattedChunks.push(aiResponse);
+    let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
+    
+    if (!ORjson) {
+        console.error(`API request failed for chunk ${i + 1}`);
+        continue;
     }
+
+    let aiResponse = ORjson.choices[0]?.message?.content || "";
+    
+    console.log(`Chunk ${i + 1} Response:\n`, aiResponse);
+
+    // Apply the formatting fix to the AI response
+    let formattedText = formatAIResponse(aiResponse);
+    if (!formattedText) {
+        console.error(`Skipping chunk ${i + 1} due to formatting issues.`);
+        continue;
+    }
+
+    formattedChunks.push(formattedText);
+}
+
 
     let finalBodyContent = formattedChunks.join("\n");
     let finalDocXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -154,6 +166,25 @@ function chunkText(text, maxWords = 200) {
         chunks.push(words.slice(i, i + maxWords).join(" "));
     }
     return chunks;
+}
+
+function formatAIResponse(aiResponse) {
+    if (!aiResponse) return "";
+
+    let raw = removeCodeFences(aiResponse);
+
+    if (!raw.startsWith('<?xml')) {
+        console.error("Invalid AI response: Missing XML declaration.");
+        alert("AI response is invalid.");
+        return "";
+    }
+
+    if (!raw.includes("</w:document>")) {
+        console.warn("AI response missing closing </w:document>. Auto-fixing...");
+        raw = raw.trim() + "\n</w:document>";
+    }
+
+    return raw.trim();
 }
 
 // Helper Function: Escape XML
