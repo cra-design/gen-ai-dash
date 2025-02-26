@@ -55,12 +55,63 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
+// Declare loadingIndicator globally so it can be accessed inside event listeners
 const loadingIndicator = document.createElement("p");
 loadingIndicator.innerText = "Processing...";
 loadingIndicator.style.display = "none";
 loadingIndicator.style.color = "blue";
 loadingIndicator.style.fontWeight = "bold";
-document.body.appendChild(loadingIndicator); 
+document.body.appendChild(loadingIndicator);
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Selecting elements
+    const apiKeyEntry = document.getElementById("api-key-entry");
+    const apiKeyInput = document.getElementById("api-key");
+    const apiKeySubmitBtn = document.getElementById("api-key-submit-btn");
+    const documentUploadContainer = document.getElementById("document-upload-container");
+
+    // French text and file input elements
+    const frenchTextareaContainer = document.getElementById("french-textarea-container");
+    const frenchFileContainer = document.getElementById("french-file-container");
+
+    const savedApiKey = sessionStorage.getItem("openRouterApiKey") || "";
+    if (savedApiKey.trim() !== "") {
+        apiKeyEntry.style.display = "none";
+        documentUploadContainer.style.display = "block";
+    } else {
+        apiKeyEntry.style.display = "block";
+        documentUploadContainer.style.display = "none";
+    }
+
+    apiKeySubmitBtn.addEventListener("click", function () {
+        const apiKey = apiKeyInput.value.trim();
+        if (apiKey) {
+            sessionStorage.setItem("openRouterApiKey", apiKey);
+            apiKeyEntry.style.display = "none";
+            documentUploadContainer.style.display = "block";
+            documentUploadContainer.scrollIntoView({ behavior: "smooth" });
+        } else {
+            alert("Please enter a valid API key.");
+        }
+    });
+
+    const radioOptions = document.getElementsByName("french-input-option");
+
+    radioOptions.forEach(radio => {
+        radio.addEventListener("change", function () {
+            console.log("French input option selected:", this.value);
+
+            if (this.value === "textarea") {
+                frenchTextareaContainer.style.display = "block";
+                frenchFileContainer.style.display = "none";
+            } else if (this.value === "file") {
+                frenchTextareaContainer.style.display = "none";
+                frenchFileContainer.style.display = "block";
+            }
+        });
+    });
+
+});
 
 const submitBtn = document.getElementById("submit-btn");
 const downloadLink = document.getElementById("downloadLink");
@@ -73,7 +124,7 @@ submitBtn.addEventListener("click", async () => {
     }
 
     console.log("Submit button clicked. Processing started...");
-    loadingIndicator.style.display = "block";
+    loadingIndicator.style.display = "block"; // ✅ Now properly declared
 
     if (!englishDocxData) {
         alert("Please upload an English Word Document.");
@@ -100,39 +151,38 @@ submitBtn.addEventListener("click", async () => {
     let textChunks = chunkText(bodyContent, 500);
     console.log(`Total chunks to process: ${textChunks.length}`);
 
-   let formattedChunks = [];
+    let formattedChunks = [];
 
-for (let i = 0; i < textChunks.length; i++) {
-    console.log(`Processing chunk ${i + 1}/${textChunks.length}...`);
+    for (let i = 0; i < textChunks.length; i++) {
+        console.log(`Processing chunk ${i + 1}/${textChunks.length}...`);
 
-    let requestJson = {
-        messages: [
-            { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting. Return only valid DOCX XML." },
-            { role: "user", content: "English DOCX chunk: " + escapeXML(textChunks[i]) }
-        ]
-    };
+        let requestJson = {
+            messages: [
+                { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting. Return only valid DOCX XML." },
+                { role: "user", content: "English DOCX chunk: " + escapeXML(textChunks[i]) }
+            ]
+        };
 
-    let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
-    
-    if (!ORjson) {
-        console.error(`API request failed for chunk ${i + 1}`);
-        continue;
+        let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
+        
+        if (!ORjson) {
+            console.error(`API request failed for chunk ${i + 1}`);
+            continue;
+        }
+
+        let aiResponse = ORjson.choices[0]?.message?.content || "";
+        
+        console.log(`Chunk ${i + 1} Response:\n`, aiResponse);
+
+        // Apply the formatting fix to the AI response
+        let formattedText = formatAIResponse(aiResponse);
+        if (!formattedText) {
+            console.error(`Skipping chunk ${i + 1} due to formatting issues.`);
+            continue;
+        }
+
+        formattedChunks.push(formattedText);
     }
-
-    let aiResponse = ORjson.choices[0]?.message?.content || "";
-    
-    console.log(`Chunk ${i + 1} Response:\n`, aiResponse);
-
-    // Apply the formatting fix to the AI response
-    let formattedText = formatAIResponse(aiResponse);
-    if (!formattedText) {
-        console.error(`Skipping chunk ${i + 1} due to formatting issues.`);
-        continue;
-    }
-
-    formattedChunks.push(formattedText);
-}
-
 
     let finalBodyContent = formattedChunks.join("\n");
     let finalDocXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -155,7 +205,7 @@ for (let i = 0; i < textChunks.length; i++) {
     
     console.log("Processing complete. Download link ready.");
     alert("Success! Your formatted DOCX is ready to download.");
-    loadingIndicator.style.display = "none";
+    loadingIndicator.style.display = "none"; // ✅ Hide loading message after processing
 });
 
 // API Request with Debugging
