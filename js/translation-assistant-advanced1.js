@@ -6,10 +6,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const documentUploadContainer = document.getElementById("document-upload-container"); // Upload section
 
     // Check if an API key exists in sessionStorage (this prevents re-entering on refresh)
-    const savedApiKey = sessionStorage.getItem("openRouterApiKey");
+    const savedApiKey = sessionStorage.getItem("openRouterApiKey") || "";
 
-    if (savedApiKey) {
-        // If API key is already stored, show the upload page directly
+    if (savedApiKey.trim() !== "") {
         apiKeyEntry.style.display = "none";
         documentUploadContainer.style.display = "block";
     } else {
