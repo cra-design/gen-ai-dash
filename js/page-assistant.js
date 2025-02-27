@@ -72,16 +72,6 @@ $(document).ready(function() {
 	var urlInput = $("#url-input").val().trim();
         // Trim unwanted characters like spaces, parentheses, or extra slashes
         urlInput = urlInput.replace(/^[^\w]+|[^\w]+$/g, '').replace(/(https?:\/\/)?(www\.)?/i, ''); // trim any unnecessary characters
-	// Optionally add "http://" if missing
-        if (!/^https?:\/\//i.test(urlInput)) {
-            urlInput = "http://" + urlInput;
-        }
-	// Basic validation check for URL structure
-    	var pattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}(\/[^\s]*)?$/;
-    	if (!pattern.test(urlInput)) {
-            alert("Invalid URL");
-            return;
-        }
     updateIframeFromURL(urlInput);
   });
 
@@ -787,16 +777,6 @@ async function updateIframeFromURL(url) {
   if (urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
     	// Set the iframe src and handle the error
 	$("#url-frame").attr("src", urlInput.href);
-	
-	// Error handling for the iframe load
-	$("#url-frame").on("error", function() {
-	    alert("Failed to load the URL or it may be a 404.");
-		$('#upload-chooser').removeClass("hidden");
-		$('#url-upload-input').removeClass("hidden");
-		$("#url-frame").addClass("hidden");
-	    $(this).attr("src", ""); // Clear iframe source to prevent further loading
-		return;
-	}); 
     $("#url-frame").removeClass("hidden");
     $("#genai-upload-msg").addClass("hidden");
     $("#genai-task-options").removeClass("hidden");
