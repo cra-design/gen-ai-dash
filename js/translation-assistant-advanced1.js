@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         let bodyContent = bodyMatch[1];
-        let textChunks = chunkText(bodyContent, 200); // Adjust chunk size here
+        let textChunks = chunkText(bodyContent, 100); // Adjust chunk size here
         console.log(`Total chunks to process: ${textChunks.length}`);
 
         let formattedChunks = [];
@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function chunkText(text, maxWords = 200) {
+    function chunkText(text, maxWords = 100) {
         const words = text.split(/\s+/);
         let chunks = [];
         for (let i = 0; i < words.length; i += maxWords) {
