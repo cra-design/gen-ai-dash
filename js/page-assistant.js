@@ -313,9 +313,8 @@ $(document).ready(function() {
         return $(this).val();
       }).get();
       // Grab the report type from the <h4> element within the sidebyside-report
-      let reportType = $(this).closest('.sidebyside-container').find('h4').text().trim();
-      // Redirect to Google Form with prefilled data
-	  
+      let reportType = $(this).closest('.sidebyside-container').find('.sidebyside-report h4').text().trim();
+      // Redirect to Google Form with prefilled data	  
 	  console.log(reportType);
 	  console.log(encodeURIComponent(reportType));
       const googleFormURL = `https://docs.google.com/forms/d/e/1FAIpQLSfI_DBkkIXN1SJh0OECZt3HUztsBNzD4sm_jaL7odGbH7Awqg/viewform?usp=pp_url` +
