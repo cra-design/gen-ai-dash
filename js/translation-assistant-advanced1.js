@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 // Example usage after receiving and formatting the AI response:
-let formattedText = formatAIResponse(aiResponse); 
+let formattedText = formatAIResponse(aiResponse);
 formattedText = ensureCompleteXML(formattedText);
 
             if (!formattedText) {
