@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 ]
             };
 
-            let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
+            let ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
 
             if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
     console.error(`API request failed or returned unexpected structure for chunk ${i + 1}:`, ORjson);
