@@ -71,7 +71,7 @@ $(document).ready(function() {
   $("#url-upload-btn").click(async function(){
 	var urlInput = $("#url-input").val().trim();
         // Trim unwanted characters like spaces, parentheses, or extra slashes
-        urlInput = urlInput.replace(/^[^\w]+|[^\w]+$/g, '').replace(/(https?:\/\/)?(www\.)?/i, ''); // trim any unnecessary characters
+        // urlInput = urlInput.replace(/^[^\w]+|[^\w]+$/g, '').replace(/(https?:\/\/)?(www\.)?/i, ''); // trim any unnecessary characters
     updateIframeFromURL(urlInput);
   });
 
