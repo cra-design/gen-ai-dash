@@ -729,11 +729,22 @@ function toggleRadioCheckbox() {
 }
 
 async function formatORResponse(model, requestJson) {
-  let ORjson = await getORData(model, requestJson);
-  let aiResponse = ORjson.choices[0].message.content;
-  let formattedText = formatAIResponse(aiResponse);
-  return formattedText;
+  try {
+    let ORjson = await getORData(model, requestJson);
+    if (ORjson?.choices?.[0]?.message?.content) {
+      let aiResponse = ORjson.choices[0].message.content;
+      let formattedText = formatAIResponse(aiResponse);
+      return formattedText;
+    } else {
+      console.error("Unexpected ORjson structure:", ORjson);
+      return "Error: Error in response from GenAI model.";
+    }
+  } catch (error) {
+    console.error("Error in formatORResponse:", error);
+    return "Error: Unable to generate response.";
+  }
 }
+
 
 async function updateIframeFromURL(url) {
   $('#upload-chooser').addClass("hidden");
