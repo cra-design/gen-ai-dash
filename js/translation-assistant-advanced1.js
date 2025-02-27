@@ -164,8 +164,6 @@ document.addEventListener("DOMContentLoaded", function () {
 let formattedText = formatAIResponse(aiResponse); 
 formattedText = ensureCompleteXML(formattedText);
 
-    
-    
             if (!formattedText) {
                 console.error(`Skipping chunk ${i + 1} due to formatting issues.`);
                 continue;
