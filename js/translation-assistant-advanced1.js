@@ -133,11 +133,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
 
-            if (!ORjson) {
-                console.error(`API request failed for chunk ${i + 1}`);
-                continue;
-            }
-
+            if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
+        console.error(`API request failed or returned unexpected structure for chunk ${i + 1}`);
+        continue; // Skip this chunk if response structure is not as expected.
+    }
             let aiResponse = ORjson.choices[0]?.message?.content || "";
             console.log(`Chunk ${i + 1} Response:\n`, aiResponse);
 
