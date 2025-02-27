@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function chunkText(text, maxWords = 800) {
+    function chunkText(text, maxWords = 400) {
         const words = text.split(/\s+/);
         let chunks = [];
         for (let i = 0; i < words.length; i += maxWords) {
