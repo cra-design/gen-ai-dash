@@ -149,9 +149,9 @@ document.addEventListener("DOMContentLoaded", function () {
             formattedChunks.push(formattedText);
         }
 
-        let finalBodyContent = formattedChunks.join("\n");
+        let finalBodyContent = formattedChunks.map(chunk => extractBodyContent(chunk)).join("\n");
         let finalDocXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ...>
   <w:body>
     ${finalBodyContent}
   </w:body>
@@ -206,8 +206,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function formatAIResponse(aiResponse) {
-        return aiResponse.trim();
-    }
+  let cleaned = aiResponse.replace(/^```xml\s*/, '').replace(/\s*```$/, '').trim();
+  return cleaned;
+}
 
     function escapeXML(xml) {
         return xml.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
