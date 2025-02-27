@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let requestJson = {
                 messages: [
-                    { role: "system", content: "You are a DOCX formatting assistant.When given a chunk of DOCX XML, reformat and return only the complete, valid DOCX XML. Ensure your output includes the XML declaration, the complete <w:document> element (with its <w:body>), and all necessary closing tags. Do not wrap the output in code fences. If any part of the XML appears incomplete, please complete it with the appropriate closing tags." },
+                    { role: "system", content: "You are a DOCX formatting assistant. When given a chunk of DOCX XML, reformat and return only the complete, valid DOCX XML. Ensure your output includes the XML declaration, the complete <w:document> element (with its <w:body>), and all necessary closing tags. Do not wrap your output in code fences. Finally, end your output with the marker [END_OF_XML] (on its own line)." },
                     { role: "user", content: "English DOCX chunk: " + escapeXML(textChunks[i]) }
                 ]
             };
@@ -145,20 +145,28 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(`Chunk ${i + 1} Response:\n`, aiResponse);
 
             function ensureCompleteXML(xml) {
-              // Remove any code fences if present
-              xml = xml.replace(/^```xml\s*/, "").replace(/\s*```$/, "").trim();
+  // Remove code fences if present
+  xml = xml.replace(/^```xml\s*/, "").replace(/\s*```$/, "").trim();
 
-              // Check if the XML ends with </w:document>
-              if (!xml.endsWith("</w:document>")) {
-                // Check if </w:body> is present; if not, add it
-              if (!xml.includes("</w:body>")) {
-              xml += "\n</w:body>";
-                }
-                // Append the closing document tag
-              xml += "\n</w:document>";
-              }
-              return xml;
-            }
+  // If our marker is present, cut the string there
+  const marker = "[END_OF_XML]";
+  const markerIndex = xml.indexOf(marker);
+  if (markerIndex !== -1) {
+    xml = xml.substring(0, markerIndex).trim();
+  }
+  
+  // Now check if the XML ends with the necessary closing tags
+  if (!xml.endsWith("</w:document>")) {
+    // If </w:body> is missing, add it.
+    if (!xml.includes("</w:body>")) {
+      xml += "\n</w:body>";
+    }
+    // Append closing document tag.
+    xml += "\n</w:document>";
+  }
+  return xml;
+}
+
 
 // Example usage after receiving and formatting the AI response:
 let formattedText = formatAIResponse(aiResponse);
