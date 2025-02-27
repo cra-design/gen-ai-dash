@@ -79,7 +79,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     handleFileInput(document.getElementById("english-file"), "english");
     handleFileInput(document.getElementById("french-file"), "french");
-
+     
+    function extractBodyContent(xml) {
+  const match = xml.match(/<w:body>([\s\S]*?)<\/w:body>/);
+  return match ? match[1] : '';
+}
     // Submit Processing
     const submitBtn = document.getElementById("submit-btn");
     const downloadLink = document.getElementById("downloadLink");
@@ -148,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             formattedChunks.push(formattedText);
         }
-
+        
         let finalBodyContent = formattedChunks.map(chunk => extractBodyContent(chunk)).join("\n");
         let finalDocXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ...>
