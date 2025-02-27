@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let requestJson = {
                 messages: [
-                    { role: "system", content: "You are a DOCX formatting assistant. Preserve all formatting. Return only valid DOCX XML." },
+                    { role: "system", content: "You are a DOCX formatting assistant.When given a chunk of DOCX XML, reformat and return only the complete, valid DOCX XML. Ensure your output includes the XML declaration, the complete <w:document> element (with its <w:body>), and all necessary closing tags. Do not wrap the output in code fences. If any part of the XML appears incomplete, please complete it with the appropriate closing tags." },
                     { role: "user", content: "English DOCX chunk: " + escapeXML(textChunks[i]) }
                 ]
             };
@@ -144,7 +144,28 @@ document.addEventListener("DOMContentLoaded", function () {
             let aiResponse = ORjson.choices[0]?.message?.content || "";
             console.log(`Chunk ${i + 1} Response:\n`, aiResponse);
 
-            let formattedText = formatAIResponse(aiResponse);
+            function ensureCompleteXML(xml) {
+              // Remove any code fences if present
+              xml = xml.replace(/^```xml\s*/, "").replace(/\s*```$/, "").trim();
+
+              // Check if the XML ends with </w:document>
+              if (!xml.endsWith("</w:document>")) {
+                // Check if </w:body> is present; if not, add it
+              if (!xml.includes("</w:body>")) {
+              xml += "\n</w:body>";
+                }
+                // Append the closing document tag
+              xml += "\n</w:document>";
+              }
+              return xml;
+            }
+
+// Example usage after receiving and formatting the AI response:
+let formattedText = formatAIResponse(aiResponse); 
+formattedText = ensureCompleteXML(formattedText);
+
+            let formattedText = formatAIResponse(aiResponse); 
+    
             if (!formattedText) {
                 console.error(`Skipping chunk ${i + 1} due to formatting issues.`);
                 continue;
