@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         let bodyContent = bodyMatch[1];
-        let textChunks = chunkText(bodyContent, 400); // Adjust chunk size here
+        let textChunks = chunkText(bodyContent, 300); // Adjust chunk size here
         console.log(`Total chunks to process: ${textChunks.length}`);
 
         let formattedChunks = [];
