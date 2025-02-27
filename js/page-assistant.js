@@ -77,7 +77,8 @@ $(document).ready(function() {
             urlInput = "http://" + urlInput;
         }
 	// Basic validation check for URL structure
-        if (!isValidUrl(urlInput)) {
+    	var pattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}(\/[^\s]*)?$/;
+    	if (!pattern.test(urlInput) {
             alert("Invalid URL");
             return;
         }
@@ -836,10 +837,4 @@ async function updateIframeFromURL(url) {
     $('#url-upload-input').removeClass("hidden");
   }
   //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
-}
-
-// URL Validation Function
-function isValidUrl(url) {
-    var pattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}(\/[^\s]*)?$/;
-    return pattern.test(url);
 }
