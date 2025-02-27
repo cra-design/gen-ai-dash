@@ -69,7 +69,19 @@ $(document).ready(function() {
   });
 
   $("#url-upload-btn").click(async function(){
-    updateIframeFromURL($('#url-input').val());
+	var urlInput = $("#url-input").val().trim();
+        // Trim unwanted characters like spaces, parentheses, or extra slashes
+        urlInput = urlInput.replace(/^[^\w]+|[^\w]+$/g, '').replace(/(https?:\/\/)?(www\.)?/i, ''); // trim any unnecessary characters
+	// Optionally add "http://" if missing
+        if (!/^https?:\/\//i.test(urlInput)) {
+            urlInput = "http://" + urlInput;
+        }
+	// Basic validation check for URL structure
+        if (!isValidUrl(urlInput)) {
+            alert("Invalid URL");
+            return;
+        }
+    updateIframeFromURL(urlInput);
   });
 
   $("#html-upload-btn").click(function() {
@@ -772,7 +784,18 @@ async function updateIframeFromURL(url) {
   const urlInput = new URL(url);
   // Currently configuring it to specific github organizations:
   if (urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
-    $("#url-frame").attr("src", urlInput.href);
+    	// Set the iframe src and handle the error
+	$("#url-frame").attr("src", urlInput.href);
+	
+	// Error handling for the iframe load
+	$("#url-frame").on("error", function() {
+	    alert("Failed to load the URL or it may be a 404.");
+		$('#upload-chooser').removeClass("hidden");
+		$('#url-upload-input').removeClass("hidden");
+		$("#url-frame").addClass("hidden");
+	    $(this).attr("src", ""); // Clear iframe source to prevent further loading
+		return;
+	}); 
     $("#url-frame").removeClass("hidden");
     $("#genai-upload-msg").addClass("hidden");
     $("#genai-task-options").removeClass("hidden");
@@ -813,4 +836,10 @@ async function updateIframeFromURL(url) {
     $('#url-upload-input').removeClass("hidden");
   }
   //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
+}
+
+// URL Validation Function
+function isValidUrl(url) {
+    var pattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}(\/[^\s]*)?$/;
+    return pattern.test(url);
 }
