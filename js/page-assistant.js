@@ -78,7 +78,7 @@ $(document).ready(function() {
         }
 	// Basic validation check for URL structure
     	var pattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}(\/[^\s]*)?$/;
-    	if (!pattern.test(urlInput) {
+    	if (!pattern.test(urlInput)) {
             alert("Invalid URL");
             return;
         }
