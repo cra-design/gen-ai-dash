@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let requestJson = {
                 messages: [
-                    { role: "system", content: "You are a DOCX formatting assistant. When given a chunk of DOCX XML, reformat and return only the complete, valid DOCX XML. Ensure your output includes the XML declaration, the complete <w:document> element (with its <w:body>), and all necessary closing tags. Do not wrap your output in code fences. Finally, end your output with the marker [END_OF_XML] (on its own line)." },
+                    { role: "system", content: "You are a DOCX formatting assistant. Reformat the provided DOCX XML chunk to produce complete and valid XML output. Include the XML declaration and a full <w:document> element with its <w:body> and all required closing tags. Do not include any extra text or code fences." },
                     { role: "user", content: "English DOCX chunk: " + escapeXML(textChunks[i]) }
                 ]
             };
