@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let requestJson = {
                 messages: [
-                    { role: "system", content: "You are a DOCX formatting assistant. Reformat the provided DOCX XML chunk to produce complete and valid XML output. Include the XML declaration and a full <w:document> element with its <w:body> and all required closing tags. Do not include any extra text or code fences." },
+                    { role: "system", content: "You are a DOCX formatting assistant. Reformat the provided DOCX XML chunk to produce complete and valid XML output. Ensure your output includes the XML declaration and a full <w:document> element (with its <w:body>) and all necessary closing tags. Do not include any extra text or code fences. End your output with the marker [END_OF_XML] on its own line." },
                     { role: "user", content: "English DOCX chunk: " + escapeXML(textChunks[i]) }
                 ]
             };
@@ -144,28 +144,29 @@ document.addEventListener("DOMContentLoaded", function () {
             let aiResponse = ORjson.choices[0]?.message?.content || "";
             console.log(`Chunk ${i + 1} Response:\n`, aiResponse);
 
-            function ensureCompleteXML(xml) {
+           function ensureCompleteXML(xml) {
   // Remove code fences if present
   xml = xml.replace(/^```xml\s*/, "").replace(/\s*```$/, "").trim();
 
-  // If our marker is present, cut the string there
+  // If the marker is present, cut the string there.
   const marker = "[END_OF_XML]";
   const markerIndex = xml.indexOf(marker);
   if (markerIndex !== -1) {
     xml = xml.substring(0, markerIndex).trim();
   }
   
-  // Now check if the XML ends with the necessary closing tags
+  // Check if the XML ends with the proper closing tags.
   if (!xml.endsWith("</w:document>")) {
-    // If </w:body> is missing, add it.
+    // If </w:body> is missing, append it.
     if (!xml.includes("</w:body>")) {
       xml += "\n</w:body>";
     }
-    // Append closing document tag.
+    // Append the closing document tag.
     xml += "\n</w:document>";
   }
   return xml;
 }
+
 
 
 // Example usage after receiving and formatting the AI response:
