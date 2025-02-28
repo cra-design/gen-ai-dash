@@ -83,8 +83,8 @@ document.addEventListener("DOMContentLoaded", function () {
     return xml.match(/<w:p[\s\S]*?<\/w:p>/g) || [];
   }
 
-  // Group paragraphs into batches (e.g., 4 paragraphs per group)
-  function groupParagraphs(paragraphs, groupSize = 4) {
+  // Group paragraphs into batches so that total API calls do not exceed maxRequests
+  function groupParagraphs(paragraphs, groupSize) {
     let groups = [];
     for (let i = 0; i < paragraphs.length; i += groupSize) {
       groups.push(paragraphs.slice(i, i + groupSize).join("\n"));
@@ -92,8 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return groups;
   }
 
-  // Helper function: clean AI response by removing code fences and extra marker text,
-  // then ensure it is a complete XML document (ends with </w:document>)
+  // Helper function: remove code fences, marker, and ensure the XML is complete.
   function ensureCompleteXML(xml) {
     xml = xml.replace(/^```xml\s*/, "").replace(/\s*```$/, "").trim();
     const marker = "[END_OF_XML]";
@@ -101,7 +100,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (markerIndex !== -1) {
       xml = xml.substring(0, markerIndex).trim();
     }
-    // Ensure the response is complete. If missing closing tags, append them.
     if (!xml.endsWith("</w:document>")) {
       if (!xml.includes("</w:body>")) {
         xml += "\n</w:body>";
@@ -159,10 +157,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     let bodyContent = bodyMatch[1];
 
-    // Extract paragraphs and group them (4 per group)
+    // Extract paragraphs and group them with a computed group size
     let paragraphs = extractParagraphs(bodyContent);
     console.log(`Total paragraphs found: ${paragraphs.length}`);
-    let groups = groupParagraphs(paragraphs, 4);
+    const maxRequests = 30;
+    let groupSize = Math.ceil(paragraphs.length / maxRequests);
+    console.log(`Grouping paragraphs into batches of ${groupSize} (max ${maxRequests} requests)`);
+    let groups = groupParagraphs(paragraphs, groupSize);
     console.log(`Total groups to process: ${groups.length}`);
 
     let formattedChunks = [];
