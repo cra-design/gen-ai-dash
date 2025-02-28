@@ -385,7 +385,8 @@ async function conversionGemini(englishXml, fileType) {
   let modelCount = 0;
   for (let i = 0; i < groups.length;) {
     console.log(`Processing group ${i + 1}/${groups.length}...`);
-    const requestJson = [ systemGeneral, { role: "user", content: "English DOCX group: " + escapeXML(groups[i]) } ];
+    // Helper function: escape XML special characters in text
+    const requestJson = [ systemGeneral, { role: "user", content: "English DOCX group: " + groups[i].replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") } ];
     let ORjson = await getORData(model[modelCount], requestJson);
     // If ORjson is invalid, attempt with the next model
     if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
