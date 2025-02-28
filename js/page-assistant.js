@@ -316,13 +316,14 @@ $(document).ready(function() {
         return $(this).val();
       }).get();
       // Grab the report type from the <h4> element within the sidebyside-report
-      let reportType = $(this).closest('.toolbar').closest().find('.sidebyside-report h4').text().trim();
+      let reportType = $(this).closest('.sidebyside-container').find('.sidebyside-report h4').text().trim();
 	  console.log($(this));
 	  console.log($(this).closest('.sidebyside-container'));
 	  console.log($(this).closest('.toolbar'));
 	  console.log($(this).parents('.sidebyside-container'));
-	  console.log($(this).closest('.toolbar').closest().find('.sidebyside-report h4'));
-	  console.log($(this).closest('.toolbar').closest().find('.sidebyside-report').find('h4'));
+	  console.log($(this).closest('.sidebyside-container').find('.sidebyside-report h4'));
+	  console.log($(this).closest('.sidebyside-container').find('.sidebyside-report'));
+    console.log($(this).closest('.sidebyside-container').find('.sidebyside-report').find('h4'));
 	  console.log(reportType);
 	  console.log(encodeURIComponent(reportType));
       // Redirect to Google Form with prefilled data
