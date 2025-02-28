@@ -168,12 +168,12 @@ $(document).ready(function() {
     var englishDocxXml;
     // Step 1: Extract the XML from the English DOCX file
     await handleFileExtractionToXML(englishDocxData, function(result) {
-      console.log(documentXml);
+      console.log(englishDocxXml);
     }, function(err) {
         // Error handling callback
         console.error('Error processing English file:', err);
     });
-    if (!documentXml) {
+    if (!englishDocxXml) {
         $('#converting-spinner').addClass("hidden");
         return;
     }
@@ -182,9 +182,10 @@ $(document).ready(function() {
     const textNodes = [];
     const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
     let match;
-    while ((match = regex.exec(documentXml)) !== null) {
+    while ((match = regex.exec(englishDocxXml)) !== null) {
         textNodes.push(match[1]);
     }
+
     // Step 3: Get the translated French text and prepare for GenAI adjustment
     const translatedText = $("#translation-A").text().trim();
     const englishReference = textNodes.join("\n");
@@ -256,7 +257,7 @@ $(document).ready(function() {
     }
 
     // Step 5: Replace English text with corresponding adjusted French lines
-    let updatedXml = documentXml;
+    let updatedXml = englishDocxXml;
     textNodes.forEach((node, index) => {
         const escapedNode = node.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'); // Escape special characters
         const regexNode = new RegExp(`<w:t[^>]*>${escapedNode}<\/w:t>`);
