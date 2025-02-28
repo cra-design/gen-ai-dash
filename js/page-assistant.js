@@ -156,6 +156,11 @@ $(document).ready(function() {
     acceptIframe("b");
   });
 
+  $("#template-options-btn").click(function() {
+    let template = $('input[name="html-upload-genai-model"]:checked').val();
+    console.log(template);
+  });
+
   $("#genai-select-tasks-btn").click(function () {
     $("#genai-task-options").addClass("hidden");
     $("#genai-model-options").removeClass("hidden");
@@ -192,7 +197,7 @@ $(document).ready(function() {
     const model = $('input[name="html-upload-genai-model"]:checked').map(function() {
       return $(this).val();
     }).get();
-    $('input[name="html-upload-genai-model"]:checked').val();
+    // $('input[name="html-upload-genai-model"]:checked').val();
     let systemGeneral = { role: "system", content: "" }
     let systemTask = { role: "system", content: "" }
     let userContent = { role: "user", content: "Web page content: "}
