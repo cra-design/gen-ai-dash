@@ -183,104 +183,13 @@ $(document).ready(function() {
         $('#converting-spinner').addClass("hidden");
         return;
     }
-    console.log(englishDocxXml);
-    // Step 2: Extract all <w:t> nodes (text nodes) preserving their positions
-    const textNodes = [];
-    const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
-    let match;
-    while ((match = regex.exec(englishDocxXml)) !== null) {
-        textNodes.push(match[1]); // Extract the text content of each <w:t> node
+    var selectedMethod = $('input[name="convert-translation-method"]:checked').val();
+    var updatedXml;
+    if (selectedMethod == "convert-translation-docx") {
+      updatedXml = await conversionDocxTemplater(englishDocxXml);
+    } else {
+      updatedXml = await conversionGemini(englishDocxXml);
     }
-
-    console.log("Getting French...");
-
-    // Split the textNodes into smaller chunks (e.g., 10 nodes per chunk)
-    const chunkSize = 10;
-    const textChunks = [];
-    for (let i = 0; i < textNodes.length; i += chunkSize) {
-        textChunks.push(textNodes.slice(i, i + chunkSize));
-    }
-
-    const systemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml.txt") };
-    const retrySystemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml-retry.txt") };
-    const translatedText = $("#translation-A").text().trim();
-    let chunkCounter = 1;
-
-    // Step 3: Process each chunk sequentially
-    let adjustedFrenchText = "";
-    for (const chunk of textChunks) {
-        // Join the chunk into a reference string (English text) and translated French text
-        const englishReference = chunk.join("\n");
-        const requestJson = [ systemGeneral,
-            { role: "user", content: "English Reference (part " + chunkCounter + " of " + textChunks.length + " ):" + englishReference },
-            { role: "user", content: "Translated French (for the full document): " + translatedText }
-        ];
-        // Call the GenAI API using the existing getORData function
-        const ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
-        if (!ORjson || !ORjson.choices || !ORjson.choices[0] || !ORjson.choices[0].message) {
-            alert("No response from GenAI. Please try again.");
-            $('#converting-spinner').addClass("hidden");
-            return;
-        }
-        // Extract the adjusted French text from the response
-        const adjustedChunkText = ORjson.choices[0].message.content;
-        // Split the adjusted text into lines
-        const adjustedLines = adjustedChunkText.split("\n");
-        console.log(chunk.length);
-        console.log(chunk);
-        console.log(adjustedLines.length);
-        console.log(adjustedLines);
-
-        let retryCount = 0;
-        // Define the mismatch threshold (e.g., we allow some margin of difference before retrying)
-        while (chunk.length !== adjustedLines.length) {
-            console.log("Mismatch detected, sending back for adjustment... " + chunkCounter);
-            // Prepare the prompt for further adjustment by GenAI
-            const retryRequestJson = [ retrySystemGeneral,
-               { role: "user", content: "English Reference (" + textNodes.length + " lines): " + englishReference },
-               { role: "user", content: "Translated French (" + translatedText.split("\n").length + "): " + adjustedChunkText }
-           ];
-
-            // Call the GenAI API again for further adjustments
-            const retryORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", retryRequestJson);
-
-            if (!retryORjson || !retryORjson.choices || !retryORjson.choices[0] || !retryORjson.choices[0].message) {
-                alert("Error adjusting the French text. Please try again.");
-                $('#converting-spinner').addClass("hidden");
-                return;
-            }
-
-            // Extract the further adjusted French text
-            adjustedChunkText = retryORjson.choices[0].message.content;
-            adjustedLines = adjustedChunkText.split("\n"); // Split again after adjustment
-
-            // Optional: Limit the number of retries (e.g., after 3 retries, abort)
-            if (retryCount >= 3) {
-                alert("Too many retries. Could not match the line count.");
-                $('#converting-spinner').addClass("hidden");
-                return;
-            }
-            retryCount++;
-        }
-        adjustedFrenchText += adjustedChunkText + "\n";  // Append the adjusted text for this chunk
-        chunkCounter++;
-    }
-
-    const translatedLines = adjustedFrenchText.split("\n");
-    // Proceed if the number of lines matches after the adjustments
-    if (textNodes.length !== translatedLines.length) {
-        alert("Mismatch between full documents.");
-        $('#converting-spinner').addClass("hidden");
-        return;
-    }
-
-    // Step 5: Replace English text with corresponding adjusted French lines
-    let updatedXml = englishDocxXml;
-    textNodes.forEach((node, index) => {
-        const escapedNode = node.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'); // Escape special characters
-        const regexNode = new RegExp(`<w:t[^>]*>${escapedNode}<\/w:t>`);
-        updatedXml = updatedXml.replace(regexNode, `<w:t>${translatedLines[index]}</w:t>`);
-    });
 
     // Step 6: Rebuild the DOCX with the updated XML
     const zip = new PizZip();
@@ -304,10 +213,116 @@ $(document).ready(function() {
     saveAs(output, "translated_document.docx");
 
     $('#converting-spinner').addClass("hidden");
-    $('#translated-doc-download').removeClass("hidden");
+    // $('#translated-doc-download').removeClass("hidden");
   });
 
 });
+
+
+async function conversionDocxTemplater(englishDocxXml) {
+  // Step 2: Extract all <w:t> nodes (text nodes) preserving their positions
+  const textNodes = [];
+  const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
+  let match;
+  while ((match = regex.exec(englishDocxXml)) !== null) {
+      textNodes.push(match[1]); // Extract the text content of each <w:t> node
+  }
+
+  console.log("Getting French...");
+
+  // Split the textNodes into smaller chunks (e.g., 10 nodes per chunk)
+  const chunkSize = 10;
+  const textChunks = [];
+  for (let i = 0; i < textNodes.length; i += chunkSize) {
+      textChunks.push(textNodes.slice(i, i + chunkSize));
+  }
+
+  const systemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml.txt") };
+  const retrySystemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml-retry.txt") };
+  const translatedText = $("#translation-A").text().trim();
+  let chunkCounter = 1;
+
+  // Step 3: Process each chunk sequentially
+  let adjustedFrenchText = "";
+  for (const chunk of textChunks) {
+      // Join the chunk into a reference string (English text) and translated French text
+      const englishReference = chunk.join("\n");
+      const requestJson = [ systemGeneral,
+          { role: "user", content: "English Reference (part " + chunkCounter + " of " + textChunks.length + " ):" + englishReference },
+          { role: "user", content: "Translated French (for the full document): " + translatedText }
+      ];
+      // Call the GenAI API using the existing getORData function
+      const ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
+      if (!ORjson || !ORjson.choices || !ORjson.choices[0] || !ORjson.choices[0].message) {
+          alert("No response from GenAI. Please try again.");
+          $('#converting-spinner').addClass("hidden");
+          return;
+      }
+      // Extract the adjusted French text from the response
+      const adjustedChunkText = ORjson.choices[0].message.content;
+      // Split the adjusted text into lines
+      const adjustedLines = adjustedChunkText.split("\n");
+      console.log(chunk.length);
+      console.log(chunk);
+      console.log(adjustedLines.length);
+      console.log(adjustedLines);
+
+      let retryCount = 0;
+      // Define the mismatch threshold (e.g., we allow some margin of difference before retrying)
+      while (chunk.length !== adjustedLines.length) {
+          console.log("Mismatch detected, sending back for adjustment... " + chunkCounter);
+          // Prepare the prompt for further adjustment by GenAI
+          const retryRequestJson = [ retrySystemGeneral,
+             { role: "user", content: "English Reference (" + textNodes.length + " lines): " + englishReference },
+             { role: "user", content: "Translated French (" + translatedText.split("\n").length + "): " + adjustedChunkText }
+         ];
+
+          // Call the GenAI API again for further adjustments
+          const retryORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", retryRequestJson);
+
+          if (!retryORjson || !retryORjson.choices || !retryORjson.choices[0] || !retryORjson.choices[0].message) {
+              alert("Error adjusting the French text. Please try again.");
+              $('#converting-spinner').addClass("hidden");
+              return;
+          }
+
+          // Extract the further adjusted French text
+          adjustedChunkText = retryORjson.choices[0].message.content;
+          adjustedLines = adjustedChunkText.split("\n"); // Split again after adjustment
+
+          // Optional: Limit the number of retries (e.g., after 3 retries, abort)
+          if (retryCount >= 3) {
+              alert("Too many retries. Could not match the line count.");
+              $('#converting-spinner').addClass("hidden");
+              return;
+          }
+          retryCount++;
+      }
+      adjustedFrenchText += adjustedChunkText + "\n";  // Append the adjusted text for this chunk
+      chunkCounter++;
+  }
+
+  const translatedLines = adjustedFrenchText.split("\n");
+  // Proceed if the number of lines matches after the adjustments
+  if (textNodes.length !== translatedLines.length) {
+      alert("Mismatch between full documents.");
+      $('#converting-spinner').addClass("hidden");
+      return;
+  }
+
+  // Step 5: Replace English text with corresponding adjusted French lines
+  let updatedXml = englishDocxXml;
+  textNodes.forEach((node, index) => {
+      const escapedNode = node.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'); // Escape special characters
+      const regexNode = new RegExp(`<w:t[^>]*>${escapedNode}<\/w:t>`);
+      updatedXml = updatedXml.replace(regexNode, `<w:t>${translatedLines[index]}</w:t>`);
+  });
+  return updatedXml;
+}
+
+async function conversionDocxTemplater(englishDocxXml) {
+
+}
 
 // Function to send the extracted body content to OpenAI for restyling
 async function restyleTextWithOpenAI(text, apikey) {

@@ -368,17 +368,23 @@
                                   <div id="convert-translation" class="convert-translation hidden">
                                     <h4 style="margin-top: 20px;">Put back in document format</h4>
                                     <p>Once you're satisfied with the translation, submit it to put it back in the document formatting.</p>
+                                    <fieldset class="inline-checkbox-container" style="margin-bottom: 15px;">
+                                      <input type="radio" id="convert-translation-docx" name="convert-translation-method" value="convert-translation-docx" checked>
+                                      <label for="convert-translation-docx">DocxTemplater</label><br>
+                                      <input type="radio" id="convert-translation-gemini" name="convert-translation-method" value="convert-translation-gemini">
+                                      <label for="convert-translation-gemini">GeminiTemplater</label><br>
+                                    </fieldset>
                                     <button id="convert-translation-to-doc-btn" style="margin-top: 20px">Create document</button>
                                     <div id="converting-spinner" class="hidden">
                                       <div class="spinner"></div>
                                       <p>Generating reports...</p>
                                     </div>
                                   </div>
-                                  <div id="translated-doc-download" class="hidden">
+                                  <!-- <div id="translated-doc-download" class="hidden">
                                     <h4>Translated document</h4>
                                     <p>The reformated translation document is ready for download!</p>
                                     <button id="convert-translation-download-btn" style="margin-top: 20px">Download document</button>
-                                  </div>
+                                  </div> -->
                                 </div>
                                   <!--requred libraries-->
                                 </main>
