@@ -167,17 +167,23 @@ $(document).ready(function() {
     const englishDocxData = $('#english-file')[0].files[0]; // Get the english file
     var englishDocxXml;
     // Step 1: Extract the XML from the English DOCX file
-    await handleFileExtractionToXML(englishDocxData, function(result) {
-      console.log(englishDocxXml);
-    }, function(err) {
-        // Error handling callback
-        console.error('Error processing English file:', err);
+    // Step 1: Extract the XML from the English DOCX file
+    await new Promise((resolve, reject) => {
+        handleFileExtractionToXML(englishDocxData, function(result) {
+            englishDocxXml = result;  // Store the extracted XML
+            resolve();  // Resolve the promise once the XML is available
+        }, function(error) {
+            console.error('Error processing English file:', error);
+            reject(error);  // Reject the promise if there is an error
+        });
     });
+    // After the XML is extracted and stored in englishDocxXml
     if (!englishDocxXml) {
+        console.error("No XML document.");
         $('#converting-spinner').addClass("hidden");
         return;
     }
-    console.log("Extracting text nodes...");
+    console.log(englishDocxXml);
     // Step 2: Extract all <w:t> nodes (text nodes) preserving their positions
     const textNodes = [];
     const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
@@ -186,6 +192,7 @@ $(document).ready(function() {
         textNodes.push(match[1]);
     }
 
+    console.log("Getting French...");
     // Step 3: Get the translated French text and prepare for GenAI adjustment
     const translatedText = $("#translation-A").text().trim();
     const englishReference = textNodes.join("\n");
@@ -194,7 +201,7 @@ $(document).ready(function() {
         { role: "user", content: "English Reference: " + englishReference },
         { role: "user", content: "English Reference: " + translatedText }
     ];
-
+    
     // Call the GenAI API using the existing getORData function
     const ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
 

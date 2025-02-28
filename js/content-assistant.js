@@ -458,10 +458,10 @@ function handleFileExtractionToXML(file, successCallback, errorCallback) {
             // Use PizZip to read the .docx file
             const zip = new PizZip(arrayBuffer);
             // Extract the main document XML
-            const englishDocxXml = zip.file("word/document.xml")?.asText();
-            if (englishDocxXml) {
-                console.log("Document XML:", englishDocxXml);
-                successCallback(englishDocxXml);  // Pass the extracted XML to the callback
+            const documentXml = zip.file("word/document.xml")?.asText();
+            if (documentXml) {
+                // console.log("Document XML:", documentXml);
+                successCallback(documentXml);  // Pass the extracted XML to the callback
             } else {
                 errorCallback("Error: Could not find 'word/document.xml' in the DOCX.");
             }
