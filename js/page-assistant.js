@@ -311,6 +311,7 @@ $(document).ready(function() {
 
   $(document).on('click', '#genai-nav .toolbar-button', function() {
       const counter = $(this).attr('id').split('-').pop();
+      // Grab the report type from the <h4> element within the sidebyside-report
       let reportType = $(this).closest('.sidebyside-container').find('.sidebyside-report h4').text().trim();
       let selectedOption = "";
       // Check which button was clicked
@@ -330,9 +331,6 @@ $(document).ready(function() {
       const model = $('input[name="html-upload-genai-model"]:checked').map(function() {
         return $(this).val();
       }).get();
-      // Grab the report type from the <h4> element within the sidebyside-report
-	  console.log(reportType);
-	  console.log(encodeURIComponent(reportType));
       // Redirect to Google Form with prefilled data
       const googleFormURL = `https://docs.google.com/forms/d/e/1FAIpQLSe4PKfFCIoQkkxGGyTSda-JzczbM66r42zuQ4Gul38iGQjtpQ/viewform?usp=pp_url` +
                             `&entry.556657873=${encodeURIComponent(reportType)}` +
