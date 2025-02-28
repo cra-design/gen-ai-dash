@@ -334,11 +334,10 @@ $(document).ready(function() {
 	  console.log(reportType);
 	  console.log(encodeURIComponent(reportType));
       // Redirect to Google Form with prefilled data
-      const googleFormURL = `https://docs.google.com/forms/d/e/1FAIpQLSfI_DBkkIXN1SJh0OECZt3HUztsBNzD4sm_jaL7odGbH7Awqg/viewform?usp=pp_url` +
-                            `&entry.1414644752=${encodeURIComponent(reportType)}` +
-                            `&entry.984404841=${selectedOption}` +
-                            `&entry.510997766=${model[0]}` +
-                            `&entry.999305171=${model[1]}`;
+      const googleFormURL = `https://docs.google.com/forms/d/e/1FAIpQLSe4PKfFCIoQkkxGGyTSda-JzczbM66r42zuQ4Gul38iGQjtpQ/viewform?usp=pp_url` +
+                            `&entry.556657873=${encodeURIComponent(reportType)}` +
+                            `&entry.1982547367=${model[0]}` +
+                            `&entry.946626987=${model[1]}`;
       window.open(googleFormURL, '_blank');
   });
 
