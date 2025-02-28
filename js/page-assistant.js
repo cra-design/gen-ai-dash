@@ -297,6 +297,7 @@ $(document).ready(function() {
 
   $(document).on('click', '#genai-nav .toolbar-button', function() {
       const counter = $(this).attr('id').split('-').pop();
+      let reportType = $(this).closest('.sidebyside-container').find('.sidebyside-report h4').text().trim();
       let selectedOption = "";
       // Check which button was clicked
       if ($(this).is(`#accept-report-a-btn-${counter}`)) {
@@ -316,14 +317,6 @@ $(document).ready(function() {
         return $(this).val();
       }).get();
       // Grab the report type from the <h4> element within the sidebyside-report
-      let reportType = $(this).closest('.sidebyside-container').find('.sidebyside-report h4').text().trim();
-	  console.log($(this));
-	  console.log($(this).closest('.sidebyside-container'));
-	  console.log($(this).closest('.toolbar'));
-	  console.log($(this).parents('.sidebyside-container'));
-	  console.log($(this).closest('.sidebyside-container').find('.sidebyside-report h4'));
-	  console.log($(this).closest('.sidebyside-container').find('.sidebyside-report'));
-    console.log($(this).closest('.sidebyside-container').find('.sidebyside-report').find('h4'));
 	  console.log(reportType);
 	  console.log(encodeURIComponent(reportType));
       // Redirect to Google Form with prefilled data
