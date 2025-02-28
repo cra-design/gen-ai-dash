@@ -1,3 +1,2 @@
-The following translation does not match the expected line breaks or paragraph order based on the English reference.
-Adjust the French translation so that the number of lines and paragraphs exactly match the English reference.
+The following translation does not match the expected line breaks or paragraph order based on the English reference. Please ensure the french translation has the same number of lines and paragraphs as the English reference.
 Only return the adjusted French text, preserving its meaning and context.
