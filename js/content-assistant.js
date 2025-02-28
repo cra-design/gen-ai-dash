@@ -223,6 +223,23 @@ function formatAIResponse(aiResponse) {
     .join(""); // Join everything back together
 }
 
+// Helper function: remove code fences, marker, and ensure the XML is complete.
+function ensureCompleteXML(xml) {
+  xml = xml.replace(/^```xml\s*/, "").replace(/\s*```$/, "").trim();
+  const marker = "[END_OF_XML]";
+  const markerIndex = xml.indexOf(marker);
+  if (markerIndex !== -1) {
+    xml = xml.substring(0, markerIndex).trim();
+  }
+  if (!xml.endsWith("</w:document>")) {
+    if (!xml.includes("</w:body>")) {
+      xml += "\n</w:body>";
+    }
+    xml += "\n</w:document>";
+  }
+  return xml;
+}
+
 //Displays a side-by-side element for comparison and changes both to 50% width, or toggles the 2nd off and eleA back to 100% width
 function toggleComparisonElement(eleA, eleB) {
     if (eleB.hasClass('hidden')) {

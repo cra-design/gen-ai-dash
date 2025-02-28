@@ -92,23 +92,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return groups;
   }
 
-  // Helper function: remove code fences, marker, and ensure the XML is complete.
-  function ensureCompleteXML(xml) {
-    xml = xml.replace(/^```xml\s*/, "").replace(/\s*```$/, "").trim();
-    const marker = "[END_OF_XML]";
-    const markerIndex = xml.indexOf(marker);
-    if (markerIndex !== -1) {
-      xml = xml.substring(0, markerIndex).trim();
-    }
-    if (!xml.endsWith("</w:document>")) {
-      if (!xml.includes("</w:body>")) {
-        xml += "\n</w:body>";
-      }
-      xml += "\n</w:document>";
-    }
-    return xml;
-  }
-
   // Helper function: extract inner <w:body> content from a complete XML document
   function extractBodyContent(xml) {
     const match = xml.match(/<w:body>([\s\S]*?)<\/w:body>/);
@@ -205,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
     ${finalBodyContent}
   </w:body>
 </w:document>`;
-    
+
     zipEN.file("word/document.xml", finalDocXml);
     console.log("Final DOCX XML constructed.");
 

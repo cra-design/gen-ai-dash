@@ -168,6 +168,7 @@ $(document).ready(function() {
     var englishDocxXml;
     // Step 1: Extract the XML from the English DOCX file
     // Step 1: Extract the XML from the English DOCX file
+    const fileExtension = englishDocxData.name.split('.').pop().toLowerCase();
     await new Promise((resolve, reject) => {
         handleFileExtractionToXML(englishDocxData, function(result) {
             englishDocxXml = result;  // Store the extracted XML
@@ -188,36 +189,61 @@ $(document).ready(function() {
     if (selectedMethod == "convert-translation-docx") {
       updatedXml = await conversionDocxTemplater(englishDocxXml);
     } else {
-      updatedXml = await conversionGemini(englishDocxXml);
+      updatedXml = await conversionGemini(englishDocxXml, fileExtension);
     }
-
-    // Step 6: Rebuild the DOCX with the updated XML
-    const zip = new PizZip();
-    zip.file("word/document.xml", updatedXml);
-    const doc = new Docxtemplater(zip, {
-        paragraphLoop: true,
-        linebreaks: true,
-    });
-
-    try {
-        doc.render();
-    } catch (error) {
-        console.error(JSON.stringify({ error: error }, null, 2));
+    let originalFileName = englishDocxData.name.split('.').slice(0, -1).join('.');
+    let modifiedFileName = `${originalFileName}-FR.${fileExtension}`;
+    // Create a new zip instance based on the file extension
+    let zipEN = new JSZip();
+    let xmlContent = createXmlContent(fileExtension, updatedXml, finalContent);
+    let output;
+    if (fileExtension === 'docx') {
+      output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", doc);
+    } else if (fileExtension === 'pptx') {
+      output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.presentationml.presentation", pptx);
+    } else if (fileExtension === 'xlsx') {
+      output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", xlsx);
     }
-
-    const output = doc.getZip().generate({
-        type: "blob",
-        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    });
-
-    saveAs(output, "translated_document.docx");
-
+    saveAs(output, modifiedFileName);
     $('#converting-spinner').addClass("hidden");
-    // $('#translated-doc-download').removeClass("hidden");
   });
-
 });
 
+function generateFile(zip, xmlContent, mimeType, renderFunction) {
+  try {
+    zip.file("file.xml", xmlContent); // Assuming file name can be standardized for now
+    renderFunction.render();
+  } catch (error) {
+    console.error(JSON.stringify({ error: error }, null, 2));
+  }
+  return zip.generate({
+    type: "blob",
+    mimeType: mimeType
+  });
+}
+
+function createXmlContent(fileExtension, updatedXml, finalContent) {
+  let xmlContent = '';
+  if (fileExtension === 'docx') {
+    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ...>
+      <w:body>
+        ${updatedXml}
+      </w:body>
+      </w:document>`;
+  } else if (fileExtension === 'pptx') {
+    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+        <p:sldMasterIdLst>${finalContent}</p:sldMasterIdLst>
+      </p:presentation>`;
+  } else if (fileExtension === 'xlsx') {
+    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+        <sheetData>${finalContent}</sheetData>
+      </workbook>`;
+  }
+  return xmlContent;
+}
 
 async function conversionDocxTemplater(englishDocxXml) {
   // Step 2: Extract all <w:t> nodes (text nodes) preserving their positions
@@ -320,131 +346,94 @@ async function conversionDocxTemplater(englishDocxXml) {
   return updatedXml;
 }
 
-async function conversionDocxTemplater(englishDocxXml) {
+async function conversionGemini(englishDocxXml, fileType) {
+  let groups = [];
+  let formattedChunks = [];
+  let paragraphs = [];
+  const systemGeneral = { role: "system", content: await $.get("custom-instructions/system/xml-docx-formatting.txt") };
 
+  // Extract content based on file type
+  if (fileType === 'docx') {
+    // For .docx, we extract paragraphs
+    paragraphs = englishXml.match(/<w:p[\s\S]*?<\/w:p>/g) || [];
+    console.log(`Total paragraphs found: ${paragraphs.length}`);
+  } else if (fileType === 'pptx') {
+    // For .pptx, we extract slide elements
+    paragraphs = englishXml.match(/<p:sld[\s\S]*?<\/p:sld>/g) || [];
+    console.log(`Total slides found: ${paragraphs.length}`);
+  } else if (fileType === 'xlsx') {
+    // For .xlsx, we extract rows
+    paragraphs = englishXml.match(/<sheetData[\s\S]*?<\/sheetData>/g) || [];
+    console.log(`Total rows found: ${paragraphs.length}`);
+  }
+  const maxRequests = 30;
+  let groupSize = Math.ceil(paragraphs.length / maxRequests);
+  console.log(`Grouping paragraphs into batches of ${groupSize} (max ${maxRequests} requests)`);
+  for (let i = 0; i < paragraphs.length; i += groupSize) {
+    groups.push(paragraphs.slice(i, i + groupSize).join("\n"));
+  }
+  console.log(`Total groups to process: ${groups.length}`);
+  let model = [
+    "google/gemini-2.0-flash-lite-preview-02-05:free",
+    "google/gemini-2.0-pro-exp-02-05:free",
+    "google/gemini-2.0-flash-thinking-exp:free",
+    "google/gemini-2.0-flash-exp:free",
+    "google/gemini-exp-1206:free",
+    "google/gemini-flash-1.5-8b-exp",
+    "qwen/qwen-turbo"
+  ];
+  let modelCount = 0;
+  for (let i = 0; i < groups.length;) {
+    console.log(`Processing group ${i + 1}/${groups.length}...`);
+    const requestJson = [ systemGeneral, { role: "user", content: "English DOCX group: " + escapeXML(groups[i]) } ];
+    let ORjson = await getORData(model[modelCount], requestJson);
+    // If ORjson is invalid, attempt with the next model
+    if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
+      console.error(`API request failed or returned unexpected structure for group ${i + 1} with model ${model[modelCount]}:`, ORjson);
+      modelCount++; // Try the next model
+      if (modelCount >= model.length) {
+        console.error(`All models exhausted for group ${i + 1}. Skipping this group.`);
+        i++; // Move to the next group if all models fail
+        modelCount = 0; // Reset modelCount for the next group
+        continue;
+      }
+      console.log(`Retrying with model ${model[modelCount]}...`);
+      continue; // Skip the current iteration and retry with the next model
+    }
+    let aiResponse = ORjson.choices[0]?.message?.content || "";
+    console.log(`Group ${i + 1} Response:\n`, aiResponse);
+    let formattedText = formatAIResponse(aiResponse);
+    formattedText = ensureCompleteXML(formattedText);
+    if (!formattedText) {
+      console.error(`Skipping group ${i + 1} due to formatting issues.`);
+      continue;
+    }
+    formattedChunks.push(formattedText);
+  }
+  // Reassemble the processed groups into the final content structure
+  let finalContent;
+  if (fileType === 'docx') {
+    finalContent = formattedChunks.map(chunk => extractBodyContent(chunk)).join("\n");
+  } else if (fileType === 'pptx') {
+    finalContent = formattedChunks.map(chunk => extractSlideContent(chunk)).join("\n");
+  } else if (fileType === 'xlsx') {
+    finalContent = forvmattedChunks.map(chunk => extractRowContent(chunk)).join("\n");
+  }
+  return finalBodyContent;
 }
 
-// Function to send the extracted body content to OpenAI for restyling
-async function restyleTextWithOpenAI(text, apikey) {
-    const prompt = `Restyle this translated text to match the XML structure of the original document, preserving styling like bold, italics, lists, headers, and any other formatting: ${text}`;
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apikey}`
-        },
-        body: JSON.stringify({
-            model: "gpt-4",
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 2000
-        })
-    });
-
-    const data = await response.json();
-    return data.choices[0].message.content;
+function extractBodyContent(chunk) {
+  // Extracts <w:body> content for Word (docx)
+  return chunk.match(/<w:t[\s\S]*?<\/w:t>/g) || [];
 }
-
-
-//
-//
-//     // Extract paragraphs and group them with a computed group size
-//     let paragraphs = extractParagraphs(bodyContent);
-//     console.log(`Total paragraphs found: ${paragraphs.length}`);
-//     const maxRequests = 30;
-//     let groupSize = Math.ceil(paragraphs.length / maxRequests);
-//     console.log(`Grouping paragraphs into batches of ${groupSize} (max ${maxRequests} requests)`);
-//     let groups = groupParagraphs(paragraphs, groupSize);
-//     console.log(`Total groups to process: ${groups.length}`);
-//
-//     let formattedChunks = [];
-//     for (let i = 0; i < groups.length; i++) {
-//       console.log(`Processing group ${i + 1}/${groups.length}...`);
-//       let requestJson = {
-//         messages: [
-//           {
-//             role: "system",
-//             content:
-//               "You are a DOCX formatting assistant. Reformat the provided DOCX XML (which contains multiple <w:p> paragraphs) to produce complete and valid XML output. Ensure your output includes the XML declaration and a full <w:document> element (with its <w:body>) and all necessary closing tags. Do not include extra text or code fences. End your output with the marker [END_OF_XML] on its own line."
-//           },
-//           { role: "user", content: "English DOCX group: " + escapeXML(groups[i]) }
-//         ]
-//       };
-//
-//       let ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
-//       if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
-//         console.error(`API request failed or returned unexpected structure for group ${i + 1}:`, ORjson);
-//         continue;
-//       }
-//       let aiResponse = ORjson.choices[0]?.message?.content || "";
-//       console.log(`Group ${i + 1} Response:\n`, aiResponse);
-//
-//       let formattedText = formatAIResponse(aiResponse);
-//       formattedText = ensureCompleteXML(formattedText);
-//       if (!formattedText) {
-//         console.error(`Skipping group ${i + 1} due to formatting issues.`);
-//         continue;
-//       }
-//       formattedChunks.push(formattedText);
-//     }
-//
-//     // Reassemble the processed groups into a single <w:body>
-//     let finalBodyContent = formattedChunks.map(chunk => extractBodyContent(chunk)).join("\n");
-//     let finalDocXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-// <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ...>
-//   <w:body>
-//     ${finalBodyContent}
-//   </w:body>
-// </w:document>`;
-//
-//     zipEN.file("word/document.xml", finalDocXml);
-//     console.log("Final DOCX XML constructed.");
-//
-//     const newDocxBlob = zipEN.generate({ type: "blob", compression: "DEFLATE" });
-//     const newDocUrl = URL.createObjectURL(newDocxBlob);
-//
-//     downloadLink.href = newDocUrl;
-//     downloadLink.download = "formatted.docx";
-//     downloadLink.style.display = "inline";
-//     downloadLink.textContent = "Download Formatted DOCX";
-//
-//     console.log("Processing complete. Download link ready.");
-//     alert("Success! Your formatted DOCX is ready to download.");
-//     loadingIndicator.style.display = "none";
-//   });
-//
-//   // Helper function: call the API
-//   async function getORData(model, requestJson) {
-//     const apiKey = sessionStorage.getItem("openRouterApiKey");
-//     console.log("Sending API request...", requestJson);
-//     try {
-//       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-//         method: "POST",
-//         headers: { "Authorization": "Bearer " + apiKey, "Content-Type": "application/json" },
-//         body: JSON.stringify({ "model": model, "messages": requestJson.messages })
-//       });
-//       console.log("API Response Status:", response.status);
-//       if (!response.ok) throw new Error(`Response status: ${response.status}`);
-//       return await response.json();
-//     } catch (error) {
-//       alert("API request failed: " + error.message);
-//       console.error("Error fetching from OpenRouter API:", error.message);
-//       return undefined;
-//     }
-//   }
-// });
-
-
-
-
-
-
-
-
-
-
-
-
+function extractSlideContent(chunk) {
+  // Extracts slide content for PowerPoint (pptx)
+  return chunk.match(/<p:sp[\s\S]*?<\/p:sp>/g) || [];
+}
+function extractRowContent(chunk) {
+  // Extracts row content for Excel (xlsx)
+  return chunk.match(/<row[\s\S]*?<\/row>/g) || [];
+}
 
 function translateEnglishToFrench(english, model) {
   //The English text should be plain text extracted from doc or textbox
