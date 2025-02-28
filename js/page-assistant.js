@@ -72,10 +72,10 @@ $(document).ready(function() {
     var urlInput = $("#url-input").val().trim();
     // Trim unwanted characters like spaces, parentheses, or extra slashes
     // This regex ensures it starts with http:// or https:// and allows other common URL structures
-    var cleanUrl = cleanUrl.replace(/^(?!http(s)?:\/\/)/, 'https://'); // Ensure it starts with "http://"
+    // var cleanUrl = cleanUrl.replace(/^(?!http(s)?:\/\/)/, 'https://'); // Ensure it starts with "http://"
 
     // urlInput = urlInput.replace(/^[^\w]+|[^\w]+$/g, '').replace(/(https?:\/\/)?(www\.)?/i, ''); // trim any unnecessary characters
-    updateIframeFromURL(cleanUrl);
+    updateIframeFromURL(urlInput);
   });
 
   $("#html-upload-btn").click(function() {
