@@ -157,7 +157,7 @@ $(document).ready(function() {
   });
 
   $("#template-options-btn").click(function() {
-    let template = $('input[name="html-upload-genai-model"]:checked').val();
+    let template = $('input[name="template-options"]:checked').val();
     console.log(template);
   });
 
