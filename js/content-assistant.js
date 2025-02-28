@@ -181,6 +181,24 @@ function parsePageHTML(url, callback) {
     });
 }
 
+function convertHtmlToText(html) {
+    // Create a temporary HTML element to parse the HTML content
+    var div = document.createElement('div');
+    div.innerHTML = html;
+
+    // Replace block-level elements and <br> tags with line breaks
+    var textContent = div.textContent || div.innerText;
+
+    // Replace <p>, <div>, <h1>, <h2>, etc. tags with line breaks (\n)
+    textContent = textContent.replace(/(<\/p>|<\/div>|<\/h1>|<\/h2>|<\/ul>|<\/ol>|<\/li>)/g, "\n");
+    textContent = textContent.replace(/(<br\s*\/?>)/g, "\n");  // Handle <br> tags
+
+    // Normalize extra line breaks (if any)
+    textContent = textContent.replace(/\n+/g, "\n").trim();  // Remove excess newlines
+
+    return textContent;
+}
+
 function formatHTML(htmlString) {
     // // Create a new DOMParser instance
     // const parser = new DOMParser();
@@ -373,4 +391,72 @@ function createSideBySideReport(counter, labelText, formattedText, model) {
       </div>
     </div>
   `);
+}
+
+function handleFileExtraction(file, successCallback, errorCallback) {
+    if (!file) {
+        alert("No file detected");
+        errorCallback("No file detected");
+        return;
+    }
+    // Get the file extension to determine how to handle it
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+
+
+
+
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var arrayBuffer = e.target.result;
+
+        // Handle .docx files using Mammoth.js
+        if (fileExtension === 'docx') {
+            mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
+                .then(function(result) {
+                    console.log(`Converted HTML from ${fileExtension} file:`, result.value);
+                    // If you want plain text, you can extract it from result.value (HTML)
+                    var plainText = extractPlainTextFromHtml(result.value);
+                    successCallback({ text: plainText, html: result.value }); // Pass both plain text and HTML to callback
+                })
+                .catch(function(err) {
+                    console.error('Error extracting text:', err);
+                    errorCallback(err);
+                });
+        // Handle .pptx files using PptxGenJS
+        } else if (fileExtension === 'pptx') {
+            var pptx = new PptxGenJS();
+            pptx.load(arrayBuffer);
+            var slidesText = pptx.getSlides().map(slide => slide.getText().join(' ')).join('\n');
+            console.log(`Extracted text from ${fileExtension} file:`, slidesText);
+            successCallback({ type: 'pptx', text: slidesText });
+
+        // Handle .xlsx files using SheetJS
+        } else if (fileExtension === 'xlsx') {
+            var workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            var sheet = workbook.Sheets[workbook.SheetNames[0]];
+            var json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            var excelText = json.map(row => row.join(' ')).join('\n');
+            console.log(`Extracted text from ${fileExtension} file:`, excelText);
+            successCallback({ type: 'xlsx', text: excelText });
+
+        } else {
+            errorCallback('Unsupported file type');
+        }
+    };
+    reader.readAsArrayBuffer(file); // Read the file as ArrayBuffer
+}
+
+// Function to extract plain text from HTML and replace <br> tags with newline
+function extractPlainTextFromHtml(html) {
+    // Replace <br>, <br/> and <br /> tags with newline characters in the raw HTML
+    var modifiedHtml = html.replace(/<br\s*\/?>/g, '</p><p>'); // Regular expression to match <br>, <br/> and <br />
+    // var modifiedHtml = html.replace('<p>', '<p> '); // Regular expression to match <br>, <br/> and <br />
+
+    // Create a temporary div element to use the browser's HTML parsing functionality
+    var div = document.createElement('div');
+    div.innerHTML = modifiedHtml;  // Set the HTML content (with newlines replacing <br>)
+
+    // Extract the plain text, which now includes newlines
+    return div.textContent || div.innerText;  // Browser-specific property for extracting plain text
 }

@@ -1,0 +1,3 @@
+The following translation does not match the expected line breaks or paragraph order based on the English reference.
+Adjust the French translation so that the number of lines and paragraphs exactly match the English reference.
+Only return the adjusted French text, preserving its meaning and context.

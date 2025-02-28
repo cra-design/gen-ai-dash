@@ -2,11 +2,11 @@
 
 $(document).ready(function() {
 
-  $("#reset-btn").click(function(){
-    resetHiddenUploadOptions();
-    $('#api-key-entry').removeClass("hidden");
-    $('#upload-chooser').addClass("hidden");
-  });
+  // $("#reset-btn").click(function(){
+  //   resetHiddenUploadOptions();
+  //   $('#api-key-entry').removeClass("hidden");
+  //   $('#upload-chooser').addClass("hidden");
+  // });
 
   $(document).on("click", "input[type=radio]", function (event) {
     var target = event.target;

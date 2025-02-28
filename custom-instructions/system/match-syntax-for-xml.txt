@@ -1,0 +1,2 @@
+Adjust the following translated French text so that the line breaks and paragraph order match the English reference.
+Only return the adjusted French text as plain text, preserving the meaning and context of the translation.

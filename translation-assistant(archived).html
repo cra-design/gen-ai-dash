@@ -133,6 +133,19 @@
                            <a class="nav_link" href="wording-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">edit</span><span data-i18n="menu-tasks" class="nav_name">Wording</span></a>
                            <a class="nav_link" href="wizard-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">fork_left</span><span data-i18n="menu-tasks" class="nav_name">Wizards</span></a>
                            <a class="nav_link" href="task-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">adjust</span><span data-i18n="menu-tasks" class="nav_name">Tasks</span></a>
+                           <!-- <a class="nav_link" href="https://www.canada.ca/en/projects?dateRange=2023-01-01%2F2023-03-31&amp;comparisonDateRange=2022-10-02%2F2022-12-30"><span aria-hidden="true" class="material-icons nav_icon">folder</span><span data-i18n="menu-projects" class="nav_name">UX projects</span></a> -->
+                           <!-- <a class="nav_link" href="https://www.canada.ca/en/documents"><span aria-hidden="true" class="material-icons nav_icon">summarize</span><span data-i18n="menu-documents" class="nav_name">Documents</span></a>
+
+
+                           <a _ngcontent-ng-c82967845="" class="nav_link" href="https://www.canada.ca/en/custom-reports">
+                              <div _ngcontent-ng-c82967845="" class="row">
+                                 <div _ngcontent-ng-c82967845="" id="menu-custom-report-label" class="col"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">dashboard</span></div>
+                                 <div _ngcontent-ng-c82967845="" class="col ps-1"><span _ngcontent-ng-c82967845="" data-i18n="menu-custom-reports" class="nav_name">Custom reports</span></div>
+                              </div>
+                           </a> -->
+                           <!-- <a class="nav_link active" href="#"><span aria-hidden="true" class="material-icons nav_icon">edit document</span><span data-i18n="menu-documents" class="nav_name">Translation assistant</span></a>
+                           <a class="nav_link" href="#"><span aria-hidden="true" class="material-icons nav_icon">stacks</span><span data-i18n="menu-documents" class="nav_name">Project assistant</span></a>
+                           <a class="nav_link" href="#"><span aria-hidden="true" class="material-icons nav_icon">image</span><span data-i18n="menu-documents" class="nav_name">Image assistant</span></a> -->
                         </div>
                      </div>
                      <div _ngcontent-ng-c82967845="" class="mb-4">
@@ -147,86 +160,63 @@
                   <i class="fa fa-angle-right"></i>
               </div>
               <div>
-                <div class="flex-2-col">
-                  <h3>GenAI</h3>
-                  <button id="changeKeyBtn"><i class="fa fa-solid fa-key"></i></button>
-                </div>
-                <div id="keyPopup" style="display:none;">
-                    <input type="text" id="newKeyInput" placeholder="Enter new key">
-                    <button id="saveKeyBtn">Save</button>
-                    <button id="cancelKeyBtn">Cancel</button>
-                </div>
+                <h3>GenAI reports</h3>
                 <div id="genai-upload-msg">
                   <p>Upload content to enable GenAI</p>
                 </div>
                 <fieldset id="genai-task-options" class="hidden">
-                  <legend>Select report</legend>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-title" name="html-upload-genai-analysis" value="custom-instructions/metadata/title-en.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-title"> Suggest a SEOed title</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-description"> Suggest a metadata description</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-keywords" name="html-upload-genai-analysis" value="custom-instructions/metadata/keywords-en.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-keywords"> Suggest metadata keywords</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-metadata" name="html-upload-genai-analysis" value="custom-instructions/metadata/metadata-review.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-metadata"> Metadata review</label><br>
+                  <legend>Select task</legend>
+                  <input type="checkbox" id="html-upload-genai-analysis-title" name="html-upload-genai-analysis" value="custom-instructions/metadata/title-en.txt">
+                  <label for="html-upload-genai-analysis-title"> Suggest a SEOed title</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
+                  <label for="html-upload-genai-analysis-description"> Suggest a metadata description</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-keywords" name="html-upload-genai-analysis" value="custom-instructions/metadata/keywords-en.txt">
+                  <label for="html-upload-genai-analysis-keywords"> Suggest metadata keywords</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-metadata" name="html-upload-genai-analysis" value="custom-instructions/metadata/metadata-review.txt">
+                  <label for="html-upload-genai-analysis-metadata"> Metadata review</label><br>
 
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-comprehension" name="html-upload-genai-analysis" value="custom-instructions/content/comprehension.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-comprehension"> Rewrite for easy comprehension</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-consistency" name="html-upload-genai-analysis" value="custom-instructions/content/consistency.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-consistency"> Rewrite for consistency</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-conversational" name="html-upload-genai-analysis" value="custom-instructions/content/conversational.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-conversational"> Rewrite for conversational tone</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-inclusivity" name="html-upload-genai-analysis" value="custom-instructions/content/inclusivity.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-inclusivity"> Rewrite for inclusivity</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-jargon" name="html-upload-genai-analysis" value="custom-instructions/content/jargon-remover.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-jargon"> Rewrite to simplify jargon</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-trim" name="html-upload-genai-analysis" value="custom-instructions/content/trimmer.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-trim"> Trim the content to be more concise</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-comprehension" name="html-upload-genai-analysis" value="custom-instructions/content/comprehension.txt">
+                  <label for="html-upload-genai-analysis-comprehension"> Rewrite for easy comprehension</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-consistency" name="html-upload-genai-analysis" value="custom-instructions/content/consistency.txt">
+                  <label for="html-upload-genai-analysis-consistency"> Rewrite for consistency</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-conversational" name="html-upload-genai-analysis" value="custom-instructions/content/conversational.txt">
+                  <label for="html-upload-genai-analysis-conversational"> Rewrite for conversational tone</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-inclusivity" name="html-upload-genai-analysis" value="custom-instructions/content/inclusivity.txt">
+                  <label for="html-upload-genai-analysis-inclusivity"> Rewrite for inclusivity</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-jargon" name="html-upload-genai-analysis" value="custom-instructions/content/jargon-remover.txt">
+                  <label for="html-upload-genai-analysis-jargon"> Rewrite to simplify jargon</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-trim" name="html-upload-genai-analysis" value="custom-instructions/content/trimmer.txt">
+                  <label for="html-upload-genai-analysis-trim"> Trim the content to be more concise</label><br>
 
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-bullets" name="html-upload-genai-analysis" value="custom-instructions/content/bulleted-lists.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-bullets"> Restructure with bulleted lists</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-grid" name="html-upload-genai-analysis" value="custom-instructions/content/columns-and-rows.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-grid"> Restructure with columns and rows</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-headings" name="html-upload-genai-analysis" value="custom-instructions/content/headings.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-headings"> Propose a better heading structure</label><br>
-
-                  <!-- Use any element to open/show the overlay navigation menu -->
-                  <div class="flex-2-col">
-                    <button id="genai-select-tasks-btn" style="margin-right:5px;">Continue</button>
-                    <input class="checkbox-small" type="checkbox" id="genai-analysis-llm-compare" name="genai-analysis-llm-compare" value="genai-analysis-llm-compare">
-                    <label class="label-small" for="genai-analysis-llm-compare"> Compare models</label>
-                  </div>
+                  <input type="checkbox" id="html-upload-genai-analysis-bullets" name="html-upload-genai-analysis" value="custom-instructions/content/bulleted-lists.txt">
+                  <label for="html-upload-genai-analysis-bullets"> Restructure with bulleted lists</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-grid" name="html-upload-genai-analysis" value="custom-instructions/content/columns-and-rows.txt">
+                  <label for="html-upload-genai-analysis-grid"> Restructure with columns and rows</label><br>
+                  <input type="checkbox" id="html-upload-genai-analysis-headings" name="html-upload-genai-analysis" value="custom-instructions/content/headings.txt">
+                  <label for="html-upload-genai-analysis-headings"> Propose a better heading structure</label><br>
+                  <button id="genai-select-tasks-btn" style="margin-top:15px;">Continue</button>
                 </fieldset>
                 <fieldset id="genai-model-options" class="hidden">
-                  <legend>Select <span id="model-compare-1">1 model</span><span id="model-compare-2" class="hidden">2 models</span></legend>
+                  <legend>Select model</legend>
                   <input type="radio" id="html-upload-genai-model-gemini" name="html-upload-genai-model" value="google/gemini-2.0-flash-exp:free">
                   <label for="html-upload-genai-model-gemini"> Gemini 2.0 Flash</label><br>
-                  <input type="radio" id="html-upload-genai-model-llama" name="html-upload-genai-model" value="meta-llama/llama-3.3-70b-instruct:free">
-                  <label for="html-upload-genai-model-llama"> Llama 3.3 70B</label><br>
+                  <input type="radio" id="html-upload-genai-model-llama" name="html-upload-genai-model" value="meta-llama/llama-3.2-90b-vision-instruct:free">
+                  <label for="html-upload-genai-model-llama"> Llama 3.2 90B</label><br>
                   <input type="radio" id="html-upload-genai-model-phi" name="html-upload-genai-model" value="microsoft/phi-3-medium-128k-instruct:free">
-                  <label for="html-upload-genai-model-phi"> Phi-3 Medium</label><br>
-                  <!-- Supposedly Nemo is great for translation and FR content -->
-                  <input type="radio" id="html-upload-genai-model-mistral" name="html-upload-genai-model" value="mistralai/mistral-nemo:free">
-                  <label for="html-upload-genai-model-mistral"> Mistral Nemo</label><br>
-                  <!-- Dolphin should be competitive for coding? -->
-                  <input type="radio" id="html-upload-genai-model-dolphin" name="html-upload-genai-model" value="cognitivecomputations/dolphin3.0-r1-mistral-24b:free">
-                  <label for="html-upload-genai-model-dolphin"> Dolphin3.0 R1</label><br>
-                  <!-- Deepseek is known for reasoning/explanations? -->
-                  <!-- <input type="radio" id="html-upload-genai-model-deepseek" name="html-upload-genai-model" value="deepseek/deepseek-r1:free">
-                  <label for="html-upload-genai-model-deepseek"> Deepseek R1</label><br> -->
-                  <button id="genai-run-report-btn">Run report</button>
+                  <label for="html-upload-genai-model-phi"> Microsoft Phi-3 Medium</label><br>
+                  <input type="radio" id="html-upload-genai-model-qwen" name="html-upload-genai-model" value="qwen/qwen-2-7b-instruct:free">
+                  <label for="html-upload-genai-model-qwen"> Qwen 2 7B</label><br>
+                  <button id="genai-run-report-btn" style="margin-top:15px;">Run report</button>
                 </fieldset>
 
         				<div id="loading-indicator" class="hidden">
         					<div class="spinner"></div>
         					<p>Generating reports...</p>
         				</div>
-
-                <div class="report-list"></div>
                 <!--div id="genai-report-reset-options" class="hidden"-->
-                <button id="genai-open-report-btn" class="hidden">Open report</button>
+                <button id="genai-open-report-btn" style="margin-top:15px;" class="hidden">Open report</button>
                 <br>
-                <button id="genai-reset-report-btn" class="hidden">Reset</button>
+                <button id="genai-reset-report-btn" style="margin-top:15px;">Reset</button>
               </div>
             </genai-sidebar>
 	            <h1 _ngcontent-ng-c3392822675="" class="visually-hidden ng-tns-c3392822675-0">GCA | Translation Assistant</h1>
@@ -241,14 +231,19 @@
                         <div tabindex="0" class="card pt-2">
                            <div class="card-body card-pad pt-2 h-100">
                               <div class=" justify-content-between">
-                                <div id="api-key-entry">
+
+                                <!-- probably want to add some kind of reset button -->
+                                <!-- <button id="reset-btn" style="margin-bottom:20px;">Restart</button> -->
+
+                              <!--  <div id="api-key-entry">
                                   <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Enter the GenAI API key</h3>
                                   <p>Before we start, add an openrouter API key to make your requests.</p>
                                   <fieldset style="margin-bottom:20px;">
                                     <legend>OpenRouter API key</legend>
-                                    <input id="api-key" type="text" required placeholder="Enter OpenRouter API Key">
+                                    <input id="api-key" type="text"></span>
                                     <button id="api-key-submit-btn" style="margin-top: 20px">Submit</button>
                                   </fieldset>
+
                                   <p>If you don't have one yet, here are some steps to create one:</p>
                                   <ol>
                                     <li>Create an account at <a href="https://www.openrouter.ai">openrouter.ai</a></li>
@@ -263,153 +258,103 @@
                                     </li>
                                     <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
                                   </ol>
-                                </div>
-                                <div id="english-upload" class="after-key-unhide hidden">
-                                  <fieldset>
-                                    <legend>Provide the source content with formatting (English)</legend>
-                                    <div class="inline-checkbox-container" style="margin-bottom: 15px;">
-                                      <input type="radio" id="english-upload-doc" name="english-upload-option" value="english-upload-doc" checked>
-                                      <label for="english-upload-doc">Upload an English document (docx, ppt, xlsx)</label><br>
-                                      <input type="radio" id="english-upload-text" name="english-upload-option" value="english-upload-text">
-                                      <label for="english-upload-text">Paste English text</label><br>
-                                    </div>
-                                    <div id="english-doc-upload">
-                                      <div id="english-file-container">
-                                        <input type="file" id="english-file" accept=".docx">
-                                        <p id="english-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
-                                        <p id="english-doc-error" class="error-msg hidden">Only .docx, (planned to soon have .ppt and .xlsx) files are allowed.</p>
-                                      </div>
-                                    </div>
-                                    <div id="english-text-upload" class="hidden">
-                                      <!-- French Text Input (Initially Visible) -->
-                                      <div id="english-textarea-container">
-                                        <textarea id="english-text" name="english-text" placeholder="Paste English text here" class="inputbox"></textarea>
-                                        <p id="english-text-error" class="error-msg hidden">English content cannot be empty.</p>
-                                      </div>
-                                    </div>
-                                    <button id="english-upload-btn" style="margin-top: 20px">Continue</button>
-                                  </fieldset>
-                                </div>
-                                <div id="french-upload" class="hidden">
-                                  <fieldset>
-                                    <legend>How do you want to translate the document?</legend>
-                                    <div class="inline-checkbox-container" style="margin-bottom: 15px;">
-                                      <input type="radio" id="french-translate-english" name="french-upload-option" value="french-translate-english" checked>
-                                      <label for="french-translate-english">Generate from English source</label><br>
-                                      <input type="radio" id="french-upload-doc" name="french-upload-option" value="french-upload-doc">
-                                      <label for="french-upload-doc">Upload a French document (docx, ppt, xlsx)</label><br>
-                                      <input type="radio" id="french-upload-text" name="french-upload-option" value="french-upload-text">
-                                      <label for="french-upload-text">Paste French text</label><br>
-                                    </div>
-                                    <div id="french-translation-preview">
-                                      <p>A translation will be provided by the GenAI. Ensure there is no sensitive or protected information in the document before continuing.</p>
-                                    </div>
-                                    <div id="french-doc-upload" class="hidden">
-                                      <div id="french-file-container">
-                                        <input type="file" id="french-file" accept=".docx">
-                                        <p id="french-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
-                                        <p id="french-doc-error" class="error-msg hidden">Only .docx, (planned to soon have .ppt and .xlsx) files are allowed.</p>
-                                      </div>
-                                    </div>
-                                    <div id="french-text-upload" class="hidden">
-                                      <!-- French Text Input (Initially Visible) -->
-                                      <div id="french-textarea-container">
-                                        <textarea id="french-text" name="french-text" placeholder="Paste English text here" class="inputbox"></textarea>
-                                        <p id="french-text-error" class="error-msg hidden">English content cannot be empty.</p>
-                                      </div>
-                                    </div>
-                                    <button id="french-upload-btn" style="margin-top: 20px">Continue</button>
-                                  </fieldset>
-                                </div>
-                                <div id="translation-preview-model-b" class="hidden">
-                                  <p>The standard model used to translate is Mistral NeMo, but you can also select a second model to compare model quality:</p>
-                                  <fieldset>
-                                    <legend>What model would you like to use?</legend>
-                                    <input type="radio" id="translate-gemini" name="translate-model-b-option" value="google/gemini-2.0-flash-exp:free">
-                                    <label for="translate-gemini">Gemini</label><br>
-                                    <input type="radio" id="translate-dolphin" name="translate-model-b-option" value="cognitivecomputations/dolphin3.0-r1-mistral-24b:free">
-                                    <label for="translate-dolphin">Mistral Dolphin</label><br>
-                                    <input type="radio" id="translate-none" name="translate-model-b-option" value="" checked>
-                                    <label for="translate-none">None of the above (only use Mistral NeMo)</label><br>
-                                  </fieldset>
-                                  <button id="model-b-btn" style="margin-top: 20px">Continue</button>
-                                </div>
-                                <div id="translation-preview" class="hidden">
-                                  <!-- Add side-by-side results container here -->
-                                  <h2>Review the translation</h2>
-                                  <p class="convert-translation">If you want to put the translation back in a document, <a href="#convert-translation">convert back to document</a> below the translation preview.</p>
-                                  <div class="sidebyside-wrapper">
-                                    <div id="translation-A-container" class="sidebyside-container report-container-A">
-                                      <div id="$translation-A-toolbar" class="toolbar">
-                                        <button class="toolbar-button hidden" id="accept-translation-A-btn" title="Accept A">
-                                          <i class="fa fa-check"></i>
-                                        </button>
-                                        <button class="toolbar-button" id="edit-translation-A-btn" title="Edit A">
-                                          <i class="fa fa-edit"></i>
-                                        </button>
-                                      </div>
-                                      <div class="sidebyside-report">
-                                        <p id="translation-A"></p>
-                                        <p id="translation-model-A" class="small"></p>
-                                      </div>
-                                    </div>
-                                    <div id="translation-B-container" class="sidebyside-container report-container-B hidden">
-                                      <div id="translation-B-toolbar" class="toolbar">
-                                        <button class="toolbar-button hidden" id="accept-translation-B-btn" title="Accept B">
-                                          <i class="fa fa-check"></i>
-                                        </button>
-                                      </div>
-                                      <div class="sidebyside-report">
-                                        <p id="translation-B"></p>
-                                        <p id="translation-model-A" class="small"></p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div id="convert-translation" class="convert-translation hidden">
-                                    <h4 style="margin-top: 20px;">Put back in document format</h4>
-                                    <p>Once you're satisfied with the translation, submit it to put it back in the document formatting.</p>
-                                    <button id="convert-translation-to-doc-btn" style="margin-top: 20px">Create document</button>
-                                    <div id="converting-spinner" class="hidden">
-                                      <div class="spinner"></div>
-                                      <p>Generating reports...</p>
-                                    </div>
-                                  </div>
-                                  <div id="translated-doc-download" class="hidden">
-                                    <h4>Translated document</h4>
-                                    <p>The reformated translation document is ready for download!</p>
-                                    <button id="convert-translation-download-btn" style="margin-top: 20px">Download document</button>
-                                  </div>
-                                </div>
-                                  <!--requred libraries-->
-                                </main>
-                                <footer _ngcontent-ng-c3392822675="" class="mt-4 ng-tns-c3392822675-0">
-                                  <div _ngcontent-ng-c3392822675="" class="d-flex justify-content-between align-items-end mt-auto pb-4 ng-tns-c3392822675-0">
-                                    <div _ngcontent-ng-c3392822675="" class="align-self-end ng-tns-c3392822675-0"><span _ngcontent-ng-c3392822675="" class="text-muted small ng-tns-c3392822675-0">version: 0.0.1 </span></div>
-                                    <div _ngcontent-ng-c3392822675="" class="col-lg-2 col-md-3 col-sm-4 col-4 ng-tns-c3392822675-0"><img _ngcontent-ng-c3392822675="" class="img-fluid ng-tns-c3392822675-0" alt="Government of Canada" src="img/canada-black-30mm.png"></div>
-                                  </div>
-                                </footer>
-                                <!-- expanded genai nav -->
-                                <div id="genai-nav" class="overlay">
-                                  <!-- Button to close the overlay navigation -->
-                                  <a href="javascript:void(0)" class="closebtn" id="close-report-btn">&times;</a>
-                                  <div class="overlay-content" style="padding-left:300px;">
-                                    <h3>GenAI reports</h3>
-                                  </div>
-                                </div>
-                              </div>
-                            </upd-root>
 
+                                </div> -->
+	 <!-- END API Key Entry Section --> 
+
+                          <div id="document-upload-container">
+    <!-- Section 1: English Document Upload -->
+    <fieldset>
+        <legend>Upload the English Word Document</legend>
+        <input type="file" id="english-file" name="english-file" accept=".docx">
+        <p id="english-error" style="color: red; display: none;">Only one .docx file is allowed.</p>
+    </fieldset>
+    <br>
+    <!-- Section 2: French Content Entry -->
+<fieldset>
+    <legend>Provide the French Content</legend>
+    <p>Select one option below to provide the French content.</p>
+    
+    <div class="radio-group">
+        <label>
+            <input type="radio" name="french-input-option" value="textarea" checked> Paste French text
+        </label>
+        <label>
+            <input type="radio" name="french-input-option" value="file"> Upload a French Word document
+        </label>
+    </div>
+
+    <!-- French Text Input (Initially Visible) -->
+    <div id="french-textarea-container">
+        <textarea id="french-text" name="french-text" placeholder="Paste your French text here" rows="6" style="width:100%;"></textarea>
+        <p id="french-text-error" style="color: red; display: none;">French content cannot be empty.</p>
+    </div>
+
+    <!-- French File Upload (Initially Hidden) -->
+    <div id="french-file-container" style="display:none;">
+        <input type="file" id="french-file" name="french-file" accept=".docx">
+        <p id="french-error" style="color: red; display: none;">Only .docx files are allowed.</p>
+    </div>
+</fieldset>
+    
+    <!-- Submit Button -->
+    <button id="submit-btn" style="margin-top: 20px">Submit</button>
+    
+    <!-- Download Button -->
+    <div id="download-container" style="display:none; margin-top: 20px;">
+        <a id="download-link" href="#" download="formatted_french.docx">Download French Document</a>
+    </div>
+</div> 
+<!--requred libraries-->
+            </main>
+            <footer _ngcontent-ng-c3392822675="" class="mt-4 ng-tns-c3392822675-0">
+               <div _ngcontent-ng-c3392822675="" class="d-flex justify-content-between align-items-end mt-auto pb-4 ng-tns-c3392822675-0">
+                  <div _ngcontent-ng-c3392822675="" class="align-self-end ng-tns-c3392822675-0"><span _ngcontent-ng-c3392822675="" class="text-muted small ng-tns-c3392822675-0">version: 0.0.1 </span></div>
+                  <div _ngcontent-ng-c3392822675="" class="col-lg-2 col-md-3 col-sm-4 col-4 ng-tns-c3392822675-0"><img _ngcontent-ng-c3392822675="" class="img-fluid ng-tns-c3392822675-0" alt="Government of Canada" src="img/canada-black-30mm.png"></div>
+               </div>
+            </footer>
+            <!-- expanded genai nav -->
+            <div id="genai-nav" class="overlay">
+
+              <!-- Button to close the overlay navigation -->
+              <a href="javascript:void(0)" class="closebtn" id="close-report-btn">&times;</a>
+
+
+              <div class="overlay-content" style="padding-left:300px;">
+                <h3>GenAI reports</h3>
+                <div id="accessibility-report" class="hidden">
+        					<h4>Accessibility validation summary</h4>
+      				  </div>
+
+                <div id="metadata-report" class="hidden">
+                  <h4>Metadata recommendations</h4>
+                  <p><strong>Description:</strong> <span id="report-genai-description-output"></span></p>
+                  <p><strong>Keywords:</strong> <span id="report-genai-keywords-output"></span></p>
+                </div>
+
+      				  <div id="content-report" class="hidden">
+                  <h4>Content recommendations</h4>
+        					<p><strong>Conversational rewrite:</strong> <span id="report-genai-conversational-output"></span></p>
+                  <p><strong>Shortened rewrite:</strong> <span id="report-genai-trim-output"></span></p>
+      				  </div>
+
+              </div>
+
+            </div>
+         </div>
+      </upd-root>
+    
 <!--Libraries-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> 
 <script src="js/mammoth.js"></script>
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.1/pizzip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@9.2.0/dist/index.iife.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.8/dist/pizzip.min.js"></script>
 
 <!-- My JS Files -->
 <script src="js/content-assistant.js"></script>
-<!--<script src="js/page-assistant.js"></script> -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.21.0/docxtemplater.min.js"></script>
+<script src="js/page-assistant.js"></script>
 <script src="js/translation-assistant.js"></script>
 </body>
 </html>
