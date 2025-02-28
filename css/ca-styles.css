@@ -24,7 +24,9 @@ button i {
 .strong {
   font-weight: bold;
 }
-
+.small {
+  font-size: 0.85em; /* Smaller than normal text */
+}
 
 .error-msg {
     display: flex;

@@ -69,10 +69,13 @@ $(document).ready(function() {
   });
 
   $("#url-upload-btn").click(async function(){
-	var urlInput = $("#url-input").val().trim();
-        // Trim unwanted characters like spaces, parentheses, or extra slashes
-        // urlInput = urlInput.replace(/^[^\w]+|[^\w]+$/g, '').replace(/(https?:\/\/)?(www\.)?/i, ''); // trim any unnecessary characters
-    updateIframeFromURL(urlInput);
+    var urlInput = $("#url-input").val().trim();
+    // Trim unwanted characters like spaces, parentheses, or extra slashes
+    // This regex ensures it starts with http:// or https:// and allows other common URL structures
+    var cleanUrl = cleanUrl.replace(/^(?!http(s)?:\/\/)/, 'https://'); // Ensure it starts with "http://"
+
+    // urlInput = urlInput.replace(/^[^\w]+|[^\w]+$/g, '').replace(/(https?:\/\/)?(www\.)?/i, ''); // trim any unnecessary characters
+    updateIframeFromURL(cleanUrl);
   });
 
   $("#html-upload-btn").click(function() {
@@ -168,6 +171,17 @@ $(document).ready(function() {
     $("#genai-reset-report-btn").removeClass("hidden");
   });
 
+  // Limit checkbox selection to a maximum of 2
+  $(document).on("change", "input[name='html-upload-genai-model']:checkbox", function() {
+    var selectedCount = $("input[name='html-upload-genai-model']:checked").length;
+
+    if (selectedCount > 2) {
+      // Deselect the last checked box if the limit is exceeded
+      this.checked = false;
+      alert("You can select a maximum of 2 models.");
+    }
+  });
+
   $("#genai-run-report-btn").click(async function () {
     $("#genai-model-options").addClass("hidden");
     $("#genai-open-report-btn").addClass("hidden"); // Hide report button initially
@@ -235,7 +249,7 @@ $(document).ready(function() {
             let requestJson = [systemGeneral, systemTask, userContent, userData];
             // Send it to the API
             let formattedText = { a: await formatORResponse(model[0], requestJson), b: "" };
-            if ($("#genai-analysis-llm-compare").is(':checked')) {
+            if ($("#genai-analysis-llm-compare").is(':checked') && model[1]) {
               formattedText.b = await formatORResponse(model[1], requestJson);
             } else if (fileContentB) {
               systemTask.content = "Custom instruction: " + fileContentB;
@@ -246,7 +260,7 @@ $(document).ready(function() {
             if (formattedText.b != "") {
               // Side-by-side comparison needed
               reportCount++;
-              newReport = createSideBySideReport(reportCount, labelText, formattedText);
+              newReport = createSideBySideReport(reportCount, labelText, formattedText, model);
             } else {
               // No side-by-side, just show the single report
               newReport = createBasicReport(labelText, formattedText);

@@ -333,13 +333,17 @@ function createBasicReport(labelText, formattedText) {
 }
 
 // Function to create a side-by-side report
-function createSideBySideReport(counter, labelText, formattedText) {
+function createSideBySideReport(counter, labelText, formattedText, model) {
   const reportIdA = `report-container-A-${counter}`;
   const reportIdB = `report-container-B-${counter}`;
   const toolboxIdA = `report-toolbox-A-${counter}`;
   const toolboxIdB = `report-toolbox-B-${counter}`;
   const titleIdA = `report-A-title-${counter}`;
   const titleIdB = `report-B-title-${counter}`;
+  // Conditionally add model info
+  const modelInfoA = `<p class="small">${model[0]}</p>`;
+  const modelInfoB = model[1] ? `<p class="small">${model[1]}</p>` : `<p class="small">${model[0]}</p>`;
+
 
   return $(`
     <div class="sidebyside-wrapper generated-report">
@@ -352,6 +356,7 @@ function createSideBySideReport(counter, labelText, formattedText) {
         <div class="sidebyside-report">
           <h4 id="${titleIdA}">${labelText} (A)</h4>
           <p>${formattedText.a}</p>
+          ${modelInfoA}
         </div>
       </div>
       <div id="${reportIdB}" class="sidebyside-container report-container-B">
@@ -363,6 +368,7 @@ function createSideBySideReport(counter, labelText, formattedText) {
         <div class="sidebyside-report">
           <h4 id="${titleIdB}">${labelText} (B)</h4>
           <p>${formattedText.b}</p>
+          ${modelInfoB}
         </div>
       </div>
     </div>
