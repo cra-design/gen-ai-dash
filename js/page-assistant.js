@@ -318,7 +318,7 @@ $(document).ready(function() {
       // Grab the report type from the <h4> element within the sidebyside-report
       let reportType = $(this).closest('.toolbar').closest().find('.sidebyside-report h4').text().trim();
 	  console.log($(this));
-	  console.log($(this).closest());
+	  console.log($(this).closest('.sidebyside-container'));
 	  console.log($(this).closest('.toolbar').closest());
 	  console.log($(this).parents('.sidebyside-container'));
 	  console.log($(this).closest('.toolbar').closest().find('.sidebyside-report h4'));
