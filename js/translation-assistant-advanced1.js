@@ -78,36 +78,51 @@ document.addEventListener("DOMContentLoaded", function () {
   handleFileInput(document.getElementById("english-file"), "english");
   handleFileInput(document.getElementById("french-file"), "french");
 
-  // Helper function: extract complete paragraphs (<w:p>...</w:p>) from XML
+  // Helper function: extract all <w:p>...</w:p> blocks from XML
   function extractParagraphs(xml) {
     return xml.match(/<w:p[\s\S]*?<\/w:p>/g) || [];
   }
 
-  // Helper function: remove code fences, marker, and ensure the paragraph is complete
-  function ensureCompleteParagraph(xml) {
+  // Group paragraphs into batches (e.g., 4 paragraphs per group)
+  function groupParagraphs(paragraphs, groupSize = 4) {
+    let groups = [];
+    for (let i = 0; i < paragraphs.length; i += groupSize) {
+      groups.push(paragraphs.slice(i, i + groupSize).join("\n"));
+    }
+    return groups;
+  }
+
+  // Helper function: clean AI response by removing code fences and extra marker text,
+  // then ensure it is a complete XML document (ends with </w:document>)
+  function ensureCompleteXML(xml) {
     xml = xml.replace(/^```xml\s*/, "").replace(/\s*```$/, "").trim();
     const marker = "[END_OF_XML]";
     const markerIndex = xml.indexOf(marker);
     if (markerIndex !== -1) {
       xml = xml.substring(0, markerIndex).trim();
     }
-    // If it doesn't start with <w:p or end with </w:p>, try to fix it
-    if (!xml.startsWith("<w:p")) {
-      xml = "<w:p>" + xml;
-    }
-    if (!xml.endsWith("</w:p>")) {
-      xml += "\n</w:p>";
+    // Ensure the response is complete. If missing closing tags, append them.
+    if (!xml.endsWith("</w:document>")) {
+      if (!xml.includes("</w:body>")) {
+        xml += "\n</w:body>";
+      }
+      xml += "\n</w:document>";
     }
     return xml;
   }
 
-  // Helper function: clean up AI response by removing code fences
-  function formatAIResponse(aiResponse) {
-    let cleaned = aiResponse.replace(/^```xml\s*/, "").replace(/\s*```$/, "").trim();
-    return cleaned;
+  // Helper function: extract inner <w:body> content from a complete XML document
+  function extractBodyContent(xml) {
+    const match = xml.match(/<w:body>([\s\S]*?)<\/w:body>/);
+    return match ? match[1] : '';
   }
 
-  // Helper function: escape XML special characters
+  // Helper function: remove code fences from AI response
+  function formatAIResponse(aiResponse) {
+    return aiResponse.replace(/^```xml\s*/, "").replace(/\s*```$/, "").trim();
+  }
+
+  // Helper function: escape XML special characters in text
   function escapeXML(xml) {
     return xml.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
@@ -144,39 +159,45 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     let bodyContent = bodyMatch[1];
 
-    // Split the document into complete paragraphs
+    // Extract paragraphs and group them (4 per group)
     let paragraphs = extractParagraphs(bodyContent);
-    console.log(`Total paragraphs to process: ${paragraphs.length}`);
+    console.log(`Total paragraphs found: ${paragraphs.length}`);
+    let groups = groupParagraphs(paragraphs, 4);
+    console.log(`Total groups to process: ${groups.length}`);
 
     let formattedChunks = [];
-    for (let i = 0; i < paragraphs.length; i++) {
-      console.log(`Processing paragraph ${i + 1}/${paragraphs.length}...`);
+    for (let i = 0; i < groups.length; i++) {
+      console.log(`Processing group ${i + 1}/${groups.length}...`);
       let requestJson = {
         messages: [
-          { role: "system", content: "You are a DOCX formatting assistant. Reformat the provided DOCX XML paragraph to produce complete and valid XML output. Ensure your output is a complete <w:p> element with all necessary closing tags. Do not include extra text or code fences. End your output with the marker [END_OF_XML] on its own line." },
-          { role: "user", content: "English DOCX paragraph: " + escapeXML(paragraphs[i]) }
+          {
+            role: "system",
+            content:
+              "You are a DOCX formatting assistant. Reformat the provided DOCX XML (which contains multiple <w:p> paragraphs) to produce complete and valid XML output. Ensure your output includes the XML declaration and a full <w:document> element (with its <w:body>) and all necessary closing tags. Do not include extra text or code fences. End your output with the marker [END_OF_XML] on its own line."
+          },
+          { role: "user", content: "English DOCX group: " + escapeXML(groups[i]) }
         ]
       };
 
       let ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
       if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
-        console.error(`API request failed or returned unexpected structure for paragraph ${i + 1}:`, ORjson);
+        console.error(`API request failed or returned unexpected structure for group ${i + 1}:`, ORjson);
         continue;
       }
       let aiResponse = ORjson.choices[0]?.message?.content || "";
-      console.log(`Paragraph ${i + 1} Response:\n`, aiResponse);
+      console.log(`Group ${i + 1} Response:\n`, aiResponse);
 
       let formattedText = formatAIResponse(aiResponse);
-      formattedText = ensureCompleteParagraph(formattedText);
+      formattedText = ensureCompleteXML(formattedText);
       if (!formattedText) {
-        console.error(`Skipping paragraph ${i + 1} due to formatting issues.`);
+        console.error(`Skipping group ${i + 1} due to formatting issues.`);
         continue;
       }
       formattedChunks.push(formattedText);
     }
 
-    // Reassemble the processed paragraphs into a single <w:body>
-    let finalBodyContent = formattedChunks.join("\n");
+    // Reassemble the processed groups into a single <w:body>
+    let finalBodyContent = formattedChunks.map(chunk => extractBodyContent(chunk)).join("\n");
     let finalDocXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ...>
   <w:body>
