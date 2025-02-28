@@ -167,34 +167,24 @@ $(document).ready(function() {
     const englishDocxData = $('#english-file')[0].files[0]; // Get the english file
     var englishDocxXml;
     // Step 1: Extract the XML from the English DOCX file
-    await handleFileExtraction(englishDocxData, function(result) {
-      console.log();
-        // Handle the extracted text from French file
-        const zipEN = new PizZip(result);
-        englishDocxXml = zipEN.file("word/document.xml")?.asText();
-        if (!englishDocxXml) {
-          alert("Error: Could not extract XML from the English DOCX.");
-          return;
-        }
+    await handleFileExtractionToXML(englishDocxData, function(result) {
+      console.log(documentXml);
     }, function(err) {
         // Error handling callback
         console.error('Error processing English file:', err);
     });
-    if (!englishDocxXml) {
+    if (!documentXml) {
         $('#converting-spinner').addClass("hidden");
         return;
     }
-    console.log("Extracting text nodes...");
-
     console.log("Extracting text nodes...");
     // Step 2: Extract all <w:t> nodes (text nodes) preserving their positions
     const textNodes = [];
     const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
     let match;
-    while ((match = regex.exec(englishDocxXml)) !== null) {
+    while ((match = regex.exec(documentXml)) !== null) {
         textNodes.push(match[1]);
     }
-
     // Step 3: Get the translated French text and prepare for GenAI adjustment
     const translatedText = $("#translation-A").text().trim();
     const englishReference = textNodes.join("\n");
@@ -266,7 +256,7 @@ $(document).ready(function() {
     }
 
     // Step 5: Replace English text with corresponding adjusted French lines
-    let updatedXml = englishDocxXml;
+    let updatedXml = documentXml;
     textNodes.forEach((node, index) => {
         const escapedNode = node.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'); // Escape special characters
         const regexNode = new RegExp(`<w:t[^>]*>${escapedNode}<\/w:t>`);
@@ -444,41 +434,3 @@ function acceptTranslation(option) {
   $(".convert-translation").removeClass("hidden");
   toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
 }
-
-//
-// // Function to handle file extraction
-// function handleFileExtractionXML(file, successCallback, errorCallback) {
-//     if (!file) {
-//         alert("No file detected");
-//         errorCallback("No file detected");
-//         return;
-//     }
-//
-//     const fileExtension = file.name.split('.').pop().toLowerCase();
-//
-//     // Ensure we're processing a .docx file
-//     if (fileExtension === 'docx') {
-//         var reader = new FileReader();
-//
-//         reader.onload = function(e) {
-//             var arrayBuffer = e.target.result;
-//
-//             // Use PizZip to read the .docx file
-//             const zip = new PizZip(arrayBuffer);
-//
-//             // Extract the main document XML
-//             const documentXml = zip.file("word/document.xml")?.asText();
-//
-//             if (documentXml) {
-//                 console.log("Document XML:", documentXml);
-//                 successCallback(documentXml);  // Pass the extracted XML to the callback
-//             } else {
-//                 errorCallback("Error: Could not find 'word/document.xml' in the DOCX.");
-//             }
-//         };
-//
-//         reader.readAsArrayBuffer(file);  // Read the file as ArrayBuffer
-//     } else {
-//         errorCallback("Error: Unsupported file type. Only DOCX files are supported.");
-//     }
-// }

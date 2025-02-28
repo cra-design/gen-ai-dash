@@ -401,11 +401,6 @@ function handleFileExtraction(file, successCallback, errorCallback) {
     }
     // Get the file extension to determine how to handle it
     const fileExtension = file.name.split('.').pop().toLowerCase();
-
-
-
-
-
     var reader = new FileReader();
     reader.onload = function(e) {
         var arrayBuffer = e.target.result;
@@ -445,6 +440,36 @@ function handleFileExtraction(file, successCallback, errorCallback) {
         }
     };
     reader.readAsArrayBuffer(file); // Read the file as ArrayBuffer
+}
+
+// Function to handle file extraction
+function handleFileExtractionToXML(file, successCallback, errorCallback) {
+    if (!file) {
+        alert("No file detected");
+        errorCallback("No file detected");
+        return;
+    }
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    // Ensure we're processing a .docx file
+    if (fileExtension === 'docx') {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var arrayBuffer = e.target.result;
+            // Use PizZip to read the .docx file
+            const zip = new PizZip(arrayBuffer);
+            // Extract the main document XML
+            const documentXml = zip.file("word/document.xml")?.asText();
+            if (documentXml) {
+                console.log("Document XML:", documentXml);
+                successCallback(documentXml);  // Pass the extracted XML to the callback
+            } else {
+                errorCallback("Error: Could not find 'word/document.xml' in the DOCX.");
+            }
+        };
+        reader.readAsArrayBuffer(file);  // Read the file as ArrayBuffer
+    } else {
+        errorCallback("Error: Unsupported file type. Only DOCX files are supported.");
+    }
 }
 
 // Function to extract plain text from HTML and replace <br> tags with newline
