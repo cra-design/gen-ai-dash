@@ -624,10 +624,16 @@ async function applyCanadaHtmlTemplate(extractedHtml) {
         footerResponse2.text(),
         dateResponse2.text()
     ]);
+    const today = new Date();
+    const formattedDate = today.getFullYear() + '-' +
+                          String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                          String(today.getDate()).padStart(2, '0');
+    newDate = newDate.replace("2020-07-29", formattedDate);
+
     // Check if the extractedHtml already has a date modified section
     const hasDateModifiedSection = /<dl id="wb-dtmd">/.test(extractedHtml);
     if (!hasDateModifiedSection) {
-      newFooter.replace('</main>', newDate);
+      newFooter = newFooter.replace('</main>', newDate);
     }
     // Check if the original HTML <main> tag contains the class "container"
     const mainClassMatch = extractedHtml.match(/<main[^>]*class=["'][^"']*container[^"']*["'][^>]*>/);
