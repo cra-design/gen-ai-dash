@@ -165,21 +165,21 @@ $(document).ready(function() {
   $("#convert-translation-to-doc-btn").click(async function() {
     $('#converting-spinner').removeClass("hidden");
     const englishDocxData = $('#english-file')[0].files[0]; // Get the english file
-    var englishDocxXml;
+    var englishXml;
     // Step 1: Extract the XML from the English DOCX file
     // Step 1: Extract the XML from the English DOCX file
     const fileExtension = englishDocxData.name.split('.').pop().toLowerCase();
     await new Promise((resolve, reject) => {
         handleFileExtractionToXML(englishDocxData, function(result) {
-            englishDocxXml = result;  // Store the extracted XML
+            englishXml = result;  // Store the extracted XML
             resolve();  // Resolve the promise once the XML is available
         }, function(error) {
             console.error('Error processing English file:', error);
             reject(error);  // Reject the promise if there is an error
         });
     });
-    // After the XML is extracted and stored in englishDocxXml
-    if (!englishDocxXml) {
+    // After the XML is extracted and stored in englishXml
+    if (!englishXml) {
         console.error("No XML document.");
         $('#converting-spinner').addClass("hidden");
         return;
@@ -187,9 +187,9 @@ $(document).ready(function() {
     var selectedMethod = $('input[name="convert-translation-method"]:checked').val();
     var updatedXml;
     if (selectedMethod == "convert-translation-docx") {
-      updatedXml = await conversionDocxTemplater(englishDocxXml);
+      updatedXml = await conversionDocxTemplater(englishXml);
     } else {
-      updatedXml = await conversionGemini(englishDocxXml, fileExtension);
+      updatedXml = await conversionGemini(englishXml, fileExtension);
     }
     let originalFileName = englishDocxData.name.split('.').slice(0, -1).join('.');
     let modifiedFileName = `${originalFileName}-FR.${fileExtension}`;
@@ -245,12 +245,12 @@ function createXmlContent(fileExtension, updatedXml, finalContent) {
   return xmlContent;
 }
 
-async function conversionDocxTemplater(englishDocxXml) {
+async function conversionDocxTemplater(englishXml) {
   // Step 2: Extract all <w:t> nodes (text nodes) preserving their positions
   const textNodes = [];
   const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
   let match;
-  while ((match = regex.exec(englishDocxXml)) !== null) {
+  while ((match = regex.exec(englishXml)) !== null) {
       textNodes.push(match[1]); // Extract the text content of each <w:t> node
   }
 
@@ -337,7 +337,7 @@ async function conversionDocxTemplater(englishDocxXml) {
   }
 
   // Step 5: Replace English text with corresponding adjusted French lines
-  let updatedXml = englishDocxXml;
+  let updatedXml = englishXml;
   textNodes.forEach((node, index) => {
       const escapedNode = node.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'); // Escape special characters
       const regexNode = new RegExp(`<w:t[^>]*>${escapedNode}<\/w:t>`);
@@ -346,7 +346,7 @@ async function conversionDocxTemplater(englishDocxXml) {
   return updatedXml;
 }
 
-async function conversionGemini(englishDocxXml, fileType) {
+async function conversionGemini(englishXml, fileType) {
   let groups = [];
   let formattedChunks = [];
   let paragraphs = [];
