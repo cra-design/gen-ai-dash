@@ -1,3 +1,6 @@
+// Global variable outside the document ready function
+let generatedDownloadFile = null;
+
 $(document).ready(function() {
 
   $(document).on("click", "input[type=radio]", function (event) {
@@ -207,24 +210,38 @@ $(document).ready(function() {
       const modifiedFileName = `${originalFileName}-FR.${fileExtension}`;
       const zipEN = new JSZip();
       const xmlContent = createXmlContent(fileExtension, updatedXml);
-      // Define render functions for each file type
-      const doc = () => console.log("Rendering DOCX...");
-      const pptx = () => console.log("Rendering PPTX...");
-      const xlsx = () => console.log("Rendering XLSX...");
-      let output;
+      let mimeType;
       if (fileExtension === 'docx') {
-        output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", doc);
+          mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
       } else if (fileExtension === 'pptx') {
-        output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.presentationml.presentation", pptx);
+          mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
       } else if (fileExtension === 'xlsx') {
-        output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", xlsx);
+          mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
       }
-      saveAs(output, modifiedFileName);
+      // Generate file and save it as a Blob
+      generatedDownloadFile = await generateFile(zipEN, xmlContent, mimeType);
+      // Show the download button
+      $("#translated-doc-download").removeClass("hidden");
+      $("#convert-translation-download-btn").attr("data-filename", modifiedFileName);
+      $('#converting-spinner').addClass("hidden");
     } catch (error) {
       console.error("An error occurred:", error);
     } finally {
       $('#converting-spinner').addClass("hidden");
     }
+  });
+
+  $("#convert-translation-download-btn").click(function() {
+      if (generatedDownloadFile) {
+          let fileName = $(this).attr("data-filename") || "translated-file.docx";
+          let downloadLink = document.createElement('a');
+          downloadLink.href = URL.createObjectURL(generatedDownloadFile);
+          downloadLink.download = fileName;
+          downloadLink.click();
+          URL.revokeObjectURL(downloadLink.href); // Clean up
+      } else {
+          console.error("No file generated.");
+      }
   });
 
 });
