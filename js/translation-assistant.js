@@ -68,6 +68,7 @@ $(document).ready(function() {
     var selectedOption = $('input[name="source-upload-option"]:checked').val();
     var selectedCompare = $('input[name="translations-instructions-compare"]:checked').val();
     var selectedModel = $('input[name="translate-model-b-option"]:checked').val();
+    var selectedLanguage = $('#source-language').val();
     var sourceText;
     //determine the source text to translate
     if (selectedOption == "source-upload-doc") {
@@ -87,14 +88,18 @@ $(document).ready(function() {
     } else if (selectedOption == "source-upload-text") {
       sourceText = $("#source-text").text();
     }
+    let translationInstructions = "custom-instructions/translation/english2french.txt";
+    if (selectedLanguage == "French") {
+      translationInstructions = "custom-instructions/translation/french2english.txt";
+    }
     $("#translation-preview").removeClass("hidden");
     $("#convert-translation-to-doc-btn").removeClass("hidden");
-    let translationA = translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", "custom-instructions/translation/english2french.txt");
+    let translationA = translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions);
     $('#translation-A').html(translationA);
     if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
-      let translationB = translateEnglishToFrench(sourceText, selectedModel, "custom-instructions/translation/english2french.txt");
+      let translationB = translateEnglishToFrench(sourceText, selectedModel, translationInstructions);
     } else if (selectedCompare == "translations-instructions-compare") {
-      let translationB = translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", "custom-instructions/translation/english2french-B.txt");
+      let translationB = translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions.replace(".txt", "-B.txt"));
     } else {
       $(".convert-translation").removeClass("hidden");
       return;
