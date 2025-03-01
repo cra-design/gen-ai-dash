@@ -151,82 +151,31 @@
                   <h3>GenAI</h3>
                   <button id="changeKeyBtn"><i class="fa fa-solid fa-key"></i></button>
                 </div>
-                <div id="keyPopup" style="display:none;">
+                <div id="keyPopup" class="pop-up-overlay hidden">
                     <input type="text" id="newKeyInput" placeholder="Enter new key">
                     <button id="saveKeyBtn">Save</button>
                     <button id="cancelKeyBtn">Cancel</button>
                 </div>
-                <div id="genai-upload-msg">
-                  <p>Upload content to enable GenAI</p>
-                </div>
-                <fieldset id="genai-task-options" class="hidden">
-                  <legend>Select report</legend>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-title" name="html-upload-genai-analysis" value="custom-instructions/metadata/title-en.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-title"> Suggest a SEOed title</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-description" name="html-upload-genai-analysis" value="custom-instructions/metadata/description-en.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-description"> Suggest a metadata description</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-keywords" name="html-upload-genai-analysis" value="custom-instructions/metadata/keywords-en.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-keywords"> Suggest metadata keywords</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-metadata" name="html-upload-genai-analysis" value="custom-instructions/metadata/metadata-review.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-metadata"> Metadata review</label><br>
-
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-comprehension" name="html-upload-genai-analysis" value="custom-instructions/content/comprehension.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-comprehension"> Rewrite for easy comprehension</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-consistency" name="html-upload-genai-analysis" value="custom-instructions/content/consistency.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-consistency"> Rewrite for consistency</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-conversational" name="html-upload-genai-analysis" value="custom-instructions/content/conversational.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-conversational"> Rewrite for conversational tone</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-inclusivity" name="html-upload-genai-analysis" value="custom-instructions/content/inclusivity.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-inclusivity"> Rewrite for inclusivity</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-jargon" name="html-upload-genai-analysis" value="custom-instructions/content/jargon-remover.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-jargon"> Rewrite to simplify jargon</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-trim" name="html-upload-genai-analysis" value="custom-instructions/content/trimmer.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-trim"> Trim the content to be more concise</label><br>
-
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-bullets" name="html-upload-genai-analysis" value="custom-instructions/content/bulleted-lists.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-bullets"> Restructure with bulleted lists</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-grid" name="html-upload-genai-analysis" value="custom-instructions/content/columns-and-rows.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-grid"> Restructure with columns and rows</label><br>
-                  <input class="checkbox-small" type="checkbox" id="html-upload-genai-analysis-headings" name="html-upload-genai-analysis" value="custom-instructions/content/headings.txt">
-                  <label class="label-small" for="html-upload-genai-analysis-headings"> Propose a better heading structure</label><br>
-
-                  <!-- Use any element to open/show the overlay navigation menu -->
-                  <div class="flex-2-col">
-                    <button id="genai-select-tasks-btn" style="margin-right:5px;">Continue</button>
-                    <input class="checkbox-small" type="checkbox" id="genai-analysis-llm-compare" name="genai-analysis-llm-compare" value="genai-analysis-llm-compare">
-                    <label class="label-small" for="genai-analysis-llm-compare"> Compare models</label>
-                  </div>
+                <fieldset style="margin-top: 15px;">
+                  <input class="checkbox-small" type="checkbox" id="translations-glossary" name="translations-glossary" value="translations-glossary" checked>
+                  <label class="label-small" for="translations-glossary"> Use glossary</label><br>
+                </fieldset>
+                <fieldset style="margin-top: 15px;">
+                  <legend>Compare</legend>
+                  <input type="radio" id="translations-instructions-compare" name="translations-compare" value="instructions-compare" checked>
+                  <label for="translations-instructions-compare"> Instructions</label><br>
+                  <input type="radio" id="translations-llm-compare" name="translations-compare" value="llm-compare">
+                  <label for="translations-llm-compare"> Models</label><br>
+                  <input type="radio" id="translations-no-compare" name="translations-compare" value="no-compare">
+                  <label for="translations-no-compare"> None</label><br>
                 </fieldset>
                 <fieldset id="genai-model-options" class="hidden">
-                  <legend>Select <span id="model-compare-1">1 model</span><span id="model-compare-2" class="hidden">2 models</span></legend>
-                  <input type="radio" id="html-upload-genai-model-gemini" name="html-upload-genai-model" value="google/gemini-2.0-flash-exp:free">
-                  <label for="html-upload-genai-model-gemini"> Gemini 2.0 Flash</label><br>
-                  <input type="radio" id="html-upload-genai-model-llama" name="html-upload-genai-model" value="meta-llama/llama-3.3-70b-instruct:free">
-                  <label for="html-upload-genai-model-llama"> Llama 3.3 70B</label><br>
-                  <input type="radio" id="html-upload-genai-model-phi" name="html-upload-genai-model" value="microsoft/phi-3-medium-128k-instruct:free">
-                  <label for="html-upload-genai-model-phi"> Phi-3 Medium</label><br>
-                  <!-- Supposedly Nemo is great for translation and FR content -->
-                  <input type="radio" id="html-upload-genai-model-mistral" name="html-upload-genai-model" value="mistralai/mistral-nemo:free">
-                  <label for="html-upload-genai-model-mistral"> Mistral Nemo</label><br>
-                  <!-- Dolphin should be competitive for coding? -->
-                  <input type="radio" id="html-upload-genai-model-dolphin" name="html-upload-genai-model" value="cognitivecomputations/dolphin3.0-r1-mistral-24b:free">
-                  <label for="html-upload-genai-model-dolphin"> Dolphin3.0 R1</label><br>
-                  <!-- Deepseek is known for reasoning/explanations? -->
-                  <!-- <input type="radio" id="html-upload-genai-model-deepseek" name="html-upload-genai-model" value="deepseek/deepseek-r1:free">
-                  <label for="html-upload-genai-model-deepseek"> Deepseek R1</label><br> -->
-                  <button id="genai-run-report-btn">Run report</button>
+                  <legend>Select a model to compare</legend>
+                  <input type="radio" id="translate-gemini" name="translate-model-b-option" value="google/gemini-2.0-flash-exp:free">
+                  <label for="translate-gemini">Gemini</label><br>
+                  <input type="radio" id="translate-dolphin" name="translate-model-b-option" value="cognitivecomputations/dolphin3.0-r1-mistral-24b:free">
+                  <label for="translate-dolphin">Mistral Dolphin</label><br>
                 </fieldset>
-
-        				<div id="loading-indicator" class="hidden">
-        					<div class="spinner"></div>
-        					<p>Generating reports...</p>
-        				</div>
-
-                <div class="report-list"></div>
-                <!--div id="genai-report-reset-options" class="hidden"-->
-                <button id="genai-open-report-btn" class="hidden">Open report</button>
-                <br>
-                <button id="genai-reset-report-btn" class="hidden">Reset</button>
               </div>
             </genai-sidebar>
 	            <h1 _ngcontent-ng-c3392822675="" class="visually-hidden ng-tns-c3392822675-0">GCA | Translation Assistant</h1>
@@ -237,104 +186,109 @@
                   <upd-projects-home _nghost-ng-c1826793033="" class="ng-star-inserted">
                      <h2 _ngcontent-ng-c1826793033="">Translation Assistant</h2>
 
-                     <upd-card _ngcontent-ng-c1826793033="" titlesize="h5">
-                        <div tabindex="0" class="card pt-2">
+                     <upd-card>
+                        <div class="card pt-2">
                            <div class="card-body card-pad pt-2 h-100">
-                              <div class=" justify-content-between">
-                                <div id="api-key-entry">
-                                  <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Enter the GenAI API key</h3>
-                                  <p>Before we start, add an openrouter API key to make your requests.</p>
-                                  <fieldset style="margin-bottom:20px;">
-                                    <legend>OpenRouter API key</legend>
-                                    <input id="api-key" type="text" required placeholder="Enter OpenRouter API Key">
-                                    <button id="api-key-submit-btn" style="margin-top: 20px">Submit</button>
-                                  </fieldset>
-                                  <p>If you don't have one yet, here are some steps to create one:</p>
-                                  <ol>
-                                    <li>Create an account at <a href="https://www.openrouter.ai">openrouter.ai</a></li>
-                                    <li>Under the top right hamburger menu icon, select "Keys"</li>
-                                    <li>Create key (and save it somewhere!)
-                                      <ul>
-                                        <li>the point of this is to prevent abuse if you bought credits on your account if third parties find your key</li>
-                                        <li>you don't need to buy credits for free models used in this demo</li>
-                                        <li>you will be shown your key right after creating it: copy and save it somewhere, as you can't access it again through openrouter</li>
-                    										<li>if you want to try another model, or have credits on your account and want a paid model, let Miguel know so we can update the selections</li>
-                  									  </ul>
-                                    </li>
-                                    <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
-                                  </ol>
-                                </div>
-                                <div id="english-upload" class="after-key-unhide hidden">
-                                  <fieldset>
-                                    <legend>Provide the source content with formatting (English)</legend>
-                                    <div class="inline-checkbox-container" style="margin-bottom: 15px;">
-                                      <input type="radio" id="english-upload-doc" name="english-upload-option" value="english-upload-doc" checked>
-                                      <label for="english-upload-doc">Upload an English document (docx, ppt, xlsx)</label><br>
-                                      <input type="radio" id="english-upload-text" name="english-upload-option" value="english-upload-text">
-                                      <label for="english-upload-text">Paste English text</label><br>
-                                    </div>
-                                    <div id="english-doc-upload">
-                                      <div id="english-file-container">
-                                        <input type="file" id="english-file" accept=".docx">
-                                        <p id="english-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
-                                        <p id="english-doc-error" class="error-msg hidden">Only .docx, (planned to soon have .ppt and .xlsx) files are allowed.</p>
+                              <div id="api-key-entry" class=" justify-content-between">
+                                <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Enter the GenAI API key</h3>
+                                <p>Before we start, add an openrouter API key to make your requests.</p>
+                                <fieldset style="margin-bottom:20px;">
+                                  <legend>OpenRouter API key</legend>
+                                  <input id="api-key" type="text" required placeholder="Enter OpenRouter API Key">
+                                  <button id="api-key-submit-btn" style="margin-top: 20px">Submit</button>
+                                </fieldset>
+                                <p>If you don't have one yet, here are some steps to create one:</p>
+                                <ol>
+                                  <li>Create an account at <a href="https://www.openrouter.ai">openrouter.ai</a></li>
+                                  <li>Under the top right hamburger menu icon, select "Keys"</li>
+                                  <li>Create key (and save it somewhere!)
+                                    <ul>
+                                      <li>the point of this is to prevent abuse if you bought credits on your account if third parties find your key</li>
+                                      <li>you don't need to buy credits for free models used in this demo</li>
+                                      <li>you will be shown your key right after creating it: copy and save it somewhere, as you can't access it again through openrouter</li>
+                  										<li>if you want to try another model, or have credits on your account and want a paid model, let Miguel know so we can update the selections</li>
+                									  </ul>
+                                  </li>
+                                  <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
+                                </ol>
+                              </div>
+                              <div id="source-upload" class="after-key-unhide hidden justify-content-between">
+                                <fieldset>
+                                  <legend>Provide the source content</legend>
+                                  <div class="inline-checkbox-container" style="margin-bottom: 15px;">
+                                    <input type="radio" id="source-upload-text" name="source-upload-option" value="source-upload-text" checked>
+                                    <label for="source-upload-text">Translate text</label><br>
+                                    <input type="radio" id="source-upload-doc" name="source-upload-option" value="source-upload-doc">
+                                    <label for="source-upload-doc">Translate/format files</label><br>
+                                  </div>
+                                  <div id="text-upload" class="translation-container">
+                                    <div class="text-box-container">
+                                      <div class="text-box-header">
+                                        <label for="source-language">Source Language:</label><select id="source-language"><option value="english">English</option><option value="french">French</option></select>
+                                      </div>
+                                      <div class="translation-textarea-container">
+                                        <textarea id="source-text" name="source-text" placeholder="Enter text to translate" class="inputbox-translation"></textarea>
+                                        <p id="source-text-error" class="error-msg hidden">Text cannot be empty.</p>
                                       </div>
                                     </div>
-                                    <div id="english-text-upload" class="hidden">
-                                      <!-- French Text Input (Initially Visible) -->
-                                      <div id="english-textarea-container">
-                                        <textarea id="english-text" name="english-text" placeholder="Paste English text here" class="inputbox"></textarea>
-                                        <p id="english-text-error" class="error-msg hidden">English content cannot be empty.</p>
-                                      </div>
+                                  </div>
+                                  <div id="source-doc-upload" class="hidden">
+                                    <div id="source-file-container">
+                                      <input type="file" id="source-file" accept=".docx">
+                                      <p id="source-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
+                                      <p id="source-doc-error" class="error-msg hidden">You must upload a .docx, .ppt or .xlsx file to proceed.</p>
                                     </div>
-                                    <button id="english-upload-btn" style="margin-top: 20px">Continue</button>
-                                  </fieldset>
-                                </div>
-                                <div id="french-upload" class="hidden">
+                                  </div>
+                                  <div class="sidebyside-wrapper">
+                                    <button id="source-upload-translate-btn" style="margin-top: 20px; margin-right: 20px;">Translate</button>
+                                    <button id="source-upload-provide-btn" style="margin-top: 20px">Provide translation</button>
+                                  </div>
+                                </fieldset>
+                              </div>
+                            </div>
+                          </div>
+                        </upd-card>
+                        <upd-card id="second-upload" class="hidden">
+                           <div class="card pt-2">
+                              <div class="card-body card-pad pt-2 h-100">
+                                <div class="justify-content-between">
                                   <fieldset>
                                     <legend>How do you want to translate the document?</legend>
                                     <div class="inline-checkbox-container" style="margin-bottom: 15px;">
-                                      <input type="radio" id="french-translate-english" name="french-upload-option" value="french-translate-english" checked>
-                                      <label for="french-translate-english">Generate from English source</label><br>
-                                      <input type="radio" id="french-upload-doc" name="french-upload-option" value="french-upload-doc">
-                                      <label for="french-upload-doc">Upload a French document (docx, ppt, xlsx)</label><br>
-                                      <input type="radio" id="french-upload-text" name="french-upload-option" value="french-upload-text">
-                                      <label for="french-upload-text">Paste French text</label><br>
+                                      <input type="radio" id="second-translate-english" name="second-upload-option" value="second-translate-english" checked>
+                                      <label for="second-translate-english">Generate from English source</label><br>
+                                      <input type="radio" id="second-upload-doc" name="second-upload-option" value="second-upload-doc">
+                                      <label for="second-upload-doc">Upload a French document (docx, ppt, xlsx)</label><br>
+                                      <input type="radio" id="second-upload-text" name="second-upload-option" value="second-upload-text">
+                                      <label for="second-upload-text">Paste French text</label><br>
                                     </div>
-                                    <div id="french-translation-preview">
+                                    <div id="second-translation-preview">
                                       <p>A translation will be provided by the GenAI. Ensure there is no sensitive or protected information in the document before continuing.</p>
                                     </div>
-                                    <div id="french-doc-upload" class="hidden">
-                                      <div id="french-file-container">
-                                        <input type="file" id="french-file" accept=".docx">
-                                        <p id="french-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
-                                        <p id="french-doc-error" class="error-msg hidden">Only .docx, (planned to soon have .ppt and .xlsx) files are allowed.</p>
+                                    <div id="second-doc-upload" class="hidden">
+                                      <div id="second-file-container">
+                                        <input type="file" id="second-file" accept=".docx">
+                                        <p id="second-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
+                                        <p id="second-doc-error" class="error-msg hidden">Only .docx, (planned to soon have .ppt and .xlsx) files are allowed.</p>
                                       </div>
                                     </div>
-                                    <div id="french-text-upload" class="hidden">
+                                    <div id="second-text-upload" class="hidden">
                                       <!-- French Text Input (Initially Visible) -->
-                                      <div id="french-textarea-container">
-                                        <textarea id="french-text" name="french-text" placeholder="Paste English text here" class="inputbox"></textarea>
-                                        <p id="french-text-error" class="error-msg hidden">English content cannot be empty.</p>
+                                      <div>
+                                        <textarea id="second-text" name="second-text" placeholder="Paste English text here" class="inputbox"></textarea>
+                                        <p id="second-text-error" class="error-msg hidden">English content cannot be empty.</p>
                                       </div>
                                     </div>
-                                    <button id="french-upload-btn" style="margin-top: 20px">Continue</button>
+                                    <button id="second-upload-btn" style="margin-top: 20px">Continue</button>
                                   </fieldset>
                                 </div>
-                                <div id="translation-preview-model-b" class="hidden">
-                                  <p>The standard model used to translate is Mistral NeMo, but you can also select a second model to compare model quality:</p>
-                                  <fieldset>
-                                    <legend>What model would you like to use?</legend>
-                                    <input type="radio" id="translate-gemini" name="translate-model-b-option" value="google/gemini-2.0-flash-exp:free">
-                                    <label for="translate-gemini">Gemini</label><br>
-                                    <input type="radio" id="translate-dolphin" name="translate-model-b-option" value="cognitivecomputations/dolphin3.0-r1-mistral-24b:free">
-                                    <label for="translate-dolphin">Mistral Dolphin</label><br>
-                                    <input type="radio" id="translate-none" name="translate-model-b-option" value="" checked>
-                                    <label for="translate-none">None of the above (only use Mistral NeMo)</label><br>
-                                  </fieldset>
-                                  <button id="model-b-btn" style="margin-top: 20px">Continue</button>
-                                </div>
-                                <div id="translation-preview" class="hidden">
+                              </div>
+                            </div>
+                          </upd-card>
+                          <upd-card id="translation-preview" class="hidden">
+                            <div class="card pt-2">
+                              <div class="card-body card-pad pt-2 h-100">
+                                <div class="justify-content-between">
                                   <!-- Add side-by-side results container here -->
                                   <h2>Review the translation</h2>
                                   <p class="convert-translation">If you want to put the translation back in a document, <a href="#convert-translation">convert back to document</a> below the translation preview.</p>
@@ -365,7 +319,14 @@
                                       </div>
                                     </div>
                                   </div>
-                                  <div id="convert-translation" class="convert-translation hidden">
+                                </div>
+                              </div>
+                            </div>
+                          </upd-card>
+                          <upd-card id="convert-translation" class="convert-translation hidden">
+                            <div class="card pt-2">
+                              <div class="card-body card-pad pt-2 h-100">
+                                <div class="justify-content-between">
                                     <h4 style="margin-top: 20px;">Put back in document format</h4>
                                     <p>Once you're satisfied with the translation, submit it to put it back in the document formatting.</p>
                                     <fieldset class="inline-checkbox-container" style="margin-bottom: 15px;">
@@ -380,12 +341,14 @@
                                       <p>Generating reports...</p>
                                     </div>
                                   </div>
-                                  <div id="translated-doc-download" class="hidden">
+                                  <div id="translated-doc-download" class="justify-content-between hidden">
                                     <h4>Translated document</h4>
                                     <p>The reformated translation document is ready for download!</p>
                                     <button id="convert-translation-download-btn" style="margin-top: 20px">Download document</button>
                                   </div>
                                 </div>
+                              </div>
+                            </upd-card>
                                   <!--requred libraries-->
                                 </main>
                                 <footer _ngcontent-ng-c3392822675="" class="mt-4 ng-tns-c3392822675-0">

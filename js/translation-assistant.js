@@ -5,32 +5,40 @@ $(document).ready(function() {
 
   $(document).on("click", "input[type=radio]", function (event) {
     var target = event.target;
-    if (target.name == "english-upload-option") {
-      $('#english-doc-upload').addClass("hidden");
-      $('#english-text-upload').addClass("hidden");
-      if (target.id == "english-upload-doc") {
-        $('#english-doc-upload').removeClass("hidden");
-      } else if (target.id == "english-upload-text") {
-        $('#english-text-upload').removeClass("hidden");
+    if (target.name == "source-upload-option") {
+      $('#source-doc-upload').addClass("hidden");
+      $('#text-upload').addClass("hidden");
+      if (target.id == "source-upload-doc") {
+        $('#source-doc-upload').removeClass("hidden");
+      } else if (target.id == "source-upload-text") {
+        $('#text-upload').removeClass("hidden");
       }
-    } else if (target.name == "french-upload-option") {
-      $('#french-translation-preview').addClass("hidden");
-      $('#french-doc-upload').addClass("hidden");
-      $('#french-text-upload').addClass("hidden");
-      if (target.id == "french-translate-english") {
-        $('#french-translation-preview').removeClass("hidden");
-      } else if (target.id == "french-upload-doc") {
-        $('#french-doc-upload').removeClass("hidden");
-      } else if (target.id == "french-upload-text") {
-        $('#french-text-upload').removeClass("hidden");
+    } else if (target.name == "second-upload-option") {
+      $('#second-translation-preview').addClass("hidden");
+      $('#second-doc-upload').addClass("hidden");
+      $('#second-text-upload').addClass("hidden");
+      if (target.id == "second-translate-english") {
+        $('#second-translation-preview').removeClass("hidden");
+      } else if (target.id == "second-upload-doc") {
+        $('#second-doc-upload').removeClass("hidden");
+      } else if (target.id == "second-upload-text") {
+        $('#second-text-upload').removeClass("hidden");
+      }
+    } else if (target.name == "translations-compare") {
+      if (target.id == "translations-llm-compare") {
+        $('#genai-model-options').removeClass("hidden");
+      } else if (target.id == "translations-instructions-compare") {
+        $('#genai-model-options').addClass("hidden");
+      } else if (target.id == "translations-no-compare") {
+        $('#genai-model-options').addClass("hidden");
       }
     }
   });
 
   //Validate file uploads to ensure 1 doc at a time + docx, xlsx or ppt
   $(document).on("change", "input", async function (event) {
-    if (event.target.id == "english-file" || event.target.id == "french-file") {
-      let language = event.target.id === "english-file" ? "english" : "french";
+    if (event.target.id == "source-file" || event.target.id == "second-file") {
+      let language = event.target.id === "source-file" ? "source" : "second";
       $(`#${language}-multiple-msg`).addClass("hidden");
       $(`#${language}-doc-error`).addClass("hidden");
       var fileList = event.target.files;
@@ -56,35 +64,73 @@ $(document).ready(function() {
     }
   });
 
-  $("#english-upload-btn").click(function() {
-    $("#english-upload").addClass("hidden");
-    let enguploadoption = $('input[name="english-upload-option"]:checked').val();
-    if (enguploadoption == "english-upload-text") {
-      $("#translation-preview-model-b").removeClass("hidden");
-    } else if (enguploadoption == "english-upload-doc") {
-      $("#french-upload").removeClass("hidden");
+  $("#source-upload-translate-btn").click(function() {
+    var selectedOption = $('input[name="source-upload-option"]:checked').val();
+    var selectedCompare = $('input[name="translations-instructions-compare"]:checked').val();
+    var selectedModel = $('input[name="translate-model-b-option"]:checked').val();
+    var sourceText;
+    //determine the source text to translate
+    if (selectedOption == "source-upload-doc") {
+      var file = $('#source-file')[0].files[0]; // Get the selected file from the English file input
+      if (file) {
+        handleFileExtraction(file, function(result) {
+          // sourceText = result.text;
+          sourceText = convertHtmlToText(result.text);
+        }, function(err) {
+            // Error handling callback
+            console.error('Error processing English file:', err);
+        });
+      } else {
+        $(`#source-doc-error`).removeClass("hidden");
+        return;
+      }
+    } else if (selectedOption == "source-upload-text") {
+      sourceText = $("#source-text").text();
+    }
+    $("#translation-preview").removeClass("hidden");
+    $("#convert-translation-to-doc-btn").removeClass("hidden");
+    let translationA = translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", "custom-instructions/translation/english2french.txt");
+    $('#translation-A').html(translationA);
+    if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
+      let translationB = translateEnglishToFrench(sourceText, selectedModel, "custom-instructions/translation/english2french.txt");
+    } else if (selectedCompare == "translations-instructions-compare") {
+      let translationB = translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", "custom-instructions/translation/english2french-B.txt");
+    } else {
+      $(".convert-translation").removeClass("hidden");
+      return;
+    }
+    if (translationB != "") {
+      $('#translation-B').html(translationB);
+      $('#accept-translation-A-btn').removeClass("hidden");
+      $('#accept-translation-B-btn').removeClass("hidden");
+      if ($('#translation-B').hasClass("hidden")) {
+        toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
+      }
     }
   });
-  //
-  // $("#translation-preview-model-b").click(function() {
-  //   var selectedModel = $('input[name="english-upload-option"]:checked').val();
-  //   $("#translation-preview-model-b").removeClass("hidden");
-  //   $("#translation-preview").removeClass("hidden");
-  //   translateEnglishToFrench($("#english-text").text());
-  // });
 
-  $("#french-upload-btn").click(function() {
-      $("#french-upload").addClass("hidden");
-      var selectedOption = $('input[name="french-upload-option"]:checked').val();
-      if (selectedOption == "french-translate-english") {
+  $("#source-upload-provide-btn").click(function() {
+    $("#second-upload").removeClass("hidden");
+  });
+
+
+  //A) We could do milestone matches with genAI calls - check the intervening line counts and narrow down mismatches, then handle by creating new fields?
+    //-- How about manual guesses by looking at character counts on specific lines? This could minimize GenAI calls
+  //B) We could translate just the text per field
+  //C) Use text styling placeholders then rebuild them
+
+  $("#second-upload-btn").click(function() {
+      $("#second-upload").addClass("hidden");
+      var selectedOption = $('input[name="second-upload-option"]:checked').val();
+      if (selectedOption == "second-translate-english") {
         $("#translation-preview-model-b").removeClass("hidden");
-      } else if (selectedOption == "french-upload-doc") { // uploading French file without GenAI translation
-          var file = $('#french-file')[0].files[0]; // Get the selected file from the French file input
+      } else if (selectedOption == "second-upload-doc") { // uploading French file without GenAI translation
+          var file = $('#second-file')[0].files[0]; // Get the selected file from the French file input
           handleFileExtraction(file, function(result) {
             console.log(result.text);
             console.log(result.html);
               // Output the formatted html to the div
-              // frenchText = convertHtmlToText(englishText);
+              // frenchText = convertHtmlToText(sourceText);
               $('#translation-A').html(result.html);
               $("#translation-preview").removeClass("hidden");
               $(".convert-translation").removeClass("hidden");
@@ -92,54 +138,13 @@ $(document).ready(function() {
               // Error handling callback
               console.error('Error processing French file:', err);
           });
-      } else if (selectedOption == "french-upload-text") {
-        // var formattedText = $("#french-text").val().replace(/\r?\n/g, '<br>');
+      } else if (selectedOption == "second-upload-text") {
+        // var formattedText = $("#second-text").val().replace(/\r?\n/g, '<br>');
         // Output the formatted text to the div
-        $('#translation-A').html($("#french-text").val());
+        $('#translation-A').html($("#second-text").val());
         $("#translation-preview").removeClass("hidden");
         $(".convert-translation").removeClass("hidden");
       }
-  });
-  $("#model-b-btn").click(function() {
-    var selectedOption = $('input[name="english-upload-option"]:checked').val();
-    var selectedModel = $('input[name="translate-model-b-option"]:checked').val();
-    var englishText;
-    //determine the English text to translate
-    if (selectedOption == "english-upload-doc") {
-      var file = $('#english-file')[0].files[0]; // Get the selected file from the English file input
-      handleFileExtraction(file, function(result) {
-        englishText = result.text;
-        englishText = convertHtmlToText(englishText);
-      }, function(err) {
-          // Error handling callback
-          console.error('Error processing English file:', err);
-      });
-    } else if (selectedOption == "") {
-      englishText = $("#english-text").text();
-    }
-    $("#translation-preview").removeClass("hidden");
-    $("#convert-translation-to-doc-btn").removeClass("hidden");
-    let translationA = translateEnglishToFrench(englishText, "mistralai/mistral-nemo:free");
-    // Convert line breaks to <br> tags
-    // var formattedText = translationA.replace(/\r?\n/g, '<br>');
-    // Output the formatted text to the div
-    // Example of how to use the function:
-    $('#translation-A').html(translationA);
-    //if comparing models
-    if (selectedModel != "" && selectedModel != "translate-none") {
-      let translationB = translateEnglishToFrench(englishText, selectedModel);
-      // formattedText = translationB.replace(/\r?\n/g, '<br>');
-      // Output the formatted text to the div
-      $('#translation-B').html(translationB);
-      //create side-by-side view
-      $('#accept-translation-A-btn').removeClass("hidden");
-      $('#accept-translation-B-btn').removeClass("hidden");
-      if ($('#translation-B').hasClass("hidden")) {
-        toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
-      }
-    } else {
-      $(".convert-translation").removeClass("hidden");
-    }
   });
 
   $("#accept-translation-A-btn").click(function() {
@@ -168,7 +173,7 @@ $(document).ready(function() {
   $("#convert-translation-to-doc-btn").click(async function() {
     try {
       $('#converting-spinner').removeClass("hidden");
-      const englishDocxData = $('#english-file')[0].files[0]; // Get the english file
+      const englishDocxData = $('#source-file')[0].files[0]; // Get the english file
       if (!englishDocxData) {
         console.error("No file selected.");
         $('#converting-spinner').addClass("hidden");
@@ -484,14 +489,37 @@ function extractRowContent(chunk) {
   return chunk.match(/<row[\s\S]*?<\/row>/g) || [];
 }
 
-function translateEnglishToFrench(english, model) {
-  //The English text should be plain text extracted from doc or textbox
-  /*
-    Step 1: Filter JSON glossary
-    Step 2: Get the custom instructions
-    Step 3: Translate with model
-    Step 4: Return text translation
-  */
+async function translateEnglishToFrench(source, model, instructions) {
+  const systemGeneral = { role: "system", content: await $.get(instructions) };
+  var glossary;
+  var systemGlossary;
+  if ($('#translations-glossary').prop('checked')) { //Step 1: Filter JSON glossary
+    glossary = await $.get("custom-instuctions/translation/en-fr-glossary.json");
+    // Filter glossary entries that match the 'english' string
+    glossary = glossary.filter(entry => {
+      return entry.EN.toLowerCase().includes(source.toLowerCase());
+    });
+    console.log(glossary);
+    if (glossary.length > 0) {
+      systemGlossary = { role: "system", content: glossary };
+    } else {
+      systemGlossary = null;
+    }
+  } else {
+    systemGlossary = null;
+  }
+  let requestJson = [systemGeneral];
+  if (systemGlossary) {
+    requestJson.push(systemGlossary);
+  }
+  requestJson.push({ role: "user", content: source });
+  let ORjson = await getORData(model, requestJson);
+  // If ORjson is invalid, attempt with the next model
+  if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
+    console.error(`API request failed or returned something unexpected`, ORjson);
+    return "error";
+  }
+  return ORjson.choices[0].message.content;
 }
 
 function acceptTranslation(option) {

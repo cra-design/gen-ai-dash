@@ -419,6 +419,55 @@ iframe {
     resize: auto; /* Allows user to resize */
 }
 
+.text-box-container {
+  overflow: hidden;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.text-box-header {
+  background: #f4f4f4;
+  padding: 8px 12px;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  border-bottom: 1px solid #ddd;
+  border-radius: 4px 4px 0px 0px; /* Top corners rounded */
+  text-align: left;
+  font-size: 14px;
+}
+
+.translation-textarea-container {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 0 0 4px 4px; /* Only bottom-left and bottom-right rounded */
+}
+
+/* Highlight container when textarea is focused */
+.inputbox-translation:focus + .translation-textarea-container,
+.translation-textarea-container:has(.inputbox-translation:focus) {
+  border-color: #a7a72e; /* Highlight color */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Optional glow effect */
+}
+
+
+.translation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    width: 100%;
+    margin: auto;
+}
+
+.inputbox-translation {
+  width: 100%;
+  height: 150px;
+  border: none;
+  resize: none;
+  padding: 8px;
+  font-size: 14px;
+  outline: none;
+  font-family: Arial, sans-serif;
+}
+
 #url-preview {
   display: flex;
 }
@@ -450,7 +499,8 @@ iframe {
     margin-right: 0;
 }
 
-#keyPopup {
+/* Reusing keyPopup */
+.pop-up-overlay {
     position: absolute;
     background: white;
     border: 1px solid #ccc;
@@ -458,6 +508,9 @@ iframe {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     display: none;
-    width: 200px;
+    width: 220px;
     border-radius: 4px;
+    top: 50px; /* Position below the button */
+    left: 50%;
+    transform: translateX(-50%);
 }

@@ -30,7 +30,7 @@ $(document).ready(function() {
 
     // Show the pop-up when the button is clicked
     $('#changeKeyBtn').on('click', function() {
-        $('#keyPopup').show();
+        $('#keyPopup').removeClass("hidden");
     });
     // Save the new key and update the URL and links
     $('#saveKeyBtn').on('click', function() {
@@ -41,13 +41,13 @@ $(document).ready(function() {
             // Update all links on the page with the new key
             updateLinks(newQueryString);
             // Hide the pop-up
-            $('#keyPopup').hide();
+            $('#keyPopup').addClass("hidden");
             $('#newKeyInput').val('');
         }
     });
     // Cancel and close the pop-up without saving
     $('#cancelKeyBtn').on('click', function() {
-        $('#keyPopup').hide();
+        $('#keyPopup').addClass("hidden");
         $('#newKeyInput').val('');
     });
 
