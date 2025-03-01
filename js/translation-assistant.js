@@ -238,11 +238,12 @@ function generateFile(zip, xmlContent, mimeType, renderFunction) {
   } catch (error) {
     console.error("Error during file generation:", error);
   }
-  return zip.generate({
+  return zip.generateAsync({
     type: "blob",
     mimeType: mimeType
   });
 }
+
 
 function createXmlContent(fileExtension, updatedXml) {
   let xmlContent = '';
