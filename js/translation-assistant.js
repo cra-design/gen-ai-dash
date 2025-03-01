@@ -163,58 +163,80 @@ $(document).ready(function() {
   });
 
   $("#convert-translation-to-doc-btn").click(async function() {
-    $('#converting-spinner').removeClass("hidden");
-    const englishDocxData = $('#english-file')[0].files[0]; // Get the english file
-    var englishXml;
-    // Step 1: Extract the XML from the English DOCX file
-    // Step 1: Extract the XML from the English DOCX file
-    const fileExtension = englishDocxData.name.split('.').pop().toLowerCase();
-    await new Promise((resolve, reject) => {
-        handleFileExtractionToXML(englishDocxData, function(result) {
-            englishXml = result;  // Store the extracted XML
-            resolve();  // Resolve the promise once the XML is available
-        }, function(error) {
-            console.error('Error processing English file:', error);
-            reject(error);  // Reject the promise if there is an error
-        });
-    });
-    // After the XML is extracted and stored in englishXml
-    if (!englishXml) {
-        console.error("No XML document.");
+    try {
+      $('#converting-spinner').removeClass("hidden");
+      const englishDocxData = $('#english-file')[0].files[0]; // Get the english file
+      if (!englishDocxData) {
+        console.error("No file selected.");
         $('#converting-spinner').addClass("hidden");
         return;
+      }
+      const fileExtension = englishDocxData.name.split('.').pop().toLowerCase();
+      if (!['docx', 'pptx', 'xlsx'].includes(fileExtension)) {
+        console.error("Unsupported file type.");
+        $('#converting-spinner').addClass("hidden");
+        return;
+      }
+      // Step 1: Extract the XML from the English DOCX file
+      const englishXml = await new Promise((resolve, reject) => {
+        handleFileExtractionToXML(englishDocxData,
+          function(result) {
+            resolve(result); // Store the extracted XML
+          },
+          function(error) {
+            console.error('Error processing English file:', error);
+            reject(error);
+          }
+        );
+      });
+      if (!englishXml) {
+        console.error("No XML document extracted.");
+        $('#converting-spinner').addClass("hidden");
+        return;
+      }
+      // Step 2: Translate the content
+      const selectedMethod = $('input[name="convert-translation-method"]:checked').val();
+      let updatedXml;
+      if (selectedMethod === "convert-translation-docx") {
+        updatedXml = await conversionDocxTemplater(englishXml);
+      } else {
+        updatedXml = await conversionGemini(englishXml, fileExtension);
+      }
+      // Step 3: Generate the translated file
+      const originalFileName = englishDocxData.name.split('.').slice(0, -1).join('.');
+      const modifiedFileName = `${originalFileName}-FR.${fileExtension}`;
+      const zipEN = new JSZip();
+      const xmlContent = createXmlContent(fileExtension, updatedXml);
+      // Define render functions for each file type
+      const doc = () => console.log("Rendering DOCX...");
+      const pptx = () => console.log("Rendering PPTX...");
+      const xlsx = () => console.log("Rendering XLSX...");
+      let output;
+      if (fileExtension === 'docx') {
+        output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", doc);
+      } else if (fileExtension === 'pptx') {
+        output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.presentationml.presentation", pptx);
+      } else if (fileExtension === 'xlsx') {
+        output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", xlsx);
+      }
+      saveAs(output, modifiedFileName);
+    } catch (error) {
+      console.error("An error occurred:", error);
+    } finally {
+      $('#converting-spinner').addClass("hidden");
     }
-    var selectedMethod = $('input[name="convert-translation-method"]:checked').val();
-    var updatedXml;
-    if (selectedMethod == "convert-translation-docx") {
-      updatedXml = await conversionDocxTemplater(englishXml);
-    } else {
-      updatedXml = await conversionGemini(englishXml, fileExtension);
-    }
-    let originalFileName = englishDocxData.name.split('.').slice(0, -1).join('.');
-    let modifiedFileName = `${originalFileName}-FR.${fileExtension}`;
-    // Create a new zip instance based on the file extension
-    let zipEN = new JSZip();
-    let xmlContent = createXmlContent(fileExtension, updatedXml, finalContent);
-    let output;
-    if (fileExtension === 'docx') {
-      output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", doc);
-    } else if (fileExtension === 'pptx') {
-      output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.presentationml.presentation", pptx);
-    } else if (fileExtension === 'xlsx') {
-      output = generateFile(zipEN, xmlContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", xlsx);
-    }
-    saveAs(output, modifiedFileName);
-    $('#converting-spinner').addClass("hidden");
   });
+
 });
 
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
     zip.file("file.xml", xmlContent); // Assuming file name can be standardized for now
-    renderFunction.render();
+    if (typeof renderFunction === 'function') {
+      renderFunction(); // Call the function directly
+    }
   } catch (error) {
-    console.error(JSON.stringify({ error: error }, null, 2));
+    console.error("Error during file generation:", error);
   }
   return zip.generate({
     type: "blob",
@@ -222,7 +244,7 @@ function generateFile(zip, xmlContent, mimeType, renderFunction) {
   });
 }
 
-function createXmlContent(fileExtension, updatedXml, finalContent) {
+function createXmlContent(fileExtension, updatedXml) {
   let xmlContent = '';
   if (fileExtension === 'docx') {
     xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -234,12 +256,12 @@ function createXmlContent(fileExtension, updatedXml, finalContent) {
   } else if (fileExtension === 'pptx') {
     xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
-        <p:sldMasterIdLst>${finalContent}</p:sldMasterIdLst>
+        <p:sldMasterIdLst>${updatedXml}</p:sldMasterIdLst>
       </p:presentation>`;
   } else if (fileExtension === 'xlsx') {
     xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-        <sheetData>${finalContent}</sheetData>
+        <sheetData>${updatedXml}</sheetData>
       </workbook>`;
   }
   return xmlContent;
@@ -386,7 +408,12 @@ async function conversionGemini(englishXml, fileType) {
   for (let i = 0; i < groups.length;) {
     console.log(`Processing group ${i + 1}/${groups.length}...`);
     // Helper function: escape XML special characters in text
-    const requestJson = [ systemGeneral, { role: "user", content: "English DOCX group: " + groups[i].replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") } ];
+    const escapedContent = groups[i].replace(/[&<>]/g, match => ({
+      '&': "&amp;",
+      '<': "&lt;",
+      '>': "&gt;"
+    }[match]));
+    const requestJson = [ systemGeneral, { role: "user", content: "English DOCX group: " + escapedContent } ];
     let ORjson = await getORData(model[modelCount], requestJson);
     // If ORjson is invalid, attempt with the next model
     if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
@@ -413,15 +440,15 @@ async function conversionGemini(englishXml, fileType) {
     i++;
   }
   // Reassemble the processed groups into the final content structure
-  let finalContent;
+  let updatedXml;
   if (fileType === 'docx') {
-    finalContent = formattedChunks.map(chunk => extractBodyContent(chunk)).join("\n");
+    updatedXml = formattedChunks.map(chunk => extractBodyContent(chunk)).join("\n");
   } else if (fileType === 'pptx') {
-    finalContent = formattedChunks.map(chunk => extractSlideContent(chunk)).join("\n");
+    updatedXml = formattedChunks.map(chunk => extractSlideContent(chunk)).join("\n");
   } else if (fileType === 'xlsx') {
-    finalContent = forvmattedChunks.map(chunk => extractRowContent(chunk)).join("\n");
+    updatedXml = formattedChunks.map(chunk => extractRowContent(chunk)).join("\n");
   }
-  return finalContent;
+  return updatedXml;
 }
 
 function extractBodyContent(chunk) {
