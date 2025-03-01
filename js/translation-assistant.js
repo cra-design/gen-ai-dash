@@ -410,6 +410,7 @@ async function conversionGemini(englishXml, fileType) {
       continue;
     }
     formattedChunks.push(formattedText);
+    i++;
   }
   // Reassemble the processed groups into the final content structure
   let finalContent;
