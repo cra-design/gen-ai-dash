@@ -421,7 +421,7 @@ async function conversionGemini(englishXml, fileType) {
   } else if (fileType === 'xlsx') {
     finalContent = forvmattedChunks.map(chunk => extractRowContent(chunk)).join("\n");
   }
-  return finalBodyContent;
+  return finalContent;
 }
 
 function extractBodyContent(chunk) {
