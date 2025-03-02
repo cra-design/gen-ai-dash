@@ -416,16 +416,13 @@ async function handleFileExtraction(file) {
             reject("No file detected");
             return;
         }
-
         const fileExtension = file.name.split('.').pop().toLowerCase();
         var reader = new FileReader();
-
         reader.onload = function (e) {
             var arrayBuffer = e.target.result;
-
             if (fileExtension === "docx") {
                 mammoth.extractRawText({ arrayBuffer: arrayBuffer })
-                    .then(result => resolve(convertHtmlToText(result.value)))
+                    .then(result => resolve(result.value))
                     .catch(err => reject(err));
             } else if (fileExtension === "pptx") {
                 var pptx = new PptxGenJS();
@@ -441,7 +438,59 @@ async function handleFileExtraction(file) {
                 reject("Unsupported file type");
             }
         };
+        reader.onerror = function () {
+            reject("Error reading file.");
+        };
 
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+async function handleFileExtractionToHtml(file) {
+    return new Promise((resolve, reject) => {
+        if (!file) {
+            reject("No file detected");
+            return;
+        }
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var arrayBuffer = e.target.result;
+            if (fileExtension === "docx") {
+                mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
+                    .then(result => resolve(result.value))
+                    .catch(err => reject(err));
+            } else if (fileExtension === "pptx") {
+                JSZip.loadAsync(arrayBuffer).then(zip => {
+                  let slideTexts = [];
+                  let promises = [];
+
+                  zip.forEach((relativePath, file) => {
+                      if (relativePath.startsWith("ppt/slides/") && relativePath.endsWith(".xml")) {
+                          promises.push(file.async("text").then(xml => {
+                              return xml2js.parseStringPromise(xml).then(result => {
+                                  let texts = result["p:sld"]["p:cSld"][0]["p:spTree"][0]["p:sp"]
+                                      .map(sp => sp["p:txBody"]?.[0]?.["a:p"]?.map(p => p["a:r"]?.map(r => r["a:t"]?.join(' ')).join(' ')).join(' '))
+                                      .filter(Boolean)
+                                      .join("\n");
+                                  slideTexts.push(texts);
+                              });
+                          }));
+                      }
+                  });
+                  Promise.all(promises).then(() => resolve(slideTexts.join("\n"))).catch(err => reject(err));
+                });
+            } else if (fileExtension === "xlsx") {
+                // Convert XLSX to formatted HTML table
+                var workbook = XLSX.read(arrayBuffer, { type: "array" });
+                let htmlTables = workbook.SheetNames.map(sheetName =>
+                    XLSX.utils.sheet_to_html(workbook.Sheets[sheetName])
+                ).join("<br><br>");
+                resolve(htmlTables);
+            } else {
+                reject("Unsupported file type");
+            }
+        };
         reader.onerror = function () {
             reject("Error reading file.");
         };

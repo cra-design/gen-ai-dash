@@ -1,6 +1,7 @@
 // Global variable outside the document ready function
 let generatedDownloadFile = null;
 
+
 $(document).ready(function() {
 
   $(document).on("click", "input[type=radio]", function (event) {
@@ -119,7 +120,7 @@ $(document).ready(function() {
       var file = $('#source-file')[0].files[0]; // Get the selected file from the English file input
       if (file) {
         try {
-            sourceText = await handleFileExtraction(file);
+            sourceText = await handleFileExtractionToHtml(file);
         } catch (err) {
             console.error('Error processing source file:', err);
         }
@@ -168,7 +169,7 @@ $(document).ready(function() {
   //C) Use text styling placeholders then rebuild them
 
   $("#second-upload-btn").click(async function() {
-      $("#second-upload").addClass("hidden");
+      // $("#second-upload").addClass("hidden");
       var selectedOption = $('input[name="second-upload-option"]:checked').val();
       // if (selectedOption == "second-translate-english") {
       //   $("#translation-preview-model-b").removeClass("hidden");
@@ -176,7 +177,8 @@ $(document).ready(function() {
       if (selectedOption == "second-upload-doc") { // uploading French file without GenAI translation
           var file = $('#second-file')[0].files[0]; // Get the selected file from the French file input
           try {
-              let translatedText = await handleFileExtraction(file);
+              let translatedText = await handleFileExtractionToHtml(file);
+              console.log(translatedText);
               $('#translation-A').html(translatedText);
               $("#translation-preview").removeClass("hidden");
               $(".convert-translation").removeClass("hidden");
