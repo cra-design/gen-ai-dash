@@ -224,7 +224,7 @@
                                   <div id="text-upload" class="translation-container">
                                     <div class="text-box-container">
                                       <div class="text-box-header">
-                                        <label for="source-language">Source Language:</label><select id="source-language"><option value="english">English</option><option value="french">French</option></select>
+                                        <label for="source-language">Source Language: </label><span id="source-heading-detecting" class="hidden">detecting...</span><select id="source-language" class="hidden"><option value="english">English</option><option value="french">French</option></select>
                                       </div>
                                       <div class="translation-textarea-container">
                                         <textarea id="source-text" name="source-text" placeholder="Enter text to translate" class="inputbox-translation"></textarea>
@@ -234,14 +234,19 @@
                                   </div>
                                   <div id="source-doc-upload" class="hidden">
                                     <div id="source-file-container">
-                                      <input type="file" id="source-file" accept=".docx">
+                                      <input type="file" id="source-file">
                                       <p id="source-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
                                       <p id="source-doc-error" class="error-msg hidden">You must upload a .docx, .ppt or .xlsx file to proceed.</p>
+                                    </div>
+                                    <div class="sidebyside-wrapper">
+                                      <p id="source-language-heading" style="margin-top: 15px;">Source language: <span id="source-doc-detecting" class="hidden">detecting...</span></p>
+                                      <select id="source-language-doc" class="hidden"><option value="english">English</option><option value="french">French</option></select>
                                     </div>
                                   </div>
                                   <div class="sidebyside-wrapper">
                                     <button id="source-upload-translate-btn" style="margin-top: 20px; margin-right: 20px;">Translate</button>
-                                    <button id="source-upload-provide-btn" style="margin-top: 20px">Provide translation</button>
+                                    <button id="source-upload-provide-btn" style="margin-top: 20px; margin-right: 20px;">Provide translation</button>
+                                    <button id="source-upload-provide-update-btn" style="margin-top: 20px; margin-right: 20px;">Provide update</button>
                                   </div>
                                 </fieldset>
                               </div>
@@ -253,33 +258,37 @@
                               <div class="card-body card-pad pt-2 h-100">
                                 <div class="justify-content-between">
                                   <fieldset>
-                                    <legend>How do you want to translate the document?</legend>
-                                    <div class="inline-checkbox-container" style="margin-bottom: 15px;">
-                                      <input type="radio" id="second-translate-english" name="second-upload-option" value="second-translate-english" checked>
-                                      <label for="second-translate-english">Generate from English source</label><br>
-                                      <input type="radio" id="second-upload-doc" name="second-upload-option" value="second-upload-doc">
-                                      <label for="second-upload-doc">Upload a French document (docx, ppt, xlsx)</label><br>
+                                    <legend id="second-upload-legend">Provide your translation</legend>
+                                    <div id="second-upload-radio" class="inline-checkbox-container" style="margin-bottom: 15px;">
                                       <input type="radio" id="second-upload-text" name="second-upload-option" value="second-upload-text">
-                                      <label for="second-upload-text">Paste French text</label><br>
+                                      <label for="second-upload-text">Provide text</label><br>
+                                      <input type="radio" id="second-upload-doc" name="second-upload-option" value="second-upload-doc">
+                                      <label for="second-upload-doc">Translated document</label><br>
                                     </div>
-                                    <div id="second-translation-preview">
-                                      <p>A translation will be provided by the GenAI. Ensure there is no sensitive or protected information in the document before continuing.</p>
+                                    <div id="second-text-upload" class="translation-container">
+                                      <div class="text-box-container">
+                                        <div class="text-box-header">
+                                          <label for="source-language">Source Language:</label><span id="second-language">French</span>
+                                        </div>
+                                        <div class="translation-textarea-container">
+                                          <textarea id="second-text" name="source-text" placeholder="Enter your translation" class="inputbox-translation"></textarea>
+                                          <p id="second-text-error" class="error-msg hidden">Text cannot be empty.</p>
+                                        </div>
+                                      </div>
                                     </div>
                                     <div id="second-doc-upload" class="hidden">
                                       <div id="second-file-container">
-                                        <input type="file" id="second-file" accept=".docx">
+                                        <input type="file" id="second-file">
                                         <p id="second-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
-                                        <p id="second-doc-error" class="error-msg hidden">Only .docx, (planned to soon have .ppt and .xlsx) files are allowed.</p>
+                                        <p id="second-doc-error" class="error-msg hidden">You must upload a .docx, .ppt or .xlsx file to proceed.</p>
+                                        <p id="second-doc-mismatch-msg" class="error-msg hidden">Both documents appear to be in the same language.</p>
+                                      </div>
+                                      <div class="sidebyside-wrapper">
+                                        <p id="second-language-heading" style="margin-top: 15px;">Source language: <span id="source-doc-detecting" class="hidden">detecting...</span></p>
+                                        <select id="second-language-doc" class="hidden"><option value="english">English</option><option value="french">French</option></select>
                                       </div>
                                     </div>
-                                    <div id="second-text-upload" class="hidden">
-                                      <!-- French Text Input (Initially Visible) -->
-                                      <div>
-                                        <textarea id="second-text" name="second-text" placeholder="Paste English text here" class="inputbox"></textarea>
-                                        <p id="second-text-error" class="error-msg hidden">English content cannot be empty.</p>
-                                      </div>
-                                    </div>
-                                    <button id="second-upload-btn" style="margin-top: 20px">Continue</button>
+                                    <button id="second-upload-btn" style="margin-top: 20px; margin-right: 20px;">Continue</button>
                                   </fieldset>
                                 </div>
                               </div>

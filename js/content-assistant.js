@@ -410,53 +410,44 @@ function createSideBySideReport(counter, labelText, formattedText, model) {
   `);
 }
 
-function handleFileExtraction(file, successCallback, errorCallback) {
-    if (!file) {
-        alert("No file detected");
-        errorCallback("No file detected");
-        return;
-    }
-    // Get the file extension to determine how to handle it
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var arrayBuffer = e.target.result;
-
-        // Handle .docx files using Mammoth.js
-        if (fileExtension === 'docx') {
-            mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
-                .then(function(result) {
-                    console.log(`Converted HTML from ${fileExtension} file:`, result.value);
-                    // If you want plain text, you can extract it from result.value (HTML)
-                    var plainText = extractPlainTextFromHtml(result.value);
-                    successCallback({ text: plainText, html: result.value }); // Pass both plain text and HTML to callback
-                })
-                .catch(function(err) {
-                    console.error('Error extracting text:', err);
-                    errorCallback(err);
-                });
-        // Handle .pptx files using PptxGenJS
-        } else if (fileExtension === 'pptx') {
-            var pptx = new PptxGenJS();
-            pptx.load(arrayBuffer);
-            var slidesText = pptx.getSlides().map(slide => slide.getText().join(' ')).join('\n');
-            console.log(`Extracted text from ${fileExtension} file:`, slidesText);
-            successCallback({ type: 'pptx', text: slidesText });
-
-        // Handle .xlsx files using SheetJS
-        } else if (fileExtension === 'xlsx') {
-            var workbook = XLSX.read(arrayBuffer, { type: 'array' });
-            var sheet = workbook.Sheets[workbook.SheetNames[0]];
-            var json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-            var excelText = json.map(row => row.join(' ')).join('\n');
-            console.log(`Extracted text from ${fileExtension} file:`, excelText);
-            successCallback({ type: 'xlsx', text: excelText });
-
-        } else {
-            errorCallback('Unsupported file type');
+async function handleFileExtraction(file) {
+    return new Promise((resolve, reject) => {
+        if (!file) {
+            reject("No file detected");
+            return;
         }
-    };
-    reader.readAsArrayBuffer(file); // Read the file as ArrayBuffer
+
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            var arrayBuffer = e.target.result;
+
+            if (fileExtension === "docx") {
+                mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                    .then(result => resolve(convertHtmlToText(result.value)))
+                    .catch(err => reject(err));
+            } else if (fileExtension === "pptx") {
+                var pptx = new PptxGenJS();
+                pptx.load(arrayBuffer);
+                var slidesText = pptx.getSlides().map(slide => slide.getText().join(' ')).join('\n');
+                resolve(slidesText);
+            } else if (fileExtension === "xlsx") {
+                var workbook = XLSX.read(arrayBuffer, { type: "array" });
+                var sheet = workbook.Sheets[workbook.SheetNames[0]];
+                var excelText = XLSX.utils.sheet_to_csv(sheet);
+                resolve(excelText);
+            } else {
+                reject("Unsupported file type");
+            }
+        };
+
+        reader.onerror = function () {
+            reject("Error reading file.");
+        };
+
+        reader.readAsArrayBuffer(file);
+    });
 }
 
 // Function to handle file extraction

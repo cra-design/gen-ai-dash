@@ -8,18 +8,22 @@ $(document).ready(function() {
     if (target.name == "source-upload-option") {
       $('#source-doc-upload').addClass("hidden");
       $('#text-upload').addClass("hidden");
+      $('#second-upload').addClass("hidden");
+      $('#translation-preview').addClass("hidden");
+      $('#convert-translation').addClass("hidden");
       if (target.id == "source-upload-doc") {
         $('#source-doc-upload').removeClass("hidden");
       } else if (target.id == "source-upload-text") {
         $('#text-upload').removeClass("hidden");
       }
     } else if (target.name == "second-upload-option") {
-      $('#second-translation-preview').addClass("hidden");
+      // $('#second-translation-preview').addClass("hidden");
       $('#second-doc-upload').addClass("hidden");
       $('#second-text-upload').addClass("hidden");
-      if (target.id == "second-translate-english") {
-        $('#second-translation-preview').removeClass("hidden");
-      } else if (target.id == "second-upload-doc") {
+      // if (target.id == "second-translate-english") {
+      //   $('#second-translation-preview').removeClass("hidden");
+      // } else
+      if (target.id == "second-upload-doc") {
         $('#second-doc-upload').removeClass("hidden");
       } else if (target.id == "second-upload-text") {
         $('#second-text-upload').removeClass("hidden");
@@ -35,16 +39,37 @@ $(document).ready(function() {
     }
   });
 
-  //Validate file uploads to ensure 1 doc at a time + docx, xlsx or ppt
+  $('#source-text').on('input', function() {
+    $('#source-heading-detecting').removeClass("hidden");
+    var text = $(this).val().trim();
+    if (text.length === 0) {
+      $('#source-language').addClass("hidden"); // Hide the select if textarea is empty
+      return;
+    }
+    var detectedLanguage = detectLanguageBasedOnWords(text);
+    // Default to English if the detection is unclear
+    if (detectedLanguage == 'unknown') {
+      detectedLanguage = 'english';
+    }
+    $('#source-heading-detecting').addClass("hidden");
+    $('#source-language').removeClass("hidden");
+    $('#source-language').val(detectedLanguage);
+  });
+
   $(document).on("change", "input", async function (event) {
     if (event.target.id == "source-file" || event.target.id == "second-file") {
       let language = event.target.id === "source-file" ? "source" : "second";
+      $(`#${language}-doc-detecting`).removeClass("hidden");
       $(`#${language}-multiple-msg`).addClass("hidden");
       $(`#${language}-doc-error`).addClass("hidden");
+      $(`#${language}-language-heading`).removeClass("hidden");
+      $(`#${language}-language-doc`).addClass("hidden");
       var fileList = event.target.files;
       if (!fileList || fileList.length === 0) return;
       if (fileList.length > 1) {
           $(`#${language}-multiple-msg`).removeClass("hidden");
+          $(`#${language}-doc-detecting`).addClass("hidden");
+          $(`#${language}-language-heading`).addClass("hidden");
           return;
       }
       var uploadedFile = fileList[0];
@@ -59,7 +84,26 @@ $(document).ready(function() {
       // Check if the file type and extension are valid
       if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
           $(`#${language}-doc-error`).removeClass("hidden");
+          $(`#${language}-doc-detecting`).addClass("hidden");
+          $(`#${language}-language-heading`).removeClass("hidden");
           return;
+      }
+      try {
+          let textContent = await handleFileExtraction(uploadedFile);
+          if (!textContent) {
+              throw new Error("No text extracted.");
+          }
+          var detectedLanguage = detectLanguageBasedOnWords(textContent);
+          if (detectedLanguage !== "french") {
+              detectedLanguage = "english"; // Default to English
+          }
+          $(`#${language}-doc-detecting`).addClass("hidden");
+          $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden");
+      } catch (err) {
+          console.error('Error processing source file:', err);
+          $(`#${language}-doc-error`).removeClass("hidden");
+          $(`#${language}-doc-detecting`).addClass("hidden");
+          $(`#${language}-language-heading`).addClass("hidden");
       }
     }
   });
@@ -127,9 +171,10 @@ $(document).ready(function() {
   $("#second-upload-btn").click(function() {
       $("#second-upload").addClass("hidden");
       var selectedOption = $('input[name="second-upload-option"]:checked').val();
-      if (selectedOption == "second-translate-english") {
-        $("#translation-preview-model-b").removeClass("hidden");
-      } else if (selectedOption == "second-upload-doc") { // uploading French file without GenAI translation
+      // if (selectedOption == "second-translate-english") {
+      //   $("#translation-preview-model-b").removeClass("hidden");
+      // } else
+      if (selectedOption == "second-upload-doc") { // uploading French file without GenAI translation
           var file = $('#second-file')[0].files[0]; // Get the selected file from the French file input
           handleFileExtraction(file, function(result) {
             console.log(result.text);
@@ -494,6 +539,7 @@ function extractRowContent(chunk) {
   return chunk.match(/<row[\s\S]*?<\/row>/g) || [];
 }
 
+//modify for both directions
 async function translateEnglishToFrench(source, model, instructions) {
   const systemGeneral = { role: "system", content: await $.get(instructions) };
   var glossary;
@@ -502,6 +548,7 @@ async function translateEnglishToFrench(source, model, instructions) {
     glossary = await $.get("custom-instuctions/translation/en-fr-glossary.json");
     // Filter glossary entries that match the 'english' string
     glossary = glossary.filter(entry => {
+      //modify for FR.
       return entry.EN.toLowerCase().includes(source.toLowerCase());
     });
     console.log(glossary);
@@ -538,4 +585,22 @@ function acceptTranslation(option) {
   $("#accept-translation-B-btn").addClass("hidden");
   $(".convert-translation").removeClass("hidden");
   toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
+}
+
+function detectLanguageBasedOnWords(text) {
+  const englishWords = ['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'on', 'with'];
+  const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
+  text = text.toLowerCase();
+  function countMatches(wordList) {
+    return wordList.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0);
+  }
+  const englishMatches = countMatches(englishWords);
+  const frenchMatches = countMatches(frenchWords);
+  if (englishMatches > frenchMatches) {
+    return 'english';
+  } else if (frenchMatches > englishMatches) {
+    return 'french';
+  } else {
+    return 'unknown'; // If there's no clear match, return 'unknown'
+  }
 }
