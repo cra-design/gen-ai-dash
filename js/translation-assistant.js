@@ -545,7 +545,7 @@ function extractRowContent(chunk) {
 }
 
 //modify for both directions
-async function translateText(source, model, instructions, sourceLanguage) {
+async function translateText(source, models, instructions, sourceLanguage) {
   const systemGeneral = { role: "system", content: await $.get(instructions) };
   var glossary;
   var systemGlossary;
