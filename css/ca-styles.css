@@ -514,10 +514,6 @@ iframe {
     padding: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 1000;
-    display: none;
     width: 220px;
     border-radius: 4px;
-    top: 50px; /* Position below the button */
-    left: 50%;
-    transform: translateX(-50%);
 }
