@@ -108,7 +108,7 @@ $(document).ready(function() {
     }
   });
 
-  $("#source-upload-translate-btn").click(function() {
+  $("#source-upload-translate-btn").click(async function() {
     var selectedOption = $('input[name="source-upload-option"]:checked').val();
     var selectedCompare = $('input[name="translations-instructions-compare"]:checked').val();
     var selectedModel = $('input[name="translate-model-b-option"]:checked').val();
@@ -118,13 +118,11 @@ $(document).ready(function() {
     if (selectedOption == "source-upload-doc") {
       var file = $('#source-file')[0].files[0]; // Get the selected file from the English file input
       if (file) {
-        handleFileExtraction(file, function(result) {
-          // sourceText = result.text;
-          sourceText = convertHtmlToText(result.text);
-        }, function(err) {
-            // Error handling callback
-            console.error('Error processing English file:', err);
-        });
+        try {
+            sourceText = await handleFileExtraction(file);
+        } catch (err) {
+            console.error('Error processing source file:', err);
+        }
       } else {
         $(`#source-doc-error`).removeClass("hidden");
         return;
@@ -168,7 +166,7 @@ $(document).ready(function() {
   //B) We could translate just the text per field
   //C) Use text styling placeholders then rebuild them
 
-  $("#second-upload-btn").click(function() {
+  $("#second-upload-btn").click(async function() {
       $("#second-upload").addClass("hidden");
       var selectedOption = $('input[name="second-upload-option"]:checked').val();
       // if (selectedOption == "second-translate-english") {
@@ -176,18 +174,14 @@ $(document).ready(function() {
       // } else
       if (selectedOption == "second-upload-doc") { // uploading French file without GenAI translation
           var file = $('#second-file')[0].files[0]; // Get the selected file from the French file input
-          handleFileExtraction(file, function(result) {
-            console.log(result.text);
-            console.log(result.html);
-              // Output the formatted html to the div
-              // frenchText = convertHtmlToText(sourceText);
-              $('#translation-A').html(result.html);
+          try {
+              let translatedText = await handleFileExtraction(file);
+              $('#translation-A').html(translatedText);
               $("#translation-preview").removeClass("hidden");
               $(".convert-translation").removeClass("hidden");
-          }, function(err) {
-              // Error handling callback
-              console.error('Error processing French file:', err);
-          });
+          } catch (err) {
+              console.error('Error processing source file:', err);
+          }
       } else if (selectedOption == "second-upload-text") {
         // var formattedText = $("#second-text").val().replace(/\r?\n/g, '<br>');
         // Output the formatted text to the div
@@ -541,6 +535,7 @@ function extractRowContent(chunk) {
 
 //modify for both directions
 async function translateEnglishToFrench(source, model, instructions) {
+  console.log(source);
   try {
     const systemGeneral = { role: "system", content: await $.get(instructions) };
     var glossary;
