@@ -537,6 +537,8 @@ function extractRowContent(chunk) {
 //modify for both directions
 async function translateEnglishToFrench(source, model, instructions) {
   console.log(source);
+  console.log(model);
+  console.log(instructions);
   try {
     const systemGeneral = { role: "system", content: await $.get(instructions) };
     var glossary;
