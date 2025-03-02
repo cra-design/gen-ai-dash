@@ -136,12 +136,12 @@ $(document).ready(function() {
     }
     $("#translation-preview").removeClass("hidden");
     $("#convert-translation-to-doc-btn").removeClass("hidden");
-    let translationA = translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions);
+    let translationA = await translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions);
     $('#translation-A').html(translationA);
     if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
-      let translationB = translateEnglishToFrench(sourceText, selectedModel, translationInstructions);
+      let translationB = await translateEnglishToFrench(sourceText, selectedModel, translationInstructions);
     } else if (selectedCompare == "translations-instructions-compare") {
-      let translationB = translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions.replace(".txt", "-B.txt"));
+      let translationB = await translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions.replace(".txt", "-B.txt"));
     } else {
       $(".convert-translation").removeClass("hidden");
       return;
