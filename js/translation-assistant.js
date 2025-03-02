@@ -541,37 +541,48 @@ function extractRowContent(chunk) {
 
 //modify for both directions
 async function translateEnglishToFrench(source, model, instructions) {
-  const systemGeneral = { role: "system", content: await $.get(instructions) };
-  var glossary;
-  var systemGlossary;
-  if ($('#translations-glossary').prop('checked')) { //Step 1: Filter JSON glossary
-    glossary = await $.get("custom-instuctions/translation/en-fr-glossary.json");
-    // Filter glossary entries that match the 'english' string
-    glossary = glossary.filter(entry => {
-      //modify for FR.
-      return entry.EN.toLowerCase().includes(source.toLowerCase());
-    });
-    console.log(glossary);
-    if (glossary.length > 0) {
-      systemGlossary = { role: "system", content: glossary };
+  try {
+    const systemGeneral = { role: "system", content: await $.get(instructions) };
+    var glossary;
+    var systemGlossary;
+    if ($('#translations-glossary').prop('checked')) { //Step 1: Filter JSON glossary
+      glossary = await $.get("custom-instuctions/translation/en-fr-glossary.json");
+      // Filter glossary entries that match the 'english' string
+      glossary = glossary.filter(entry => {
+        //modify for FR.
+        return entry.EN.toLowerCase().includes(source.toLowerCase());
+      });
+      console.log(glossary);
+      if (glossary.length > 0) {
+        systemGlossary = { role: "system", content: glossary };
+      } else {
+        systemGlossary = null;
+      }
     } else {
       systemGlossary = null;
     }
-  } else {
-    systemGlossary = null;
+    let requestJson = [systemGeneral];
+    if (systemGlossary) {
+      requestJson.push(systemGlossary);
+    }
+    requestJson.push({ role: "user", content: source });
+    let ORjson;
+    try {
+      ORjson = await getORData(model, requestJson);
+    } catch (error) {
+      console.error("Error calling getORData:", error);
+      return "error"; // Handles rejection properly
+    }
+    // If ORjson is invalid, attempt with the next model
+    if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
+      console.error(`API request failed or returned something unexpected`, ORjson);
+      return "error";
+    }
+    return ORjson.choices[0].message.content;
+  } catch (error) {
+    console.error("Unexpected error in translateEnglishToFrench:", error);
+    return error;
   }
-  let requestJson = [systemGeneral];
-  if (systemGlossary) {
-    requestJson.push(systemGlossary);
-  }
-  requestJson.push({ role: "user", content: source });
-  let ORjson = await getORData(model, requestJson);
-  // If ORjson is invalid, attempt with the next model
-  if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
-    console.error(`API request failed or returned something unexpected`, ORjson);
-    return "error";
-  }
-  return ORjson.choices[0].message.content;
 }
 
 function acceptTranslation(option) {
