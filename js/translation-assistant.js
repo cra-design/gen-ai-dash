@@ -138,10 +138,11 @@ $(document).ready(function() {
     $("#convert-translation-to-doc-btn").removeClass("hidden");
     let translationA = await translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions);
     $('#translation-A').html(translationA);
+    let translationB;
     if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
-      let translationB = await translateEnglishToFrench(sourceText, selectedModel, translationInstructions);
+      translationB = await translateEnglishToFrench(sourceText, selectedModel, translationInstructions);
     } else if (selectedCompare == "translations-instructions-compare") {
-      let translationB = await translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions.replace(".txt", "-B.txt"));
+      translationB = await translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions.replace(".txt", "-B.txt"));
     } else {
       $(".convert-translation").removeClass("hidden");
       return;
