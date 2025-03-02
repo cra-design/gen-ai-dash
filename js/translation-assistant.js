@@ -541,10 +541,12 @@ async function translateEnglishToFrench(source, model, instructions) {
   console.log(instructions);
   try {
     const systemGeneral = { role: "system", content: await $.get(instructions) };
+    console.log(systemGeneral);
     var glossary;
     var systemGlossary;
     if ($('#translations-glossary').prop('checked')) { //Step 1: Filter JSON glossary
       glossary = await $.get("custom-instuctions/translation/en-fr-glossary.json");
+      console.log(glossary);
       // Filter glossary entries that match the 'english' string
       glossary = glossary.filter(entry => {
         //modify for FR.
