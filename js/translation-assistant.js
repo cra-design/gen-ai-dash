@@ -113,6 +113,13 @@ $(document).ready(function() {
     var selectedOption = $('input[name="source-upload-option"]:checked').val();
     var selectedCompare = $('input[name="translations-instructions-compare"]:checked').val();
     var selectedModel = $('input[name="translate-model-b-option"]:checked').val();
+    const models = [
+        "mistralai/mistral-nemo:free",
+        "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+        "cognitivecomputations/dolphin3.0-mistral-24b:free",
+        "mistralai/mistral-small-24b-instruct-2501:free",
+        "mistralai/mistral-7b-instruct:free"
+    ];
     var selectedLanguage = $('#source-language').val();
     var sourceText;
     //determine the source text to translate
@@ -137,19 +144,21 @@ $(document).ready(function() {
     }
     $("#translation-preview").removeClass("hidden");
     $("#convert-translation-to-doc-btn").removeClass("hidden");
-    let translationA = await translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions, selectedLanguage);
+    let { translationA, modelUsed } = await translateText(sourceText, models, translationInstructions, selectedLanguage);
     $('#translation-A').html(translationA);
+    $('#translation-model-A').html(modelUsed);
     let translationB;
     if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
-      translationB = await translateEnglishToFrench(sourceText, selectedModel, translationInstructions, selectedLanguage);
+      { translationB, modelUsed } = await translateText(sourceText, selectedModel, translationInstructions, selectedLanguage);
     } else if (selectedCompare == "translations-instructions-compare") {
-      translationB = await translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions.replace(".txt", "-B.txt"), selectedLanguage);
+      { translationB, modelUsed } = await translateText(sourceText, "mistralai/mistral-nemo:free", translationInstructions.replace(".txt", "-B.txt"), selectedLanguage);
     } else {
       $(".convert-translation").removeClass("hidden");
       return;
     }
     if (translationB != "") {
       $('#translation-B').html(translationB);
+      $('#translation-model-B').html(modelUsed);
       $('#accept-translation-A-btn').removeClass("hidden");
       $('#accept-translation-B-btn').removeClass("hidden");
       if ($('#translation-B').hasClass("hidden")) {
@@ -157,7 +166,6 @@ $(document).ready(function() {
       }
     }
   });
-
   $("#source-upload-provide-btn").click(function() {
     $("#second-upload").removeClass("hidden");
   });
@@ -537,7 +545,7 @@ function extractRowContent(chunk) {
 }
 
 //modify for both directions
-async function translateEnglishToFrench(source, model, instructions, sourceLanguage) {
+async function translateText(source, model, instructions, sourceLanguage) {
   const systemGeneral = { role: "system", content: await $.get(instructions) };
   var glossary;
   var systemGlossary;
@@ -551,17 +559,11 @@ async function translateEnglishToFrench(source, model, instructions, sourceLangu
     // Filter glossary entries that match the 'english' string
     glossary = glossary.filter(entry => {
       //modify for FR.
-      if (sourceLanguage == "French") {
-        return source.toLowerCase().includes(entry.FR.toLowerCase());
-      }
-      return source.toLowerCase().includes(entry.EN.toLowerCase());
+      return sourceLanguage === "French"
+                ? source.toLowerCase().includes(entry.FR.toLowerCase())
+                : source.toLowerCase().includes(entry.EN.toLowerCase());
     });
-    console.log(glossary);
-    if (glossary.length > 0) {
-      systemGlossary = { role: "system", content: glossary };
-    } else {
-      systemGlossary = null;
-    }
+    systemGlossary = glossary.length > 0 ? { role: "system", content: glossary } : null;
   } else {
     systemGlossary = null;
   }
@@ -570,19 +572,22 @@ async function translateEnglishToFrench(source, model, instructions, sourceLangu
     requestJson.push(systemGlossary);
   }
   requestJson.push({ role: "user", content: source });
-  let ORjson;
-  try {
-    ORjson = await getORData(model, requestJson);
-  } catch (error) {
-    console.error("Error calling getORData:", error);
-    return "error"; // Handles rejection properly
-  }
-  // If ORjson is invalid, attempt with the next model
-  if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
-    console.error(`API request failed or returned something unexpected`, ORjson);
-    return "error";
-  }
-  return ORjson.choices[0].message.content;
+  for (let model of models) {
+     try {
+         console.log(`Attempting translation with model: ${model}`);
+         let ORjson = await getORData(model, requestJson);
+         // Validate API response
+         if (ORjson && ORjson.choices && ORjson.choices.length > 0) {
+             return ORjson.choices[0].message.content;
+         } else {
+             console.error(`Model ${model} returned an unexpected response:`, ORjson);
+         }
+     } catch (error) {
+         console.error(`Error calling getORData with model ${model}:`, error);
+     }
+   }
+   console.error("All models failed to translate.");
+   return "error";
 }
 
 function acceptTranslation(option) {
