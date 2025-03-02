@@ -149,9 +149,9 @@ $(document).ready(function() {
     $('#translation-model-A').html(modelUsed);
     let translationB;
     if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
-      { translationB, modelUsed } = await translateText(sourceText, selectedModel, translationInstructions, selectedLanguage);
+      let { translationB, modelUsed } = await translateText(sourceText, selectedModel, translationInstructions, selectedLanguage);
     } else if (selectedCompare == "translations-instructions-compare") {
-      { translationB, modelUsed } = await translateText(sourceText, "mistralai/mistral-nemo:free", translationInstructions.replace(".txt", "-B.txt"), selectedLanguage);
+      let { translationB, modelUsed } = await translateText(sourceText, models, translationInstructions.replace(".txt", "-B.txt"), selectedLanguage);
     } else {
       $(".convert-translation").removeClass("hidden");
       return;
