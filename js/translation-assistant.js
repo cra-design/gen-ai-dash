@@ -136,13 +136,13 @@ $(document).ready(function() {
     }
     $("#translation-preview").removeClass("hidden");
     $("#convert-translation-to-doc-btn").removeClass("hidden");
-    let translationA = await translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions);
+    let translationA = await translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions, selectedLanguage);
     $('#translation-A').html(translationA);
     let translationB;
     if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
-      translationB = await translateEnglishToFrench(sourceText, selectedModel, translationInstructions);
+      translationB = await translateEnglishToFrench(sourceText, selectedModel, translationInstructions, selectedLanguage);
     } else if (selectedCompare == "translations-instructions-compare") {
-      translationB = await translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions.replace(".txt", "-B.txt"));
+      translationB = await translateEnglishToFrench(sourceText, "mistralai/mistral-nemo:free", translationInstructions.replace(".txt", "-B.txt"), selectedLanguage);
     } else {
       $(".convert-translation").removeClass("hidden");
       return;
@@ -535,7 +535,7 @@ function extractRowContent(chunk) {
 }
 
 //modify for both directions
-async function translateEnglishToFrench(source, model, instructions) {
+async function translateEnglishToFrench(source, model, instructions, sourceLanguage) {
   const systemGeneral = { role: "system", content: await $.get(instructions) };
   var glossary;
   var systemGlossary;
@@ -549,8 +549,12 @@ async function translateEnglishToFrench(source, model, instructions) {
     // Filter glossary entries that match the 'english' string
     glossary = glossary.filter(entry => {
       //modify for FR.
-      return entry.EN.toLowerCase().includes(source.toLowerCase());
+      if (sourceLanguage == "French") {
+        return source.toLowerCase().includes(entry.FR.toLowerCase());
+      }
+      return source.toLowerCase().includes(entry.EN.toLowerCase());
     });
+    console.log(glossary);
     if (glossary.length > 0) {
       systemGlossary = { role: "system", content: glossary };
     } else {
