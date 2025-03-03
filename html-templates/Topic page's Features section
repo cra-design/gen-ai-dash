@@ -1,0 +1,50 @@
+<!--Featured section-->
+<div class="provisional gc-prtts mrgn-tp-0">
+	<div class="container">
+	  <div class="row">
+		<section class="provisional col-md-12 mrgn-bttm-md mrgn-tp-0">
+		  <h2>Features</h2>
+		  <div class="wb-eqht row">
+			<!-- feature 1 -->
+			<div class="col-md-4 col-sm-6 mrgn-lft-0">
+				<div class="well eqht-trgt"><a href="Caption link" data-gc-analytics="promo:promotionalfeature">
+						<figure>
+							<div> <img src="JPG image path" alt="" class="img-responsive thumbnail mrgn-bttm-sm"> </div>
+							<figcaption>Caption</figcaption>
+							<div>
+								<p>Descriptive text.</p>
+							</div>
+						</figure>
+					</a> </div>
+			</div>
+		
+			<!-- feature 2 -->
+			<div class="col-md-4 col-sm-6 mrgn-rght-0 mrgn-lft-0">
+				<div class="well eqht-trgt"><a href="Caption link" data-gc-analytics="promo:promotionalfeature">
+						<figure>
+							<div> <img src="JPG image path" alt="" class="img-responsive thumbnail mrgn-bttm-sm"> </div>
+							<figcaption>Caption</figcaption>
+							<div>
+								<p>Descriptive text.</p>
+							</div>
+						</figure>
+					</a> </div>
+			</div>
+			<!-- feature 3 -->
+		
+			<div class="col-md-4 col-sm-6 mrgn-rght-0">
+				<div class="well eqht-trgt"><a href="Caption link" data-gc-analytics="promo:promotionalfeature">
+						<figure>
+							<div> <img src="JPG image path" alt="" class="img-responsive thumbnail mrgn-bttm-sm"> </div>
+							<figcaption>Caption</figcaption>
+							<div>
+								<p>Descriptive text.</p>
+							</div>
+						</figure>
+					</a> </div>
+			</div>
+		</div>
+		</section>
+	  </div>
+	</div>
+  </div>
