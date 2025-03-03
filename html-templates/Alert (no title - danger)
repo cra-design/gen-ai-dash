@@ -1,0 +1,4 @@
+<section class="alert alert-danger">
+<span class="wb-inv">Alert: Danger</span>
+<p>Content of your alert <a href="#">link text</a>.</p>  
+</section>
