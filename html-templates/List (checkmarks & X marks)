@@ -1,0 +1,6 @@
+<ul class="fa-ul">
+   <li><span class="fas fa-check text-success fa-li"></span>List item 1</li>
+   <li><span class="fas fa-check text-success fa-li"></span>List item 2</li>
+   <li><span class="fas fa-times text-danger fa-li"></span>List item 3</li>
+   <li><span class="fas fa-times text-danger fa-li"></span>List item 4</li>
+</ul>
