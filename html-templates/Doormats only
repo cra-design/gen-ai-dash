@@ -1,0 +1,56 @@
+<div class="container mrgn-bttm-lg">
+
+  <section class="gc-srvinfo">
+    <h2 class="wb-inv">Services and information</h2>
+    <div class="row wb-eqht-grd">
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p> Doormat description</p>
+      </section>
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p>Doormat description</p>
+      </section>
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p> Doormat description</p>
+      </section>
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p>Doormat description</p>
+      </section>
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p> Doormat description</p>
+      </section>
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p> Doormat description</p>
+      </section>
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p>Doormat description</p>
+      </section>
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p>Doormat description</p>
+      </section>
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p>Doormat description</p>
+      </section>
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p>Doormat description</p>
+      </section>
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p> Doormat description</p>
+      </section>
+      <section class="col-md-6 col-lg-4">
+        <h3><a href="Title link">Title</a></h3>
+        <p>Doormat description</p>
+      </section>
+    </div>
+  </section>
+</div>
