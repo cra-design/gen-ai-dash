@@ -1,0 +1,21 @@
+<p>Your primary text...</p>
+<ul class="list-unstyled">
+ <li>
+  <details>
+   <summary>First option</summary>
+   <p>Your text for the first option...</p>
+  </details>
+ </li>
+ <li>
+  <details>
+   <summary>Second option</summary>
+   <p>Your text for the second option...</p>
+  </details>
+ </li>
+ <li>
+  <details>
+   <summary>Third option</summary>
+   <p>Your text for the third option...</p>
+  </details>
+ </li>
+</ul>
