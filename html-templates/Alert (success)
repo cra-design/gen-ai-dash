@@ -1,0 +1,4 @@
+<section class="alert alert-success">
+<p class="h3 mrgn-tp-0">Descriptive title</p>
+<p>Content of your alert <a href="#">link text</a>.</p>  
+</section>
