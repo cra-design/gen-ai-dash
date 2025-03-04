@@ -365,12 +365,13 @@ function createXmlContent(fileExtension, updatedXml) {
   }
   return xmlContent;
 }
+
 // Helper function to align lines using word counts without GenAI.
 function alignLines(originalLines, adjustedLines) {
   // Calculate word counts for each original line.
   const originalCounts = originalLines.map(line => line.trim().split(/\s+/).length);
   
-  // If there are fewer adjusted lines than expected, try splitting long lines.
+  // If there are fewer adjusted lines than expected, try splitting long adjusted lines.
   if (adjustedLines.length < originalLines.length) {
     let newAdjusted = [];
     let j = 0;
@@ -396,7 +397,7 @@ function alignLines(originalLines, adjustedLines) {
     }
     return newAdjusted;
   } 
-  // If there are more adjusted lines than expected, try merging short lines.
+  // If there are more adjusted lines than expected, try merging short adjacent lines.
   else if (adjustedLines.length > originalLines.length) {
     let newAdjusted = [];
     let i = 0;
@@ -421,6 +422,7 @@ function alignLines(originalLines, adjustedLines) {
   // Otherwise, return the adjusted lines as-is.
   return adjustedLines;
 }
+
 // Conversion function for DOCX using milestone matching (Method A)
 // It extracts <w:t> nodes, splits them into chunks, and uses GenAI (with retries) to align line counts.
 async function conversionDocxTemplater(englishXml) {
@@ -672,4 +674,3 @@ function detectLanguageBasedOnWords(text) {
     return 'unknown';
   }
 }
-
