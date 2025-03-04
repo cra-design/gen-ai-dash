@@ -423,6 +423,21 @@ function alignLines(originalLines, adjustedLines) {
   return adjustedLines;
 }
 
+// Fallback alignment function: if after retries the line count still mismatches,
+// split the adjusted text into sentences and distribute them evenly across the expected number of lines.
+function fallbackAlignLines(originalLines, adjustedText) {
+  // Split by punctuation markers followed by whitespace.
+  let sentences = adjustedText.split(/[.?!]\s+/).filter(s => s.trim() !== "");
+  let targetLineCount = originalLines.length;
+  let newLines = [];
+  let sentencesPerLine = Math.ceil(sentences.length / targetLineCount);
+  for (let i = 0; i < targetLineCount; i++) {
+    let group = sentences.slice(i * sentencesPerLine, (i + 1) * sentencesPerLine);
+    newLines.push(group.join(". ") + (group.length > 0 ? "." : ""));
+  }
+  return newLines;
+}
+
 // Conversion function for DOCX using milestone matching (Method A)
 // It extracts <w:t> nodes, splits them into chunks, and uses GenAI (with retries) to align line counts.
 async function conversionDocxTemplater(englishXml) {
@@ -471,8 +486,8 @@ async function conversionDocxTemplater(englishXml) {
     // If the number of lines does not match, attempt retries...
     while (chunk.length !== adjustedLines.length) {
       if (retryCount >= 3) {
-        console.log("Too many retries. Falling back to code-based alignment.");
-        adjustedLines = alignLines(chunk, adjustedLines);
+        console.log("Too many retries. Falling back to fallbackAlignLines.");
+        adjustedLines = fallbackAlignLines(chunk, adjustedChunkText);
         break;
       }
       console.log("Mismatch detected, sending back for adjustment... " + chunkCounter);
