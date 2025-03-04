@@ -1,4 +1,13 @@
-let generatedDownloadFile = null;
+let generatedDownloadFile = null; 
+
+// Helper function to wrap file extraction into a Promise.
+// This prevents the "successCallback is not a function" error.
+function extractXmlFromFile(file) {
+  return new Promise((resolve, reject) => {
+    // Ensure that handleFileExtractionToXML is called with proper callbacks.
+    handleFileExtractionToXML(file, resolve, reject);
+  });
+}
 
 $(document).ready(function() {
 
@@ -120,8 +129,8 @@ $(document).ready(function() {
       }
       var fileExtension = file.name.split('.').pop().toLowerCase();
       try {
-        // Extract the XML content from the file
-        const englishXml = await handleFileExtractionToXML(file);
+         // Use our promise wrapper to ensure callbacks are provided
+        const englishXml = await extractXmlFromFile(file);
         if (!englishXml) {
           throw new Error("No XML extracted from file.");
         }
