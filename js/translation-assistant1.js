@@ -1,4 +1,3 @@
-// Global variable outside the document ready function
 let generatedDownloadFile = null;
 
 $(document).ready(function() {
