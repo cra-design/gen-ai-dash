@@ -729,3 +729,4 @@ function detectLanguageBasedOnWords(text) {
     return 'unknown';
   }
 }
+}
