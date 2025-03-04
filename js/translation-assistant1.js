@@ -365,63 +365,6 @@ function createXmlContent(fileExtension, updatedXml) {
   }
   return xmlContent;
 }
-function alignLines(originalLines, adjustedLines) {
-  // Calculate word counts for each original line.
-  const originalCounts = originalLines.map(line => line.trim().split(/\s+/).length);
-  
-  // If the number of adjusted lines is fewer than original lines, try to split long adjusted lines.
-  if (adjustedLines.length < originalLines.length) {
-    let newAdjusted = [];
-    for (let i = 0, j = 0; i < originalLines.length; i++) {
-      if (j < adjustedLines.length) {
-        let currentLine = adjustedLines[j];
-        let currentCount = currentLine.trim().split(/\s+/).length;
-        let expectedCount = originalCounts[i];
-        // If the current adjusted line has significantly more words than expected,
-        // split it into two roughly equal parts.
-        if (currentCount >= expectedCount * 1.5) {
-          const words = currentLine.trim().split(/\s+/);
-          const mid = Math.floor(words.length / 2);
-          newAdjusted.push(words.slice(0, mid).join(" "));
-          newAdjusted.push(words.slice(mid).join(" "));
-          j++;
-        } else {
-          newAdjusted.push(currentLine);
-          j++;
-        }
-      } else {
-        // If we run out of adjusted lines, add an empty string.
-        newAdjusted.push("");
-      }
-    }
-    return newAdjusted;
-  }
-  // If there are more adjusted lines than original lines, try merging short adjacent lines.
-  else if (adjustedLines.length > originalLines.length) {
-    let newAdjusted = [];
-    let i = 0;
-    while (i < adjustedLines.length) {
-      // If current line is very short and the total count is still less than needed,
-      // merge with the next line.
-      let current = adjustedLines[i];
-      let currentCount = current.trim().split(/\s+/).length;
-      if (i + 1 < adjustedLines.length) {
-        let next = adjustedLines[i + 1];
-        let nextCount = next.trim().split(/\s+/).length;
-        if (currentCount < 5 || nextCount < 5) {
-          newAdjusted.push(current + " " + next);
-          i += 2;
-          continue;
-        }
-      }
-      newAdjusted.push(current);
-      i++;
-    }
-    return newAdjusted;
-  }
-  // If the counts match, return the adjusted lines as-is.
-  return adjustedLines;
-} 
 // Helper function to align lines using word counts without GenAI.
 function alignLines(originalLines, adjustedLines) {
   // Calculate word counts for each original line.
@@ -477,7 +420,7 @@ function alignLines(originalLines, adjustedLines) {
   }
   // Otherwise, return the adjusted lines as-is.
   return adjustedLines;
-
+}
 // Conversion function for DOCX using milestone matching (Method A)
 // It extracts <w:t> nodes, splits them into chunks, and uses GenAI (with retries) to align line counts.
 async function conversionDocxTemplater(englishXml) {
