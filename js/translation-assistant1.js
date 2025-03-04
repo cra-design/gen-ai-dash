@@ -111,17 +111,16 @@ $(document).ready(function() {
       try {
         const englishXml = await extractXmlFromFile(file);
         if (!englishXml) { throw new Error("No XML extracted from file."); }
-        let updatedText;
+        let updatedXml;
         if (fileExtension === 'docx') {
-          // Use paragraph-based conversion to produce plain text with preserved paragraphs.
-          updatedText = await conversionDocxParagraphBased(englishXml);
+          // Use the new paragraph-based conversion.
+          updatedXml = await conversionDocxParagraphBased(englishXml);
         } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
-          updatedText = await conversionGemini(englishXml, fileExtension);
+          updatedXml = await conversionGemini(englishXml, fileExtension);
         } else {
           throw new Error("Unsupported file type for translation.");
         }
-        // Display the plain text in the review area.
-        $('#translation-A').html(updatedText);
+        $('#translation-A').html(updatedXml);
         $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
       } catch (error) {
         console.error("Error during file translation:", error);
@@ -169,12 +168,12 @@ $(document).ready(function() {
     }
   });
 
-  // Show second upload section.
+  // Show second upload section if "Provide translation" is clicked.
   $("#source-upload-provide-btn").click(function() {
     $("#second-upload").removeClass("hidden");
   });
 
-  // Second upload: manual translation.
+  // Second upload: manually provided translation.
   $("#second-upload-btn").click(async function() {
     var selectedOption = $('input[name="second-upload-option"]:checked').val();
     if (selectedOption == "second-upload-doc") {
@@ -226,43 +225,43 @@ $(document).ready(function() {
         $('#converting-spinner').addClass("hidden");
         return;
       }
-      // For DOCX, we use Docxtemplater to rebuild the document.
-      if (fileExtension === 'docx') {
-        // First, use our paragraph-based conversion to get plain text.
-        const englishXml = await extractXmlFromFile(englishDocxData);
-        if (!englishXml) {
-          console.error("No XML extracted from file.");
-          $('#converting-spinner').addClass("hidden");
-          return;
-        }
-        const translatedText = await conversionDocxParagraphBased(englishXml);
-        // Now, generate a new DOCX file using Docxtemplater.
-        const finalDocxBlob = await generateTranslatedDocx(englishDocxData, translatedText);
-        generatedDownloadFile = finalDocxBlob;
-      } else {
-        // For PPTX/XLSX, use your existing conversionGemini method.
-        const englishXml = await extractXmlFromFile(englishDocxData);
-        if (!englishXml) {
-          console.error("No XML extracted from file.");
-          $('#converting-spinner').addClass("hidden");
-          return;
-        }
-        let updatedText = await conversionGemini(englishXml, fileExtension);
-        const originalFileName = englishDocxData.name.split('.').slice(0, -1).join('.');
-        const modifiedFileName = `${originalFileName}-FR.${fileExtension}`;
-        const zipEN = new JSZip();
-        const xmlContent = createXmlContent(fileExtension, updatedText);
-        let mimeType;
-        if (fileExtension === 'pptx') {
-          mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-        } else if (fileExtension === 'xlsx') {
-          mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        }
-        generatedDownloadFile = await generateFile(zipEN, xmlContent, mimeType);
+      // Step 1: Extract XML from the original file.
+      const englishXml = await new Promise((resolve, reject) => {
+        handleFileExtractionToXML(englishDocxData,
+          function(result) { resolve(result); },
+          function(error) { console.error('Error processing English file:', error); reject(error); }
+        );
+      });
+      if (!englishXml) {
+        console.error("No XML document extracted.");
+        $('#converting-spinner').addClass("hidden");
+        return;
       }
+      // Step 2: Translate content using the appropriate conversion function.
+      let updatedXml;
+      const selectedMethod = $('input[name="convert-translation-method"]:checked').val();
+      if (fileExtension === 'docx') {
+        // Use the paragraph-based conversion.
+        updatedXml = await conversionDocxParagraphBased(englishXml);
+      } else {
+        updatedXml = await conversionGemini(englishXml, fileExtension);
+      }
+      // Step 3: Generate final translated file.
+      const originalFileName = englishDocxData.name.split('.').slice(0, -1).join('.');
+      const modifiedFileName = `${originalFileName}-FR.${fileExtension}`;
+      const zipEN = new JSZip();
+      const xmlContent = createXmlContent(fileExtension, updatedXml);
+      let mimeType;
+      if (fileExtension === 'docx') {
+        mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      } else if (fileExtension === 'pptx') {
+        mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+      } else if (fileExtension === 'xlsx') {
+        mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      }
+      generatedDownloadFile = await generateFile(zipEN, xmlContent, mimeType);
       $("#translated-doc-download").removeClass("hidden");
-      const outputFileName = englishDocxData.name.replace(/\.docx$/i, "-FR.docx");
-      $("#convert-translation-download-btn").attr("data-filename", outputFileName);
+      $("#convert-translation-download-btn").attr("data-filename", modifiedFileName);
       $('#converting-spinner').addClass("hidden");
     } catch (error) {
       console.error("An error occurred:", error);
@@ -297,53 +296,28 @@ function generateFile(zip, xmlContent, mimeType, renderFunction) {
   return zip.generateAsync({ type: "blob", mimeType: mimeType });
 }
 
-// Create XML content for non-DOCX files.
-function createXmlContent(fileExtension, updatedText) {
+// Create XML content for the final file based on file extension.
+function createXmlContent(fileExtension, updatedXml) {
   let xmlContent = '';
-  if (fileExtension === 'pptx') {
+  if (fileExtension === 'docx') {
+    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+      <w:body>
+        ${updatedXml}
+      </w:body>
+      </w:document>`;
+  } else if (fileExtension === 'pptx') {
     xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
-        <p:sldMasterIdLst>${updatedText}</p:sldMasterIdLst>
+        <p:sldMasterIdLst>${updatedXml}</p:sldMasterIdLst>
       </p:presentation>`;
   } else if (fileExtension === 'xlsx') {
     xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-        <sheetData>${updatedText}</sheetData>
+        <sheetData>${updatedXml}</sheetData>
       </workbook>`;
   }
   return xmlContent;
-}
-
-// This function uses Docxtemplater to rebuild a DOCX file based on a template.
-// The template is your original DOCX file which must include a placeholder {{content}}.
-async function generateTranslatedDocx(templateFile, translatedText) {
-  // Read the template file as an ArrayBuffer.
-  const arrayBuffer = await templateFile.arrayBuffer();
-  // Load the file content into PizZip.
-  const zip = new PizZip(arrayBuffer);
-  // Create a new Docxtemplater instance.
-  const doc = new window.Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true
-  });
-  
-  // Set the data for the placeholder. Your template must contain {{content}}.
-  doc.setData({ content: translatedText });
-  
-  try {
-    doc.render();
-  } catch (error) {
-    console.error("Error rendering document:", error);
-    throw error;
-  }
-  
-  // Generate a Blob of the final document.
-  const out = doc.getZip().generate({
-    type: "blob",
-    mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-  });
-  
-  return out;
 }
 
 // Helper function to align lines using word counts without GenAI.
@@ -408,14 +382,14 @@ function fallbackAlignLines(originalLines, adjustedText) {
   return newLines;
 }
 
-// Conversion function for DOCX using paragraph-based processing.
+// New conversion function: process DOCX at the paragraph level.
 async function conversionDocxParagraphBased(englishXml) {
-  // Extract paragraph elements.
+  // Extract all paragraph elements.
   let paragraphs = englishXml.match(/<w:p[\s\S]*?<\/w:p>/g) || [];
   console.log(`Total paragraphs found: ${paragraphs.length}`);
   let translatedParagraphs = [];
 
-  // Process each paragraph.
+  // Translate each paragraph individually.
   for (let para of paragraphs) {
     let textNodes = [];
     let regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
@@ -441,14 +415,18 @@ async function conversionDocxParagraphBased(englishXml) {
         console.error("Error translating paragraph:", err);
         translatedParaText = originalParaText;
       }
+    } else {
+      translatedParaText = "";
     }
-    translatedParagraphs.push(translatedParaText);
+    // Replace all <w:t> content in the paragraph with the translated text.
+    let newPara = para.replace(/<w:t[^>]*>[\s\S]*?<\/w:t>/, `<w:t>${translatedParaText}</w:t>`);
+    translatedParagraphs.push(newPara);
   }
-  // Join paragraphs with double-newlines to preserve structure.
-  return translatedParagraphs.join("\n\n");
+  // Reassemble paragraphs.
+  return translatedParagraphs.join("\n");
 }
 
-// Conversion function for PPTX/XLSX using a similar approach.
+// Conversion function for PPTX/XLSX using similar approach.
 async function conversionGemini(englishXml, fileType) {
   let groups = [];
   let formattedChunks = [];
