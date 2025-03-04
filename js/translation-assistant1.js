@@ -421,7 +421,62 @@ function alignLines(originalLines, adjustedLines) {
   }
   // If the counts match, return the adjusted lines as-is.
   return adjustedLines;
-}
+} 
+// Helper function to align lines using word counts without GenAI.
+function alignLines(originalLines, adjustedLines) {
+  // Calculate word counts for each original line.
+  const originalCounts = originalLines.map(line => line.trim().split(/\s+/).length);
+  
+  // If there are fewer adjusted lines than expected, try splitting long lines.
+  if (adjustedLines.length < originalLines.length) {
+    let newAdjusted = [];
+    let j = 0;
+    for (let i = 0; i < originalLines.length; i++) {
+      if (j < adjustedLines.length) {
+        let currentLine = adjustedLines[j];
+        let currentCount = currentLine.trim().split(/\s+/).length;
+        let expectedCount = originalCounts[i];
+        // If the current line is much longer than expected, split it roughly in half.
+        if (currentCount >= expectedCount * 1.5) {
+          const words = currentLine.trim().split(/\s+/);
+          const mid = Math.floor(words.length / 2);
+          newAdjusted.push(words.slice(0, mid).join(" "));
+          newAdjusted.push(words.slice(mid).join(" "));
+          j++;
+        } else {
+          newAdjusted.push(currentLine);
+          j++;
+        }
+      } else {
+        newAdjusted.push("");
+      }
+    }
+    return newAdjusted;
+  } 
+  // If there are more adjusted lines than expected, try merging short lines.
+  else if (adjustedLines.length > originalLines.length) {
+    let newAdjusted = [];
+    let i = 0;
+    while (i < adjustedLines.length) {
+      let current = adjustedLines[i];
+      let currentCount = current.trim().split(/\s+/).length;
+      // If the line is very short, merge it with the next one.
+      if (i + 1 < adjustedLines.length) {
+        let next = adjustedLines[i + 1];
+        let nextCount = next.trim().split(/\s+/).length;
+        if (currentCount < 5 || nextCount < 5) {
+          newAdjusted.push(current + " " + next);
+          i += 2;
+          continue;
+        }
+      }
+      newAdjusted.push(current);
+      i++;
+    }
+    return newAdjusted;
+  }
+  // Otherwise, return the adjusted lines as-is.
+  return adjustedLines;
 
 // Conversion function for DOCX using milestone matching (Method A)
 // It extracts <w:t> nodes, splits them into chunks, and uses GenAI (with retries) to align line counts.
@@ -433,8 +488,8 @@ async function conversionDocxTemplater(englishXml) {
     textNodes.push(match[1]);
   }
   console.log("Getting French...");
-  
-  // Divide the text nodes into chunks (milestones)
+
+  // Divide the text nodes into chunks (milestones).
   const chunkSize = 10;
   const textChunks = [];
   for (let i = 0; i < textNodes.length; i += chunkSize) {
@@ -443,13 +498,11 @@ async function conversionDocxTemplater(englishXml) {
   
   const systemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml.txt") };
   const retrySystemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml-retry.txt") };
-  // Get the overall translated text (from the editable preview area)
   const translatedText = $("#translation-A").text().trim();
   
   let chunkCounter = 1;
   let adjustedFrenchText = "";
   
-  // Process each chunk sequentially
   for (const chunk of textChunks) {
     const englishReference = chunk.join("\n");
     const requestJson = [
@@ -466,13 +519,12 @@ async function conversionDocxTemplater(englishXml) {
     }
     
     let adjustedChunkText = ORjson.choices[0].message.content;
-    let adjustedLines = adjustedChunkText.split("\n");
+    // Use a robust newline split (matches \r, \n, or both)
+    let adjustedLines = adjustedChunkText.split(/[\r\n]+/).filter(line => line.trim() !== "");
     let retryCount = 0;
     
-    // While the number of adjusted lines does not match the number of original lines in this chunk,
-    // try to adjust using GenAI retries.
+    // If the number of lines does not match, attempt retries...
     while (chunk.length !== adjustedLines.length) {
-      // If too many retries, fall back to our code-based alignment.
       if (retryCount >= 3) {
         console.log("Too many retries. Falling back to code-based alignment.");
         adjustedLines = alignLines(chunk, adjustedLines);
@@ -482,7 +534,7 @@ async function conversionDocxTemplater(englishXml) {
       const retryRequestJson = [
         retrySystemGeneral,
         { role: "user", content: "English Reference (" + chunk.length + " lines): " + englishReference },
-        { role: "user", content: "Translated French (" + translatedText.split("\n").length + "): " + adjustedChunkText }
+        { role: "user", content: "Translated French (" + translatedText.split(/[\r\n]+/).filter(line => line.trim() !== "").length + "): " + adjustedChunkText }
       ];
       const retryORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", retryRequestJson);
       if (!retryORjson || !retryORjson.choices || !retryORjson.choices[0] || !retryORjson.choices[0].message) {
@@ -491,16 +543,15 @@ async function conversionDocxTemplater(englishXml) {
         return;
       }
       adjustedChunkText = retryORjson.choices[0].message.content;
-      adjustedLines = adjustedChunkText.split("\n");
+      adjustedLines = adjustedChunkText.split(/[\r\n]+/).filter(line => line.trim() !== "");
       retryCount++;
     }
     
-    // Append the (now aligned) adjusted lines
     adjustedFrenchText += adjustedLines.join("\n") + "\n";
     chunkCounter++;
   }
   
-  const translatedLines = adjustedFrenchText.split("\n");
+  const translatedLines = adjustedFrenchText.split(/[\r\n]+/).filter(line => line.trim() !== "");
   if (textNodes.length !== translatedLines.length) {
     alert("Mismatch between full documents after alignment.");
     $('#converting-spinner').addClass("hidden");
