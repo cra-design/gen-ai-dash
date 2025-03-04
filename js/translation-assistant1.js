@@ -36,7 +36,7 @@ $(document).ready(function() {
     }
   });
 
-  // Detect language as the user types.
+  // Detect language from entered text as the user types.
   $('#source-text').on('input', function() {
     $('#source-heading-detecting').removeClass("hidden");
     var text = $(this).val().trim();
@@ -50,7 +50,7 @@ $(document).ready(function() {
     $('#source-language').removeClass("hidden").val(detectedLanguage);
   });
 
-  // Handle file input changes.
+  // Handle file input change for both source and second file uploads.
   $(document).on("change", "input", async function (event) {
     if (event.target.id == "source-file" || event.target.id == "second-file") {
       let language = event.target.id === "source-file" ? "source" : "second";
@@ -95,9 +95,9 @@ $(document).ready(function() {
   });
 
   /***********************************************************************
-   * Translate Button Flow:
-   * For file uploads, extract the XML and call the appropriate conversion 
-   * function. For plain text, use the standard translation flow.
+   * Updated Translate Button Flow:
+   * For file uploads, extract XML and use a conversion function that applies 
+   * milestone matching (with retries). For plain text, use the existing translation.
    ***********************************************************************/
   $("#source-upload-translate-btn").click(async function() {
     var selectedOption = $('input[name="source-upload-option"]:checked').val();
@@ -113,8 +113,7 @@ $(document).ready(function() {
         if (!englishXml) { throw new Error("No XML extracted from file."); }
         let updatedXml;
         if (fileExtension === 'docx') {
-          // Use the new paragraph-based conversion.
-          updatedXml = await conversionDocxParagraphBased(englishXml);
+          updatedXml = await conversionDocxTemplater(englishXml);
         } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
           updatedXml = await conversionGemini(englishXml, fileExtension);
         } else {
@@ -130,7 +129,9 @@ $(document).ready(function() {
       var sourceText = $("#source-text").text();
       var selectedLanguage = $('#source-language').val();
       let translationInstructions = "custom-instructions/translation/english2french.txt";
-      if (selectedLanguage == "French") { translationInstructions = "custom-instructions/translation/french2english.txt"; }
+      if (selectedLanguage == "French") {
+        translationInstructions = "custom-instructions/translation/french2english.txt";
+      }
       $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
       let models = [
           "mistralai/mistral-nemo:free",
@@ -141,7 +142,7 @@ $(document).ready(function() {
       ];
       let translationResult = await translateText(sourceText, models, translationInstructions, selectedLanguage);
       $('#translation-A').html(translationResult);
-      // Optional: handle compare options.
+      // Handle compare options if selected.
       let selectedCompare = $('input[name="translations-instructions-compare"]:checked').val();
       let selectedModel = $('input[name="translate-model-b-option"]:checked').val();
       if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
@@ -168,12 +169,12 @@ $(document).ready(function() {
     }
   });
 
-  // Show second upload section if "Provide translation" is clicked.
+  // Show second upload section if user clicks "Provide translation".
   $("#source-upload-provide-btn").click(function() {
     $("#second-upload").removeClass("hidden");
   });
 
-  // Second upload: manually provided translation.
+  // Second upload: provide a translation manually.
   $("#second-upload-btn").click(async function() {
     var selectedOption = $('input[name="second-upload-option"]:checked').val();
     if (selectedOption == "second-upload-doc") {
@@ -225,11 +226,14 @@ $(document).ready(function() {
         $('#converting-spinner').addClass("hidden");
         return;
       }
-      // Step 1: Extract XML from the original file.
+      // Step 1: Extract the XML from the original file.
       const englishXml = await new Promise((resolve, reject) => {
         handleFileExtractionToXML(englishDocxData,
           function(result) { resolve(result); },
-          function(error) { console.error('Error processing English file:', error); reject(error); }
+          function(error) {
+            console.error('Error processing English file:', error);
+            reject(error);
+          }
         );
       });
       if (!englishXml) {
@@ -237,16 +241,15 @@ $(document).ready(function() {
         $('#converting-spinner').addClass("hidden");
         return;
       }
-      // Step 2: Translate content using the appropriate conversion function.
-      let updatedXml;
+      // Step 2: Translate the content using conversion functions.
       const selectedMethod = $('input[name="convert-translation-method"]:checked').val();
-      if (fileExtension === 'docx') {
-        // Use the paragraph-based conversion.
-        updatedXml = await conversionDocxParagraphBased(englishXml);
+      let updatedXml;
+      if (selectedMethod === "convert-translation-docx") {
+        updatedXml = await conversionDocxTemplater(englishXml);
       } else {
         updatedXml = await conversionGemini(englishXml, fileExtension);
       }
-      // Step 3: Generate final translated file.
+      // Step 3: Generate the final translated file.
       const originalFileName = englishDocxData.name.split('.').slice(0, -1).join('.');
       const modifiedFileName = `${originalFileName}-FR.${fileExtension}`;
       const zipEN = new JSZip();
@@ -289,7 +292,9 @@ $(document).ready(function() {
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
     zip.file("file.xml", xmlContent);
-    if (typeof renderFunction === 'function') { renderFunction(); }
+    if (typeof renderFunction === 'function') {
+      renderFunction();
+    }
   } catch (error) {
     console.error("Error during file generation:", error);
   }
@@ -321,55 +326,7 @@ function createXmlContent(fileExtension, updatedXml) {
 }
 
 // Helper function to align lines using word counts without GenAI.
-function alignLines(originalLines, adjustedLines) {
-  const originalCounts = originalLines.map(line => line.trim().split(/\s+/).length);
-  if (adjustedLines.length < originalLines.length) {
-    let newAdjusted = [];
-    let j = 0;
-    for (let i = 0; i < originalLines.length; i++) {
-      if (j < adjustedLines.length) {
-        let currentLine = adjustedLines[j];
-        let currentCount = currentLine.trim().split(/\s+/).length;
-        let expectedCount = originalCounts[i];
-        if (currentCount >= expectedCount * 1.5) {
-          const words = currentLine.trim().split(/\s+/);
-          const mid = Math.floor(words.length / 2);
-          newAdjusted.push(words.slice(0, mid).join(" "));
-          newAdjusted.push(words.slice(mid).join(" "));
-          j++;
-        } else {
-          newAdjusted.push(currentLine);
-          j++;
-        }
-      } else {
-        newAdjusted.push("");
-      }
-    }
-    return newAdjusted;
-  } else if (adjustedLines.length > originalLines.length) {
-    let newAdjusted = [];
-    let i = 0;
-    while (i < adjustedLines.length) {
-      let current = adjustedLines[i];
-      let currentCount = current.trim().split(/\s+/).length;
-      if (i + 1 < adjustedLines.length) {
-        let next = adjustedLines[i + 1];
-        let nextCount = next.trim().split(/\s+/).length;
-        if (currentCount < 5 || nextCount < 5) {
-          newAdjusted.push(current + " " + next);
-          i += 2;
-          continue;
-        }
-      }
-      newAdjusted.push(current);
-      i++;
-    }
-    return newAdjusted;
-  }
-  return adjustedLines;
-}
-
-// Fallback alignment function: splits the entire adjusted text into words and groups them evenly.
+// This fallback splits the entire adjusted text into words and groups them evenly.
 function fallbackAlignLines(originalLines, adjustedText) {
   let words = adjustedText.split(/\s+/).filter(w => w.trim() !== "");
   let targetLineCount = originalLines.length;
@@ -382,51 +339,97 @@ function fallbackAlignLines(originalLines, adjustedText) {
   return newLines;
 }
 
-// New conversion function: process DOCX at the paragraph level.
-async function conversionDocxParagraphBased(englishXml) {
-  // Extract all paragraph elements.
-  let paragraphs = englishXml.match(/<w:p[\s\S]*?<\/w:p>/g) || [];
-  console.log(`Total paragraphs found: ${paragraphs.length}`);
-  let translatedParagraphs = [];
-
-  // Translate each paragraph individually.
-  for (let para of paragraphs) {
-    let textNodes = [];
-    let regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
-    let match;
-    while ((match = regex.exec(para)) !== null) {
-      textNodes.push(match[1]);
-    }
-    let originalParaText = textNodes.join(" ").trim();
-    let translatedParaText = "";
-    if (originalParaText) {
-      try {
-        const systemMsg = { role: "system", content: await $.get("custom-instructions/system/paragraph-translation.txt") };
-        const userMsg = { role: "user", content: originalParaText };
-        let requestJson = [ systemMsg, userMsg ];
-        let ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
-        if (ORjson && ORjson.choices && ORjson.choices[0] && ORjson.choices[0].message) {
-          translatedParaText = ORjson.choices[0].message.content.trim();
-        } else {
-          console.error("No valid response for paragraph:", originalParaText);
-          translatedParaText = originalParaText;
-        }
-      } catch (err) {
-        console.error("Error translating paragraph:", err);
-        translatedParaText = originalParaText;
-      }
-    } else {
-      translatedParaText = "";
-    }
-    // Replace all <w:t> content in the paragraph with the translated text.
-    let newPara = para.replace(/<w:t[^>]*>[\s\S]*?<\/w:t>/, `<w:t>${translatedParaText}</w:t>`);
-    translatedParagraphs.push(newPara);
+// Conversion function for DOCX using milestone matching (Method A).
+// It extracts <w:t> nodes, splits them into chunks, and uses GenAI (with retries) to align line counts.
+async function conversionDocxTemplater(englishXml) {
+  const textNodes = [];
+  const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
+  let match;
+  while ((match = regex.exec(englishXml)) !== null) {
+    textNodes.push(match[1]);
   }
-  // Reassemble paragraphs.
-  return translatedParagraphs.join("\n");
+  console.log("Getting French...");
+
+  // Divide the text nodes into chunks (milestones).
+  const chunkSize = 10;
+  const textChunks = [];
+  for (let i = 0; i < textNodes.length; i += chunkSize) {
+    textChunks.push(textNodes.slice(i, i + chunkSize));
+  }
+  
+  const systemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml.txt") };
+  const retrySystemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml-retry.txt") };
+  const translatedText = $("#translation-A").text().trim();
+  
+  let chunkCounter = 1;
+  let adjustedFrenchText = "";
+  
+  for (const chunk of textChunks) {
+    const englishReference = chunk.join("\n");
+    const requestJson = [
+      systemGeneral,
+      { role: "user", content: "English Reference (part " + chunkCounter + " of " + textChunks.length + "):" + englishReference },
+      { role: "user", content: "Translated French (for the full document): " + translatedText }
+    ];
+    
+    let ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
+    if (!ORjson || !ORjson.choices || !ORjson.choices[0] || !ORjson.choices[0].message) {
+      alert("No response from GenAI. Please try again.");
+      $('#converting-spinner').addClass("hidden");
+      return;
+    }
+    
+    let adjustedChunkText = ORjson.choices[0].message.content;
+    // Use a robust newline split (matches \r, \n, or both).
+    let adjustedLines = adjustedChunkText.split(/[\r\n]+/).filter(line => line.trim() !== "");
+    let retryCount = 0;
+    
+    // If the number of lines does not match, attempt retries...
+    while (chunk.length !== adjustedLines.length) {
+      if (retryCount >= 3) {
+        console.log("Too many retries. Falling back to fallbackAlignLines.");
+        adjustedLines = fallbackAlignLines(chunk, adjustedChunkText);
+        break;
+      }
+      console.log("Mismatch detected, sending back for adjustment... " + chunkCounter);
+      const retryRequestJson = [
+        retrySystemGeneral,
+        { role: "user", content: "English Reference (" + chunk.length + " lines): " + englishReference },
+        { role: "user", content: "Translated French (" + translatedText.split(/[\r\n]+/).filter(line => line.trim() !== "").length + "): " + adjustedChunkText }
+      ];
+      const retryORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", retryRequestJson);
+      if (!retryORjson || !retryORjson.choices || !retryORjson.choices[0] || !retryORjson.choices[0].message) {
+        alert("Error adjusting the French text. Please try again.");
+        $('#converting-spinner').addClass("hidden");
+        return;
+      }
+      adjustedChunkText = retryORjson.choices[0].message.content;
+      adjustedLines = adjustedChunkText.split(/[\r\n]+/).filter(line => line.trim() !== "");
+      retryCount++;
+    }
+    
+    adjustedFrenchText += adjustedLines.join("\n") + "\n";
+    chunkCounter++;
+  }
+  
+  const translatedLines = adjustedFrenchText.split(/[\r\n]+/).filter(line => line.trim() !== "");
+  if (textNodes.length !== translatedLines.length) {
+    alert("Mismatch between full documents after alignment.");
+    $('#converting-spinner').addClass("hidden");
+    return;
+  }
+  
+  // Replace each original XML text node with its corresponding translated line.
+  let updatedXml = englishXml;
+  textNodes.forEach((node, index) => {
+    const escapedNode = node.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regexNode = new RegExp(`<w:t[^>]*>${escapedNode}<\/w:t>`);
+    updatedXml = updatedXml.replace(regexNode, `<w:t>${translatedLines[index]}</w:t>`);
+  });
+  return updatedXml;
 }
 
-// Conversion function for PPTX/XLSX using similar approach.
+// Conversion function for PPTX/XLSX using a similar approach.
 async function conversionGemini(englishXml, fileType) {
   let groups = [];
   let formattedChunks = [];
@@ -555,9 +558,11 @@ async function translateText(source, models, instructions, sourceLanguage) {
   return "error";
 }
 
-// Accept translation function.
+// Accept translation function to finalize the selection.
 function acceptTranslation(option) {
-  if (option == "b") { $("#translation-A").text($("#translation-B").text()); }
+  if (option == "b") {
+    $("#translation-A").text($("#translation-B").text());
+  }
   $("#edit-translation-A-btn").removeClass("hidden");
   $("#accept-translation-A-btn, #accept-translation-B-btn").addClass("hidden");
   $(".convert-translation").removeClass("hidden");
