@@ -365,6 +365,63 @@ function createXmlContent(fileExtension, updatedXml) {
   }
   return xmlContent;
 }
+function alignLines(originalLines, adjustedLines) {
+  // Calculate word counts for each original line.
+  const originalCounts = originalLines.map(line => line.trim().split(/\s+/).length);
+  
+  // If the number of adjusted lines is fewer than original lines, try to split long adjusted lines.
+  if (adjustedLines.length < originalLines.length) {
+    let newAdjusted = [];
+    for (let i = 0, j = 0; i < originalLines.length; i++) {
+      if (j < adjustedLines.length) {
+        let currentLine = adjustedLines[j];
+        let currentCount = currentLine.trim().split(/\s+/).length;
+        let expectedCount = originalCounts[i];
+        // If the current adjusted line has significantly more words than expected,
+        // split it into two roughly equal parts.
+        if (currentCount >= expectedCount * 1.5) {
+          const words = currentLine.trim().split(/\s+/);
+          const mid = Math.floor(words.length / 2);
+          newAdjusted.push(words.slice(0, mid).join(" "));
+          newAdjusted.push(words.slice(mid).join(" "));
+          j++;
+        } else {
+          newAdjusted.push(currentLine);
+          j++;
+        }
+      } else {
+        // If we run out of adjusted lines, add an empty string.
+        newAdjusted.push("");
+      }
+    }
+    return newAdjusted;
+  }
+  // If there are more adjusted lines than original lines, try merging short adjacent lines.
+  else if (adjustedLines.length > originalLines.length) {
+    let newAdjusted = [];
+    let i = 0;
+    while (i < adjustedLines.length) {
+      // If current line is very short and the total count is still less than needed,
+      // merge with the next line.
+      let current = adjustedLines[i];
+      let currentCount = current.trim().split(/\s+/).length;
+      if (i + 1 < adjustedLines.length) {
+        let next = adjustedLines[i + 1];
+        let nextCount = next.trim().split(/\s+/).length;
+        if (currentCount < 5 || nextCount < 5) {
+          newAdjusted.push(current + " " + next);
+          i += 2;
+          continue;
+        }
+      }
+      newAdjusted.push(current);
+      i++;
+    }
+    return newAdjusted;
+  }
+  // If the counts match, return the adjusted lines as-is.
+  return adjustedLines;
+}
 
 // Conversion function for DOCX using milestone matching (Method A)
 // It extracts <w:t> nodes, splits them into chunks, and uses GenAI (with retries) to align line counts.
@@ -376,35 +433,55 @@ async function conversionDocxTemplater(englishXml) {
     textNodes.push(match[1]);
   }
   console.log("Getting French...");
+  
+  // Divide the text nodes into chunks (milestones)
   const chunkSize = 10;
   const textChunks = [];
   for (let i = 0; i < textNodes.length; i += chunkSize) {
     textChunks.push(textNodes.slice(i, i + chunkSize));
   }
+  
   const systemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml.txt") };
   const retrySystemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml-retry.txt") };
+  // Get the overall translated text (from the editable preview area)
   const translatedText = $("#translation-A").text().trim();
+  
   let chunkCounter = 1;
   let adjustedFrenchText = "";
+  
+  // Process each chunk sequentially
   for (const chunk of textChunks) {
     const englishReference = chunk.join("\n");
-    const requestJson = [ systemGeneral,
+    const requestJson = [
+      systemGeneral,
       { role: "user", content: "English Reference (part " + chunkCounter + " of " + textChunks.length + "):" + englishReference },
       { role: "user", content: "Translated French (for the full document): " + translatedText }
     ];
-    const ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
+    
+    let ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
     if (!ORjson || !ORjson.choices || !ORjson.choices[0] || !ORjson.choices[0].message) {
       alert("No response from GenAI. Please try again.");
       $('#converting-spinner').addClass("hidden");
       return;
     }
+    
     let adjustedChunkText = ORjson.choices[0].message.content;
     let adjustedLines = adjustedChunkText.split("\n");
     let retryCount = 0;
+    
+    // While the number of adjusted lines does not match the number of original lines in this chunk,
+    // try to adjust using GenAI retries.
     while (chunk.length !== adjustedLines.length) {
+      // If too many retries, fall back to our code-based alignment.
+      if (retryCount >= 3) {
+        console.log("Too many retries. Falling back to code-based alignment.");
+        adjustedLines = alignLines(chunk, adjustedLines);
+        break;
+      }
       console.log("Mismatch detected, sending back for adjustment... " + chunkCounter);
-      const retryRequestJson = [ retrySystemGeneral,
-        { role: "user", content: "English Reference (" + textNodes.length + " lines): " + englishReference },
+      const retryRequestJson = [
+        retrySystemGeneral,
+        { role: "user", content: "English Reference (" + chunk.length + " lines): " + englishReference },
         { role: "user", content: "Translated French (" + translatedText.split("\n").length + "): " + adjustedChunkText }
       ];
       const retryORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", retryRequestJson);
@@ -415,22 +492,22 @@ async function conversionDocxTemplater(englishXml) {
       }
       adjustedChunkText = retryORjson.choices[0].message.content;
       adjustedLines = adjustedChunkText.split("\n");
-      if (retryCount >= 3) {
-        alert("Too many retries. Could not match the line count.");
-        $('#converting-spinner').addClass("hidden");
-        return;
-      }
       retryCount++;
     }
-    adjustedFrenchText += adjustedChunkText + "\n";
+    
+    // Append the (now aligned) adjusted lines
+    adjustedFrenchText += adjustedLines.join("\n") + "\n";
     chunkCounter++;
   }
+  
   const translatedLines = adjustedFrenchText.split("\n");
   if (textNodes.length !== translatedLines.length) {
-    alert("Mismatch between full documents.");
+    alert("Mismatch between full documents after alignment.");
     $('#converting-spinner').addClass("hidden");
     return;
   }
+  
+  // Replace each original XML text node with its corresponding translated line.
   let updatedXml = englishXml;
   textNodes.forEach((node, index) => {
     const escapedNode = node.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
