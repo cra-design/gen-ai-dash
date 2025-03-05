@@ -120,21 +120,13 @@ $("#source-upload-translate-btn").click(async function() {
     var fileExtension = file.name.split('.').pop().toLowerCase();
     if (fileExtension === 'docx') {
       try {
-  
+   
         let arrayBuffer = await file.arrayBuffer();
         let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-        let originalHtml = mammothResult.value; 
+        let originalHtml = mammothResult.value;
 
         let $tempDiv = $('<div>').html(originalHtml);
         let paragraphs = $tempDiv.find('p');
-
-        let paragraphTexts = [];
-        paragraphs.each(function() {
-          let text = $(this).text().trim();
-          paragraphTexts.push(text);
-        });
-        const delimiter = '[[[PARA_BREAK]]]'; 
-        let combinedText = paragraphTexts.join(delimiter);
 
         let selectedLanguage = $('#source-language').val();
         let translationInstructions = "custom-instructions/translation/english2french.txt";
@@ -149,22 +141,21 @@ $("#source-upload-translate-btn").click(async function() {
           "mistralai/mistral-7b-instruct:free"
         ];
 
-        let translationResult = await translateText(combinedText, models, translationInstructions, selectedLanguage);
-        if (!translationResult || translationResult === "error") {
-          throw new Error("Translation failed");
-        }
-
-        let translatedParagraphs = translationResult.split(delimiter);
-     
-        if (translatedParagraphs.length !== paragraphTexts.length) {
-          translatedParagraphs = translationResult.split(/\n\s*\n/);
-        }
+        let translationPromises = [];
+        paragraphs.each(function() {
+          let paragraphText = $(this).text().trim();
+          if (paragraphText.length > 0) {
+            translationPromises.push(translateText(paragraphText, models, translationInstructions, selectedLanguage));
+          } else {
+            translationPromises.push(Promise.resolve(""));
+          }
+        });
+        let translations = await Promise.all(translationPromises);
 
         paragraphs.each(function(index) {
-          if (translatedParagraphs[index]) {
-            let formattedTranslation = translatedParagraphs[index].split('\n').join('<br>');
-            $(this).html(formattedTranslation);
-          }
+          let translated = translations[index];
+          let formattedTranslation = translated.split('\n').join('<br>');
+          $(this).html(formattedTranslation);
         });
 
         $('#translation-A').html($tempDiv.html());
@@ -199,7 +190,7 @@ $("#source-upload-translate-btn").click(async function() {
     let models = [
       "mistralai/mistral-nemo:free",
       "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
-      "cognitivecomputations/dolphin3.0-ristral-24b:free",
+      "cognitivecomputations/dolphin3.0-mistral-24b:free",
       "mistralai/mistral-small-24b-instruct-2501:free",
       "mistralai/mistral-7b-instruct:free"
     ];
@@ -578,7 +569,6 @@ function extractRowContent(chunk) {
 }
 
 // Translation function that calls the GenAI API with optional glossary support.
-// NEW CODE: 更新后的 translateText 函数，针对限额错误（429）进行跳过处理
 async function translateText(source, models, instructions, sourceLanguage) {
   const systemGeneral = { role: "system", content: await $.get(instructions) };
   var glossary;
@@ -602,7 +592,6 @@ async function translateText(source, models, instructions, sourceLanguage) {
   let requestJson = [systemGeneral];
   if (systemGlossary) { requestJson.push(systemGlossary); }
   requestJson.push({ role: "user", content: source });
-  
   for (let model of models) {
     try {
       console.log(`Attempting translation with model: ${model}`);
@@ -611,24 +600,14 @@ async function translateText(source, models, instructions, sourceLanguage) {
         return ORjson.choices[0].message.content;
       } else {
         console.error(`Model ${model} returned an unexpected response:`, ORjson);
-        if (ORjson && ORjson.error && ORjson.error.code === 429) {
-          console.warn(`Model ${model} rate limited, skipping to next model.`);
-          continue;
-        }
       }
     } catch (error) {
       console.error(`Error calling getORData with model ${model}:`, error);
-      // 如果错误包含限额信息则跳过该模型
-      if (error && error.code === 429) {
-        console.warn(`Model ${model} rate limited, skipping to next model.`);
-        continue;
-      }
     }
   }
   console.error("All models failed to translate.");
   return "error";
 }
-
 
 // Accept translation function to finalize the selection.
 function acceptTranslation(option) {
