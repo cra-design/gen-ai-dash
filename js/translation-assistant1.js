@@ -167,57 +167,63 @@ $(document).ready(function() {
       }
       var fileExtension = file.name.split('.').pop().toLowerCase();
       if (fileExtension === 'docx') {
-        // NEW CODE: Use Mammoth integration for DOCX formatted translation output
-        try {
-          // Get the raw translated French content using your existing translation function
-          var sourceText = $("#source-text").text();
-          var selectedLanguage = $('#source-language').val();
-          let translationInstructions = "custom-instructions/translation/english2french.txt";
-          if (selectedLanguage == "French") { 
-            translationInstructions = "custom-instructions/translation/french2english.txt"; 
-          }
-          let rawTranslatedFrench = await translateText(sourceText, [
-              "google/gemini-2.0-flash-lite-preview-02-05:free",
-              "google/gemini-2.0-pro-exp-02-05:free",
-              "google/gemini-2.0-flash-thinking-exp:free",
-              "meta-llama/llama-3.3-70b-instruct:free",
-              "nvidia/llama-3.1-nemotron-70b-instruct:free",
-              "google/gemini-2.0-flash-exp:free",
-              "google/gemini-exp-1206:free",
-              "google/gemini-flash-1.5-8b-exp",
-              "deepseek/deepseek-r1:free"
-          ], translationInstructions, selectedLanguage);
+        try { 
+           const englishXml = await extractXmlFromFile(file);
+           if (!englishXml) { throw new Error("No XML extracted from file."); } 
+
+          const englishTextNodes = [];
+          const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
+          let match;
+          while ((match = regex.exec(englishXml)) !== null) {
+          englishTextNodes.push(match[1]);
+        }
+        const englishFullText = englishTextNodes.join("\n"); 
           
-          // Format the translated output using Mammoth to mirror the English DOCX structure
-          const formattedHtml = await formatTranslatedUsingMammoth(file, rawTranslatedFrench);
+        var selectedLanguage = $('#source-language').val();
+        let translationInstructions = "custom-instructions/translation/english2french.txt";
+        if (selectedLanguage == "French") { 
+          translationInstructions = "custom-instructions/translation/french2english.txt"; 
+        }
+        let models = [
+          "mistralai/mistral-nemo:free",
+          "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+          "cognitivecomputations/dolphin3.0-mistral-24b:free",
+          "mistralai/mistral-small-24b-instruct-2501:free",
+          "mistralai/mistral-7b-instruct:free"
+        ];
+          
+           let rawTranslatedFrench = await translateText(englishFullText, models, translationInstructions, selectedLanguage);
           
           // Output the formatted HTML in the translation preview area
-          $('#translation-A').html(formattedHtml);
-          $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
-        } catch (error) {
-          console.error("Error during DOCX translation and formatting:", error);
-          alert("Error during file translation. Please check the console for details.");
-        }
-      } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
-        try {
-          const englishXml = await extractXmlFromFile(file);
-          if (!englishXml) { throw new Error("No XML extracted from file."); }
-          let updatedXml;
-          if (fileExtension === 'docx') {
-            updatedXml = await conversionDocxTemplater(englishXml);
-          } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
-            updatedXml = await conversionGemini(englishXml, fileExtension);
-          } else {
-            throw new Error("Unsupported file type for translation.");
-          }
-          let formattedOutput = formatTranslatedOutput(updatedXml);
-          $('#translation-A').html(formattedOutput);
-          $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
-        } catch (error) {
-          console.error("Error during file translation:", error);
-          alert("Error during file translation. Please check the console for details.");
-        }
+          $("#translation-A").text(rawTranslatedFrench);
+         let updatedXml = await conversionDocxTemplater(englishXml);
+        let formattedOutput = formatTranslatedOutput(updatedXml);
+        $('#translation-A').html(formattedOutput);
+        $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+      } catch (error) {
+        console.error("Error during DOCX translation and formatting:", error);
+        alert("Error during file translation. Please check the console for details.");
       }
+    } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
+      try {
+        const englishXml = await extractXmlFromFile(file);
+        if (!englishXml) { throw new Error("No XML extracted from file."); }
+        let updatedXml;
+        if (fileExtension === 'docx') {
+          updatedXml = await conversionDocxTemplater(englishXml);
+        } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
+          updatedXml = await conversionGemini(englishXml, fileExtension);
+        } else {
+          throw new Error("Unsupported file type for translation.");
+        }
+        let formattedOutput = formatTranslatedOutput(updatedXml);
+        $('#translation-A').html(formattedOutput);
+        $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+      } catch (error) {
+        console.error("Error during file translation:", error);
+        alert("Error during file translation. Please check the console for details.");
+      }
+    }
     } else if (selectedOption == "source-upload-text") {
       var sourceText = $("#source-text").text();
       var selectedLanguage = $('#source-language').val();
