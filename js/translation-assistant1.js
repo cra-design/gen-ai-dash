@@ -8,8 +8,6 @@ function extractXmlFromFile(file) {
   });
 }
 
-// Function to format raw translated output into structured HTML.
-// Splits text into paragraphs using double-newlines and replaces remaining newlines with <br> tags.
 function formatTranslatedOutput(rawText) {
   if (!rawText) return "";
   rawText = rawText.trim();
@@ -17,7 +15,54 @@ function formatTranslatedOutput(rawText) {
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
 }
-
+// Helper function to read a file as an ArrayBuffer (for Mammoth)
+function readFileAsArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      resolve(event.target.result);
+    };
+    reader.onerror = function (err) {
+      reject(err);
+    };
+    reader.readAsArrayBuffer(file);
+  });
+} 
+// Function that uses Mammoth to convert DOCX to HTML and map raw French text into the English document structure
+async function formatTranslatedUsingMammoth(file, rawTranslatedFrench) {
+  try {
+    // Read the file as ArrayBuffer for Mammoth conversion
+    const arrayBuffer = await readFileAsArrayBuffer(file);
+    // Convert the DOCX file to HTML using Mammoth
+    const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+    const englishHtml = result.value;
+    
+    // Create a temporary container to manipulate the HTML structure
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = englishHtml;
+    
+    // Extract all paragraph elements from the English HTML
+    const englishParagraphs = tempContainer.querySelectorAll('p');
+    
+    // Split the raw French translation into paragraphs based on double newlines
+    const frenchParagraphs = rawTranslatedFrench.trim().split(/\n\s*\n/);
+    
+    // Replace each English paragraph’s content with the corresponding French paragraph
+    englishParagraphs.forEach((p, index) => {
+      if (frenchParagraphs[index]) {
+        p.innerHTML = frenchParagraphs[index].replace(/\n/g, '<br>');
+      } else {
+        p.innerHTML = "";
+      }
+    });
+    
+    // Return the final formatted HTML string
+    return tempContainer.innerHTML;
+  } catch (error) {
+    console.error("Error in formatTranslatedUsingMammoth:", error);
+    return "";
+  }
+}
 $(document).ready(function() {
 
   // Handle radio button changes for various upload and compare options.
@@ -115,9 +160,35 @@ $(document).ready(function() {
       var file = $('#source-file')[0].files[0];
       if (!file) {
         $(`#source-doc-error`).removeClass("hidden");
-        return;
-      }
+        return; }    
+      
       var fileExtension = file.name.split('.').pop().toLowerCase();
+      if (fileExtension === 'docx') {
+        // Use Mammoth integration for DOCX formatted translation output
+        try {
+          // Get the raw translated French content using your existing translation function
+          var sourceText = $("#source-text").text();
+          var selectedLanguage = $('#source-language').val();
+          let translationInstructions = "custom-instructions/translation/english2french.txt";
+          if (selectedLanguage == "French") { 
+            translationInstructions = "custom-instructions/translation/french2english.txt"; 
+          }
+          let rawTranslatedFrench = await translateText(sourceText, [
+              "mistralai/mistral-nemo:free",
+              "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+              "cognitivecomputations/dolphin3.0-mistral-24b:free",
+              "mistralai/mistral-small-24b-instruct-2501:free",
+              "mistralai/mistral-7b-instruct:free"
+          ], translationInstructions, selectedLanguage);
+         // Format the translated output using Mammoth to mirror the English DOCX structure
+          const formattedHtml = await formatTranslatedUsingMammoth(file, rawTranslatedFrench);
+         // Output the formatted HTML in the translation preview area
+        $('#translation-A').html(formattedHtml);
+        $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+      }catch (error) {
+          console.error("Error during DOCX translation and formatting:", error);
+          alert("Error during file translation. Please check the console for details.");
+         } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
       try {
         const englishXml = await extractXmlFromFile(file);
         if (!englishXml) { throw new Error("No XML extracted from file."); }
@@ -136,6 +207,7 @@ $(document).ready(function() {
         console.error("Error during file translation:", error);
         alert("Error during file translation. Please check the console for details.");
       }
+    }
     } else if (selectedOption == "source-upload-text") {
       var sourceText = $("#source-text").text();
       var selectedLanguage = $('#source-language').val();
