@@ -118,23 +118,52 @@ $(document).ready(function() {
         return;
       }
       var fileExtension = file.name.split('.').pop().toLowerCase();
-      try {
-        const englishXml = await extractXmlFromFile(file);
-        if (!englishXml) { throw new Error("No XML extracted from file."); }
-        let updatedXml;
-        if (fileExtension === 'docx') {
-          updatedXml = await conversionDocxTemplater(englishXml);
-        } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
-          updatedXml = await conversionGemini(englishXml, fileExtension);
-        } else {
-          throw new Error("Unsupported file type for translation.");
+      if (fileExtension === 'docx') {
+        try {
+          //Extract English XML from the uploaded DOCX file.
+          const englishXml = await extractXmlFromFile(file);
+          if (!englishXml) { throw new Error("No XML extracted from file."); }
+          // Use original method to translate, producing French XML.
+          let updatedXml = await conversionDocxTemplater(englishXml);
+          // Remove XML tags (<w:t>) to get plain French translation.
+          let frenchPlain = updatedXml.replace(/<w:t[^>]*>/g, "").replace(/<\/w:t>/g, "");
+          // Convert original DOCX file to HTML using Mammoth to preserve formatting.
+          let arrayBuffer = await file.arrayBuffer();
+          let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+          let originalHtml = mammothResult.value;
+          //CODE: Create a temporary DOM element from the HTML.
+          let tempDiv = document.createElement("div");
+          tempDiv.innerHTML = originalHtml;
+          // CODE: Split the French plain text into paragraphs using double newlines.
+          let frenchParagraphs = frenchPlain.split(/\n\s*\n/);
+          //CODE: Replace each <p> element's content with the corresponding French translation.
+          let pTags = tempDiv.querySelectorAll("p");
+          pTags.forEach((p, index) => {
+            if (frenchParagraphs[index]) {
+              p.innerHTML = frenchParagraphs[index].replace(/\n/g, '<br>');
+            }
+          });
+          //CODE: Set the final HTML with preserved formatting into the translation text box.
+          $('#translation-A').html(tempDiv.innerHTML);
+          $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+        } catch (error) {
+          console.error("Error during DOCX translation:", error);
+          alert("Error during file translation. Please check the console for details.");
         }
-        let formattedOutput = formatTranslatedOutput(updatedXml);
-        $('#translation-A').html(formattedOutput);
-        $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
-      } catch (error) {
-        console.error("Error during file translation:", error);
-        alert("Error during file translation. Please check the console for details.");
+      } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
+        try {
+          const englishXml = await extractXmlFromFile(file);
+          if (!englishXml) { throw new Error("No XML extracted from file."); }
+          let updatedXml = await conversionGemini(englishXml, fileExtension);
+          let formattedOutput = formatTranslatedOutput(updatedXml);
+          $('#translation-A').html(formattedOutput);
+          $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+        } catch (error) {
+          console.error("Error during file translation:", error);
+          alert("Error during file translation. Please check the console for details.");
+        }
+      } else {
+        alert("Unsupported file type for translation.");
       }
     } else if (selectedOption == "source-upload-text") {
       var sourceText = $("#source-text").text();
@@ -586,4 +615,3 @@ function detectLanguageBasedOnWords(text) {
   else if (frenchMatches > englishMatches) { return 'french'; }
   else { return 'unknown'; }
 }
-
