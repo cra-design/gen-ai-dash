@@ -188,6 +188,7 @@ $(document).ready(function() {
       }catch (error) {
           console.error("Error during DOCX translation and formatting:", error);
           alert("Error during file translation. Please check the console for details.");
+        }
          } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
       try {
         const englishXml = await extractXmlFromFile(file);
