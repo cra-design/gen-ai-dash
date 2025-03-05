@@ -16,7 +16,7 @@ function formatTranslatedOutput(rawText) {
   return formatted;
 }
 
-//Helper function to read a file as an ArrayBuffer (for Mammoth)
+// NEW CODE: Helper function to read a file as an ArrayBuffer (for Mammoth)
 function readFileAsArrayBuffer(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -30,7 +30,7 @@ function readFileAsArrayBuffer(file) {
   });
 }
 
-//Function that uses Mammoth to convert DOCX to HTML and map raw French text into the English document structure
+// NEW CODE: Function that uses Mammoth to convert DOCX to HTML and map raw French text into the English document structure
 async function formatTranslatedUsingMammoth(file, rawTranslatedFrench) {
   try {
     // Read the file as ArrayBuffer for Mammoth conversion
@@ -167,7 +167,7 @@ $(document).ready(function() {
       }
       var fileExtension = file.name.split('.').pop().toLowerCase();
       if (fileExtension === 'docx') {
-        //Use Mammoth integration for DOCX formatted translation output
+        // NEW CODE: Use Mammoth integration for DOCX formatted translation output
         try {
           // Get the raw translated French content using your existing translation function
           var sourceText = $("#source-text").text();
