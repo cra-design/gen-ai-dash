@@ -586,3 +586,4 @@ function detectLanguageBasedOnWords(text) {
   else if (frenchMatches > englishMatches) { return 'french'; }
   else { return 'unknown'; }
 }
+
