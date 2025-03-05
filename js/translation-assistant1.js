@@ -15,7 +15,8 @@ function formatTranslatedOutput(rawText) {
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
 }
-// Helper function to read a file as an ArrayBuffer (for Mammoth)
+
+//Helper function to read a file as an ArrayBuffer (for Mammoth)
 function readFileAsArrayBuffer(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -27,8 +28,9 @@ function readFileAsArrayBuffer(file) {
     };
     reader.readAsArrayBuffer(file);
   });
-} 
-// Function that uses Mammoth to convert DOCX to HTML and map raw French text into the English document structure
+}
+
+//Function that uses Mammoth to convert DOCX to HTML and map raw French text into the English document structure
 async function formatTranslatedUsingMammoth(file, rawTranslatedFrench) {
   try {
     // Read the file as ArrayBuffer for Mammoth conversion
@@ -63,6 +65,7 @@ async function formatTranslatedUsingMammoth(file, rawTranslatedFrench) {
     return "";
   }
 }
+
 $(document).ready(function() {
 
   // Handle radio button changes for various upload and compare options.
@@ -160,11 +163,11 @@ $(document).ready(function() {
       var file = $('#source-file')[0].files[0];
       if (!file) {
         $(`#source-doc-error`).removeClass("hidden");
-        return; }    
-      
+        return;
+      }
       var fileExtension = file.name.split('.').pop().toLowerCase();
       if (fileExtension === 'docx') {
-        // Use Mammoth integration for DOCX formatted translation output
+        //Use Mammoth integration for DOCX formatted translation output
         try {
           // Get the raw translated French content using your existing translation function
           var sourceText = $("#source-text").text();
@@ -180,40 +183,44 @@ $(document).ready(function() {
               "mistralai/mistral-small-24b-instruct-2501:free",
               "mistralai/mistral-7b-instruct:free"
           ], translationInstructions, selectedLanguage);
-         // Format the translated output using Mammoth to mirror the English DOCX structure
+          
+          // Format the translated output using Mammoth to mirror the English DOCX structure
           const formattedHtml = await formatTranslatedUsingMammoth(file, rawTranslatedFrench);
-         // Output the formatted HTML in the translation preview area
-        $('#translation-A').html(formattedHtml);
-        $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
-      }catch (error) {
+          
+          // Output the formatted HTML in the translation preview area
+          $('#translation-A').html(formattedHtml);
+          $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+        } catch (error) {
           console.error("Error during DOCX translation and formatting:", error);
           alert("Error during file translation. Please check the console for details.");
         }
-         } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
-      try {
-        const englishXml = await extractXmlFromFile(file);
-        if (!englishXml) { throw new Error("No XML extracted from file."); }
-        let updatedXml;
-        if (fileExtension === 'docx') {
-          updatedXml = await conversionDocxTemplater(englishXml);
-        } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
-          updatedXml = await conversionGemini(englishXml, fileExtension);
-        } else {
-          throw new Error("Unsupported file type for translation.");
+      } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
+        try {
+          const englishXml = await extractXmlFromFile(file);
+          if (!englishXml) { throw new Error("No XML extracted from file."); }
+          let updatedXml;
+          if (fileExtension === 'docx') {
+            updatedXml = await conversionDocxTemplater(englishXml);
+          } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
+            updatedXml = await conversionGemini(englishXml, fileExtension);
+          } else {
+            throw new Error("Unsupported file type for translation.");
+          }
+          let formattedOutput = formatTranslatedOutput(updatedXml);
+          $('#translation-A').html(formattedOutput);
+          $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+        } catch (error) {
+          console.error("Error during file translation:", error);
+          alert("Error during file translation. Please check the console for details.");
         }
-        let formattedOutput = formatTranslatedOutput(updatedXml);
-        $('#translation-A').html(formattedOutput);
-        $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
-      } catch (error) {
-        console.error("Error during file translation:", error);
-        alert("Error during file translation. Please check the console for details.");
       }
-    }
     } else if (selectedOption == "source-upload-text") {
       var sourceText = $("#source-text").text();
       var selectedLanguage = $('#source-language').val();
       let translationInstructions = "custom-instructions/translation/english2french.txt";
-      if (selectedLanguage == "French") { translationInstructions = "custom-instructions/translation/french2english.txt"; }
+      if (selectedLanguage == "French") { 
+        translationInstructions = "custom-instructions/translation/french2english.txt"; 
+      }
       $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
       let models = [
           "mistralai/mistral-nemo:free",
