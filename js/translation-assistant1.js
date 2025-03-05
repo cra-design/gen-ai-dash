@@ -177,11 +177,15 @@ $(document).ready(function() {
             translationInstructions = "custom-instructions/translation/french2english.txt"; 
           }
           let rawTranslatedFrench = await translateText(sourceText, [
-              "mistralai/mistral-nemo:free",
-              "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
-              "cognitivecomputations/dolphin3.0-mistral-24b:free",
-              "mistralai/mistral-small-24b-instruct-2501:free",
-              "mistralai/mistral-7b-instruct:free"
+              "google/gemini-2.0-flash-lite-preview-02-05:free",
+              "google/gemini-2.0-pro-exp-02-05:free",
+              "google/gemini-2.0-flash-thinking-exp:free",
+              "meta-llama/llama-3.3-70b-instruct:free",
+              "nvidia/llama-3.1-nemotron-70b-instruct:free",
+              "google/gemini-2.0-flash-exp:free",
+              "google/gemini-exp-1206:free",
+              "google/gemini-flash-1.5-8b-exp",
+              "deepseek/deepseek-r1:free"
           ], translationInstructions, selectedLanguage);
           
           // Format the translated output using Mammoth to mirror the English DOCX structure
