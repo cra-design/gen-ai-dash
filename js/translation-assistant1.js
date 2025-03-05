@@ -117,18 +117,56 @@ $(document).ready(function() {
         $(`#source-doc-error`).removeClass("hidden");
         return;
       }
-      var fileExtension = file.name.split('.').pop().toLowerCase();
+      var fileExtension = file.name.split('.').pop().toLowerCase(); 
+     
+      if (fileExtension === 'docx') {
+      try {
+        // use Mammoth to convert DOCX to HTML 
+        let arrayBuffer = await file.arrayBuffer();
+        let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+        let originalHtml = mammothResult.value; // En doc in HTML format
+
+        let tempDiv = document.createElement("div");
+        tempDiv.innerHTML = originalHtml;
+        let englishText = tempDiv.innerText;
+
+        let selectedLanguage = $('#source-language').val();
+        let translationInstructions = "custom-instructions/translation/english2french.txt";
+        if (selectedLanguage == "French") {
+          translationInstructions = "custom-instructions/translation/french2english.txt";
+        }
+        let models = [
+          "mistralai/mistral-nemo:free",
+          "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+          "cognitivecomputations/dolphin3.0-mistral-24b:free",
+          "mistralai/mistral-small-24b-instruct-2501:free",
+          "mistralai/mistral-7b-instruct:free"
+        ];
+       let translationResult = await translateText(englishText, models, translationInstructions, selectedLanguage);
+        if (!translationResult || translationResult === "error") {
+          throw new Error("Translation failed");
+        } 
+        
+        let $html = $('<div>' + originalHtml + '</div>');
+        
+        let englishParagraphs = englishText.split(/\n\s*\n/);
+        let frenchParagraphs = translationResult.split(/\n\s*\n/);
+        $html.find('p').each(function(index) {
+          if (frenchParagraphs[index]) {
+            $(this).html(frenchParagraphs[index].replace(/\n/g, '<br>'));
+          }
+        });
+         $('#translation-A').html($html.html());
+           $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+      } catch (error) {
+        console.error("Error during file translation:", error);
+        alert("Error during file translation. Please check the console for details.");
+      }
+    }  else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
       try {
         const englishXml = await extractXmlFromFile(file);
         if (!englishXml) { throw new Error("No XML extracted from file."); }
-        let updatedXml;
-        if (fileExtension === 'docx') {
-          updatedXml = await conversionDocxTemplater(englishXml);
-        } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
-          updatedXml = await conversionGemini(englishXml, fileExtension);
-        } else {
-          throw new Error("Unsupported file type for translation.");
-        }
+        let updatedXml = await conversionGemini(englishXml, fileExtension);
         let formattedOutput = formatTranslatedOutput(updatedXml);
         $('#translation-A').html(formattedOutput);
         $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
@@ -136,6 +174,9 @@ $(document).ready(function() {
         console.error("Error during file translation:", error);
         alert("Error during file translation. Please check the console for details.");
       }
+    } else {
+      alert("Unsupported file type for translation.");
+    }
     } else if (selectedOption == "source-upload-text") {
       var sourceText = $("#source-text").text();
       var selectedLanguage = $('#source-language').val();
