@@ -109,26 +109,24 @@ $(document).ready(function() {
    * For file uploads, extract XML and use a conversion function that applies 
    * milestone matching (with retries). For plain text, use the existing translation.
    ***********************************************************************/
-  $("#source-upload-translate-btn").click(async function() {
-    var selectedOption = $('input[name="source-upload-option"]:checked').val();
-    if (selectedOption == "source-upload-doc") {
-      var file = $('#source-file')[0].files[0];
-      if (!file) {
-        $(`#source-doc-error`).removeClass("hidden");
-        return;
-      }
-      var fileExtension = file.name.split('.').pop().toLowerCase(); 
-     
-      if (fileExtension === 'docx') {
+$("#source-upload-translate-btn").click(async function() {
+  var selectedOption = $('input[name="source-upload-option"]:checked').val();
+  if (selectedOption == "source-upload-doc") {
+    var file = $('#source-file')[0].files[0];
+    if (!file) {
+      $(`#source-doc-error`).removeClass("hidden");
+      return;
+    }
+    var fileExtension = file.name.split('.').pop().toLowerCase();
+    if (fileExtension === 'docx') {
       try {
-        // use Mammoth to convert DOCX to HTML 
+   
         let arrayBuffer = await file.arrayBuffer();
         let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-        let originalHtml = mammothResult.value; // En doc in HTML format
+        let originalHtml = mammothResult.value;
 
-        let tempDiv = document.createElement("div");
-        tempDiv.innerHTML = originalHtml;
-        let englishText = tempDiv.innerText;
+        let $tempDiv = $('<div>').html(originalHtml);
+        let paragraphs = $tempDiv.find('p');
 
         let selectedLanguage = $('#source-language').val();
         let translationInstructions = "custom-instructions/translation/english2french.txt";
@@ -142,27 +140,31 @@ $(document).ready(function() {
           "mistralai/mistral-small-24b-instruct-2501:free",
           "mistralai/mistral-7b-instruct:free"
         ];
-       let translationResult = await translateText(englishText, models, translationInstructions, selectedLanguage);
-        if (!translationResult || translationResult === "error") {
-          throw new Error("Translation failed");
-        } 
-        
-        let $html = $('<div>' + originalHtml + '</div>');
-        
-        let englishParagraphs = englishText.split(/\n\s*\n/);
-        let frenchParagraphs = translationResult.split(/\n\s*\n/);
-        $html.find('p').each(function(index) {
-          if (frenchParagraphs[index]) {
-            $(this).html(frenchParagraphs[index].replace(/\n/g, '<br>'));
+
+        let translationPromises = [];
+        paragraphs.each(function() {
+          let paragraphText = $(this).text().trim();
+          if (paragraphText.length > 0) {
+            translationPromises.push(translateText(paragraphText, models, translationInstructions, selectedLanguage));
+          } else {
+            translationPromises.push(Promise.resolve(""));
           }
         });
-         $('#translation-A').html($html.html());
-           $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+        let translations = await Promise.all(translationPromises);
+
+        paragraphs.each(function(index) {
+          let translated = translations[index];
+          let formattedTranslation = translated.split('\n').join('<br>');
+          $(this).html(formattedTranslation);
+        });
+
+        $('#translation-A').html($tempDiv.html());
+        $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
       } catch (error) {
-        console.error("Error during file translation:", error);
+        console.error("Error during docx translation with Mammoth:", error);
         alert("Error during file translation. Please check the console for details.");
       }
-    }  else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
+    } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
       try {
         const englishXml = await extractXmlFromFile(file);
         if (!englishXml) { throw new Error("No XML extracted from file."); }
@@ -177,48 +179,51 @@ $(document).ready(function() {
     } else {
       alert("Unsupported file type for translation.");
     }
-    } else if (selectedOption == "source-upload-text") {
-      var sourceText = $("#source-text").text();
-      var selectedLanguage = $('#source-language').val();
-      let translationInstructions = "custom-instructions/translation/english2french.txt";
-      if (selectedLanguage == "French") { translationInstructions = "custom-instructions/translation/french2english.txt"; }
-      $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
-      let models = [
-          "mistralai/mistral-nemo:free",
-          "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
-          "cognitivecomputations/dolphin3.0-mistral-24b:free",
-          "mistralai/mistral-small-24b-instruct-2501:free",
-          "mistralai/mistral-7b-instruct:free"
-      ];
-      let translationResult = await translateText(sourceText, models, translationInstructions, selectedLanguage);
-      let formattedOutput = formatTranslatedOutput(translationResult);
-      $('#translation-A').html(formattedOutput);
-      // Handle compare options if selected.
-      let selectedCompare = $('input[name="translations-instructions-compare"]:checked').val();
-      let selectedModel = $('input[name="translate-model-b-option"]:checked').val();
-      if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
-        let compareResult = await translateText(sourceText, selectedModel, translationInstructions, selectedLanguage);
-        if (compareResult != "") {
-          $('#translation-B').html(formatTranslatedOutput(compareResult));
-          $('#translation-model-B').html(selectedModel);
-          $('#accept-translation-A-btn, #accept-translation-B-btn').removeClass("hidden");
-          if ($('#translation-B').hasClass("hidden")) {
-            toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
-          }
+  } else if (selectedOption == "source-upload-text") {
+    var sourceText = $("#source-text").text();
+    var selectedLanguage = $('#source-language').val();
+    let translationInstructions = "custom-instructions/translation/english2french.txt";
+    if (selectedLanguage == "French") { 
+      translationInstructions = "custom-instructions/translation/french2english.txt"; 
+    }
+    $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+    let models = [
+      "mistralai/mistral-nemo:free",
+      "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+      "cognitivecomputations/dolphin3.0-mistral-24b:free",
+      "mistralai/mistral-small-24b-instruct-2501:free",
+      "mistralai/mistral-7b-instruct:free"
+    ];
+    let translationResult = await translateText(sourceText, models, translationInstructions, selectedLanguage);
+    let formattedOutput = formatTranslatedOutput(translationResult);
+    $('#translation-A').html(formattedOutput);
+    // Handle compare options if selected.
+    let selectedCompare = $('input[name="translations-instructions-compare"]:checked').val();
+    let selectedModel = $('input[name="translate-model-b-option"]:checked').val();
+    if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
+      let compareResult = await translateText(sourceText, selectedModel, translationInstructions, selectedLanguage);
+      if (compareResult != "") {
+        $('#translation-B').html(formatTranslatedOutput(compareResult));
+        $('#translation-model-B').html(selectedModel);
+        $('#accept-translation-A-btn, #accept-translation-B-btn').removeClass("hidden");
+        if ($('#translation-B').hasClass("hidden")) {
+          toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
         }
-      } else if (selectedCompare == "translations-instructions-compare") {
-        let compareResult = await translateText(sourceText, models, translationInstructions.replace(".txt", "-B.txt"), selectedLanguage);
-        if (compareResult != "") {
-          $('#translation-B').html(formatTranslatedOutput(compareResult));
-          $('#translation-model-B').html("Instructions Compare");
-          $('#accept-translation-A-btn, #accept-translation-B-btn').removeClass("hidden");
-          if ($('#translation-B').hasClass("hidden")) {
-            toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
-          }
+      }
+    } else if (selectedCompare == "translations-instructions-compare") {
+      let compareResult = await translateText(sourceText, models, translationInstructions.replace(".txt", "-B.txt"), selectedLanguage);
+      if (compareResult != "") {
+        $('#translation-B').html(formatTranslatedOutput(compareResult));
+        $('#translation-model-B').html("Instructions Compare");
+        $('#accept-translation-A-btn, #accept-translation-B-btn').removeClass("hidden");
+        if ($('#translation-B').hasClass("hidden")) {
+          toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
         }
       }
     }
-  });
+  }
+});
+
 
   // Show second upload section.
   $("#source-upload-provide-btn").click(function() {
