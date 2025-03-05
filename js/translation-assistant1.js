@@ -6,14 +6,13 @@ function extractXmlFromFile(file) {
     // Call handleFileExtractionToXML with proper callbacks.
     handleFileExtractionToXML(file, resolve, reject);
   });
-} 
+}
+
 // Function to format raw translated output into structured HTML.
-// This function splits the text into paragraphs (using double-newlines)
-// and then replaces any remaining single newlines with <br> tags,
-// wrapping each paragraph in <p> tags.
+// Splits text into paragraphs using double-newlines and replaces remaining newlines with <br> tags.
 function formatTranslatedOutput(rawText) {
+  if (!rawText) return "";
   rawText = rawText.trim();
-  // Split into paragraphs on one or more empty lines.
   let paragraphs = rawText.split(/\n\s*\n/);
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
@@ -106,7 +105,7 @@ $(document).ready(function() {
   });
 
   /***********************************************************************
-   * Updated Translate Button Flow:
+   * Translate Button Flow:
    * For file uploads, extract XML and use a conversion function that applies 
    * milestone matching (with retries). For plain text, use the existing translation.
    ***********************************************************************/
@@ -129,8 +128,7 @@ $(document).ready(function() {
           updatedXml = await conversionGemini(englishXml, fileExtension);
         } else {
           throw new Error("Unsupported file type for translation.");
-        } 
-        // Before placing in the text area, try to format the output using newline tags.
+        }
         let formattedOutput = formatTranslatedOutput(updatedXml);
         $('#translation-A').html(formattedOutput);
         $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
@@ -142,9 +140,7 @@ $(document).ready(function() {
       var sourceText = $("#source-text").text();
       var selectedLanguage = $('#source-language').val();
       let translationInstructions = "custom-instructions/translation/english2french.txt";
-      if (selectedLanguage == "French") {
-        translationInstructions = "custom-instructions/translation/french2english.txt";
-      }
+      if (selectedLanguage == "French") { translationInstructions = "custom-instructions/translation/french2english.txt"; }
       $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
       let models = [
           "mistralai/mistral-nemo:free",
@@ -155,14 +151,14 @@ $(document).ready(function() {
       ];
       let translationResult = await translateText(sourceText, models, translationInstructions, selectedLanguage);
       let formattedOutput = formatTranslatedOutput(translationResult);
-      $('#translation-A').html(translationResult);
+      $('#translation-A').html(formattedOutput);
       // Handle compare options if selected.
       let selectedCompare = $('input[name="translations-instructions-compare"]:checked').val();
       let selectedModel = $('input[name="translate-model-b-option"]:checked').val();
       if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
         let compareResult = await translateText(sourceText, selectedModel, translationInstructions, selectedLanguage);
         if (compareResult != "") {
-          $('#translation-B').html(compareResult);
+          $('#translation-B').html(formatTranslatedOutput(compareResult));
           $('#translation-model-B').html(selectedModel);
           $('#accept-translation-A-btn, #accept-translation-B-btn').removeClass("hidden");
           if ($('#translation-B').hasClass("hidden")) {
@@ -172,7 +168,7 @@ $(document).ready(function() {
       } else if (selectedCompare == "translations-instructions-compare") {
         let compareResult = await translateText(sourceText, models, translationInstructions.replace(".txt", "-B.txt"), selectedLanguage);
         if (compareResult != "") {
-          $('#translation-B').html(compareResult);
+          $('#translation-B').html(formatTranslatedOutput(compareResult));
           $('#translation-model-B').html("Instructions Compare");
           $('#accept-translation-A-btn, #accept-translation-B-btn').removeClass("hidden");
           if ($('#translation-B').hasClass("hidden")) {
@@ -183,12 +179,12 @@ $(document).ready(function() {
     }
   });
 
-  // Show second upload section if user clicks "Provide translation".
+  // Show second upload section.
   $("#source-upload-provide-btn").click(function() {
     $("#second-upload").removeClass("hidden");
   });
 
-  // Second upload: provide a translation manually.
+  // Second upload: manual translation.
   $("#second-upload-btn").click(async function() {
     var selectedOption = $('input[name="second-upload-option"]:checked').val();
     if (selectedOption == "second-upload-doc") {
@@ -196,13 +192,13 @@ $(document).ready(function() {
       try {
         let translatedText = await handleFileExtractionToHtml(file);
         console.log(translatedText);
-        $('#translation-A').html(translatedText);
+        $('#translation-A').html(formatTranslatedOutput(translatedText));
         $("#translation-preview, .convert-translation").removeClass("hidden");
       } catch (err) {
         console.error('Error processing source file:', err);
       }
     } else if (selectedOption == "second-upload-text") {
-      $('#translation-A').html($("#second-text").val());
+      $('#translation-A').html(formatTranslatedOutput($("#second-text").val()));
       $("#translation-preview, .convert-translation").removeClass("hidden");
     }
   });
@@ -244,10 +240,7 @@ $(document).ready(function() {
       const englishXml = await new Promise((resolve, reject) => {
         handleFileExtractionToXML(englishDocxData,
           function(result) { resolve(result); },
-          function(error) {
-            console.error('Error processing English file:', error);
-            reject(error);
-          }
+          function(error) { console.error('Error processing English file:', error); reject(error); }
         );
       });
       if (!englishXml) {
@@ -306,9 +299,7 @@ $(document).ready(function() {
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
     zip.file("file.xml", xmlContent);
-    if (typeof renderFunction === 'function') {
-      renderFunction();
-    }
+    if (typeof renderFunction === 'function') { renderFunction(); }
   } catch (error) {
     console.error("Error during file generation:", error);
   }
@@ -574,9 +565,7 @@ async function translateText(source, models, instructions, sourceLanguage) {
 
 // Accept translation function to finalize the selection.
 function acceptTranslation(option) {
-  if (option == "b") {
-    $("#translation-A").text($("#translation-B").text());
-  }
+  if (option == "b") { $("#translation-A").text($("#translation-B").text()); }
   $("#edit-translation-A-btn").removeClass("hidden");
   $("#accept-translation-A-btn, #accept-translation-B-btn").addClass("hidden");
   $(".convert-translation").removeClass("hidden");
