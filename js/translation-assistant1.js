@@ -12,58 +12,8 @@ function formatTranslatedOutput(rawText) {
   if (!rawText) return "";
   rawText = rawText.trim();
   let paragraphs = rawText.split(/\n\s*\n/);
-  let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+  let formatted = paragraphs.map(p => <p>${p.replace(/\n/g, '<br>')}</p>).join('');
   return formatted;
-}
-
-// NEW CODE: Helper function to read a file as an ArrayBuffer (for Mammoth)
-function readFileAsArrayBuffer(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = function (event) {
-      resolve(event.target.result);
-    };
-    reader.onerror = function (err) {
-      reject(err);
-    };
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-// NEW CODE: Function that uses Mammoth to convert DOCX to HTML and map raw French text into the English document structure
-async function formatTranslatedUsingMammoth(file, rawTranslatedFrench) {
-  try {
-    // Read the file as ArrayBuffer for Mammoth conversion
-    const arrayBuffer = await readFileAsArrayBuffer(file);
-    // Convert the DOCX file to HTML using Mammoth
-    const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-    const englishHtml = result.value;
-    
-    // Create a temporary container to manipulate the HTML structure
-    const tempContainer = document.createElement('div');
-    tempContainer.innerHTML = englishHtml;
-    
-    // Extract all paragraph elements from the English HTML
-    const englishParagraphs = tempContainer.querySelectorAll('p');
-    
-    // Split the raw French translation into paragraphs based on double newlines
-    const frenchParagraphs = rawTranslatedFrench.trim().split(/\n\s*\n/);
-    
-    // Replace each English paragraph’s content with the corresponding French paragraph
-    englishParagraphs.forEach((p, index) => {
-      if (frenchParagraphs[index]) {
-        p.innerHTML = frenchParagraphs[index].replace(/\n/g, '<br>');
-      } else {
-        p.innerHTML = "";
-      }
-    });
-    
-    // Return the final formatted HTML string
-    return tempContainer.innerHTML;
-  } catch (error) {
-    console.error("Error in formatTranslatedUsingMammoth:", error);
-    return "";
-  }
 }
 
 $(document).ready(function() {
@@ -112,15 +62,15 @@ $(document).ready(function() {
   $(document).on("change", "input", async function (event) {
     if (event.target.id == "source-file" || event.target.id == "second-file") {
       let language = event.target.id === "source-file" ? "source" : "second";
-      $(`#${language}-doc-detecting`).removeClass("hidden");
-      $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
-      $(`#${language}-language-heading`).removeClass("hidden");
-      $(`#${language}-language-doc`).addClass("hidden");
+      $(#${language}-doc-detecting).removeClass("hidden");
+      $(#${language}-multiple-msg, #${language}-doc-error).addClass("hidden");
+      $(#${language}-language-heading).removeClass("hidden");
+      $(#${language}-language-doc).addClass("hidden");
       var fileList = event.target.files;
       if (!fileList || fileList.length === 0) return;
       if (fileList.length > 1) {
-          $(`#${language}-multiple-msg`).removeClass("hidden");
-          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+          $(#${language}-multiple-msg).removeClass("hidden");
+          $(#${language}-doc-detecting, #${language}-language-heading).addClass("hidden");
           return;
       }
       var uploadedFile = fileList[0];
@@ -132,9 +82,9 @@ $(document).ready(function() {
           "application/vnd.ms-powerpoint"
       ];
       if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
-          $(`#${language}-doc-error`).removeClass("hidden");
-          $(`#${language}-doc-detecting`).addClass("hidden");
-          $(`#${language}-language-heading`).removeClass("hidden");
+          $(#${language}-doc-error).removeClass("hidden");
+          $(#${language}-doc-detecting).addClass("hidden");
+          $(#${language}-language-heading).removeClass("hidden");
           return;
       }
       try {
@@ -142,12 +92,12 @@ $(document).ready(function() {
           if (!textContent) { throw new Error("No text extracted."); }
           var detectedLanguage = detectLanguageBasedOnWords(textContent);
           if (detectedLanguage !== "french") { detectedLanguage = "english"; }
-          $(`#${language}-doc-detecting`).addClass("hidden");
-          $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden");
+          $(#${language}-doc-detecting).addClass("hidden");
+          $(#${language}-language-doc).val(detectedLanguage).removeClass("hidden");
       } catch (err) {
           console.error('Error processing source file:', err);
-          $(`#${language}-doc-error`).removeClass("hidden");
-          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+          $(#${language}-doc-error).removeClass("hidden");
+          $(#${language}-doc-detecting, #${language}-language-heading).addClass("hidden");
       }
     }
   });
@@ -162,49 +112,10 @@ $(document).ready(function() {
     if (selectedOption == "source-upload-doc") {
       var file = $('#source-file')[0].files[0];
       if (!file) {
-        $(`#source-doc-error`).removeClass("hidden");
+        $(#source-doc-error).removeClass("hidden");
         return;
       }
       var fileExtension = file.name.split('.').pop().toLowerCase();
-      if (fileExtension === 'docx') {
-        try { 
-           const englishXml = await extractXmlFromFile(file);
-           if (!englishXml) { throw new Error("No XML extracted from file."); } 
-
-          const englishTextNodes = [];
-          const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
-          let match;
-          while ((match = regex.exec(englishXml)) !== null) {
-          englishTextNodes.push(match[1]);
-        }
-        const englishFullText = englishTextNodes.join("\n"); 
-          
-        var selectedLanguage = $('#source-language').val();
-        let translationInstructions = "custom-instructions/translation/english2french.txt";
-        if (selectedLanguage == "French") { 
-          translationInstructions = "custom-instructions/translation/french2english.txt"; 
-        }
-        let models = [
-          "mistralai/mistral-nemo:free",
-          "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
-          "cognitivecomputations/dolphin3.0-mistral-24b:free",
-          "mistralai/mistral-small-24b-instruct-2501:free",
-          "mistralai/mistral-7b-instruct:free"
-        ];
-          
-           let rawTranslatedFrench = await translateText(englishFullText, models, translationInstructions, selectedLanguage);
-          
-          // Output the formatted HTML in the translation preview area
-          $("#translation-A").text(rawTranslatedFrench);
-         let updatedXml = await conversionDocxTemplater(englishXml);
-        let formattedOutput = formatTranslatedOutput(updatedXml);
-        $('#translation-A').html(formattedOutput);
-        $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
-      } catch (error) {
-        console.error("Error during DOCX translation and formatting:", error);
-        alert("Error during file translation. Please check the console for details.");
-      }
-    } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
       try {
         const englishXml = await extractXmlFromFile(file);
         if (!englishXml) { throw new Error("No XML extracted from file."); }
@@ -223,14 +134,11 @@ $(document).ready(function() {
         console.error("Error during file translation:", error);
         alert("Error during file translation. Please check the console for details.");
       }
-    }
     } else if (selectedOption == "source-upload-text") {
       var sourceText = $("#source-text").text();
       var selectedLanguage = $('#source-language').val();
       let translationInstructions = "custom-instructions/translation/english2french.txt";
-      if (selectedLanguage == "French") { 
-        translationInstructions = "custom-instructions/translation/french2english.txt"; 
-      }
+      if (selectedLanguage == "French") { translationInstructions = "custom-instructions/translation/french2english.txt"; }
       $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
       let models = [
           "mistralai/mistral-nemo:free",
@@ -348,7 +256,7 @@ $(document).ready(function() {
       }
       // Step 3: Generate the final translated file.
       const originalFileName = englishDocxData.name.split('.').slice(0, -1).join('.');
-      const modifiedFileName = `${originalFileName}-FR.${fileExtension}`;
+      const modifiedFileName = ${originalFileName}-FR.${fileExtension};
       const zipEN = new JSZip();
       const xmlContent = createXmlContent(fileExtension, updatedXml);
       let mimeType;
@@ -400,22 +308,22 @@ function generateFile(zip, xmlContent, mimeType, renderFunction) {
 function createXmlContent(fileExtension, updatedXml) {
   let xmlContent = '';
   if (fileExtension === 'docx') {
-    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    xmlContent = <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
       <w:body>
         ${updatedXml}
       </w:body>
-      </w:document>`;
+      </w:document>;
   } else if (fileExtension === 'pptx') {
-    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    xmlContent = <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
         <p:sldMasterIdLst>${updatedXml}</p:sldMasterIdLst>
-      </p:presentation>`;
+      </p:presentation>;
   } else if (fileExtension === 'xlsx') {
-    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    xmlContent = <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
         <sheetData>${updatedXml}</sheetData>
-      </workbook>`;
+      </workbook>;
   }
   return xmlContent;
 }
@@ -518,8 +426,8 @@ async function conversionDocxTemplater(englishXml) {
   let updatedXml = englishXml;
   textNodes.forEach((node, index) => {
     const escapedNode = node.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const regexNode = new RegExp(`<w:t[^>]*>${escapedNode}<\/w:t>`);
-    updatedXml = updatedXml.replace(regexNode, `<w:t>${translatedLines[index]}</w:t>`);
+    const regexNode = new RegExp(<w:t[^>]*>${escapedNode}<\/w:t>);
+    updatedXml = updatedXml.replace(regexNode, <w:t>${translatedLines[index]}</w:t>);
   });
   return updatedXml;
 }
@@ -532,21 +440,21 @@ async function conversionGemini(englishXml, fileType) {
   const systemGeneral = { role: "system", content: await $.get("custom-instructions/system/xml-docx-formatting.txt") };
   if (fileType === 'docx') {
     paragraphs = englishXml.match(/<w:p[\s\S]*?<\/w:p>/g) || [];
-    console.log(`Total paragraphs found: ${paragraphs.length}`);
+    console.log(Total paragraphs found: ${paragraphs.length});
   } else if (fileType === 'pptx') {
     paragraphs = englishXml.match(/<p:sld[\s\S]*?<\/p:sld>/g) || [];
-    console.log(`Total slides found: ${paragraphs.length}`);
+    console.log(Total slides found: ${paragraphs.length});
   } else if (fileType === 'xlsx') {
     paragraphs = englishXml.match(/<sheetData[\s\S]*?<\/sheetData>/g) || [];
-    console.log(`Total rows found: ${paragraphs.length}`);
+    console.log(Total rows found: ${paragraphs.length});
   }
   const maxRequests = 30;
   let groupSize = Math.ceil(paragraphs.length / maxRequests);
-  console.log(`Grouping paragraphs into batches of ${groupSize} (max ${maxRequests} requests)`);
+  console.log(Grouping paragraphs into batches of ${groupSize} (max ${maxRequests} requests));
   for (let i = 0; i < paragraphs.length; i += groupSize) {
     groups.push(paragraphs.slice(i, i + groupSize).join("\n"));
   }
-  console.log(`Total groups to process: ${groups.length}`);
+  console.log(Total groups to process: ${groups.length});
   let model = [
     "google/gemini-2.0-flash-lite-preview-02-05:free",
     "google/gemini-2.0-pro-exp-02-05:free",
@@ -560,7 +468,7 @@ async function conversionGemini(englishXml, fileType) {
   ];
   let modelCount = 0;
   for (let i = 0; i < groups.length;) {
-    console.log(`Processing group ${i + 1}/${groups.length}...`);
+    console.log(Processing group ${i + 1}/${groups.length}...);
     const escapedContent = groups[i].replace(/[&<>]/g, match => ({
       '&': "&amp;",
       '<': "&lt;",
@@ -569,23 +477,23 @@ async function conversionGemini(englishXml, fileType) {
     const requestJson = [ systemGeneral, { role: "user", content: "English DOCX group: " + escapedContent } ];
     let ORjson = await getORData(model[modelCount], requestJson);
     if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
-      console.error(`API request failed for group ${i + 1} with model ${model[modelCount]}:`, ORjson);
+      console.error(API request failed for group ${i + 1} with model ${model[modelCount]}:, ORjson);
       modelCount++;
       if (modelCount >= model.length) {
-        console.error(`All models exhausted for group ${i + 1}. Skipping this group.`);
+        console.error(All models exhausted for group ${i + 1}. Skipping this group.);
         i++;
         modelCount = 0;
         continue;
       }
-      console.log(`Retrying with model ${model[modelCount]}...`);
+      console.log(Retrying with model ${model[modelCount]}...);
       continue;
     }
     let aiResponse = ORjson.choices[0]?.message?.content || "";
-    console.log(`Group ${i + 1} Response:\n`, aiResponse);
+    console.log(Group ${i + 1} Response:\n, aiResponse);
     let formattedText = formatAIResponse(aiResponse);
     formattedText = ensureCompleteXML(formattedText);
     if (!formattedText) {
-      console.error(`Skipping group ${i + 1} due to formatting issues.`);
+      console.error(Skipping group ${i + 1} due to formatting issues.);
       continue;
     }
     formattedChunks.push(formattedText);
@@ -615,8 +523,8 @@ function extractRowContent(chunk) {
 // Translation function that calls the GenAI API with optional glossary support.
 async function translateText(source, models, instructions, sourceLanguage) {
   const systemGeneral = { role: "system", content: await $.get(instructions) };
-  let glossary = null;
-  let systemGlossary = null;
+  var glossary;
+  var systemGlossary;
   if ($('#translations-glossary').prop('checked')) {
     try {
       glossary = await $.get("custom-instructions/translation/en-fr-glossary.json");
@@ -638,24 +546,19 @@ async function translateText(source, models, instructions, sourceLanguage) {
   requestJson.push({ role: "user", content: source });
   for (let model of models) {
     try {
-      console.log(`Attempting translation with model: ${model}`);
-      let ORjson = await getORData(model, requestJson); 
-       console.log("Raw translation API response:", ORjson); 
-      
-      if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
-        let translatedContent = ORjson.choices[0].message.content;
-        console.log(`Translation successful with model: ${model}`);
-        console.log("Raw translated text:", translatedContent);
-        return translatedContent;
+      console.log(Attempting translation with model: ${model});
+      let ORjson = await getORData(model, requestJson);
+      if (ORjson && ORjson.choices && ORjson.choices.length > 0) {
+        return ORjson.choices[0].message.content;
       } else {
-        console.error(`Model ${model} returned an unexpected response:`, ORjson);
+        console.error(Model ${model} returned an unexpected response:, ORjson);
       }
     } catch (error) {
-      console.error(`Error calling getORData with model ${model}:`, error);
+      console.error(Error calling getORData with model ${model}:, error);
     }
   }
   console.error("All models failed to translate.");
-  return "Translation error. All models failed.";
+  return "error";
 }
 
 // Accept translation function to finalize the selection.
