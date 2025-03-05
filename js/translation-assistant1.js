@@ -609,8 +609,8 @@ function extractRowContent(chunk) {
 // Translation function that calls the GenAI API with optional glossary support.
 async function translateText(source, models, instructions, sourceLanguage) {
   const systemGeneral = { role: "system", content: await $.get(instructions) };
-  var glossary;
-  var systemGlossary;
+  let glossary = null;
+  let systemGlossary = null;
   if ($('#translations-glossary').prop('checked')) {
     try {
       glossary = await $.get("custom-instructions/translation/en-fr-glossary.json");
@@ -633,9 +633,14 @@ async function translateText(source, models, instructions, sourceLanguage) {
   for (let model of models) {
     try {
       console.log(`Attempting translation with model: ${model}`);
-      let ORjson = await getORData(model, requestJson);
-      if (ORjson && ORjson.choices && ORjson.choices.length > 0) {
-        return ORjson.choices[0].message.content;
+      let ORjson = await getORData(model, requestJson); 
+       console.log("Raw translation API response:", ORjson); 
+      
+      if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
+        let translatedContent = ORjson.choices[0].message.content;
+        console.log(`Translation successful with model: ${model}`);
+        console.log("Raw translated text:", translatedContent);
+        return translatedContent;
       } else {
         console.error(`Model ${model} returned an unexpected response:`, ORjson);
       }
@@ -644,7 +649,7 @@ async function translateText(source, models, instructions, sourceLanguage) {
     }
   }
   console.error("All models failed to translate.");
-  return "error";
+  return "Translation error. All models failed.";
 }
 
 // Accept translation function to finalize the selection.
