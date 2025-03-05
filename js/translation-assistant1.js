@@ -578,6 +578,7 @@ function extractRowContent(chunk) {
 }
 
 // Translation function that calls the GenAI API with optional glossary support.
+// NEW CODE: 更新后的 translateText 函数，针对限额错误（429）进行跳过处理
 async function translateText(source, models, instructions, sourceLanguage) {
   const systemGeneral = { role: "system", content: await $.get(instructions) };
   var glossary;
@@ -601,6 +602,7 @@ async function translateText(source, models, instructions, sourceLanguage) {
   let requestJson = [systemGeneral];
   if (systemGlossary) { requestJson.push(systemGlossary); }
   requestJson.push({ role: "user", content: source });
+  
   for (let model of models) {
     try {
       console.log(`Attempting translation with model: ${model}`);
@@ -609,14 +611,24 @@ async function translateText(source, models, instructions, sourceLanguage) {
         return ORjson.choices[0].message.content;
       } else {
         console.error(`Model ${model} returned an unexpected response:`, ORjson);
+        if (ORjson && ORjson.error && ORjson.error.code === 429) {
+          console.warn(`Model ${model} rate limited, skipping to next model.`);
+          continue;
+        }
       }
     } catch (error) {
       console.error(`Error calling getORData with model ${model}:`, error);
+      // 如果错误包含限额信息则跳过该模型
+      if (error && error.code === 429) {
+        console.warn(`Model ${model} rate limited, skipping to next model.`);
+        continue;
+      }
     }
   }
   console.error("All models failed to translate.");
   return "error";
 }
+
 
 // Accept translation function to finalize the selection.
 function acceptTranslation(option) {
