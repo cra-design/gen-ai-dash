@@ -120,13 +120,21 @@ $("#source-upload-translate-btn").click(async function() {
     var fileExtension = file.name.split('.').pop().toLowerCase();
     if (fileExtension === 'docx') {
       try {
-   
+  
         let arrayBuffer = await file.arrayBuffer();
         let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-        let originalHtml = mammothResult.value;
+        let originalHtml = mammothResult.value; 
 
         let $tempDiv = $('<div>').html(originalHtml);
         let paragraphs = $tempDiv.find('p');
+
+        let paragraphTexts = [];
+        paragraphs.each(function() {
+          let text = $(this).text().trim();
+          paragraphTexts.push(text);
+        });
+        const delimiter = '[[[PARA_BREAK]]]'; 
+        let combinedText = paragraphTexts.join(delimiter);
 
         let selectedLanguage = $('#source-language').val();
         let translationInstructions = "custom-instructions/translation/english2french.txt";
@@ -141,21 +149,22 @@ $("#source-upload-translate-btn").click(async function() {
           "mistralai/mistral-7b-instruct:free"
         ];
 
-        let translationPromises = [];
-        paragraphs.each(function() {
-          let paragraphText = $(this).text().trim();
-          if (paragraphText.length > 0) {
-            translationPromises.push(translateText(paragraphText, models, translationInstructions, selectedLanguage));
-          } else {
-            translationPromises.push(Promise.resolve(""));
-          }
-        });
-        let translations = await Promise.all(translationPromises);
+        let translationResult = await translateText(combinedText, models, translationInstructions, selectedLanguage);
+        if (!translationResult || translationResult === "error") {
+          throw new Error("Translation failed");
+        }
+
+        let translatedParagraphs = translationResult.split(delimiter);
+     
+        if (translatedParagraphs.length !== paragraphTexts.length) {
+          translatedParagraphs = translationResult.split(/\n\s*\n/);
+        }
 
         paragraphs.each(function(index) {
-          let translated = translations[index];
-          let formattedTranslation = translated.split('\n').join('<br>');
-          $(this).html(formattedTranslation);
+          if (translatedParagraphs[index]) {
+            let formattedTranslation = translatedParagraphs[index].split('\n').join('<br>');
+            $(this).html(formattedTranslation);
+          }
         });
 
         $('#translation-A').html($tempDiv.html());
@@ -190,7 +199,7 @@ $("#source-upload-translate-btn").click(async function() {
     let models = [
       "mistralai/mistral-nemo:free",
       "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
-      "cognitivecomputations/dolphin3.0-mistral-24b:free",
+      "cognitivecomputations/dolphin3.0-ristral-24b:free",
       "mistralai/mistral-small-24b-instruct-2501:free",
       "mistralai/mistral-7b-instruct:free"
     ];
