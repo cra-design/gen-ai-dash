@@ -6,6 +6,17 @@ function extractXmlFromFile(file) {
     // Call handleFileExtractionToXML with proper callbacks.
     handleFileExtractionToXML(file, resolve, reject);
   });
+} 
+// Function to format raw translated output into structured HTML.
+// This function splits the text into paragraphs (using double-newlines)
+// and then replaces any remaining single newlines with <br> tags,
+// wrapping each paragraph in <p> tags.
+function formatTranslatedOutput(rawText) {
+  rawText = rawText.trim();
+  // Split into paragraphs on one or more empty lines.
+  let paragraphs = rawText.split(/\n\s*\n/);
+  let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+  return formatted;
 }
 
 $(document).ready(function() {
@@ -118,8 +129,10 @@ $(document).ready(function() {
           updatedXml = await conversionGemini(englishXml, fileExtension);
         } else {
           throw new Error("Unsupported file type for translation.");
-        }
-        $('#translation-A').html(updatedXml);
+        } 
+        // Before placing in the text area, try to format the output using newline tags.
+        let formattedOutput = formatTranslatedOutput(updatedXml);
+        $('#translation-A').html(formattedOutput);
         $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
       } catch (error) {
         console.error("Error during file translation:", error);
@@ -141,6 +154,7 @@ $(document).ready(function() {
           "mistralai/mistral-7b-instruct:free"
       ];
       let translationResult = await translateText(sourceText, models, translationInstructions, selectedLanguage);
+      let formattedOutput = formatTranslatedOutput(translationResult);
       $('#translation-A').html(translationResult);
       // Handle compare options if selected.
       let selectedCompare = $('input[name="translations-instructions-compare"]:checked').val();
