@@ -148,10 +148,9 @@ $(document).ready(function() {
           // Use a delimiter that is unlikely to occur in text.
           const delimiter = "___SPLIT___";
           let joinedText = textNodes.map(node => node.nodeValue).join(delimiter);
-          
           // Set translation instructions and model list.
           let selectedLanguage = $('#source-language').val();
-          let translationInstructions = "custom-instructions/translation/english2french.txt";
+          let translationInstructions = "custom-instructions/translation/english2french1.txt";
           if (selectedLanguage == "French") { 
             translationInstructions = "custom-instructions/translation/french2english.txt"; 
           }
