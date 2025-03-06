@@ -104,6 +104,14 @@ $(document).ready(function() {
     }
   });
 
+  /***********************************************************************
+   * Translate Button Flow:
+   * For file uploads, if DOCX, convert the file to HTML via Mammoth, then traverse the
+   * DOM to extract all text nodes (including titles, bullet points, table cells, etc.),
+   * join them with a unique delimiter, send the entire text for translation,
+   * then split the translated text and reassign each text node.
+   * For plain text, use the existing translation.
+   ***********************************************************************/
   $("#source-upload-translate-btn").click(async function() {
     var selectedOption = $('input[name="source-upload-option"]:checked').val();
     if (selectedOption == "source-upload-doc") {
@@ -114,23 +122,35 @@ $(document).ready(function() {
       }
       var fileExtension = file.name.split('.').pop().toLowerCase();
       
-      // Use a simplified approach for DOCX files
+      // For DOCX files, translate all visible text (titles, bullet points, tables, etc.)
       if (fileExtension === 'docx') {
         try {
-          // Convert the DOCX file to HTML using Mammoth
+          // Convert DOCX to HTML using Mammoth.
           let arrayBuffer = await file.arrayBuffer();
           let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
           let originalHtml = mammothResult.value;
           
-          // Create a temporary DOM element from the HTML.
+          // Create a temporary DOM element to hold the HTML.
           let tempDiv = document.createElement("div");
           tempDiv.innerHTML = originalHtml;
-          // Extract plain text from each <p> element and join with double newline.
-          let pElements = tempDiv.querySelectorAll("p");
-          let plainText = Array.from(pElements).map(p => p.innerText).join("\n\n");
           
-          //  Set translation instructions and model list.
-          var selectedLanguage = $('#source-language').val();
+          // Recursively collect all text nodes.
+          function getTextNodes(root) {
+            let walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+            let nodes = [];
+            let currentNode;
+            while(currentNode = walker.nextNode()) {
+              nodes.push(currentNode);
+            }
+            return nodes;
+          }
+          let textNodes = getTextNodes(tempDiv);
+          // Use a delimiter that is unlikely to occur in text.
+          const delimiter = "___SPLIT___";
+          let joinedText = textNodes.map(node => node.nodeValue).join(delimiter);
+          
+          // Set translation instructions and model list.
+          let selectedLanguage = $('#source-language').val();
           let translationInstructions = "custom-instructions/translation/english2french.txt";
           if (selectedLanguage == "French") { 
             translationInstructions = "custom-instructions/translation/french2english.txt"; 
@@ -143,24 +163,24 @@ $(document).ready(function() {
               "mistralai/mistral-7b-instruct:free"
           ];
           
-          // Translate the entire plain text in one go.
-          let translatedText = await translateText(plainText, models, translationInstructions, selectedLanguage);
-          if (!translatedText || translatedText === "error") {
+          // Translate the full joined text in one call.
+          let translatedJoinedText = await translateText(joinedText, models, translationInstructions, selectedLanguage);
+          if (!translatedJoinedText || translatedJoinedText === "error") {
             alert("Translation failed. Please try again.");
             return;
           }
           
-          // Split the translated text into paragraphs using double newlines.
-          let translatedParagraphs = translatedText.split(/\n\s*\n/);
-          
-          // Replace the content of each <p> element with the corresponding translated paragraph.
-          pElements.forEach((p, index) => {
-            if (translatedParagraphs[index]) {
-              p.innerHTML = translatedParagraphs[index].replace(/\n/g, '<br>');
-            }
+          // Split the translated text back using the delimiter.
+          let translatedSegments = translatedJoinedText.split(delimiter);
+          if (translatedSegments.length < textNodes.length) {
+            console.error("Mismatch in number of translated segments vs text nodes");
+          }
+          // Replace each text node's value with its translated counterpart.
+          textNodes.forEach((node, index) => {
+            node.nodeValue = translatedSegments[index] || "";
           });
           
-          //  Display the final formatted translated HTML in the text area.
+          // Now tempDiv contains the fully translated HTML preserving structure.
           $('#translation-A').html(tempDiv.innerHTML);
           $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
         } catch (error) {
@@ -378,7 +398,8 @@ function createXmlContent(fileExtension, updatedXml) {
   return xmlContent;
 }
 
-// (The fallbackAlignLines, conversionDocxTemplater, conversionGemini, translateText, acceptTranslation, and detectLanguageBasedOnWords functions remain unchanged.)
+// (The functions fallbackAlignLines, conversionDocxTemplater, conversionGemini, translateText, acceptTranslation, and detectLanguageBasedOnWords remain unchanged.)
+
 function fallbackAlignLines(originalLines, adjustedText) {
   let words = adjustedText.split(/\s+/).filter(w => w.trim() !== "");
   let targetLineCount = originalLines.length;
