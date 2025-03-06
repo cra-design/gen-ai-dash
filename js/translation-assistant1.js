@@ -136,16 +136,15 @@ $(document).ready(function() {
           
           // Recursively collect all text nodes.
           function getTextNodes(root) {
-          let walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
-          let nodes = [];
-          let currentNode;
-          while (currentNode = walker.nextNode()) {
-          nodes.push(currentNode);
+            let walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+            let nodes = [];
+            let currentNode;
+            while(currentNode = walker.nextNode()) {
+              nodes.push(currentNode);
             }
-          return nodes;
+            return nodes;
           }
-          let textNodes = getTextNodes(tempDiv); 
-          
+          let textNodes = getTextNodes(tempDiv);
           // Use a delimiter that is unlikely to occur in text.
           const delimiter = "___SPLIT___"; 
           let joinedText = textNodes.map(node => node.nodeValue).join(delimiter);
@@ -181,10 +180,7 @@ $(document).ready(function() {
           if (!translatedJoinedText) {
       alert("Translation failed. No valid response from any model.");
       return;
-    } 
-          translatedJoinedText = translatedJoinedText.replace(/^Here's the translated text using your guidelines and the DeepL glossary provided:\s*/, '');
-    translatedJoinedText = translatedJoinedText.replace(/"$/, ''); 
-          
+    }
           // Split the translated text back using the delimiter.
           let translatedSegments = translatedJoinedText.split(delimiter);
           if (translatedSegments.length !== textNodes.length) {
