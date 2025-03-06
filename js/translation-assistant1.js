@@ -120,30 +120,36 @@ $(document).ready(function() {
       var fileExtension = file.name.split('.').pop().toLowerCase();
       if (fileExtension === 'docx') {
         try {
-          //Extract English XML from the uploaded DOCX file.
+          // NEW CODE: Extract English XML from the uploaded DOCX file.
           const englishXml = await extractXmlFromFile(file);
           if (!englishXml) { throw new Error("No XML extracted from file."); }
-          // Use original method to translate, producing French XML.
+          // NEW CODE: Use original method to translate, producing French XML.
           let updatedXml = await conversionDocxTemplater(englishXml);
-          // Remove XML tags (<w:t>) to get plain French translation.
+          // 如果转换失败，则提示并退出，防止后续调用 replace 时出错
+          if (!updatedXml) {
+            alert("Translation failed. Please try again.");
+            $('#converting-spinner').addClass("hidden");
+            return;
+          }
+          // NEW CODE: Remove XML tags (<w:t>) to get plain French translation.
           let frenchPlain = updatedXml.replace(/<w:t[^>]*>/g, "").replace(/<\/w:t>/g, "");
-          // Convert original DOCX file to HTML using Mammoth to preserve formatting.
+          // NEW CODE: Convert original DOCX file to HTML using Mammoth to preserve formatting.
           let arrayBuffer = await file.arrayBuffer();
           let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
           let originalHtml = mammothResult.value;
-          //CODE: Create a temporary DOM element from the HTML.
+          // NEW CODE: Create a temporary DOM element from the HTML.
           let tempDiv = document.createElement("div");
           tempDiv.innerHTML = originalHtml;
-          // CODE: Split the French plain text into paragraphs using double newlines.
+          // NEW CODE: Split the French plain text into paragraphs using double newlines.
           let frenchParagraphs = frenchPlain.split(/\n\s*\n/);
-          //CODE: Replace each <p> element's content with the corresponding French translation.
+          // NEW CODE: Replace each <p> element's content with the corresponding French translation.
           let pTags = tempDiv.querySelectorAll("p");
           pTags.forEach((p, index) => {
             if (frenchParagraphs[index]) {
               p.innerHTML = frenchParagraphs[index].replace(/\n/g, '<br>');
             }
           });
-          //CODE: Set the final HTML with preserved formatting into the translation text box.
+          // NEW CODE: Set the final HTML with preserved formatting into the translation text box.
           $('#translation-A').html(tempDiv.innerHTML);
           $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
         } catch (error) {
