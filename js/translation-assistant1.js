@@ -104,11 +104,6 @@ $(document).ready(function() {
     }
   });
 
-  /***********************************************************************
-   * Translate Button Flow:
-   * For file uploads, extract XML and use a conversion function that applies 
-   * milestone matching (with retries). For plain text, use the existing translation.
-   ***********************************************************************/
   $("#source-upload-translate-btn").click(async function() {
     var selectedOption = $('input[name="source-upload-option"]:checked').val();
     if (selectedOption == "source-upload-doc") {
@@ -118,37 +113,54 @@ $(document).ready(function() {
         return;
       }
       var fileExtension = file.name.split('.').pop().toLowerCase();
+      
+      // Use a simplified approach for DOCX files
       if (fileExtension === 'docx') {
         try {
-          // NEW CODE: Extract English XML from the uploaded DOCX file.
-          const englishXml = await extractXmlFromFile(file);
-          if (!englishXml) { throw new Error("No XML extracted from file."); }
-          // NEW CODE: Use original method to translate, producing French XML.
-          let updatedXml = await conversionDocxTemplater(englishXml);
-          // 如果转换失败，则直接退出（fallback 已在 conversionDocxTemplater 内处理）
-          if (!updatedXml) {
-            console.error("Conversion returned no result. Aborting translation.");
-            return;
-          }
-          // NEW CODE: Remove XML tags (<w:t>) to get plain French translation.
-          let frenchPlain = updatedXml.replace(/<w:t[^>]*>/g, "").replace(/<\/w:t>/g, "");
-          // NEW CODE: Convert original DOCX file to HTML using Mammoth to preserve formatting.
+          // Convert the DOCX file to HTML using Mammoth
           let arrayBuffer = await file.arrayBuffer();
           let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
           let originalHtml = mammothResult.value;
-          // NEW CODE: Create a temporary DOM element from the HTML.
+          
+          // Create a temporary DOM element from the HTML.
           let tempDiv = document.createElement("div");
           tempDiv.innerHTML = originalHtml;
-          // NEW CODE: Split the French plain text into paragraphs using double newlines.
-          let frenchParagraphs = frenchPlain.split(/\n\s*\n/);
-          // NEW CODE: Replace each <p> element's content with the corresponding French translation.
-          let pTags = tempDiv.querySelectorAll("p");
-          pTags.forEach((p, index) => {
-            if (frenchParagraphs[index]) {
-              p.innerHTML = frenchParagraphs[index].replace(/\n/g, '<br>');
+          // Extract plain text from each <p> element and join with double newline.
+          let pElements = tempDiv.querySelectorAll("p");
+          let plainText = Array.from(pElements).map(p => p.innerText).join("\n\n");
+          
+          //  Set translation instructions and model list.
+          var selectedLanguage = $('#source-language').val();
+          let translationInstructions = "custom-instructions/translation/english2french.txt";
+          if (selectedLanguage == "French") { 
+            translationInstructions = "custom-instructions/translation/french2english.txt"; 
+          }
+          let models = [
+              "mistralai/mistral-nemo:free",
+              "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+              "cognitivecomputations/dolphin3.0-mistral-24b:free",
+              "mistralai/mistral-small-24b-instruct-2501:free",
+              "mistralai/mistral-7b-instruct:free"
+          ];
+          
+          // Translate the entire plain text in one go.
+          let translatedText = await translateText(plainText, models, translationInstructions, selectedLanguage);
+          if (!translatedText || translatedText === "error") {
+            alert("Translation failed. Please try again.");
+            return;
+          }
+          
+          // Split the translated text into paragraphs using double newlines.
+          let translatedParagraphs = translatedText.split(/\n\s*\n/);
+          
+          // Replace the content of each <p> element with the corresponding translated paragraph.
+          pElements.forEach((p, index) => {
+            if (translatedParagraphs[index]) {
+              p.innerHTML = translatedParagraphs[index].replace(/\n/g, '<br>');
             }
           });
-          // NEW CODE: Set the final HTML with preserved formatting into the translation text box.
+          
+          //  Display the final formatted translated HTML in the text area.
           $('#translation-A').html(tempDiv.innerHTML);
           $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
         } catch (error) {
@@ -174,7 +186,9 @@ $(document).ready(function() {
       var sourceText = $("#source-text").text();
       var selectedLanguage = $('#source-language').val();
       let translationInstructions = "custom-instructions/translation/english2french.txt";
-      if (selectedLanguage == "French") { translationInstructions = "custom-instructions/translation/french2english.txt"; }
+      if (selectedLanguage == "French") { 
+        translationInstructions = "custom-instructions/translation/french2english.txt"; 
+      }
       $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
       let models = [
           "mistralai/mistral-nemo:free",
@@ -364,8 +378,7 @@ function createXmlContent(fileExtension, updatedXml) {
   return xmlContent;
 }
 
-// Helper function to align lines using word counts without GenAI.
-// This fallback splits the entire adjusted text into words and groups them evenly.
+// (The fallbackAlignLines, conversionDocxTemplater, conversionGemini, translateText, acceptTranslation, and detectLanguageBasedOnWords functions remain unchanged.)
 function fallbackAlignLines(originalLines, adjustedText) {
   let words = adjustedText.split(/\s+/).filter(w => w.trim() !== "");
   let targetLineCount = originalLines.length;
@@ -378,8 +391,6 @@ function fallbackAlignLines(originalLines, adjustedText) {
   return newLines;
 }
 
-// Conversion function for DOCX using milestone matching (Method A).
-// It extracts <w:t> nodes, splits them into chunks, and uses GenAI (with retries) to align line counts.
 async function conversionDocxTemplater(englishXml) {
   const textNodes = [];
   const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
@@ -415,7 +426,7 @@ async function conversionDocxTemplater(englishXml) {
     let adjustedChunkText;
     if (!ORjson || !ORjson.choices || !ORjson.choices[0] || !ORjson.choices[0].message) {
       console.error("No response from GenAI for chunk", chunkCounter, "using fallback.");
-      adjustedChunkText = translatedText; // fallback to overall translation text
+      adjustedChunkText = translatedText;
     } else {
       adjustedChunkText = ORjson.choices[0].message.content;
     }
@@ -448,11 +459,9 @@ async function conversionDocxTemplater(englishXml) {
   const translatedLines = adjustedFrenchText.split(/[\r\n]+/).filter(line => line.trim() !== "");
   if (textNodes.length !== translatedLines.length) {
     console.error("Mismatch between full documents after alignment. Using fallback for entire document.");
-    // Fallback: evenly distribute overall translated text to match number of text nodes.
     adjustedFrenchText = fallbackAlignLines(textNodes, translatedText).join("\n");
   }
   
-  // Replace each original XML text node with its corresponding translated line.
   let updatedXml = englishXml;
   textNodes.forEach((node, index) => {
     const escapedNode = node.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -462,7 +471,6 @@ async function conversionDocxTemplater(englishXml) {
   return updatedXml;
 }
 
-// Conversion function for PPTX/XLSX using a similar approach.
 async function conversionGemini(englishXml, fileType) {
   let groups = [];
   let formattedChunks = [];
@@ -550,7 +558,6 @@ function extractRowContent(chunk) {
   return chunk.match(/<row[\s\S]*?<\/row>/g) || [];
 }
 
-// Translation function that calls the GenAI API with optional glossary support.
 async function translateText(source, models, instructions, sourceLanguage) {
   const systemGeneral = { role: "system", content: await $.get(instructions) };
   var glossary;
@@ -591,7 +598,6 @@ async function translateText(source, models, instructions, sourceLanguage) {
   return "error";
 }
 
-// Accept translation function to finalize the selection.
 function acceptTranslation(option) {
   if (option == "b") { $("#translation-A").text($("#translation-B").text()); }
   $("#edit-translation-A-btn").removeClass("hidden");
@@ -600,7 +606,6 @@ function acceptTranslation(option) {
   toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
 }
 
-// Simple language detection based on keyword matches.
 function detectLanguageBasedOnWords(text) {
   const englishWords = ['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'on', 'with'];
   const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
