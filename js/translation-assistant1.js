@@ -146,7 +146,7 @@ $(document).ready(function() {
           }
           let textNodes = getTextNodes(tempDiv);
           // Use a delimiter that is unlikely to occur in text.
-          const delimiter = "___SPLIT___";
+          const delimiter = "___SPLIT___"; 
           let joinedText = textNodes.map(node => node.nodeValue).join(delimiter);
           // Set translation instructions and model list.
           let selectedLanguage = $('#source-language').val();
@@ -161,24 +161,35 @@ $(document).ready(function() {
               "mistralai/mistral-small-24b-instruct-2501:free",
               "mistralai/mistral-7b-instruct:free"
           ];
-          
-          // Translate the full joined text in one call.
-          let translatedJoinedText = await translateText(joinedText, models, translationInstructions, selectedLanguage);
-          if (!translatedJoinedText || translatedJoinedText === "error") {
-            alert("Translation failed. Please try again.");
-            return;
+
+          let systemPrompt = await $.get(translationInstructions); 
+
+           let requestJson = [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: joinedText }
+          ]; 
+
+          let translatedJoinedText = null;
+          for (let model of models) {
+          let ORjson = await getORData(model, requestJson);
+          if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
+          translatedJoinedText = ORjson.choices[0].message.content;
+          break;
           }
-          
+        }
+          if (!translatedJoinedText) {
+      alert("Translation failed. No valid response from any model.");
+      return;
+    }
           // Split the translated text back using the delimiter.
           let translatedSegments = translatedJoinedText.split(delimiter);
-          if (translatedSegments.length < textNodes.length) {
-            console.error("Mismatch in number of translated segments vs text nodes");
-          }
+          if (translatedSegments.length !== textNodes.length) {
+      console.warn("Mismatch in number of segments. Possibly some delimiters were removed.");
+    }
           // Replace each text node's value with its translated counterpart.
           textNodes.forEach((node, index) => {
             node.nodeValue = translatedSegments[index] || "";
           });
-          
           // Now tempDiv contains the fully translated HTML preserving structure.
           $('#translation-A').html(tempDiv.innerHTML);
           $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
