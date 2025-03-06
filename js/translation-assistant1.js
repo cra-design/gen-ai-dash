@@ -124,64 +124,70 @@ $(document).ready(function() {
       
       // For DOCX files, translate all visible text (titles, bullet points, tables, etc.)
       if (fileExtension === 'docx') {
-        try {
-          // Convert DOCX to HTML using Mammoth.
-          let arrayBuffer = await file.arrayBuffer();
-          let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-          let originalHtml = mammothResult.value;
-          
-          // Create a temporary DOM element to hold the HTML.
-          let tempDiv = document.createElement("div");
-          tempDiv.innerHTML = originalHtml;
-          
-          // Recursively collect all text nodes.
-          function getTextNodes(root) {
-          let walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
-          let nodes = [];
-          let currentNode;
-          while (currentNode = walker.nextNode()) {
-          nodes.push(currentNode);
-            }
-          return nodes;
-          }
-          let textNodes = getTextNodes(tempDiv);
-          // Use a delimiter that is unlikely to occur in text.
-          const delimiter = "<<<DELIM>>>"; 
-          let joinedText = textNodes.map(node => node.nodeValue).join(delimiter);
-          // Set translation instructions and model list.
-          let selectedLanguage = $('#source-language').val();
-          let translationInstructions = "custom-instructions/translation/english2french1.txt";
-          if (selectedLanguage == "French") { 
-            translationInstructions = "custom-instructions/translation/french2english.txt"; 
-          }
-          let models = [
-              "mistralai/mistral-nemo:free",
-              "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
-              "cognitivecomputations/dolphin3.0-mistral-24b:free",
-              "mistralai/mistral-small-24b-instruct-2501:free",
-              "mistralai/mistral-7b-instruct:free"
-          ];
-
-          let systemPrompt = await $.get(translationInstructions); 
-
-           let requestJson = [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: joinedText }
-          ]; 
-
-          let translatedJoinedText = null;
-          for (let model of models) {
-          let ORjson = await getORData(model, requestJson);
-          if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
-          translatedJoinedText = ORjson.choices[0].message.content;
-          break;
-          }
-        }
-          if (!translatedJoinedText) {
+  try {
+    // Convert DOCX to HTML using Mammoth.
+    let arrayBuffer = await file.arrayBuffer();
+    let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+    let originalHtml = mammothResult.value;
+    
+    // Create a temporary DOM element to hold the HTML.
+    let tempDiv = document.createElement("div");
+    tempDiv.innerHTML = originalHtml;
+    
+    // Recursively collect all text nodes.
+    function getTextNodes(root) {
+      let walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+      let nodes = [];
+      let currentNode;
+      while (currentNode = walker.nextNode()) {
+        nodes.push(currentNode);
+      }
+      return nodes;
+    }
+    let textNodes = getTextNodes(tempDiv);
+    
+    // Use a delimiter that is unlikely to occur in text.
+    const delimiter = "<<<DELIM>>>";
+    let joinedText = textNodes.map(node => node.nodeValue).join(delimiter);
+    
+    // Set translation instructions and model list.
+    let selectedLanguage = $('#source-language').val();
+    let translationInstructions = "custom-instructions/translation/english2french1.txt";
+    if (selectedLanguage == "French") { 
+      translationInstructions = "custom-instructions/translation/french2english.txt"; 
+    }
+    let models = [
+      "mistralai/mistral-nemo:free",
+      "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+      "cognitivecomputations/dolphin3.0-mistral-24b:free",
+      "mistralai/mistral-small-24b-instruct-2501:free",
+      "mistralai/mistral-7b-instruct:free"
+    ];
+    
+    // Load the system prompt from your file.
+    let systemPrompt = await $.get(translationInstructions);
+    
+    // Build the request JSON.
+    let requestJson = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: joinedText }
+    ];
+    
+    // Iterate over model list until one returns a valid response.
+    let translatedJoinedText = null;
+    for (let model of models) {
+      let ORjson = await getORData(model, requestJson);
+      if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
+        translatedJoinedText = ORjson.choices[0].message.content;
+        break;
+      }
+    }
+    if (!translatedJoinedText) {
       alert("Translation failed. No valid response from any model.");
       return;
-    } 
-          // Remove any extraneous content before the first occurrence and after the last occurrence of the delimiter.
+    }
+    
+    // Remove extraneous content before the first occurrence and after the last occurrence of the delimiter.
     function cleanTranslatedText(text, delimiter) {
       let first = text.indexOf(delimiter);
       if (first !== -1) {
@@ -195,28 +201,43 @@ $(document).ready(function() {
     }
     translatedJoinedText = cleanTranslatedText(translatedJoinedText, delimiter);
     
-          // Split the translated text back using the delimiter.
-          let translatedSegments = translatedJoinedText.split(delimiter);
-          if (translatedSegments.length !== textNodes.length) {
+    // Split the translated text back using the delimiter.
+    let translatedSegments = translatedJoinedText.split(delimiter);
+    if (translatedSegments.length !== textNodes.length) {
       console.warn("Mismatch in number of segments. Possibly some delimiters were removed.");
+      // Fallback: Normalize the entire raw translated output as HTML.
+      function normalizeHtmlContent(htmlContent) {
+        let $container = $("<div>").html(htmlContent);
+        $container.contents().filter(function() {
+          return this.nodeType === 3 && !/\S/.test(this.nodeValue);
+        }).remove();
+        return $container.html().trim();
+      }
+      let finalHtml = normalizeHtmlContent(translatedJoinedText);
+      $('#translation-A').html(finalHtml);
+    } else {
+      // Reassign each text node's value with its corresponding translated segment.
+      textNodes.forEach((node, index) => {
+        node.nodeValue = translatedSegments[index] || "";
+      });
+      // Optional: further normalize the resulting HTML.
+      function normalizeHtmlContent(htmlContent) {
+        let $container = $("<div>").html(htmlContent);
+        $container.contents().filter(function() {
+          return this.nodeType === 3 && !/\S/.test(this.nodeValue);
+        }).remove();
+        return $container.html().trim();
+      }
+      let normalizedHtml = normalizeHtmlContent(tempDiv.innerHTML);
+      $('#translation-A').html(normalizedHtml);
     }
-          // Replace each text node's value with its translated counterpart.
-          textNodes.forEach((node, index) => {
-            node.nodeValue = translatedSegments[index] || "";
-          }); 
-
-          //Normalize the final HTML content.
-    function normalizeHtmlContent(htmlContent) { 
-       let $container = $("<div>").html(htmlContent);
-      // Remove extra whitespace and trim any extra content outside the main paragraphs.
-       $container.contents().filter(function() {
-    return this.nodeType === 3 && !/\S/.test(this.nodeValue);
-  }).remove();
-  // Return the cleaned-up HTML.
-  return $container.html().trim();
-}
-    let normalizedHtml = normalizeHtmlContent(tempDiv.innerHTML);
     
+    $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+  } catch (error) {
+    console.error("Error during DOCX translation:", error);
+    alert("Error during file translation. Please check the console for details.");
+  }
+}
           // Now tempDiv contains the fully translated HTML preserving structure.
           $('#translation-A').html(tempDiv.innerHTML);
           $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
