@@ -203,7 +203,20 @@ $(document).ready(function() {
           // Replace each text node's value with its translated counterpart.
           textNodes.forEach((node, index) => {
             node.nodeValue = translatedSegments[index] || "";
-          });
+          }); 
+
+          //Normalize the final HTML content.
+    function normalizeHtmlContent(htmlContent) { 
+       let $container = $("<div>").html(htmlContent);
+      // Remove extra whitespace and trim any extra content outside the main paragraphs.
+       $container.contents().filter(function() {
+    return this.nodeType === 3 && !/\S/.test(this.nodeValue);
+  }).remove();
+  // Return the cleaned-up HTML.
+  return $container.html().trim();
+}
+    let normalizedHtml = normalizeHtmlContent(tempDiv.innerHTML);
+    
           // Now tempDiv contains the fully translated HTML preserving structure.
           $('#translation-A').html(tempDiv.innerHTML);
           $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
