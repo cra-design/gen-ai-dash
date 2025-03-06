@@ -136,17 +136,17 @@ $(document).ready(function() {
           
           // Recursively collect all text nodes.
           function getTextNodes(root) {
-            let walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
-            let nodes = [];
-            let currentNode;
-            while(currentNode = walker.nextNode()) {
-              nodes.push(currentNode);
+          let walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+          let nodes = [];
+          let currentNode;
+          while (currentNode = walker.nextNode()) {
+          nodes.push(currentNode);
             }
-            return nodes;
+          return nodes;
           }
           let textNodes = getTextNodes(tempDiv);
           // Use a delimiter that is unlikely to occur in text.
-          const delimiter = "___SPLIT___"; 
+          const delimiter = "<<<DELIM>>>"; 
           let joinedText = textNodes.map(node => node.nodeValue).join(delimiter);
           // Set translation instructions and model list.
           let selectedLanguage = $('#source-language').val();
@@ -180,7 +180,21 @@ $(document).ready(function() {
           if (!translatedJoinedText) {
       alert("Translation failed. No valid response from any model.");
       return;
+    } 
+          // Remove any extraneous content before the first occurrence and after the last occurrence of the delimiter.
+    function cleanTranslatedText(text, delimiter) {
+      let first = text.indexOf(delimiter);
+      if (first !== -1) {
+        text = text.substring(first);
+      }
+      let last = text.lastIndexOf(delimiter);
+      if (last !== -1 && last + delimiter.length < text.length) {
+        text = text.substring(0, last + delimiter.length);
+      }
+      return text;
     }
+    translatedJoinedText = cleanTranslatedText(translatedJoinedText, delimiter);
+    
           // Split the translated text back using the delimiter.
           let translatedSegments = translatedJoinedText.split(delimiter);
           if (translatedSegments.length !== textNodes.length) {
