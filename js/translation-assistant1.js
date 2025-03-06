@@ -125,10 +125,9 @@ $(document).ready(function() {
           if (!englishXml) { throw new Error("No XML extracted from file."); }
           // NEW CODE: Use original method to translate, producing French XML.
           let updatedXml = await conversionDocxTemplater(englishXml);
-          // 如果转换失败，则提示并退出，防止后续调用 replace 时出错
+          // 如果转换失败，则直接退出（fallback 已在 conversionDocxTemplater 内处理）
           if (!updatedXml) {
-            alert("Translation failed. Please try again.");
-            $('#converting-spinner').addClass("hidden");
+            console.error("Conversion returned no result. Aborting translation.");
             return;
           }
           // NEW CODE: Remove XML tags (<w:t>) to get plain French translation.
@@ -413,25 +412,19 @@ async function conversionDocxTemplater(englishXml) {
     ];
     
     let ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
+    let adjustedChunkText;
     if (!ORjson || !ORjson.choices || !ORjson.choices[0] || !ORjson.choices[0].message) {
-      alert("No response from GenAI. Please try again.");
-      $('#converting-spinner').addClass("hidden");
-      return;
+      console.error("No response from GenAI for chunk", chunkCounter, "using fallback.");
+      adjustedChunkText = translatedText; // fallback to overall translation text
+    } else {
+      adjustedChunkText = ORjson.choices[0].message.content;
     }
     
-    let adjustedChunkText = ORjson.choices[0].message.content;
-    // Use a robust newline split (matches \r, \n, or both).
     let adjustedLines = adjustedChunkText.split(/[\r\n]+/).filter(line => line.trim() !== "");
     let retryCount = 0;
     
-    // If the number of lines does not match, attempt retries...
-    while (chunk.length !== adjustedLines.length) {
-      if (retryCount >= 3) {
-        console.log("Too many retries. Falling back to fallbackAlignLines.");
-        adjustedLines = fallbackAlignLines(chunk, adjustedChunkText);
-        break;
-      }
-      console.log("Mismatch detected, sending back for adjustment... " + chunkCounter);
+    while (chunk.length !== adjustedLines.length && retryCount < 3) {
+      console.log("Mismatch detected for chunk", chunkCounter, "attempting adjustment.");
       const retryRequestJson = [
         retrySystemGeneral,
         { role: "user", content: "English Reference (" + chunk.length + " lines): " + englishReference },
@@ -439,9 +432,9 @@ async function conversionDocxTemplater(englishXml) {
       ];
       const retryORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", retryRequestJson);
       if (!retryORjson || !retryORjson.choices || !retryORjson.choices[0] || !retryORjson.choices[0].message) {
-        alert("Error adjusting the French text. Please try again.");
-        $('#converting-spinner').addClass("hidden");
-        return;
+        console.error("Error adjusting the French text for chunk", chunkCounter, "using fallback.");
+        adjustedLines = fallbackAlignLines(chunk, translatedText);
+        break;
       }
       adjustedChunkText = retryORjson.choices[0].message.content;
       adjustedLines = adjustedChunkText.split(/[\r\n]+/).filter(line => line.trim() !== "");
@@ -454,9 +447,9 @@ async function conversionDocxTemplater(englishXml) {
   
   const translatedLines = adjustedFrenchText.split(/[\r\n]+/).filter(line => line.trim() !== "");
   if (textNodes.length !== translatedLines.length) {
-    alert("Mismatch between full documents after alignment.");
-    $('#converting-spinner').addClass("hidden");
-    return;
+    console.error("Mismatch between full documents after alignment. Using fallback for entire document.");
+    // Fallback: evenly distribute overall translated text to match number of text nodes.
+    adjustedFrenchText = fallbackAlignLines(textNodes, translatedText).join("\n");
   }
   
   // Replace each original XML text node with its corresponding translated line.
@@ -464,7 +457,7 @@ async function conversionDocxTemplater(englishXml) {
   textNodes.forEach((node, index) => {
     const escapedNode = node.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
     const regexNode = new RegExp(`<w:t[^>]*>${escapedNode}<\/w:t>`);
-    updatedXml = updatedXml.replace(regexNode, `<w:t>${translatedLines[index]}</w:t>`);
+    updatedXml = updatedXml.replace(regexNode, `<w:t>${translatedLines[index] || ""}</w:t>`);
   });
   return updatedXml;
 }
