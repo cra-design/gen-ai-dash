@@ -173,7 +173,7 @@ $(document).ready(function() {
       { role: "user", content: joinedText }
     ];
     
-    // Iterate over model list until one returns a valid response.
+    // Iterate over your model list until one returns a valid response.
     let translatedJoinedText = null;
     for (let model of models) {
       let ORjson = await getORData(model, requestJson);
