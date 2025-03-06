@@ -237,15 +237,7 @@ $(document).ready(function() {
     console.error("Error during DOCX translation:", error);
     alert("Error during file translation. Please check the console for details.");
   }
-}
-          // Now tempDiv contains the fully translated HTML preserving structure.
-          $('#translation-A').html(tempDiv.innerHTML);
-          $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
-        } catch (error) {
-          console.error("Error during DOCX translation:", error);
-          alert("Error during file translation. Please check the console for details.");
-        }
-      } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
+}else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
         try {
           const englishXml = await extractXmlFromFile(file);
           if (!englishXml) { throw new Error("No XML extracted from file."); }
