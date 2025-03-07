@@ -6,4 +6,6 @@ Populate the topic page template provided for a navigation page that helps the u
 - Include most requested links only if they are shortcuts to popular links that aren't already linked in the doormats
 - Include 3-12 doormat links with clear link text and succinct, scannable descriptions
 
+Delete the HTML comments after populating the template.
+
 Only provide the completed template, no description or explanation is required. Ensure the code is clean, sticks to the template options and is semantically correct.
