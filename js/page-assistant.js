@@ -158,18 +158,13 @@ $(document).ready(function() {
 
   $("#template-options-btn").click(async function() {
     let template = $('input[name="template-options"]:checked').val();
-    console.log(template);
     //1) Strip header/footer from page code to focus prompt on page content
     let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate($("#fullHtml code").text());
-    console.log(extractedHtml);
     //2) Send page body code + template code to genAI
     let systemGeneral = { role: "system", content: await $.get("custom-instructions/system/template-application.txt") };
-    console.log(systemGeneral);
     let systemTemplate = { role: "system", content: await $.get(template) };
-    console.log(systemTemplate);
     let userContent = { role: "user", content: extractedHtml};
     let requestJson = [systemGeneral, systemTemplate, userContent];
-    console.log(requestJson);
     // Send it to the API
     try {
       let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
