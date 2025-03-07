@@ -10,7 +10,6 @@ function extractXmlFromFile(file) {
 }
 
 // Function to format raw translated output into structured HTML.
-// Splits text into paragraphs using double-newlines and replaces remaining newlines with <br> tags.
 function formatTranslatedOutput(rawText) {
   if (!rawText) return "";
   rawText = rawText.trim();
