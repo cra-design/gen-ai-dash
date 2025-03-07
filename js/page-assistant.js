@@ -160,8 +160,7 @@ $(document).ready(function() {
     let template = $('input[name="template-options"]:checked').val();
     console.log(template);
     //1) Strip header/footer from page code to focus prompt on page content
-    html = applySimpleHtmlTemplate($("#fullHtml code").text());
-    let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
+    let { extractedHtml, metadata, mainClassMatch } = applySimpleHtmlTemplate($("#fullHtml code").text());
     //2) Send page body code + template code to genAI
     let systemGeneral = { role: "system", content: await $.get("template-application.txt") };
     let systemTemplate = { role: "system", content: await $.get(template) };
@@ -248,7 +247,6 @@ $(document).ready(function() {
       // userContent.content += $("#html-input").html();
     // } else if ($('#url-upload-preview').is(':visible')) {
       let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate($("#fullHtml code").text()); //strip header/footer for size
-      // let  = await applySimpleHtmlTemplate(html); //keep metadata for later
       userContent.content += extractedHtml; //give it the full page html minus metadata
       userData.content += "Search terms: " + $("#search-terms-input").text(); //give it any data we have
       userData.content += "Page feedback summary: " + $("#feedback-summary-input").text();
