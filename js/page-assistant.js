@@ -654,7 +654,8 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
       newFooter = newFooter.replace('</main>', newDate);
     }
     //add in the metadata stripped from original code
-    newHeader = newHeader.replace('</head>', `${metadata}</head>`)
+    newHeader = newHeader.replace('</head>', `${metadata}</head>`);
+    console.log(newHeader);
     // If the class="container" exists when stripped in simpleHtmlTemplate, use it; otherwise, we'll add the class and the <div class="main">
     if (mainClassMatch) {
       // If class="container" exists, replace the <main> tag in the newHeader file with the class included
@@ -834,7 +835,9 @@ async function updateIframeFromURL(url) {
         }
         //Process HTML to replace header/footer
         let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
+        console.log(metadata);
         extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
+
         // Extract fields from the HTML
         const fields = extractFields(extractedHtml);
         // Render fields and page code
