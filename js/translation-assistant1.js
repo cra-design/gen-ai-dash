@@ -416,10 +416,11 @@ $("#source-upload-provide-btn").click(function() {
     alert("Translation alignment failed. No valid response from any model.");
     return;
   }
+     console.log("Final French HTML:", finalFrenchHtml);
 
     // 4) Display the final merged output in #review-translation
      $("#review-translation").html(finalFrenchHtml);
-    $("#review-translation").removeClass("hidden");
+     $("#translation-preview").removeClass("hidden").show(); 
   });
     
   // Accept and edit translation button handlers.
