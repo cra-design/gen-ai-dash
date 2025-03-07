@@ -156,18 +156,14 @@ $(document).ready(function() {
     acceptIframe("b");
   });
 
-  $("#template-options-btn").click(function() {
+  $("#template-options-btn").click(async function() {
     let template = $('input[name="template-options"]:checked').val();
     console.log(template);
-    //1) Strip header/footer from page code
+    //1) Strip header/footer from page code to focus prompt on page content
     html = applySimpleHtmlTemplate($("#fullHtml code").text());
     let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
-    //extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
-
-
-
-
     //2) Send page body code + template code to genAI
+
     //3) Trim response
     //4) make side-by-side accept/deny block in the code - use the fullHtmlCompare and iframeB?
       //Maybe refresh the iframe with the suggested code too?
@@ -175,7 +171,7 @@ $(document).ready(function() {
 
 
 
-    //extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
+    extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
 
   });
 
