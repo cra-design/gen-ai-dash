@@ -592,17 +592,22 @@ async function applySimpleHtmlTemplate(extractedHtml) {
         footerResponse.text()
     ]);
 
-    // Extract only <title>, <meta name="description">, and <meta name="keywords">
-    const titleMatch = extractedHtml.match(/<title[^>]*>.*?<\/title>/);
-    const descriptionMatch = extractedHtml.match(/<meta\s+name=["']description["'][^>]*>/);
-    const keywordsMatch = extractedHtml.match(/<meta\s+name=["']keywords["'][^>]*>/);
+    //ALL METADATA
+     // Extract metadata fields from the original extractedHtml (if any)
+    const metadataMatches = extractedHtml.match(/<meta[^>]*>|<title[^>]*>.*?<\/title>|<link[^>]*>/g) || [];
+    const metadata = metadataMatches.join("\n");
 
-    // Join the matches if they exist, otherwise set to empty string
-    const metadata = [
-      titleMatch ? titleMatch[0] : '',
-      descriptionMatch ? descriptionMatch[0] : '',
-      keywordsMatch ? keywordsMatch[0] : ''
-    ].join("\n");
+    //SPECIFIC METADATA
+    // const titleMatch = extractedHtml.match(/<title[^>]*>.*?<\/title>/);
+    // const descriptionMatch = extractedHtml.match(/<meta\s+name=["']description["'][^>]*>/);
+    // const keywordsMatch = extractedHtml.match(/<meta\s+name=["']keywords["'][^>]*>/);
+    //
+    // // Join the matches if they exist, otherwise set to empty string
+    // const metadata = [
+    //   titleMatch ? titleMatch[0] : '',
+    //   descriptionMatch ? descriptionMatch[0] : '',
+    //   keywordsMatch ? keywordsMatch[0] : ''
+    // ].join("\n");
 
     // Check if <main> has class="container"
     const mainClassMatch = extractedHtml.match(/<main[^>]*class=["']([^"']*container[^"']*)["'][^>]*>/);
