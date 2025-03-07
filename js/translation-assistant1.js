@@ -298,17 +298,19 @@ $(document).ready(function() {
 
   // 'Provide translation' button, show the second upload section
   $("#source-upload-provide-btn").click(function() {
-    $("#second-upload").removeClass("hidden");
+    $("#second-upload").removeClass("hidden"); 
+    console.log($("#translation-A").html());
   });
 
   // Second upload: manual translation.
   $("#second-upload-btn").click(async function() {
-    var selectedOption = $('input[name="second-upload-option"]:checked').val(); 
+    var selectedOption = $('input[name="second-upload-option"]:checked').val();  
     let frenchText = ""; 
     
     // 1) Get the raw French text from doc or text:
     if (selectedOption == "second-upload-doc") {
-      var file = $('#second-file')[0].files[0];
+      var file = $('#second-file')[0].files[0]; 
+      console.log("French text:", frenchText);
       if (!file) {
         alert("Please select your translated file.");
         return;
