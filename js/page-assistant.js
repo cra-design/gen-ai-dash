@@ -247,8 +247,8 @@ $(document).ready(function() {
     // if ($('#html-upload-preview').is(':visible')) {
       // userContent.content += $("#html-input").html();
     // } else if ($('#url-upload-preview').is(':visible')) {
-      let html = applySimpleHtmlTemplate($("#fullHtml code").text()); //strip header/footer for size
-      let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html); //keep metadata for later
+      let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate($("#fullHtml code").text()); //strip header/footer for size
+      // let  = await applySimpleHtmlTemplate(html); //keep metadata for later
       userContent.content += extractedHtml; //give it the full page html minus metadata
       userData.content += "Search terms: " + $("#search-terms-input").text(); //give it any data we have
       userData.content += "Page feedback summary: " + $("#feedback-summary-input").text();
