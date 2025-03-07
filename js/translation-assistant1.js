@@ -331,7 +331,7 @@ $("#source-upload-provide-btn").click(function() {
     // 1) Get the raw French text from doc or text:
     if (selectedOption == "second-upload-doc") {
       var file = $('#second-file')[0].files[0]; 
-      console.log("French text:", frenchText);
+     
       if (!file) {
         alert("Please select your translated file.");
         return;
@@ -348,7 +348,7 @@ $("#source-upload-provide-btn").click(function() {
     } else if (selectedOption == "second-upload-text") {
       frenchText = $("#second-text").val();
     } 
-
+    console.log("French text:", frenchText);
     // 2) Retrieve the formatted English HTML from #translation-A
     //    (#translation-A is where we stored the first doc's structure).
     let englishHtml = $("#translation-A").html();
