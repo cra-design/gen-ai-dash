@@ -858,11 +858,25 @@ async function updateIframeFromURL(url) {
   //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
 }
 
+// function formatGenAIHtmlResponse(genaiResponse) {
+//   formattedHtml = genaiResponse
+//     .replace(/^```|```$/g, '')
+//     .replace(/^html/, '')
+//     .trim();
+//   formattedHtml = formatHTML(formattedHtml);
+//   return formattedHtml;
+// }
+
 function formatGenAIHtmlResponse(genaiResponse) {
-  formattedHtml = genaiResponse
-    .replace(/^```|```$/g, '')
-    .replace(/^html/, '')
-    .trim();
+  let formattedHtml = genaiResponse;
+
+  // Extract content inside triple backticks if they exist
+  const match = formattedHtml.match(/```(?:html)?\n([\s\S]*?)\n```/);
+  if (match) {
+    formattedHtml = match[1]; // Capture only the inner content
+  }
+
+  formattedHtml = formattedHtml.replace(/^html/, '').trim();
   formattedHtml = formatHTML(formattedHtml);
   return formattedHtml;
 }
