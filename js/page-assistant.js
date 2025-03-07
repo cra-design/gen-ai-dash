@@ -526,7 +526,6 @@ function loadTemplate(filePath, targetSelector) {
 async function RefineSyntax(html) {
   //Part 1: Get simple templates
   let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
-  console.log(extractedHtml);
   let formattedAIHTML = "";
   let aiWordResponse = ""; // Default to extractedHtml in case API isn't used
   if (!$('#doc-exact-syntax').is(':checked') || $("#html").prop("checked")) {
@@ -653,10 +652,6 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
     if (!hasDateModifiedSection) {
       newFooter = newFooter.replace('</main>', newDate);
     }
-    //add in the metadata stripped from original code
-    newHeader = newHeader.replace('</head>', `${metadata}</head>`);
-    console.log(metadata);
-    console.log(newHeader);
     // If the class="container" exists when stripped in simpleHtmlTemplate, use it; otherwise, we'll add the class and the <div class="main">
     if (mainClassMatch) {
       // If class="container" exists, replace the <main> tag in the newHeader file with the class included
@@ -666,6 +661,7 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
       newHeader = newHeader.replace('<main>', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement"><div class="container">');
     }
     extractedHtml = extractedHtml
+      .replace('</head>', `${metadata}</head>`);
       .replace(/<main[^>]*>/, newHeader)
       .replace('</main>', newFooter)
       .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
@@ -824,7 +820,6 @@ async function updateIframeFromURL(url) {
         renderHTMLFields(html, fields);
     });
   } else if (urlInput.host == "www.canada.ca") { //canada.ca link
-    console.log("canada.ca page");
     $("#url-frame").removeClass("hidden");
     $("#genai-upload-msg").addClass("hidden");
     $("#genai-task-options").removeClass("hidden");
@@ -836,7 +831,6 @@ async function updateIframeFromURL(url) {
         }
         //Process HTML to replace header/footer
         let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
-        console.log(metadata);
         extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
 
         // Extract fields from the HTML
