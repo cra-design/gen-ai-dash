@@ -322,6 +322,13 @@ $("#source-upload-provide-btn").click(function() {
     console.log($("#translation-A").html());
   });
 
+  function removeCodeFences(str) {
+  return str
+    .replace(/^```[a-zA-Z]*\s*/, '')
+    .replace(/```$/, '')             
+    .trim();
+  }
+
   // Second upload: manual translation.
   $("#second-upload-btn").click(async function() {
     var selectedOption = $('input[name="second-upload-option"]:checked').val();  
@@ -415,8 +422,9 @@ $("#source-upload-provide-btn").click(function() {
   if (!finalFrenchHtml) {
     alert("Translation alignment failed. No valid response from any model.");
     return;
-  }
-     console.log("Final French HTML:", finalFrenchHtml);
+  } 
+     finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+     console.log("Final French HTML (cleaned):", finalFrenchHtml);
 
     // 4) Display the final merged output in #review-translation
      $("#translation-A").html(finalFrenchHtml);
