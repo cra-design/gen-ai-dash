@@ -4,7 +4,6 @@ let frenchFile = null;
 
 function extractXmlFromFile(file) {
   return new Promise((resolve, reject) => {
-    // Call handleFileExtractionToXML with proper callbacks.
     handleFileExtractionToXML(file, resolve, reject);
   });
 }
