@@ -655,6 +655,7 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
     }
     //add in the metadata stripped from original code
     newHeader = newHeader.replace('</head>', `${metadata}</head>`);
+    console.log(metadata);
     console.log(newHeader);
     // If the class="container" exists when stripped in simpleHtmlTemplate, use it; otherwise, we'll add the class and the <div class="main">
     if (mainClassMatch) {
