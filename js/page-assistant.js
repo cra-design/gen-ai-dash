@@ -171,8 +171,8 @@ $(document).ready(function() {
       let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
       console.log(aiResponse);
       let formattedHtml = formatGenAIHtmlResponse(aiResponse);
-      console.log(formattedHtml);
-      extractedHtml = await applyCanadaHtmlTemplate(formattedHtml, metadata, mainClassMatch);
+      let { extractedHtml: simpleHtml } = await applySimpleHtmlTemplate(formattedHtml);
+      extractedHtml = await applyCanadaHtmlTemplate(simpleHtml, metadata, mainClassMatch);
     } catch (err) {
         console.error('Templating error:', err);
         $("#templates-loading-indicator").addClass("hidden");
@@ -879,8 +879,8 @@ function formatGenAIHtmlResponse(genaiResponse) {
   if (match) {
     formattedHtml = match[1]; // Capture only the inner content
   }
-  formattedHtml = formattedHtml.replace(/^html/, '').trim();
-  formattedHtml = formattedHtml.trim();
+  // Trim leading and trailing <p> and </p> tags
+  formattedHtml = formattedHtml.replace(/^<p>/, '').replace(/<\/p>$/, '').trim();
   formattedHtml = formatHTML(formattedHtml);
   return formattedHtml;
 }
