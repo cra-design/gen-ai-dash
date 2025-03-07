@@ -1,0 +1,41 @@
+.nav_link.active {
+	background-color: #6e2ea7!important;
+}
+
+.nav_link.active-hide {
+	background-color: #6e2ea7!important;
+}
+
+summary {
+  color: #6e2ea7!important;
+}
+
+.tabs li .active {
+	border-bottom-color: #6e2ea7!important;
+	border-width: 4px;
+	color: #6e2ea7!important;
+}
+
+/* Button Styling */
+button {
+  background: #6e2ea7!important;
+}
+
+button:hover {
+    background: #9262bd!important;
+}
+
+.spinner {
+  border-top-color: #6e2ea7!important;
+}
+
+/* Style the checked state for radio buttons */
+input[type="radio"]:checked::before {
+    background-color: #6e2ea7!important;
+}
+
+/* Highlight container when textarea is focused */
+.inputbox-translation:focus + .translation-textarea-container,
+.translation-textarea-container:has(.inputbox-translation:focus) {
+  border-color: #6e2ea7!important; /* Highlight color */
+}

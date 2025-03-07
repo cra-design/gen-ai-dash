@@ -517,3 +517,64 @@ iframe {
     width: 220px;
     border-radius: 4px;
 }
+
+/* Ensure dropdown is positioned relative to logo */
+.dropdown {
+   position: relative;
+   display: inline-block;
+}
+
+/* Adjust the logo link to align the dropdown icon */
+.nav_logo_link {
+   display: flex;
+   align-items: center;
+   gap: 0.4rem;
+   cursor: pointer;
+   text-decoration: none;
+}
+
+/* Style the dropdown icon */
+.dropdown-icon {
+   font-size: 1.5rem;
+   color: var(--first-color-light);
+   transition: transform 0.3s;
+}
+
+/* Dropdown Menu Styling */
+.dropdown-menu {
+   display: none;
+   position: absolute;
+   top: 100%;
+   left: 0;
+   background-color: #ffffff; /* Contrasting light background */
+   min-width: 220px;
+   border-radius: 0.25rem;
+   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+   border: 1px solid #ccc;
+   z-index: 1000;
+   padding: 0.5rem 0;
+}
+
+/* Dropdown items styling */
+.dropdown-menu a {
+   color: #333;
+   padding: 0.5rem 1rem;
+   display: flex;
+   align-items: center;
+   text-decoration: none;
+   transition: background 0.3s;
+}
+
+.dropdown-menu a:hover {
+   background-color: #f5f5f5;
+}
+
+/* Show dropdown on hover */
+.dropdown:hover .dropdown-menu {
+   display: block;
+}
+
+/* Rotate the dropdown icon when hovering */
+.dropdown:hover .dropdown-icon {
+   transform: rotate(180deg);
+}

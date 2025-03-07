@@ -5,7 +5,7 @@
       <title>Content Assistant | Page Assistant</title>
       <!--base href="./"-->
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+      <link rel="icon" type="image/x-icon" href="img/favicon-ca.ico">
       <meta name="robots" content="noindex, nofollow">
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous">
@@ -120,24 +120,38 @@
                   </div>
                </header>
             </upd-header>
-            <upd-sidebar _ngcontent-ng-c3392822675="" class="ng-tns-c3392822675-0" _nghost-ng-c82967845="">
-               <div _ngcontent-ng-c82967845="" id="nav-bar" class="l-navbar show-n">
-                  <nav _ngcontent-ng-c82967845="" class="nav">
-                     <div _ngcontent-ng-c82967845="">
-                        <a _ngcontent-ng-c82967845="" class="nav_logo" href=""><img _ngcontent-ng-c82967845="" alt="" src="img/ca-logo.png"></a>
-                        <div _ngcontent-ng-c82967845="" class="nav_list mt-5">
+            <upd-sidebar class="ng-tns-c3392822675-0">
+               <div id="nav-bar" class="l-navbar show-n">
+                  <nav  class="nav">
+                     <div>
+                       <div class="nav_logo dropdown">
+                         <a class="nav_logo_link" href="#">
+                            <img alt="Content Assistant Logo" src="img/ca-logo.png">
+                            <span class="dropdown-icon material-icons">arrow_drop_down</span>
+                         </a>
+                         <div class="dropdown-menu">
+                            <a class="dropdown-item" href="usability-dashboard.html">
+                               <span class="material-icons">leaderboard</span> UPD
+                            </a>
+                            <a class="dropdown-item" href="project-assistant.html">
+                               <span class="material-icons">fact_check</span> Project Assistant
+                            </a>
+                         </div>
+                      </div>
+                      <!-- <a class="nav_logo" href=""><img alt="" src="img/ca-logo.png"></a> -->
+                        <div  class="nav_list mt-5">
                            <a id="active" class="nav_link active" href="page-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">article</span><span data-i18n="menu-overview" class="nav_name">Pages</span></a>
-                           <a class="nav_link" href="project-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">layers</span><span data-i18n="menu-pages" class="nav_name">Projects</span></a>
+                           <!-- <a class="nav_link" href="project-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">layers</span><span data-i18n="menu-pages" class="nav_name">Projects</span></a> -->
                            <a class="nav_link" href="image-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">image</span><span data-i18n="menu-tasks" class="nav_name">Images</span></a>
-                           <a class="nav_link" href="translation-assistant(docxOnly).html"><span aria-hidden="true" class="material-icons nav_icon">language</span><span data-i18n="menu-tasks" class="nav_name">Translations</span></a>
-                           <a class="nav_link" href="wording-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">edit</span><span data-i18n="menu-tasks" class="nav_name">Wording</span></a>
+                           <a class="nav_link" href="translation-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">language</span><span data-i18n="menu-tasks" class="nav_name">Translations</span></a>
+                           <a class="nav_link" href="wording-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">spellcheck</span><span data-i18n="menu-tasks" class="nav_name">Wording</span></a>
                            <a class="nav_link" href="wizard-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">fork_left</span><span data-i18n="menu-tasks" class="nav_name">Wizards</span></a>
-                           <a class="nav_link" href="task-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">adjust</span><span data-i18n="menu-tasks" class="nav_name">Tasks</span></a>
+                           <!-- <a class="nav_link" href="task-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">adjust</span><span data-i18n="menu-tasks" class="nav_name">Tasks</span></a> -->
                         </div>
                      </div>
-                     <div _ngcontent-ng-c82967845="" class="mb-4">
-                       <a _ngcontent-ng-c82967845="" class="nav_link" href="about-us"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">web_asset</span><span _ngcontent-ng-c82967845="" data-i18n="about-us" class="nav_name">About Us</span></a>
-                       <a _ngcontent-ng-c82967845="" class="nav_link" href="mailto:AIPIA-PIAAI@cra-arc.gc.ca?subject=Feedback for Content Assistant&amp;body="><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">feedback</span><span _ngcontent-ng-c82967845="" data-i18n="menu-feedback" class="nav_name">Feedback</span></a>
+                     <div class="mb-4">
+                       <a class="nav_link" href="about-us"><span aria-hidden="true" class="material-icons nav_icon">web_asset</span><span data-i18n="about-us" class="nav_name">About Us</span></a>
+                       <a class="nav_link" href="mailto:AIPIA-PIAAI@cra-arc.gc.ca?subject=Feedback for Content Assistant&amp;body="><span aria-hidden="true" class="material-icons nav_icon">feedback</span><span data-i18n="menu-feedback" class="nav_name">Feedback</span></a>
                      </div>
                   </nav>
                </div>
@@ -314,14 +328,6 @@
                                      </upd-nav-tabs>
 
                                      <div id="url-preview" class="tab-content">
-
-                                        <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                          Page preview
-                                        </h3> -->
-                                        <!-- This should theoretically allow for a page load, but Canada.ca has x-frame options set to deny, so it's being blocked - works for github for the moment though... Maybe there's a way on the AEM side to configure to specifically allow this tool to iframe pages? -->
-                                        <!-- <div style="border:black solid 1px;" -->
-
-                                        <!-- add some kind of tabbed interface with preview + code tabs? -->
                                         <div id="iframe-container-A" class="full-width">
                                           <div id="iframe-toolbox-A" class="toolbar hidden">
                                             <button class="toolbar-button" id="accept-iframe-a-btn" title="Accept A">
@@ -341,12 +347,8 @@
                                         <p id="url-invalid-msg" class="error-msg hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>
                                         <p id="canada-ca-msg" class="error-msg hidden">Due to technical limitations, Canada.ca pages are not yet compatible with this tool. Try a Github URL to test it out!</p>
                                         <p id="other-site-msg" class="error-msg hidden">The tool is only for validation of Canada.ca design work. If you believe this URL should be in scope, please reach out to the tool adminstrators to whitelist the domain.</p>
-                                         <!-- </div> -->
                                      </div>
                                      <div id="code-preview" class="tab-content hidden">
-                                        <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                          Code preview
-                                        </h3> -->
                                         <div class="toolbar sticky">
                                           <button class="toolbar-button" id="code-refresh-button" title="Refresh">
                                             <i class="fa fa-refresh"></i>
@@ -369,10 +371,7 @@
 
                                       </div>
                                       <div id="field-preview" class="tab-content hidden">
-                                         <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                           Field preview
-                                         </h3> -->
-                                         <div id="fields"> <!--can put something around the parsed fields of the content - heading structure, metadata, etc-->
+                                         <div id="fields">
                                             <h3>Metadata fields</h3>
                                             <table border="1">
                                                 <thead>
@@ -386,9 +385,6 @@
                                          </div>
                                        </div>
                                        <div id="data-tab" class="tab-content hidden">
-                                         <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                           Data context
-                                         </h3> -->
                                          <p>Add data to these fields to help the AI give meaningful recommendations based on pain points it can identify. Once you complete these fields, rerun your genAI report.</p>
                                          <fieldset>
                                              <legend>Search terms</legend>
@@ -404,9 +400,6 @@
                                          </fieldset>
                                        </div>
                                        <div id="templates-tab" class="tab-content hidden">
-                                         <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                           Data context
-                                         </h3> -->
                                          <fieldset id="genai-model-options">
                                            <legend>Select a template to apply to the page content</legend>
                                            <input type="radio" id="templates-topic" name="template-options" value="html-templates/topic-page-template.html">
@@ -428,65 +421,34 @@
                                         <legend>Write or paste in your content or HTML to analyze</legend>
                                         <textarea id="html-input" class="inputbox"></textarea>
                                     </fieldset>
-                                    <!-- <fieldset>
-                  										<legend>Write or paste in your content or HTML to analyze</legend>
-                  										<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
-                  										  <span id="html-input" class="input" role="textbox" contenteditable></span>
-                  										</div>
-                  									</fieldset>-->
                                     <button id="html-upload-btn" style="margin-top: 20px">Submit</button>
                                   </div>
                                   <div id="html-upload-loading-spinner" class="hidden">
                                     <div class="spinner"></div>
                                     <p>Converting content to HTML...</p>
                                   </div>
-                                  <!-- <div id="html-upload-preview" class="hidden">
-                  									<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
-                  										<pre id="html-preview"></pre>
-                  									</div>
-                                  </div> -->
                         				  <div id="html-upload-no-action-error" class="error-msg hidden">
                       					       <p>You must select an option for an action and model to run a report.</p>
                         				  </div>
                                 </div>
-                                  <div id="word-upload" class="hidden">
-                                    <div id="word-upload-input" class="" style="margin-top:20px">
-                                      <div class="inline-checkbox-container">
-                                        <fieldset>
-                                          <input type="checkbox" id="doc-exact-syntax" name="doc-formatting" value="exact-syntax">
-                                          <label for="doc-exact-syntax">Use doc formatting exactly (faster)</label><br>
-                                        </fieldset>
-                                        <fieldset>
-                                          <input type="checkbox" id="doc-basic-html" name="doc-canada" value="basic-html">
-                                          <label for="doc-basic-html">Basic html only</label><br>
-                                        </fieldset>
-                                      </div>
-                    									<fieldset>
-                    										<legend>Upload .docx word documents to generate HTML markup</legend>
-  						                          <input type="file" id="word-file" name="word-file">
-                    										<!--div id="image-drop-upload-area">
-            															<i class="fas fa-upload"></i>
-            															Drag and drop files here
-            															<span id="file-upload-btn">Browse files
-            																<input type="file" id="img-file" name="img-file">
-            															</span>
-            														</div>-->
-
-
-                    										<!-- <input type="submit" id="word-upload-btn"> -->
-
-                                        <!--Streamlit embed for alt text-->
-
-                                      <!--/fieldset-->
-                                      <!--div class="streamlit-container">
-                                          <iframe
-                                              src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
-                                              class="streamlit-embed"
-                                              allow="camera;microphone"
-                                              scrolling="yes">
-                                          </iframe-->
-                                      </div>
+                                <div id="word-upload" class="hidden">
+                                  <div id="word-upload-input" class="" style="margin-top:20px">
+                                    <div class="inline-checkbox-container">
+                                      <fieldset>
+                                        <input type="checkbox" id="doc-exact-syntax" name="doc-formatting" value="exact-syntax">
+                                        <label for="doc-exact-syntax">Use doc formatting exactly (faster)</label><br>
+                                      </fieldset>
+                                      <fieldset>
+                                        <input type="checkbox" id="doc-basic-html" name="doc-canada" value="basic-html">
+                                        <label for="doc-basic-html">Basic html only</label><br>
+                                      </fieldset>
                                     </div>
+                  									<fieldset>
+                  										<legend>Upload .docx word documents to generate HTML markup</legend>
+						                          <input type="file" id="word-file" name="word-file">
+                                    </fieldset>
+                                  </div>
+                                </div>
                                     <div id="word-upload-preview" class="hidden" style="margin-top:20px;">
   			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                         Word document preview
@@ -497,88 +459,14 @@
                                         <div class="spinner"></div>
                                         <p>Converting word doc to HTML...</p>
                                       </div>
-                                      <!-- <div id="word-preview" class="hidden">
-                                          <upd-nav-tabs>
-                                            <div class="tabs sticky" style="z-index: 0 !important;">
-                                              <ul>
-                                                <li><a href="#" class="active" data-target="#word-render-preview"> Rendered preview</a></li>
-                                                <li><a href="#" data-target="#word-code-preview"> Markup</a></li>
-                                                <li><a href="#" data-target="#field-word-preview"> Fields</a></li>
-                                              </ul>
-                                            </div>
-                                          </upd-nav-tabs>
-
-                                          <div id="word-render-preview" class="tab-content">
-                                            <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                            Rendered HTML preview
-                                            </h3>
-                                            <iframe id="word-preview-iframe" style="width: 100%; height: 800px; border: 1px solid #ddd;"></iframe>
-                                          </div>
-
-                                          <div id="word-code-preview" class="tab-content hidden">
-
-                                            <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                            HTML markup preview
-                                            </h3>
-                                            <pre id="word-html-code" class="language-markup" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap;"><code></code></pre>
-                                          </div>
-                                      </div> -->
-
                                     </div>
-                                    <div id="image-upload" class="hidden">
-                                      <div id="image-upload-input" class="" style="margin-top:20px">
-                      									<fieldset>
-                      										<legend>Upload images or PDFs to create image alt text</legend>
-    						                          <input type="file" id="img-file" name="img-file">
-                      										<!--div id="image-drop-upload-area">
-              															<i class="fas fa-upload"></i>
-              															Drag and drop files here
-              															<span id="file-upload-btn">Browse files
-              																<input type="file" id="img-file" name="img-file">
-              															</span>
-              														</div-->
-
-
-                      										<input type="submit" id="img-upload-btn">
-
-                                          <!--Streamlit embed for alt text-->
-
-                                        <!--/fieldset-->
-                                        <!--div class="streamlit-container">
-                                            <iframe
-                                                src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
-                                                class="streamlit-embed"
-                                                allow="camera;microphone"
-                                                scrolling="yes">
-                                            </iframe-->
-                                        </div>
-                                      </div>
-                                      <div id="image-upload-preview" class="hidden" style="margin-top:20px;">
-    			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                          Image preview
-                                        </h3>
-    	                                  <img id="image-preview"></img>
-                      									<p id="image-invalid-msg" class="error-msg hidden">The image you uploaded isn't in a recognized format. Please try a JPG or PNG. If you think the image format should be accepted, please reach out to the administrator.</p>
-                      									<p id="image-multiple-msg" class="error-msg hidden">We currently only accept uploading image files individually. Try again with 1 image.</p>
-
-                                      </div>
                                 </div>
-
-                                 <!---->
-                                 <upd-card-secondary-title _nghost-ng-c334178256="">
-                                    <!----><!---->
-                                 </upd-card-secondary-title>
                               </div>
-
                            </div>
                         </div>
                      </upd-card>
                   </upd-projects-home>
-                  <!---->
-               </upd-projects>
-               <!---->
                <!-- Creating the right-hand nav -->
-
             </main>
             <footer _ngcontent-ng-c3392822675="" class="mt-4 ng-tns-c3392822675-0">
                <div _ngcontent-ng-c3392822675="" class="d-flex justify-content-between align-items-end mt-auto pb-4 ng-tns-c3392822675-0">

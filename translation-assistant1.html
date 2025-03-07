@@ -5,7 +5,7 @@
       <title>Content Assistant | Translation Assistant</title>
       <!--base href="./"-->
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+      <link rel="icon" type="image/x-icon" href="img/favicon-ca.ico">
       <meta name="robots" content="noindex, nofollow">
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
@@ -120,24 +120,38 @@
                   </div>
                </header>
             </upd-header>
-            <upd-sidebar _ngcontent-ng-c3392822675="" class="ng-tns-c3392822675-0" _nghost-ng-c82967845="">
-               <div _ngcontent-ng-c82967845="" id="nav-bar" class="l-navbar show-n">
-                  <nav _ngcontent-ng-c82967845="" class="nav">
-                     <div _ngcontent-ng-c82967845="">
-                        <a _ngcontent-ng-c82967845="" class="nav_logo" href=""><img _ngcontent-ng-c82967845="" alt="" src="img/ca-logo.png"></a>
-                        <div _ngcontent-ng-c82967845="" class="nav_list mt-5">
+            <upd-sidebar class="ng-tns-c3392822675-0">
+               <div id="nav-bar" class="l-navbar show-n">
+                  <nav  class="nav">
+                     <div>
+                       <div class="nav_logo dropdown">
+                         <a class="nav_logo_link" href="#">
+                            <img alt="Content Assistant Logo" src="img/ca-logo.png">
+                            <span class="dropdown-icon material-icons">arrow_drop_down</span>
+                         </a>
+                         <div class="dropdown-menu">
+                            <a class="dropdown-item" href="usability-dashboard.html">
+                               <span class="material-icons">leaderboard</span> UPD
+                            </a>
+                            <a class="dropdown-item" href="project-assistant.html">
+                               <span class="material-icons">fact_check</span> Project Assistant
+                            </a>
+                         </div>
+                      </div>
+                      <!-- <a class="nav_logo" href=""><img alt="" src="img/ca-logo.png"></a> -->
+                        <div  class="nav_list mt-5">
                            <a class="nav_link" href="page-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">article</span><span data-i18n="menu-overview" class="nav_name">Pages</span></a>
-                           <a class="nav_link" href="project-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">layers</span><span data-i18n="menu-pages" class="nav_name">Projects</span></a>
+                           <!-- <a class="nav_link" href="project-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">layers</span><span data-i18n="menu-pages" class="nav_name">Projects</span></a> -->
                            <a class="nav_link" href="image-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">image</span><span data-i18n="menu-tasks" class="nav_name">Images</span></a>
                            <a id="active" class="nav_link active" href="translation-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">language</span><span data-i18n="menu-tasks" class="nav_name">Translations</span></a>
-                           <a class="nav_link" href="wording-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">edit</span><span data-i18n="menu-tasks" class="nav_name">Wording</span></a>
+                           <a class="nav_link" href="wording-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">spellcheck</span><span data-i18n="menu-tasks" class="nav_name">Wording</span></a>
                            <a class="nav_link" href="wizard-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">fork_left</span><span data-i18n="menu-tasks" class="nav_name">Wizards</span></a>
-                           <a class="nav_link" href="task-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">adjust</span><span data-i18n="menu-tasks" class="nav_name">Tasks</span></a>
+                           <!-- <a class="nav_link" href="task-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">adjust</span><span data-i18n="menu-tasks" class="nav_name">Tasks</span></a> -->
                         </div>
                      </div>
-                     <div _ngcontent-ng-c82967845="" class="mb-4">
-                       <a _ngcontent-ng-c82967845="" class="nav_link" href="about-us"><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">web_asset</span><span _ngcontent-ng-c82967845="" data-i18n="about-us" class="nav_name">About Us</span></a>
-                       <a _ngcontent-ng-c82967845="" class="nav_link" href="mailto:AIPIA-PIAAI@cra-arc.gc.ca?subject=Feedback for Content Assistant&amp;body="><span _ngcontent-ng-c82967845="" aria-hidden="true" class="material-icons nav_icon">feedback</span><span _ngcontent-ng-c82967845="" data-i18n="menu-feedback" class="nav_name">Feedback</span></a>
+                     <div class="mb-4">
+                       <a class="nav_link" href="about-us"><span aria-hidden="true" class="material-icons nav_icon">web_asset</span><span data-i18n="about-us" class="nav_name">About Us</span></a>
+                       <a class="nav_link" href="mailto:AIPIA-PIAAI@cra-arc.gc.ca?subject=Feedback for Content Assistant&amp;body="><span aria-hidden="true" class="material-icons nav_icon">feedback</span><span data-i18n="menu-feedback" class="nav_name">Feedback</span></a>
                      </div>
                   </nav>
                </div>

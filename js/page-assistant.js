@@ -159,6 +159,24 @@ $(document).ready(function() {
   $("#template-options-btn").click(function() {
     let template = $('input[name="template-options"]:checked').val();
     console.log(template);
+    //1) Strip header/footer from page code
+    html = applySimpleHtmlTemplate($("#fullHtml code").text());
+    let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
+    //extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
+
+
+
+
+    //2) Send page body code + template code to genAI
+    //3) Trim response
+    //4) make side-by-side accept/deny block in the code - use the fullHtmlCompare and iframeB?
+      //Maybe refresh the iframe with the suggested code too?
+    //5) Accept button - refresh iframe
+
+
+
+    //extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
+
   });
 
   $("#genai-select-tasks-btn").click(function () {
@@ -499,7 +517,7 @@ function loadTemplate(filePath, targetSelector) {
 
 async function RefineSyntax(extractedHtml) {
   //Part 1: Get simple templates
-  extractedHtml = await applySimpleHtmlTemplate(extractedHtml);
+  let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(extractedHtml);
   let formattedAIHTML = "";
   let aiWordResponse = ""; // Default to extractedHtml in case API isn't used
   if (!$('#doc-exact-syntax').is(':checked') || $("#html").prop("checked")) {
@@ -524,9 +542,9 @@ async function RefineSyntax(extractedHtml) {
 	  }
   }
   if (!$('#doc-basic-html').is(':checked') && !$('#html-basic-html').is(':checked')) {
-    extractedHtml = await applyCanadaHtmlTemplate(extractedHtml);
+    extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
     if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
-      aiWordResponse = await applyCanadaHtmlTemplate(aiWordResponse);
+      aiWordResponse = await applyCanadaHtmlTemplate(aiWordResponse, metadata, mainClassMatch);
     }
   }
   //For Rosa to merge with other trimming function
@@ -576,11 +594,6 @@ async function applySimpleHtmlTemplate(extractedHtml) {
         footerResponse.text()
     ]);
 
-    //GRAB ALL METADATA INSTEAD
-     // Extract metadata fields from the original extractedHtml (if any)
-    // const metadataMatches = extractedHtml.match(/<meta[^>]*>|<title[^>]*>.*?<\/title>|<link[^>]*>/g) || [];
-    // const metadata = metadataMatches.join("\n");
-
     // Extract only <title>, <meta name="description">, and <meta name="keywords">
     const titleMatch = extractedHtml.match(/<title[^>]*>.*?<\/title>/);
     const descriptionMatch = extractedHtml.match(/<meta\s+name=["']description["'][^>]*>/);
@@ -602,15 +615,18 @@ async function applySimpleHtmlTemplate(extractedHtml) {
     // Remove content after the closing </main> tag
     extractedHtml = extractedHtml.replace(/<\/main>[\s\S]*$/, '');
     // Reconstruct the HTML with the new header and footer
-    extractedHtml = htmlHeader.replace('</head>', `${metadata}</head>`).replace(`<main>`, `<main${mainClass}>`) + extractedHtml + htmlFooter;
-    return extractedHtml;
+    extractedHtml = htmlHeader + extractedHtml + htmlFooter;
+    return { extractedHtml, metadata, mainClassMatch };
   } catch (error) {
     console.error('Error applying simple HTML template:', error);
     hideAllSpinners(); // Consolidated UI hiding
   }
 }
 
-async function applyCanadaHtmlTemplate(extractedHtml) {
+
+//htmlHeader.replace('</head>', `${metadata}</head>`).replace(`<main>`, `<main${mainClass}>`)
+
+async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMatch = false) {
   try {
     const [headerResponse2, footerResponse2, dateResponse2] = await Promise.all([
         fetch('html-templates/canada-header-additions.html'),
@@ -818,8 +834,8 @@ async function updateIframeFromURL(url) {
             return;
         }
         //Process HTML to replace header/footer
-        html = await applySimpleHtmlTemplate(html);
-        html = await applyCanadaHtmlTemplate(html);
+        let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
+        extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
         // Extract fields from the HTML
         const fields = extractFields(html);
         // Render fields and page code
