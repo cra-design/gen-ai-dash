@@ -865,6 +865,6 @@ function formatGenAIHtmlResponse(genaiResponse) {
     .replace(/^```|```$/g, '')
     .replace(/^html/, '')
     .trim();
-  formattedHtml = formatHtml(formattedHtml);
+  formattedHtml = formatHTML(formattedHtml);
   return formattedHtml;
 }
