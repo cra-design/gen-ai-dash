@@ -526,6 +526,7 @@ function loadTemplate(filePath, targetSelector) {
 async function RefineSyntax(html) {
   //Part 1: Get simple templates
   let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
+  console.log(extractedHtml);
   let formattedAIHTML = "";
   let aiWordResponse = ""; // Default to extractedHtml in case API isn't used
   if (!$('#doc-exact-syntax').is(':checked') || $("#html").prop("checked")) {
@@ -821,6 +822,7 @@ async function updateIframeFromURL(url) {
         renderHTMLFields(html, fields);
     });
   } else if (urlInput.host == "www.canada.ca") { //canada.ca link
+    console.log("canada.ca page");
     $("#url-frame").removeClass("hidden");
     $("#genai-upload-msg").addClass("hidden");
     $("#genai-task-options").removeClass("hidden");
@@ -834,11 +836,11 @@ async function updateIframeFromURL(url) {
         let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
         extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
         // Extract fields from the HTML
-        const fields = extractFields(html);
+        const fields = extractFields(extractedHtml);
         // Render fields and page code
-        renderHTMLFields(html, fields);
+        renderHTMLFields(extractedHtml, fields);
         // Insert the processed HTML into the iframe
-        refreshIframe("url-frame", html);
+        refreshIframe("url-frame", extractedHtml);
     });
   } else { //unsupported site
     //unhide unsupported site message
