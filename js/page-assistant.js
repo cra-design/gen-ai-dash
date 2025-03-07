@@ -169,7 +169,7 @@ $(document).ready(function() {
     let requestJson = [systemGeneral, systemTemplate, userContent];
     // Send it to the API
     try {
-      let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
+      let aiResponse = await formatORResponse("qwen/qwq-32b:free", requestJson);
       let formattedHtml = formatGenAIHtmlResponse(aiResponse);
       let { extractedHtml: simpleHtml } = await applySimpleHtmlTemplate(formattedHtml);
       extractedHtml = await applyCanadaHtmlTemplate(simpleHtml, metadata, mainClassMatch);
