@@ -169,10 +169,12 @@ $(document).ready(function() {
     try {
       let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
       let formattedHtml = formatGenAIHtmlResponse(aiResponse);
+      console.log(formattedHtml);
       let templatedHtml = await applyCanadaHtmlTemplate(formattedHtml, metadata, mainClassMatch);
     } catch (err) {
         console.error('Templating error:', err);
     }
+    console.log(templatedHtml);
     //4) make side-by-side accept/deny block in the code - use the fullHtmlCompare and iframeB?
       //Maybe refresh the iframe with the suggested code too?
     refreshIframe("url-frame-2", templatedHtml);
