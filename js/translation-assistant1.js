@@ -419,7 +419,7 @@ $("#source-upload-provide-btn").click(function() {
      console.log("Final French HTML:", finalFrenchHtml);
 
     // 4) Display the final merged output in #review-translation
-     $("#review-translation").html(finalFrenchHtml);
+     $("#translation-A").html(finalFrenchHtml);
      $("#translation-preview").removeClass("hidden").show(); 
   });
     
