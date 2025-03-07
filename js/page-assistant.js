@@ -871,14 +871,16 @@ async function updateIframeFromURL(url) {
 
 function formatGenAIHtmlResponse(genaiResponse) {
   let formattedHtml = genaiResponse;
-
+  // Handle cases where ``` appears inside <p> tags
+  formattedHtml = formattedHtml.replace(/<p>```html<\/p>/, '```html\n')
+                               .replace(/<p>```<\/p>/, '\n```');
   // Extract content inside triple backticks if they exist
   const match = formattedHtml.match(/```(?:html)?\n([\s\S]*?)\n```/);
   if (match) {
     formattedHtml = match[1]; // Capture only the inner content
   }
-
   formattedHtml = formattedHtml.replace(/^html/, '').trim();
+  formattedHtml = formattedHtml.trim();
   formattedHtml = formatHTML(formattedHtml);
   return formattedHtml;
 }
