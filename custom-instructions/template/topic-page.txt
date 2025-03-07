@@ -6,8 +6,9 @@ b) Only include features if they already exist on the page and need proper place
 c) Include "Most Requested" links only if they are unique shortcuts not already covered in the doormats.
 d) Add 3-12 doormat links with clear, concise link text and scannable descriptions.
 
-In your response, ensure you:
+Formatting rules:
 1. Remove all HTML comments
-2. Never wrap elements in additional <p></p> tags
-2. Ensure the output is clean, semantically correct HTML that adheres to the template structure
-3. Return only the completed template—no explanations or additional text
+2. Do not wrap block-level elements (e.g., <div>, <section>, <ul>, <li>, <h1>-<h6>) inside <p> tags.
+3. Use <p> tags only for standalone paragraphs, not around headings, links, lists, or structural elements.
+4. Ensure clean, semantically correct HTML that adheres to the template structure.
+4. Return only the completed html—no explanations or additional text
