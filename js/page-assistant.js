@@ -163,16 +163,23 @@ $(document).ready(function() {
     html = applySimpleHtmlTemplate($("#fullHtml code").text());
     let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
     //2) Send page body code + template code to genAI
-
-    //3) Trim response
+    let systemGeneral = { role: "system", content: await $.get("template-application.txt") };
+    let systemTemplate = { role: "system", content: await $.get(template) };
+    let userContent = { role: "user", content: extractedHtml};
+    let requestJson = [systemGeneral, systemTemplate, userContent];
+    // Send it to the API
+    let aiResponse = await formatGenAIHtmlResponse(formatORResponse("google/gemini-2.0-flash-exp:free", requestJson));
+    let templatedHtml = await applyCanadaHtmlTemplate(aiResponse, metadata, mainClassMatch);
     //4) make side-by-side accept/deny block in the code - use the fullHtmlCompare and iframeB?
       //Maybe refresh the iframe with the suggested code too?
-    //5) Accept button - refresh iframe
-
-
-
-    extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
-
+    refreshIframe("url-frame-2", templatedHtml);
+    toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
+    $('#iframe-toolbox-A').removeClass('hidden');
+    $('#iframe-toolbox-B').removeClass('hidden');
+    //Add comparison code
+    $("#fullHtmlCompare code").text(templatedHtml);
+    Prism.highlightElement(document.querySelector("#fullHtmlCompare code"));
+    toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
   });
 
   $("#genai-select-tasks-btn").click(function () {
@@ -240,7 +247,9 @@ $(document).ready(function() {
     // if ($('#html-upload-preview').is(':visible')) {
       // userContent.content += $("#html-input").html();
     // } else if ($('#url-upload-preview').is(':visible')) {
-      userContent.content += $("#fullHtml").text(); //give it the full page html
+      let html = applySimpleHtmlTemplate($("#fullHtml code").text()); //strip header/footer for size
+      let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html); //keep metadata for later
+      userContent.content += extractedHtml; //give it the full page html minus metadata
       userData.content += "Search terms: " + $("#search-terms-input").text(); //give it any data we have
       userData.content += "Page feedback summary: " + $("#feedback-summary-input").text();
       userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").text();
@@ -262,6 +271,9 @@ $(document).ready(function() {
             let fileContentB = "";
             if (!$("#genai-analysis-llm-compare").is(':checked')) {
               fileContentB = await $.get(task.value.replace('.txt', '-B.txt'));
+            }
+            if (task.value.startsWith("metadata/")) {
+              userContent.content = userContent.content.replace('</head>', `${metadata}</head>`); //add metadata back in for metadata tasks only
             }
             systemTask.content = "Custom instruction: " + fileContent;
             // Create the JSON with the prompt and instructions
@@ -526,7 +538,7 @@ async function RefineSyntax(extractedHtml) {
       let requestJson = [systemWord, userWord];
       // Send it to the API
       let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
-      aiWordResponse = ORjson.choices[0].message.content.trim();
+      aiWordResponse = formatGenAIHtmlResponse(ORjson.choices[0].message.content);
     } catch (error) {
       console.error('Error fetching enhanced HTML syntax from GenAI:', error);
       hideAllSpinners();
@@ -543,17 +555,7 @@ async function RefineSyntax(extractedHtml) {
       aiWordResponse = await applyCanadaHtmlTemplate(aiWordResponse, metadata, mainClassMatch);
     }
   }
-  //For Rosa to merge with other trimming function
-  let trimmedHtml = extractedHtml
-    .replace(/^```|```$/g, '')
-    .replace(/^html/, '');
-  let formattedHTML = formatHTML(trimmedHtml);
-  if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
-    let trimmedAIHtml = aiWordResponse
-      .replace(/^```|```$/g, '')
-      .replace(/^html/, '');
-    formattedAIHTML = formatHTML(trimmedAIHtml);
-  }
+  let formattedHTML = formatHTML(extractedHtml); //indentation for code block
   refreshIframe("url-frame", formattedHTML);
   if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
     refreshIframe("url-frame-2", formattedAIHTML);
@@ -650,9 +652,9 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
     if (!hasDateModifiedSection) {
       newFooter = newFooter.replace('</main>', newDate);
     }
-    // Check if the original HTML <main> tag contains the class "container"
-    const mainClassMatch = extractedHtml.match(/<main[^>]*class=["'][^"']*container[^"']*["'][^>]*>/);
-    // If the class="container" exists, use it; otherwise, we'll add the class and the <div class="main">
+    //add in the metadata stripped from original code
+    newHeader = newHeader.replace('</head>', `${metadata}</head>`)
+    // If the class="container" exists when stripped in simpleHtmlTemplate, use it; otherwise, we'll add the class and the <div class="main">
     if (mainClassMatch) {
       // If class="container" exists, replace the <main> tag in the newHeader file with the class included
       newHeader = newHeader.replace('<main>', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement" class="container">');
@@ -692,7 +694,6 @@ function acceptIframe(option) {
     //write iframe-2 to iframe + fullHtmlCompare to fullHtml
     let iframeB = $("#url-frame-2")[0].contentDocument || $("#url-frame-2")[0].contentWindow.document;
     refreshIframe("url-frame", iframeB.body.innerHTML);
-
     // Copy pre content from fullHtmlCompare to fullHtml
     html = $("#fullHtmlCompare code").text();
     $("#fullHtml code").text(html);
@@ -845,4 +846,12 @@ async function updateIframeFromURL(url) {
     $('#url-upload-input').removeClass("hidden");
   }
   //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
+}
+
+function formatGenAIHtmlResponse(genaiResponse) {
+  formattedHtml = genaiResponse
+    .replace(/^```|```$/g, '')
+    .replace(/^html/, '')
+    .trim();
+  return formatHtml(formattedHtml);
 }
