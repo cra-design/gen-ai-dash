@@ -523,9 +523,9 @@ function loadTemplate(filePath, targetSelector) {
     });
 }
 
-async function RefineSyntax(extractedHtml) {
+async function RefineSyntax(html) {
   //Part 1: Get simple templates
-  let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(extractedHtml);
+  let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
   let formattedAIHTML = "";
   let aiWordResponse = ""; // Default to extractedHtml in case API isn't used
   if (!$('#doc-exact-syntax').is(':checked') || $("#html").prop("checked")) {
