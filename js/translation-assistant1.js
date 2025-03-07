@@ -1,4 +1,6 @@
-let generatedDownloadFile = null; 
+let generatedDownloadFile = null;  
+let englishFile = null;  
+let frenchFile = null;
 
 function extractXmlFromFile(file) {
   return new Promise((resolve, reject) => {
@@ -94,7 +96,18 @@ $(document).ready(function() {
           var detectedLanguage = detectLanguageBasedOnWords(textContent);
           if (detectedLanguage !== "french") { detectedLanguage = "english"; }
           $(`#${language}-doc-detecting`).addClass("hidden");
-          $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden");
+          $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
+
+        if (event.target.id === "source-file") {
+            englishFile = uploadedFile;
+            if (fileExtension === 'docx') {
+              let arrayBuffer = await uploadedFile.arrayBuffer();
+              let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+              $("#translation-A").html(mammothResult.value);
+            }
+          } else {
+            frenchFile = uploadedFile;
+          }
       } catch (err) {
           console.error('Error processing source file:', err);
           $(`#${language}-doc-error`).removeClass("hidden");
@@ -294,8 +307,16 @@ $(document).ready(function() {
         }
       }
     }
-  });
-
+  }); 
+  
+$("#source-upload-provide-btn").click(function() {
+    if (!englishFile) {
+      alert("Please upload the English document first.");
+      return;
+    }
+    $("#second-upload").removeClass("hidden");
+  }); 
+  
   // 'Provide translation' button, show the second upload section
   $("#source-upload-provide-btn").click(function() {
     $("#second-upload").removeClass("hidden"); 
@@ -331,10 +352,15 @@ $(document).ready(function() {
     // 2) Retrieve the formatted English HTML from #translation-A
     //    (#translation-A is where we stored the first doc's structure).
     let englishHtml = $("#translation-A").html();
-    if (!englishHtml || !frenchText) {
-      alert("Please ensure both the formatted English doc and the unformatted French doc/text are present.");
+    if (!englishHtml || englishHtml.trim().length === 0) {
+      alert("No formatted English document found. Please complete the first step.");
       return;
     }
+    if (!frenchText || frenchText.trim().length === 0) {
+      alert("No French document/text found. Please upload or enter your translation.");
+      return;
+    }
+
     // 3) Merge the unformatted French text into the English structure.
 
     // Helper to collect text nodes:
