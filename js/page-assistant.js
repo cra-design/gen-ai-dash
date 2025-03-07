@@ -166,9 +166,15 @@ $(document).ready(function() {
     let systemTemplate = { role: "system", content: await $.get(template) };
     let userContent = { role: "user", content: extractedHtml};
     let requestJson = [systemGeneral, systemTemplate, userContent];
+    console.log(requestJson);
     // Send it to the API
-    let aiResponse = await formatGenAIHtmlResponse(formatORResponse("google/gemini-2.0-flash-exp:free", requestJson));
-    let templatedHtml = await applyCanadaHtmlTemplate(aiResponse, metadata, mainClassMatch);
+    try {
+      let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
+      let formattedHtml = formatGenAIHtmlResponse(aiResponse);
+      let templatedHtml = await applyCanadaHtmlTemplate(formattedHtml, metadata, mainClassMatch);
+    } catch (err) {
+        console.error('Templating error:', err);
+    }
     //4) make side-by-side accept/deny block in the code - use the fullHtmlCompare and iframeB?
       //Maybe refresh the iframe with the suggested code too?
     refreshIframe("url-frame-2", templatedHtml);
