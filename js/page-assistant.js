@@ -157,6 +157,7 @@ $(document).ready(function() {
   });
 
   $("#template-options-btn").click(async function() {
+    $("#templates-loading-indicator").removeClass("hidden");
     let template = $('input[name="template-options"]:checked').val();
     //1) Strip header/footer from page code to focus prompt on page content
     let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate($("#fullHtml code").text());
@@ -173,6 +174,7 @@ $(document).ready(function() {
       let templatedHtml = await applyCanadaHtmlTemplate(formattedHtml, metadata, mainClassMatch);
     } catch (err) {
         console.error('Templating error:', err);
+        $("#templates-loading-indicator").addClass("hidden");
     }
     console.log(templatedHtml);
     //4) make side-by-side accept/deny block in the code - use the fullHtmlCompare and iframeB?
@@ -185,6 +187,7 @@ $(document).ready(function() {
     $("#fullHtmlCompare code").text(templatedHtml);
     Prism.highlightElement(document.querySelector("#fullHtmlCompare code"));
     toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
+    $("#templates-loading-indicator").addClass("hidden");
   });
 
   $("#genai-select-tasks-btn").click(function () {
