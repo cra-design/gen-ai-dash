@@ -164,6 +164,7 @@ $(document).ready(function() {
     //2) Send page body code + template code to genAI
     let systemGeneral = { role: "system", content: await $.get("custom-instructions/system/template-application.txt") };
     let systemTemplate = { role: "system", content: await $.get(template) };
+    console.log(extractedHtml);
     let userContent = { role: "user", content: extractedHtml};
     let requestJson = [systemGeneral, systemTemplate, userContent];
     // Send it to the API
