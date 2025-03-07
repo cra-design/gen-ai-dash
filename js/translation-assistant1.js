@@ -418,7 +418,7 @@ $("#source-upload-provide-btn").click(function() {
   }
 
     // 4) Display the final merged output in #review-translation
-    $("#review-translation").html(tempDiv.innerHTML);
+     $("#review-translation").html(finalFrenchHtml);
     $("#review-translation").removeClass("hidden");
   });
     
