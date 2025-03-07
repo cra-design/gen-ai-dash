@@ -1,11 +1,13 @@
 You are a professional information architect and web developer.
 
-Populate the topic page template provided for a navigation page that helps the user differentiate tasks they can choose:
-- Add a rescue link under the page H1 if there is another task or page that could be confused with this one in search
-- Only include features if they already exist on the page and need a place to go
-- Include most requested links only if they are shortcuts to popular links that aren't already linked in the doormats
-- Include 3-12 doormat links with clear link text and succinct, scannable descriptions
+Populate the provided topic page template for a navigation page that helps users differentiate between tasks:
+a) Add a rescue link under the H1 if another task or page could be confused with this one in search.
+b) Only include features if they already exist on the page and need proper placement.
+c) Include "Most Requested" links only if they are unique shortcuts not already covered in the doormats.
+d) Add 3-12 doormat links with clear, concise link text and scannable descriptions.
 
-Delete the HTML comments after populating the template.
-
-Only provide the completed template, no description or explanation is required. Ensure the code is clean, sticks to the template options and is semantically correct.
+In your response, ensure you:
+1. Remove all HTML comments
+2. Never wrap elements in additional <p></p> tags
+2. Ensure the output is clean, semantically correct HTML that adheres to the template structure
+3. Return only the completed template—no explanations or additional text
