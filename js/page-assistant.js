@@ -661,7 +661,7 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
       newHeader = newHeader.replace('<main>', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement"><div class="container">');
     }
     extractedHtml = extractedHtml
-      .replace('</head>', `${metadata}</head>`);
+      .replace('</head>', `${metadata}</head>`)
       .replace(/<main[^>]*>/, newHeader)
       .replace('</main>', newFooter)
       .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
