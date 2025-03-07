@@ -297,30 +297,84 @@ $(document).ready(function() {
     }
   });
 
-  // Show second upload section.
+  // 'Provide translation' button, show the second upload section
   $("#source-upload-provide-btn").click(function() {
     $("#second-upload").removeClass("hidden");
   });
 
   // Second upload: manual translation.
   $("#second-upload-btn").click(async function() {
-    var selectedOption = $('input[name="second-upload-option"]:checked').val();
+    var selectedOption = $('input[name="second-upload-option"]:checked').val(); 
+    let frenchText = ""; 
+    
+    // 1) Get the raw French text from doc or text:
     if (selectedOption == "second-upload-doc") {
       var file = $('#second-file')[0].files[0];
+      if (!file) {
+        alert("Please select your translated file.");
+        return;
+      }
       try {
-        let translatedText = await handleFileExtractionToHtml(file);
-        console.log(translatedText);
-        $('#translation-A').html(formatTranslatedOutput(translatedText));
-        $("#translation-preview, .convert-translation").removeClass("hidden");
+        // This should extract text from the user-provided FR doc (unformatted).
+        let extractedText = await handleFileExtractionToHtml(file);
+        frenchText = extractedText || "";
       } catch (err) {
-        console.error('Error processing source file:', err);
+        console.error('Error processing the second (FR) file:', err);
+        alert("Error reading your translated file. Check console for details.");
+        return;
       }
     } else if (selectedOption == "second-upload-text") {
-      $('#translation-A').html(formatTranslatedOutput($("#second-text").val()));
-      $("#translation-preview, .convert-translation").removeClass("hidden");
-    }
-  });
+      frenchText = $("#second-text").val();
+    } 
 
+    // 2) Retrieve the formatted English HTML from #translation-A
+    //    (#translation-A is where we stored the first doc's structure).
+    let englishHtml = $("#translation-A").html();
+    if (!englishHtml || !frenchText) {
+      alert("Please ensure both the formatted English doc and the unformatted French doc/text are present.");
+      return;
+    }
+    // 3) Merge the unformatted French text into the English structure.
+
+    // Helper to collect text nodes:
+    function getTextNodes(node) {
+      let textNodes = [];
+      if (node.nodeType === Node.TEXT_NODE) {
+        textNodes.push(node);
+      } else {
+        node.childNodes.forEach(child => {
+          textNodes = textNodes.concat(getTextNodes(child));
+        });
+      }
+      return textNodes;
+    } 
+    
+    // Create a temp container for the English doc's HTML
+    let tempDiv = document.createElement("div");
+    tempDiv.innerHTML = englishHtml;  
+    
+    // Grab all text nodes from the English doc
+    let textNodes = getTextNodes(tempDiv); 
+
+    // Split the French text by double-newlines as a first attempt
+    let frenchSegments = frenchText.split(/\n\s*\n/).map(s => s.trim()).filter(s => s.length > 0);
+
+    // If mismatch, fallback to word-based alignment
+    if (frenchSegments.length !== textNodes.length) {
+      console.warn("Segment count mismatch. Falling back to word-based alignment.");
+      let englishTexts = textNodes.map(node => node.nodeValue);
+      frenchSegments = fallbackAlignLines(englishTexts, frenchText);
+    } 
+    // Replace each text node in the English structure with the corresponding French segment
+    textNodes.forEach((node, index) => {
+      node.nodeValue = frenchSegments[index] || "";
+    }); 
+
+    // 4) Display the final merged output in #review-translation
+    $("#review-translation").html(tempDiv.innerHTML);
+    $("#review-translation").removeClass("hidden");
+  });
+    
   // Accept and edit translation button handlers.
   $("#accept-translation-A-btn").click(function() { acceptTranslation("a"); });
   $("#accept-translation-B-btn").click(function() { acceptTranslation("b"); });
