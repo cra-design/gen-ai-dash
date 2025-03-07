@@ -326,7 +326,13 @@ $("#source-upload-provide-btn").click(function() {
   // Second upload: manual translation.
   $("#second-upload-btn").click(async function() {
     var selectedOption = $('input[name="second-upload-option"]:checked').val();  
-    let frenchText = ""; 
+    let frenchText = "";  
+
+    // Ensure the French file is uploaded if the user selected document upload.
+  if (selectedOption == "second-upload-doc" && !frenchFile) {
+    alert("Please upload your translated French document.");
+    return;
+  }
     
     // 1) Get the raw French text from doc or text:
     if (selectedOption == "second-upload-doc") {
@@ -335,7 +341,15 @@ $("#source-upload-provide-btn").click(function() {
       if (!file) {
         alert("Please select your translated file.");
         return;
-      }
+      } 
+      file.arrayBuffer().then(buffer => {
+      mammoth.convertToHtml({ arrayBuffer: buffer })
+        .then(result => {
+          console.log("Direct extraction result:", result.value);
+        })
+        .catch(err => console.error("Error with direct extraction:", err));
+    });
+      
       try {
         // This should extract text from the user-provided FR doc (unformatted).
         let extractedText = await handleFileExtractionToHtml(file);
