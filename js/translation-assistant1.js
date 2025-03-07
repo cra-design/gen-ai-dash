@@ -1,6 +1,5 @@
 let generatedDownloadFile = null; 
 
-// Helper function to wrap file extraction into a Promise.
 function extractXmlFromFile(file) {
   return new Promise((resolve, reject) => {
     // Call handleFileExtractionToXML with proper callbacks.
