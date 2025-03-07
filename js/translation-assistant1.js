@@ -374,42 +374,45 @@ $("#source-upload-provide-btn").click(function() {
       alert("No French document/text found. Please upload or enter your translation.");
       return;
     }
+    // load the system prompt
+    let systemPrompt = "";
+    try {
+    systemPrompt = await $.get("custom-instructions/translation/english2french1.txt");
+  } catch (error) {
+    console.error("Error loading system prompt:", error);
+    alert("Could not load translation instructions. Please check your files.");
+    return;
+  }
+    let combinedPrompt = systemPrompt + "\n\n" +
+    "English Document (HTML):\n" + englishHtml + "\n\n" +
+    "French Text:\n" + frenchText + "\n\n" +
+    "Please return the French document in HTML format that exactly follows the structure of the English document."; 
 
-    // 3) Merge the unformatted French text into the English structure.
-
-    // Helper to collect text nodes:
-    function getTextNodes(node) {
-      let textNodes = [];
-      if (node.nodeType === Node.TEXT_NODE) {
-        textNodes.push(node);
-      } else {
-        node.childNodes.forEach(child => {
-          textNodes = textNodes.concat(getTextNodes(child));
-        });
-      }
-      return textNodes;
-    } 
     
-    // Create a temp container for the English doc's HTML
-    let tempDiv = document.createElement("div");
-    tempDiv.innerHTML = englishHtml;  
-    
-    // Grab all text nodes from the English doc
-    let textNodes = getTextNodes(tempDiv); 
+  let requestJson = [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: combinedPrompt }
+  ]; 
 
-    // Split the French text by double-newlines as a first attempt
-    let frenchSegments = frenchText.split(/\n\s*\n/).map(s => s.trim()).filter(s => s.length > 0);
-
-    // If mismatch, fallback to word-based alignment
-    if (frenchSegments.length !== textNodes.length) {
-      console.warn("Segment count mismatch. Falling back to word-based alignment.");
-      let englishTexts = textNodes.map(node => node.nodeValue);
-      frenchSegments = fallbackAlignLines(englishTexts, frenchText);
-    } 
-    // Replace each text node in the English structure with the corresponding French segment
-    textNodes.forEach((node, index) => {
-      node.nodeValue = frenchSegments[index] || "";
-    }); 
+   let models = [
+    "mistralai/mistral-nemo:free",
+    "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+    "cognitivecomputations/dolphin3.0-mistral-24b:free",
+    "mistralai/mistral-small-24b-instruct-2501:free",
+    "mistralai/mistral-7b-instruct:free"
+  ];
+  let finalFrenchHtml = "";
+  for (let model of models) {
+    let ORjson = await getORData(model, requestJson);
+    if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
+      finalFrenchHtml = ORjson.choices[0].message.content;
+      break;
+    }
+  }
+  if (!finalFrenchHtml) {
+    alert("Translation alignment failed. No valid response from any model.");
+    return;
+  }
 
     // 4) Display the final merged output in #review-translation
     $("#review-translation").html(tempDiv.innerHTML);
