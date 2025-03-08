@@ -160,9 +160,7 @@ $(document).ready(function() {
     $("#templates-loading-indicator").removeClass("hidden");
     let template = $('input[name="template-options"]:checked');
     //1) Strip header/footer from page code to focus prompt on page content
-    console.log($("#fullHtml code").text());
     let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate($("#fullHtml code").text());
-    console.log(extractedHtml);
     //2) Send page body code + template code to genAI
     let systemGeneral = { role: "system", content: await $.get("custom-instructions/template/" + template.attr("id").replace("templates-", "") + ".txt") };
     let systemTemplate = { role: "system", content: await $.get(template.val()) };
@@ -171,7 +169,7 @@ $(document).ready(function() {
     // Send it to the API
     try {
       //qwen/qwq-32b:free
-      let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson, true);
+      let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
       console.log(aiResponse);
       let formattedHtml = formatGenAIHtmlResponse(aiResponse);
       let { extractedHtml: simpleHtml } = await applySimpleHtmlTemplate(formattedHtml);
@@ -782,9 +780,9 @@ function toggleRadioCheckbox() {
   });
 }
 
-async function formatORResponse(model, requestJson, minify = false) {
+async function formatORResponse(model, requestJson) {
   try {
-    let ORjson = await getORData(model, requestJson, minify);
+    let ORjson = await getORData(model, requestJson);
     if (ORjson?.choices?.[0]?.message?.content) {
       let aiResponse = ORjson.choices[0].message.content;
       let formattedText = formatAIResponse(aiResponse);
@@ -885,21 +883,20 @@ function formatGenAIHtmlResponse(genaiResponse) {
   // Trim leading and trailing <p> and </p> tags
   formattedHtml = formattedHtml.replace(/^<p>/, '').replace(/<\/p>$/, '').trim();
   formattedHtml = formatHTML(formattedHtml);
-  return formattedHtml;
-  // let doc = new DOMParser().parseFromString(formattedHtml, "text/html");
-  // doc.querySelectorAll("p").forEach(p => {
-  //     let children = p.children;
-  //     // If the <p> only contains one block-level element, unwrap it
-  //     if (children.length === 1 && children[0].matches("div, section, ul, ol, table, h1, h2, h3, h4, h5, h6")) {
-  //         p.replaceWith(...p.childNodes);
-  //     }
-  // });
-  // // Remove empty <p> tags
-  // doc.querySelectorAll("p").forEach(p => {
-  //     if (p.innerHTML.trim() === "") {
-  //         p.remove();
-  //     }
-  // });
-  // // Return the cleaned-up HTML as a string
-  // return doc.body.innerHTML;
+  let doc = new DOMParser().parseFromString(formattedHtml, "text/html");
+  doc.querySelectorAll("p").forEach(p => {
+      let children = p.children;
+      // If the <p> only contains one block-level element, unwrap it
+      if (children.length === 1 && children[0].matches("div, section, ul, ol, table, h1, h2, h3, h4, h5, h6")) {
+          p.replaceWith(...p.childNodes);
+      }
+  });
+  // Remove empty <p> tags
+  doc.querySelectorAll("p").forEach(p => {
+      if (p.innerHTML.trim() === "") {
+          p.remove();
+      }
+  });
+  // Return the cleaned-up HTML as a string
+  return doc.body.innerHTML;
 }

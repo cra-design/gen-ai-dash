@@ -9,5 +9,7 @@ d) Add 3-12 doormat links with clear, concise link text and scannable descriptio
 Formatting rules:
 1. Remove all HTML comments
 2. Do not wrap block-level elements (e.g., <div>, <section>, <ul>, <li>, <h1>-<h6>) inside <p> tags.
-3. Ensure clean, semantically correct HTML that adheres to the template structure.
-4. Return only the completed html—no explanations or additional text
+3. Never include empty <p></p> tags
+4. Use <p> tags only for standalone paragraphs, not around headings, links, lists, or structural elements.
+5. Ensure clean, semantically correct HTML that adheres to the template structure.
+6. Return only the completed html—no explanations or additional text

@@ -128,16 +128,12 @@ $(document).ready(function() {
 
 });
 
-async function getORData(model, requestJson, minify = false) {
+async function getORData(model, requestJson) {
     let ORjson;
-    let jsonRequest = JSON.stringify({
-      "model": model,
-      "messages": requestJson
-    });
-    if (minify == true) {
-      jsonRequest = jsonRequest.replace(/\s+/g, " ");
-    }
-    console.log(jsonRequest);
+    console.log(JSON.stringify({
+        "model": model,
+        "messages": requestJson
+    }));
     try {
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
@@ -145,7 +141,10 @@ async function getORData(model, requestJson, minify = false) {
                 "Authorization": "Bearer " + $("#api-key").val(),
                 "Content-Type": "application/json"
             },
-            body: jsonRequest
+            body: JSON.stringify({
+                "model": model,
+                "messages": requestJson
+            })
         });
 
         if (!response.ok) {
