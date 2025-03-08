@@ -171,7 +171,7 @@ $(document).ready(function() {
     // Send it to the API
     try {
       //qwen/qwq-32b:free
-      let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
+      let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson, true);
       console.log(aiResponse);
       let formattedHtml = formatGenAIHtmlResponse(aiResponse);
       let { extractedHtml: simpleHtml } = await applySimpleHtmlTemplate(formattedHtml);
@@ -782,9 +782,9 @@ function toggleRadioCheckbox() {
   });
 }
 
-async function formatORResponse(model, requestJson) {
+async function formatORResponse(model, requestJson, minify = false) {
   try {
-    let ORjson = await getORData(model, requestJson);
+    let ORjson = await getORData(model, requestJson, minify);
     if (ORjson?.choices?.[0]?.message?.content) {
       let aiResponse = ORjson.choices[0].message.content;
       let formattedText = formatAIResponse(aiResponse);
