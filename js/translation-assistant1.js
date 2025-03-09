@@ -797,8 +797,4 @@ function detectLanguageBasedOnWords(text) {
   else if (frenchMatches > englishMatches) { return 'french'; }
   else { return 'unknown'; }
 } 
-$(document).on("click", "a[href='#convert-translation']", function(e) {
-  e.preventDefault();  // Prevent default anchor jump
-  $("#convert-translation").removeClass("hidden").show();
-  document.getElementById("convert-translation").scrollIntoView({ behavior: "smooth" });
-});
+
