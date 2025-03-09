@@ -510,15 +510,15 @@ $("#source-upload-provide-btn").click(function() {
     }
   });
 
-  // CHANGED: Event listener for "convert back to document" link.
-  // When the user clicks the link, unhide the convert-translation card.
-  $(document).on("click", "a[href='#convert-translation']", function(e) {
+}); 
+
+$(document).on("click", "a[href='#convert-translation']", function(e) {
     e.preventDefault();  // Prevent the default anchor jump
     $("#convert-translation").removeClass("hidden").show();
     document.getElementById("convert-translation").scrollIntoView({ behavior: "smooth" });
   });
   
-}); 
+});
 
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
@@ -797,3 +797,8 @@ function detectLanguageBasedOnWords(text) {
   else if (frenchMatches > englishMatches) { return 'french'; }
   else { return 'unknown'; }
 } 
+$(document).on("click", "a[href='#convert-translation']", function(e) {
+  e.preventDefault();  // Prevent default anchor jump
+  $("#convert-translation").removeClass("hidden").show();
+  document.getElementById("convert-translation").scrollIntoView({ behavior: "smooth" });
+});
