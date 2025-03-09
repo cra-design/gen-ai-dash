@@ -477,8 +477,8 @@ $("#source-upload-provide-btn").click(function() {
     // Create a new JSZip instance.
     const zip = new JSZip();
     
-    // Generate the file blob using your generateFile function.
-    let blob = await generateFile(zip, xmlContent, mimeType);
+     // Generate the file blob using your generateFile function.
+    generatedDownloadFile = await generateFile(zip, xmlContent, mimeType);
     
     // Use the English file's name if available to build the download file name.
     let englishFileName = englishFile ? englishFile.name.split('.').slice(0, -1).join('.') : "translated-file";
@@ -487,12 +487,6 @@ $("#source-upload-provide-btn").click(function() {
     $("#translated-doc-download").removeClass("hidden");
     $("#convert-translation-download-btn").attr("data-filename", modifiedFileName);
     
-    // Trigger the download.
-    let downloadLink = document.createElement('a');
-    downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = modifiedFileName;
-    downloadLink.click();
-    URL.revokeObjectURL(downloadLink.href);
     $('#converting-spinner').addClass("hidden");
   } catch (error) {
     console.error("An error occurred:", error);
@@ -500,7 +494,9 @@ $("#source-upload-provide-btn").click(function() {
     $('#converting-spinner').addClass("hidden");
   }
 });
-
+ 
+// Existing download button click handler remains unchanged.
+// When the user clicks the Download button, the file will be downloaded.
   $("#convert-translation-download-btn").click(function() {
     if (generatedDownloadFile) {
       let fileName = $(this).attr("data-filename") || "translated-file.docx";
