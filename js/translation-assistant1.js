@@ -242,7 +242,7 @@ $(document).ready(function() {
       $('#translation-A').html(normalizedHtml);
     }
     
-    $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+    $("#translation-preview, #convert-translation").removeClass("hidden");
   } catch (error) {
     console.error("Error during DOCX translation:", error);
     alert("Error during file translation. Please check the console for details.");
@@ -254,7 +254,7 @@ $(document).ready(function() {
           let updatedXml = await conversionGemini(englishXml, fileExtension);
           let formattedOutput = formatTranslatedOutput(updatedXml);
           $('#translation-A').html(formattedOutput);
-          $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+          $("#translation-preview, #convert-translation").removeClass("hidden");
         } catch (error) {
           console.error("Error during file translation:", error);
           alert("Error during file translation. Please check the console for details.");
@@ -269,7 +269,7 @@ $(document).ready(function() {
       if (selectedLanguage == "French") { 
         translationInstructions = "custom-instructions/translation/french2english.txt"; 
       }
-      $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
+      $("#translation-preview, #convert-translation").removeClass("hidden");
       let models = [
           "mistralai/mistral-nemo:free",
           "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
