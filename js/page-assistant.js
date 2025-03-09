@@ -162,10 +162,29 @@ $(document).ready(function() {
     //1) Strip header/footer from page code to focus prompt on page content
     let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate($("#fullHtml code").text());
     //2) Send page body code + template code to genAI
-    let systemGeneral = { role: "system", content: await $.get("custom-instructions/template/" + template.attr("id").replace("templates-", "") + ".txt") };
-    let systemTemplate = { role: "system", content: await $.get(template.val()) };
+    let systemGeneral = { role: "system", content: "" };
+    let systemTemplate = { role: "system", content: "" };
+    let systemContext = { role: "system", content: "For context, other sections include... " };
     let userContent = { role: "user", content: extractedHtml};
-    let requestJson = [systemGeneral, systemTemplate, userContent];
+    let subTemplates = template.attr('data-component').split(', ');
+    let requestJson;
+    //OPTIONAL PIPELINE ADDITION
+    if (subTemplates.length > 0) {
+        for (const component of subTemplates) {
+          try {
+            systemGeneral.content = await $.get("custom-instructions/component/" + component + ".txt");
+            systemTemplate.content = await $.get("html-templates/components/" + component + ".html");
+            requestJson = [systemGeneral, systemTask, userContent, userData];
+            let formattedText = formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
+            systemContext.content += component + ": " + formattedText + "; ";
+          }
+
+    }
+    // END OPTIONAL PIPELINE ADDITION
+    systemGeneral.content = await $.get("custom-instructions/template/" + template.attr("id").replace("templates-", "") + ".txt");
+    systemTemplate.content = await $.get(template.val());
+    systemContext.content = systemContext.content.replace("For context, other sections include... ", "Please use the following, if available... ");
+    requestJson = [systemGeneral, systemTemplate, userContent];
     // Send it to the API
     try {
       //qwen/qwq-32b:free
