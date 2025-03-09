@@ -517,8 +517,6 @@ $(document).on("click", "a[href='#convert-translation']", function(e) {
     $("#convert-translation").removeClass("hidden").show();
     document.getElementById("convert-translation").scrollIntoView({ behavior: "smooth" });
   });
-  
-});
 
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
