@@ -449,63 +449,57 @@ $("#source-upload-provide-btn").click(function() {
 
   // Create document button flow.
   $("#convert-translation-to-doc-btn").click(async function() {
-    try {
-      $('#converting-spinner').removeClass("hidden");
-      const englishDocxData = $('#source-file')[0].files[0];
-      if (!englishDocxData) {
-        console.error("No file selected.");
-        $('#converting-spinner').addClass("hidden");
-        return;
-      }
-      const fileExtension = englishDocxData.name.split('.').pop().toLowerCase();
-      if (!['docx', 'pptx', 'xlsx'].includes(fileExtension)) {
-        console.error("Unsupported file type.");
-        $('#converting-spinner').addClass("hidden");
-        return;
-      }
-      // Step 1: Extract the XML from the original file.
-      const englishXml = await new Promise((resolve, reject) => {
-        handleFileExtractionToXML(englishDocxData,
-          function(result) { resolve(result); },
-          function(error) { console.error('Error processing English file:', error); reject(error); }
-        );
-      });
-      if (!englishXml) {
-        console.error("No XML document extracted.");
-        $('#converting-spinner').addClass("hidden");
-        return;
-      }
-      // Step 2: Translate the content using conversion functions.
-      const selectedMethod = $('input[name="convert-translation-method"]:checked').val();
-      let updatedXml;
-      if (selectedMethod === "convert-translation-docx") {
-        updatedXml = await conversionDocxTemplater(englishXml);
-      } else {
-        updatedXml = await conversionGemini(englishXml, fileExtension);
-      }
-      // Step 3: Generate the final translated file.
-      const originalFileName = englishDocxData.name.split('.').slice(0, -1).join('.');
-      const modifiedFileName = `${originalFileName}-FR.${fileExtension}`;
-      const zipEN = new JSZip();
-      const xmlContent = createXmlContent(fileExtension, updatedXml);
-      let mimeType;
-      if (fileExtension === 'docx') {
-        mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-      } else if (fileExtension === 'pptx') {
-        mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-      } else if (fileExtension === 'xlsx') {
-        mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-      }
-      generatedDownloadFile = await generateFile(zipEN, xmlContent, mimeType);
-      $("#translated-doc-download").removeClass("hidden");
-      $("#convert-translation-download-btn").attr("data-filename", modifiedFileName);
+  try {
+    $('#converting-spinner').removeClass("hidden");
+    // Retrieve the final French HTML from translation-A.
+    let finalFrenchHtml = $("#translation-A").html();
+    if (!finalFrenchHtml || finalFrenchHtml.trim().length === 0) {
+      alert("No formatted French document available.");
       $('#converting-spinner').addClass("hidden");
-    } catch (error) {
-      console.error("An error occurred:", error);
-    } finally {
-      $('#converting-spinner').addClass("hidden");
+      return;
     }
-  });
+    // Determine the target file type based on the uploaded English file.
+    let fileExtension = englishFile ? englishFile.name.split('.').pop().toLowerCase() : 'docx';
+    let mimeType;
+    if (fileExtension === 'docx') {
+      mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    } else if (fileExtension === 'pptx') {
+      mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+    } else if (fileExtension === 'xlsx') {
+      mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    } else {
+      mimeType = "application/octet-stream"; // fallback
+    }
+    
+    // Wrap the French HTML in XML using your existing createXmlContent function.
+    let xmlContent = createXmlContent(fileExtension, finalFrenchHtml);
+    
+    // Create a new JSZip instance.
+    const zip = new JSZip();
+    
+    // Generate the file blob using your generateFile function.
+    let blob = await generateFile(zip, xmlContent, mimeType);
+    
+    // Use the English file's name if available to build the download file name.
+    let englishFileName = englishFile ? englishFile.name.split('.').slice(0, -1).join('.') : "translated-file";
+    let modifiedFileName = `${englishFileName}-FR.${fileExtension}`;
+    
+    $("#translated-doc-download").removeClass("hidden");
+    $("#convert-translation-download-btn").attr("data-filename", modifiedFileName);
+    
+    // Trigger the download.
+    let downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = modifiedFileName;
+    downloadLink.click();
+    URL.revokeObjectURL(downloadLink.href);
+    $('#converting-spinner').addClass("hidden");
+  } catch (error) {
+    console.error("An error occurred:", error);
+  } finally {
+    $('#converting-spinner').addClass("hidden");
+  }
+});
 
   $("#convert-translation-download-btn").click(function() {
     if (generatedDownloadFile) {
