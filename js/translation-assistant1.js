@@ -242,7 +242,7 @@ $(document).ready(function() {
       $('#translation-A').html(normalizedHtml);
     }
     
-    $("#translation-preview, #convert-translation").removeClass("hidden");
+    $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
   } catch (error) {
     console.error("Error during DOCX translation:", error);
     alert("Error during file translation. Please check the console for details.");
@@ -254,7 +254,7 @@ $(document).ready(function() {
           let updatedXml = await conversionGemini(englishXml, fileExtension);
           let formattedOutput = formatTranslatedOutput(updatedXml);
           $('#translation-A').html(formattedOutput);
-          $("#translation-preview, #convert-translation").removeClass("hidden");
+          $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
         } catch (error) {
           console.error("Error during file translation:", error);
           alert("Error during file translation. Please check the console for details.");
@@ -269,7 +269,7 @@ $(document).ready(function() {
       if (selectedLanguage == "French") { 
         translationInstructions = "custom-instructions/translation/french2english.txt"; 
       }
-      $("#translation-preview, #convert-translation").removeClass("hidden");
+      $("#translation-preview, #convert-translation-to-doc-btn").removeClass("hidden");
       let models = [
           "mistralai/mistral-nemo:free",
           "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
@@ -510,14 +510,6 @@ $("#source-upload-provide-btn").click(function() {
     }
   });
 
-}); 
-
-$(document).on("click", "a[href='#convert-translation']", function(e) {
-    e.preventDefault();  // Prevent the default anchor jump
-    $("#convert-translation").removeClass("hidden").show();
-    document.getElementById("convert-translation").scrollIntoView({ behavior: "smooth" });
-  });
-  
 });
 
 // Function to generate a file blob from the zip and XML content.
@@ -796,5 +788,4 @@ function detectLanguageBasedOnWords(text) {
   if (englishMatches > frenchMatches) { return 'english'; }
   else if (frenchMatches > englishMatches) { return 'french'; }
   else { return 'unknown'; }
-} 
-
+}
