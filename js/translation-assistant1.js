@@ -327,6 +327,19 @@ $("#source-upload-provide-btn").click(function() {
     .replace(/```$/, '')             
     .trim();
   }
+  // Add event listener for "convert back to document" link
+  $("a[href='#convert-translation']").click(function(e) {
+    e.preventDefault();
+    if ($("#translation-preview").is(":visible")) { // CHANGED: Only proceed if output is visible
+        $("#convert-translation").removeClass("hidden"); // Show the conversion card containing the Create Document button
+        // Optionally, scroll to the conversion card
+        $('html, body').animate({
+            scrollTop: $("#convert-translation").offset().top
+        }, 500);
+    } else {
+        alert("Please complete the translation before converting back to document.");
+    }
+});
 
   // Second upload: manual translation.
   $("#second-upload-btn").click(async function() {
