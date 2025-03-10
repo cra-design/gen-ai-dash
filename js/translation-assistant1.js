@@ -503,7 +503,10 @@ $("#source-upload-provide-btn").click(function() {
       `; 
         console.log("DOCX final HTML:\n", fullHtml);
         // htmlDocx.asBlob converts HTML to a DOCX blob with the correct internal structure. 
-        generatedBlob = htmlDocx.asBlob(finalFrenchHtml);
+        generatedBlob = new Blob([fullHtml], {
+  type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8"
+});
+
       } else if (fileExtension === 'pptx') {
         // For PPTX, use your GeminiTemplater conversion as before.
         let englishXml = await handleFileExtraction(englishFile);
