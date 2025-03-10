@@ -24,8 +24,9 @@ $(document).ready(function() {
       let key = $("#api-key").val();
       if (!key) {
         $('#api-key-entry-error').removeClass("hidden");
+      } else {
+        window.location.href = window.location.pathname + '?key=' + encodeURIComponent(key);
       }
-      window.location.href = window.location.pathname + '?key=' + encodeURIComponent(key);
     });
 
     // Show the pop-up when the button is clicked
