@@ -173,16 +173,18 @@ $(document).ready(function() {
         for (const component of subTemplates) {
           try {
             systemGeneral.content = await $.get("custom-instructions/component/" + component + ".txt");
-            systemTemplate.content = await $.get("html-templates/components/" + component + ".html");
+            systemTemplate.content = "```" + await $.get("html-templates/components/" + component + ".html") + "```";
             requestJson = [systemGeneral, systemTask, userContent, userData];
             let formattedText = formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
             systemContext.content += component + ": " + formattedText + "; ";
-          }
-
+          } catch (err) {
+		console.error('Component error:', err);
+		$("#templates-loading-indicator").addClass("hidden");
+	}
     }
     // END OPTIONAL PIPELINE ADDITION
     systemGeneral.content = await $.get("custom-instructions/template/" + template.attr("id").replace("templates-", "") + ".txt");
-    systemTemplate.content = await $.get(template.val());
+    systemTemplate.content = "```" + await $.get(template.val()) + "```";
     systemContext.content = systemContext.content.replace("For context, other sections include... ", "Please use the following, if available... ");
     requestJson = [systemGeneral, systemTemplate, userContent];
     // Send it to the API
