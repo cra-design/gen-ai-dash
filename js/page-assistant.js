@@ -178,9 +178,10 @@ $(document).ready(function() {
             let formattedText = formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
             systemContext.content += component + ": " + formattedText + "; ";
           } catch (err) {
-		console.error('Component error:', err);
-		$("#templates-loading-indicator").addClass("hidden");
-	}
+            console.error('Component error:', err);
+            $("#templates-loading-indicator").addClass("hidden");
+          }
+        }
     }
     // END OPTIONAL PIPELINE ADDITION
     systemGeneral.content = await $.get("custom-instructions/template/" + template.attr("id").replace("templates-", "") + ".txt");
