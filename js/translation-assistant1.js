@@ -500,7 +500,8 @@ $("#source-upload-provide-btn").click(function() {
             ${finalFrenchHtml}
           </body>
         </html>
-      `;
+      `; 
+        console.log("DOCX final HTML:\n", fullHtml);
         // htmlDocx.asBlob converts HTML to a DOCX blob with the correct internal structure. 
         generatedBlob = htmlDocx.asBlob(finalFrenchHtml);
       } else if (fileExtension === 'pptx') {
