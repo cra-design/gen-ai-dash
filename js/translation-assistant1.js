@@ -487,9 +487,21 @@ $("#source-upload-provide-btn").click(function() {
     }
     
     // 3) UPDATED: If the file is DOCX, use html-docx-js to convert the final HTML to a valid DOCX blob.
-      let generatedBlob;
-      if (fileExtension === 'docx') {
-        // htmlDocx.asBlob converts HTML to a DOCX blob with the correct internal structure.
+      let generatedBlob; 
+    //Wrap the final HTML with a meta charset tag
+      if (fileExtension === 'docx') { 
+        let fullHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+          </head>
+          <body>
+            ${finalFrenchHtml}
+          </body>
+        </html>
+      `;
+        // htmlDocx.asBlob converts HTML to a DOCX blob with the correct internal structure. 
         generatedBlob = htmlDocx.asBlob(finalFrenchHtml);
       } else if (fileExtension === 'pptx') {
         // For PPTX, use your GeminiTemplater conversion as before.
