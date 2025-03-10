@@ -494,7 +494,10 @@ $("#source-upload-provide-btn").click(function() {
         <!DOCTYPE html>
         <html>
           <head>
-            <meta charset="UTF-8">
+            <meta charset="UTF-8"> 
+            <style>
+              body { font-family: Calibri, "Calibri (Body)", sans-serif; }
+            </style>
           </head>
           <body>
             ${finalFrenchHtml}
