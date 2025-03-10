@@ -448,7 +448,7 @@ $("#source-upload-provide-btn").click(function() {
   $("#accept-translation-B-btn").click(function() { acceptTranslation("b"); });
   $("#edit-translation-A-btn").click(function() {
     var $translation = $('#translation-A');
-    var isEditable = $translation.attr('contenteditable') === 'true';
+    var x = $translation.attr('contenteditable') === 'true';
     if (isEditable) {
       $translation.attr('contenteditable', 'false');
       $(this).attr('title', 'Edit Code');
@@ -463,15 +463,17 @@ $("#source-upload-provide-btn").click(function() {
   // Create document button flow.
   $("#convert-translation-to-doc-btn").click(async function() {
   try {
-    $('#converting-spinner').removeClass("hidden");
-    // Retrieve the final French HTML from translation-A.
+    $('#converting-spinner').removeClass("hidden"); 
+    // 1) Grab the final, user-edited HTML from the review text area
     let finalFrenchHtml = $("#translation-A").html();
     if (!finalFrenchHtml || finalFrenchHtml.trim().length === 0) {
       alert("No formatted French document available.");
       $('#converting-spinner').addClass("hidden");
       return;
-    }
-    // Determine the target file type based on the uploaded English file.
+    } 
+    let selectedMethod = $('input[name="convert-translation-method"]:checked').val();  
+    
+    // 2) Determine the file type from the original English file.
     let fileExtension = englishFile ? englishFile.name.split('.').pop().toLowerCase() : 'docx';
     let mimeType;
     if (fileExtension === 'docx') {
@@ -484,14 +486,33 @@ $("#source-upload-provide-btn").click(function() {
       mimeType = "application/octet-stream"; // fallback
     }
     
-    // Wrap the French HTML in XML using your existing createXmlContent function.
-    let xmlContent = createXmlContent(fileExtension, finalFrenchHtml);
-    
-    // Create a new JSZip instance.
-    const zip = new JSZip();
-    
-     // Generate the file blob using your generateFile function.
-    generatedDownloadFile = await generateFile(zip, xmlContent, mimeType);
+    // 3) UPDATED: If the file is DOCX, use html-docx-js to convert the final HTML to a valid DOCX blob.
+      let generatedBlob;
+      if (fileExtension === 'docx') {
+        // htmlDocx.asBlob converts HTML to a DOCX blob with the correct internal structure.
+        generatedBlob = htmlDocx.asBlob(finalFrenchHtml);
+      } else if (fileExtension === 'pptx') {
+        // For PPTX, use your GeminiTemplater conversion as before.
+        let englishXml = await handleFileExtraction(englishFile);
+        let updatedXml = await conversionGemini(englishXml, fileExtension);
+        let zip = new JSZip();
+      // This is a simplistic structure; for a fully valid PPTX more parts are required.
+        zip.file("ppt/slides/slide1.xml", updatedXml); 
+        generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+    } else if (fileExtension === 'xlsx') {
+        // For XLSX, similarly use your conversionGemini function.
+        let englishXml = await handleFileExtraction(englishFile);
+        let updatedXml = await conversionGemini(englishXml, fileExtension);
+        let zip = new JSZip();
+        zip.file("xl/worksheets/sheet1.xml", updatedXml);
+        generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+      } 
+     if (!generatedBlob) {
+        alert("File generation failed.");
+        $('#converting-spinner').addClass("hidden");
+        return;
+      }
+      generatedDownloadFile = generatedBlob; 
     
     // Use the English file's name if available to build the download file name.
     let englishFileName = englishFile ? englishFile.name.split('.').slice(0, -1).join('.') : "translated-file";
