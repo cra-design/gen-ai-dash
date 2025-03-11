@@ -677,7 +677,7 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
   try {
     const hasMain = /<main[^>]*>/.test(extractedHtml);
     if (!hasMain) {
-      { extractedHtml: extractedHtml } = await applySimpleHtmlTemplate(extractedHtml);
+      ({ extractedHtml } = await applySimpleHtmlTemplate(extractedHtml));;
     }
     const [headerResponse2, footerResponse2, dateResponse2] = await Promise.all([
         fetch('html-templates/canada-header-additions.html'),
