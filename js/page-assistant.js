@@ -726,6 +726,66 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
   }
 }
 
+async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMatch = false) {
+  try {
+    const [headerResponse2, footerResponse2, dateResponse2] = await Promise.all([
+        fetch('html-templates/canada-header-additions.html'),
+        fetch('html-templates/canada-footer-additions.html'),
+        fetch('html-templates/canada-date-additions.html')
+    ]);
+    if (!headerResponse2.ok || !footerResponse2.ok || !dateResponse2.ok) {
+        throw new Error('Failed to load new header, footer, or date');
+    }
+    let [newHeader, newFooter, newDate] = await Promise.all([
+        headerResponse2.text(),
+        footerResponse2.text(),
+        dateResponse2.text()
+    ]);
+    const today = new Date();
+    const formattedDate = today.getFullYear() + '-' +
+                          String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                          String(today.getDate()).padStart(2, '0');
+    newDate = newDate.replace("2020-07-29", formattedDate);
+    // If extractedHtml lacks a date modified section, insert it into the footer
+    if (!/<dl id="wb-dtmd">/.test(extractedHtml)) {
+      newFooter = newFooter.replace('</main>', newDate);
+    }
+    // Modify newHeader based on mainClassMatch
+    if (mainClassMatch) {
+      newHeader = newHeader.replace('<main>', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement" class="container">');
+    } else {
+      newHeader = newHeader.replace('<main>', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement"><div class="container">');
+    }
+    // **Check if extractedHtml contains <main> and <header>**
+    const hasMain = /<main[^>]*>/.test(extractedHtml);
+    const hasHeader = /<header[^>]*>/.test(extractedHtml);
+    if (hasHeader) {
+      // Replace existing header
+      extractedHtml = extractedHtml.replace(/<header[^>]*>[\s\S]*?<\/header>/, newHeader);
+    } else {
+      // Insert newHeader at the top of <body>
+      extractedHtml = extractedHtml.replace('<body>', `<body>\n${newHeader}`);
+    }
+    if (hasMain) {
+      // Replace only the <main> content
+      extractedHtml = extractedHtml.replace(/<main[^>]*>/, newHeader).replace('</main>', newFooter);
+    } else {
+      // Wrap the entire content inside <main> with footer
+      extractedHtml = `${newHeader}\n${extractedHtml}\n${newFooter}`;
+    }
+    // Additional replacements
+    extractedHtml = extractedHtml
+      .replace(/<head[^>]*>[\s\S]*?<\/head>/, `<head>\n${metadata}\n</head>`)
+      .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
+      .replace('<table>', '<table class="wb-tables table table-striped">');
+    return extractedHtml;
+  } catch (error) {
+    console.error('Error applying Canada.ca HTML template:', error);
+    hideAllSpinners();
+  }
+}
+
+
 function showUIAfterDocUpload() {
   $("#html-upload").addClass("hidden");
   $("#html-upload-loading-spinner").addClass("hidden");
