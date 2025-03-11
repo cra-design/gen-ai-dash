@@ -591,8 +591,6 @@ async function RefineSyntax(html) {
   		//From now on, treat #html as the same thing as doc-exact-syntax checked
 	  }
   }
-  console.log(extractedHtml);
-  console.log(aiWordResponse);
   $("#html-upload-loading-spinner p").text("Applying Canada.ca header...");
   $("#word-upload-loading-spinner p").text("Applying Canada.ca header...");
   if (!$('#doc-basic-html').is(':checked') && !$('#html-basic-html').is(':checked')) {
@@ -606,6 +604,7 @@ async function RefineSyntax(html) {
   let formattedHTML = formatHTML(extractedHtml); //indentation for code block
   refreshIframe("url-frame", formattedHTML);
   if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
+    formattedHTML = formatHTML(aiWordResponse); //indentation for code block
     refreshIframe("url-frame-2", formattedAIHTML);
     toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
     $('#iframe-toolbox-A').removeClass('hidden');
