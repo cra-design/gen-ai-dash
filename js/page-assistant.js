@@ -674,58 +674,6 @@ async function applySimpleHtmlTemplate(extractedHtml) {
   }
 }
 
-
-//htmlHeader.replace('</head>', `${metadata}</head>`).replace(`<main>`, `<main${mainClass}>`)
-
-async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMatch = false) {
-  try {
-    const [headerResponse2, footerResponse2, dateResponse2] = await Promise.all([
-        fetch('html-templates/canada-header-additions.html'),
-        fetch('html-templates/canada-footer-additions.html'),
-        fetch('html-templates/canada-date-additions.html')
-    ]);
-    // Check if both fetch operations were successful
-    if (!headerResponse2.ok || !footerResponse2.ok || !dateResponse2.ok) {
-        throw new Error('Failed to load new header or footer');
-    }
-    // Retrieve the text content of the responses
-    let [newHeader, newFooter, newDate] = await Promise.all([
-        headerResponse2.text(),
-        footerResponse2.text(),
-        dateResponse2.text()
-    ]);
-    const today = new Date();
-    const formattedDate = today.getFullYear() + '-' +
-                          String(today.getMonth() + 1).padStart(2, '0') + '-' +
-                          String(today.getDate()).padStart(2, '0');
-    newDate = newDate.replace("2020-07-29", formattedDate);
-
-    // Check if the extractedHtml already has a date modified section
-    const hasDateModifiedSection = /<dl id="wb-dtmd">/.test(extractedHtml);
-    if (!hasDateModifiedSection) {
-      newFooter = newFooter.replace('</main>', newDate);
-    }
-    // If the class="container" exists when stripped in simpleHtmlTemplate, use it; otherwise, we'll add the class and the <div class="main">
-    if (mainClassMatch) {
-      // If class="container" exists, replace the <main> tag in the newHeader file with the class included
-      newHeader = newHeader.replace('<main>', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement" class="container">');
-    } else {
-      // If no class="container", just add it and include the <div class="main"> below it
-      newHeader = newHeader.replace('<main>', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement"><div class="container">');
-    }
-    extractedHtml = extractedHtml
-      .replace('</head>', `${metadata}</head>`)
-      .replace(/<main[^>]*>/, newHeader)
-      .replace('</main>', newFooter)
-      .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
-      .replace('<table>', '<table class="wb-tables table table-striped">');
-    return extractedHtml;
-  } catch (error) {
-    console.error('Error applying Canada.ca HTML template:', error);
-    hideAllSpinners(); // Consolidated UI hiding
-  }
-}
-
 async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMatch = false) {
   try {
     const [headerResponse2, footerResponse2, dateResponse2] = await Promise.all([
