@@ -675,6 +675,10 @@ async function applySimpleHtmlTemplate(extractedHtml) {
 
 async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMatch = false) {
   try {
+    const hasMain = /<main[^>]*>/.test(extractedHtml);
+    if (!hasMain) {
+      { extractedHtml: extractedHtml } = await applySimpleHtmlTemplate(extractedHtml);
+    }
     const [headerResponse2, footerResponse2, dateResponse2] = await Promise.all([
         fetch('html-templates/canada-header-additions.html'),
         fetch('html-templates/canada-footer-additions.html'),
@@ -703,26 +707,12 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
     } else {
       newHeader = newHeader.replace('<main>', '<main property="mainContentOfPage" resource="#wb-main" typeof="WebPageElement"><div class="container">');
     }
-    // **Check if extractedHtml contains <main> and <header>**
-    const hasMain = /<main[^>]*>/.test(extractedHtml);
-    const hasHeader = /<header[^>]*>/.test(extractedHtml);
-    if (hasHeader) {
-      // Replace existing header
-      extractedHtml = extractedHtml.replace(/<header[^>]*>[\s\S]*?<\/header>/, newHeader);
-    } else {
-      // Insert newHeader at the top of <body>
-      extractedHtml = extractedHtml.replace('<body>', `<body>\n${newHeader}`);
-    }
-    if (hasMain) {
-      // Replace only the <main> content
-      extractedHtml = extractedHtml.replace(/<main[^>]*>/, newHeader).replace('</main>', newFooter);
-    } else {
-      // Wrap the entire content inside <main> with footer
-      extractedHtml = `${newHeader}\n${extractedHtml}\n${newFooter}`;
-    }
+
     // Additional replacements
     extractedHtml = extractedHtml
       .replace(/<head[^>]*>[\s\S]*?<\/head>/, `<head>\n${metadata}\n</head>`)
+      .replace(/<main[^>]*>/, newHeader)
+      .replace('</main>', newFooter)
       .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
       .replace('<table>', '<table class="wb-tables table table-striped">');
     return extractedHtml;
