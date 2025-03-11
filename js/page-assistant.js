@@ -201,8 +201,8 @@ $(document).ready(function() {
       let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
       console.log(aiResponse);
       let formattedHtml = formatGenAIHtmlResponse(aiResponse);
-      let { extractedHtml: simpleHtml } = await applySimpleHtmlTemplate(formattedHtml);
-      extractedHtml = await applyCanadaHtmlTemplate(simpleHtml, metadata, mainClassMatch);
+      // let { extractedHtml: simpleHtml } = await applySimpleHtmlTemplate(formattedHtml);
+      extractedHtml = await applyCanadaHtmlTemplate(formattedHtml, metadata, mainClassMatch);
     } catch (err) {
         console.error('Templating error:', err);
         $("#templates-spinner").addClass("hidden");
@@ -599,6 +599,7 @@ async function RefineSyntax(html) {
       aiWordResponse = await applyCanadaHtmlTemplate(aiWordResponse, metadata, mainClassMatch);
     }
   }
+  console.log(aiWordResponse);
   $("#html-upload-loading-spinner p").text("Loading preview...");
   $("#word-upload-loading-spinner p").text("Loading preview...");
   let formattedHTML = formatHTML(extractedHtml); //indentation for code block
@@ -674,13 +675,11 @@ async function applySimpleHtmlTemplate(extractedHtml) {
 }
 
 async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMatch = false) {
-  console.log(extractedHtml);
   try {
-    const hasMain = /<main[^>]*>/.test(extractedHtml);
-    if (!hasMain) {
-      ({ extractedHtml } = await applySimpleHtmlTemplate(extractedHtml));;
+    const hasHeaderStructure = /<html[^>]*>/i.test(extractedHtml) && /<head[^>]*>/i.test(extractedHtml) && /<main[^>]*>/i.test(extractedHtml);
+    if (!hasHeaderStructure) {
+      ({ extractedHtml } = await applySimpleHtmlTemplate(extractedHtml));
     }
-    console.log(extractedHtml);
     const [headerResponse2, footerResponse2, dateResponse2] = await Promise.all([
         fetch('html-templates/canada-header-additions.html'),
         fetch('html-templates/canada-footer-additions.html'),
@@ -717,7 +716,6 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
       .replace('</main>', newFooter)
       .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
       .replace('<table>', '<table class="wb-tables table table-striped">');
-    console.log(extractedHtml);
     return extractedHtml;
   } catch (error) {
     console.error('Error applying Canada.ca HTML template:', error);

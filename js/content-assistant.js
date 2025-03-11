@@ -349,7 +349,6 @@ function refreshIframe(id, html) {
     iframeDoc.write(html);
     iframeDoc.close();
     iframeDoc
-    // Ensure scripts inside the iframe run
     setTimeout(() => {
       let $iframeBody = $(iframe.contentWindow.document.body);
       $iframeBody
