@@ -82,6 +82,7 @@ $(document).ready(function() {
     // $("#html-preview").html($("#html-input").html());
     // $("#html-upload-preview").removeClass("hidden");
     $("#html-upload-loading-spinner").removeClass("hidden");
+    $("#html-upload-loading-spinner p").text("Converting text to HTML...");
     let extractedHtml = convertTextToHTML($("#html-input").val());
     RefineSyntax(extractedHtml);
   });
@@ -107,6 +108,7 @@ $(document).ready(function() {
     if (event.target.id == "word-file") {
       $("#word-upload-preview").removeClass("hidden");
       $("#word-upload-loading-spinner").removeClass("hidden");
+      $("#word-upload-loading-spinner p").text("Validating file...");
       $("#word-invalid-msg").addClass("hidden");
       $("#word-multiple-msg").addClass("hidden");
 
@@ -125,6 +127,7 @@ $(document).ready(function() {
           $("#word-upload-loading-spinner").addClass("hidden");
           return;
       }
+      $("#word-upload-loading-spinner p").text("Converting document to html...");
       var reader = new FileReader();
       reader.onload = async function (event) {
           var arrayBuffer = reader.result;
@@ -157,7 +160,8 @@ $(document).ready(function() {
   });
 
   $("#template-options-btn").click(async function() {
-    $("#templates-loading-indicator").removeClass("hidden");
+    $("#templates-spinner").removeClass("hidden");
+    $("#templates-spinner p").text("Thinking...");
     let template = $('input[name="template-options"]:checked');
     //1) Strip header/footer from page code to focus prompt on page content
     let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate($("#fullHtml code").text());
@@ -171,6 +175,7 @@ $(document).ready(function() {
     //OPTIONAL PIPELINE ADDITION
     if (subTemplates.length > 0) {
         for (const component of subTemplates) {
+          $("#templates-spinner p").text("Writing " + component.replace("-", " ") + "...");
           try {
             systemGeneral.content = await $.get("custom-instructions/component/" + component + ".txt");
             systemTemplate.content = "```" + await $.get("html-templates/components/" + component + ".html") + "```";
@@ -179,12 +184,14 @@ $(document).ready(function() {
             systemContext.content += component + ": " + formattedText + "; ";
           } catch (err) {
             console.error('Component error:', err);
-            $("#templates-loading-indicator").addClass("hidden");
+            $("#templates-spinner").addClass("hidden");
           }
         }
     }
+    let templateName = template.attr("id").replace("templates-", "");
+    $("#templates-spinner p").text("Applying " + templateName.replace("-", " ") + "...");
     // END OPTIONAL PIPELINE ADDITION
-    systemGeneral.content = await $.get("custom-instructions/template/" + template.attr("id").replace("templates-", "") + ".txt");
+    systemGeneral.content = await $.get("custom-instructions/template/" + templateName + ".txt");
     systemTemplate.content = "```" + await $.get(template.val()) + "```";
     systemContext.content = systemContext.content.replace("For context, other sections include... ", "Please use the following, if available... ");
     requestJson = [systemGeneral, systemTemplate, userContent];
@@ -198,8 +205,9 @@ $(document).ready(function() {
       extractedHtml = await applyCanadaHtmlTemplate(simpleHtml, metadata, mainClassMatch);
     } catch (err) {
         console.error('Templating error:', err);
-        $("#templates-loading-indicator").addClass("hidden");
+        $("#templates-spinner").addClass("hidden");
     }
+    $("#templates-spinner p").text("Loading preview...");
     //4) make side-by-side accept/deny block in the code - use the fullHtmlCompare and iframeB?
       //Maybe refresh the iframe with the suggested code too?
     refreshIframe("url-frame-2", extractedHtml);
@@ -210,7 +218,7 @@ $(document).ready(function() {
     $("#fullHtmlCompare code").text(extractedHtml);
     Prism.highlightElement(document.querySelector("#fullHtmlCompare code"));
     toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
-    $("#templates-loading-indicator").addClass("hidden");
+    $("#templates-spinner").addClass("hidden");
   });
 
   $("#genai-select-tasks-btn").click(function () {
@@ -242,7 +250,8 @@ $(document).ready(function() {
   $("#genai-run-report-btn").click(async function () {
     $("#genai-model-options").addClass("hidden");
     $("#genai-open-report-btn").addClass("hidden"); // Hide report button initially
-    $("#loading-indicator").removeClass("hidden"); // Show spinner
+    $("#genai-report-spinner").removeClass("hidden"); // Show spinner
+    $("#genai-report-spinner p").text("Thinking...");
     //$("#genai-report-reset-options").removeClass("hidden");
     let selectedTasks = [];
     // Get all checked checkboxes and store their values in an array
@@ -296,6 +305,7 @@ $(document).ready(function() {
     //Process each selected task asynchronously
     if (selectedTasks.length > 0) {
         for (const task of selectedTasks) {
+          $("#genai-report-spinner p").text("Writing " + task.value.replace("-", " ") + " report...");
           try {
             let fileContent = await $.get(task.value);
             let fileContentB = "";
@@ -343,7 +353,7 @@ $(document).ready(function() {
       // $("#html-upload-preview").addClass("hidden");
       $("#html-upload-no-action-error").removeClass("hidden");
     }
-    $("#loading-indicator").addClass("hidden"); // Hide spinner when done
+    $("#genai-report-spinner").addClass("hidden"); // Hide spinner when done
   });
 
 
@@ -554,7 +564,8 @@ function loadTemplate(filePath, targetSelector) {
 }
 
 async function RefineSyntax(html) {
-  console.log("refineSyntax start");
+  $("#html-upload-loading-spinner p").text("Cleaning HTML syntax...");
+  $("#word-upload-loading-spinner p").text("Cleaning HTML syntax...");
   //Part 1: Get simple templates
   let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
   let formattedAIHTML = "";
@@ -582,12 +593,16 @@ async function RefineSyntax(html) {
   }
   console.log(extractedHtml);
   console.log(aiWordResponse);
+  $("#html-upload-loading-spinner p").text("Applying Canada.ca header...");
+  $("#word-upload-loading-spinner p").text("Applying Canada.ca header...");
   if (!$('#doc-basic-html').is(':checked') && !$('#html-basic-html').is(':checked')) {
     extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
     if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
       aiWordResponse = await applyCanadaHtmlTemplate(aiWordResponse, metadata, mainClassMatch);
     }
   }
+  $("#html-upload-loading-spinner p").text("Loading preview...");
+  $("#word-upload-loading-spinner p").text("Loading preview...");
   let formattedHTML = formatHTML(extractedHtml); //indentation for code block
   refreshIframe("url-frame", formattedHTML);
   if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
