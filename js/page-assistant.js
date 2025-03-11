@@ -599,13 +599,12 @@ async function RefineSyntax(html) {
       aiWordResponse = await applyCanadaHtmlTemplate(aiWordResponse, metadata, mainClassMatch);
     }
   }
-  console.log(aiWordResponse);
   $("#html-upload-loading-spinner p").text("Loading preview...");
   $("#word-upload-loading-spinner p").text("Loading preview...");
   let formattedHTML = formatHTML(extractedHtml); //indentation for code block
   refreshIframe("url-frame", formattedHTML);
   if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
-    formattedHTML = formatHTML(aiWordResponse); //indentation for code block
+    formattedAIHTML = formatHTML(aiWordResponse); //indentation for code block
     refreshIframe("url-frame-2", formattedAIHTML);
     toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
     $('#iframe-toolbox-A').removeClass('hidden');
