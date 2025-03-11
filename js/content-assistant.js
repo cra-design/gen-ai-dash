@@ -348,6 +348,16 @@ function refreshIframe(id, html) {
     iframeDoc.open();
     iframeDoc.write(html);
     iframeDoc.close();
+    iframeDoc
+    // Ensure scripts inside the iframe run
+    setTimeout(() => {
+      let $iframeBody = $(iframe.contentWindow.document.body);
+      $iframeBody
+        .find(wb.allSelectors)
+        .addClass("wb-init")
+        .filter(":not(.wb-init .wb-init)")
+        .trigger("timerpoke.wb");
+    }, 50);
   } else {
     console.error("Iframe with id " + id + " not found.");
     hideAllSpinners(); // Consolidated UI hiding
