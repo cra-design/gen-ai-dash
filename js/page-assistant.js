@@ -554,6 +554,7 @@ function loadTemplate(filePath, targetSelector) {
 }
 
 async function RefineSyntax(html) {
+  console.log("refineSyntax start");
   //Part 1: Get simple templates
   let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
   let formattedAIHTML = "";
@@ -574,11 +575,13 @@ async function RefineSyntax(html) {
       hideAllSpinners();
     }
 	  if ($("#html").prop("checked")) {
-		//We need to reassign the aiWordResponse to the basic text for content upload, since there is no mammoth version
-		extractedHtml = aiWordResponse;
-		//From now on, treat #html as the same thing as doc-exact-syntax checked
+  		//We need to reassign the aiWordResponse to the basic text for content upload, since there is no mammoth version
+  		extractedHtml = aiWordResponse;
+  		//From now on, treat #html as the same thing as doc-exact-syntax checked
 	  }
   }
+  console.log(extractedHtml);
+  console.log(aiWordResponse);
   if (!$('#doc-basic-html').is(':checked') && !$('#html-basic-html').is(':checked')) {
     extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
     if (!$('#doc-exact-syntax').is(':checked') && !$("#html").prop("checked")) {
