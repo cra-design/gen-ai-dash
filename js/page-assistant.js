@@ -674,11 +674,13 @@ async function applySimpleHtmlTemplate(extractedHtml) {
 }
 
 async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMatch = false) {
+  console.log(extractedHtml);
   try {
     const hasMain = /<main[^>]*>/.test(extractedHtml);
     if (!hasMain) {
       ({ extractedHtml } = await applySimpleHtmlTemplate(extractedHtml));;
     }
+    console.log(extractedHtml);
     const [headerResponse2, footerResponse2, dateResponse2] = await Promise.all([
         fetch('html-templates/canada-header-additions.html'),
         fetch('html-templates/canada-footer-additions.html'),
@@ -715,6 +717,7 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
       .replace('</main>', newFooter)
       .replace('<h1>', '<h1 property="name" id="wb-cont" dir="ltr">')
       .replace('<table>', '<table class="wb-tables table table-striped">');
+    console.log(extractedHtml);
     return extractedHtml;
   } catch (error) {
     console.error('Error applying Canada.ca HTML template:', error);
