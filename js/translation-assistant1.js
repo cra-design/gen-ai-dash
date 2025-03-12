@@ -322,11 +322,12 @@ $("#source-upload-provide-btn").click(function() {
   });
 
   function removeCodeFences(str) {
-  return str
-    .replace(/^```[a-zA-Z]*\s*/, '')
-    .replace(/```$/, '')             
-    .trim();
-  }
+  // Remove a leading line that starts with ``` (plus any following text)
+  str = str.replace(/^```.*\n/, '');
+  // Remove any trailing lines that contain only backticks and optional whitespace
+  str = str.replace(/\n\s*```+\s*$/, '');
+  return str.trim();
+}
   // Add event listener for "convert back to document" link
   $("a[href='#convert-translation']").click(function(e) {
     e.preventDefault();
