@@ -349,32 +349,27 @@
                                 </div>
                               </div>
                             </div>
-                          </upd-card>
-                          <upd-card id="convert-translation" class="convert-translation hidden">
-  <div class="card pt-2">
-    <div class="card-body card-pad pt-2 h-100">
-      <div class="justify-content-between">
-        <h4 style="margin-top: 20px;">Put back in document format</h4>
-        <p>Once you're satisfied with the translation, click below to download the final document.</p>
-
-        <!-- Removed the radio buttons and "Create document" button -->
-        
-        <div id="converting-spinner" class="hidden">
-          <div class="spinner"></div>
-          <p>Generating reports...</p>
+                          </upd-card> 
+			 	<div id="processing-spinner" class="hidden">
+      				<div class="spinner"></div>
+      				<p>Generating reports...</p>
+    				</div> 
+			  
+                        <upd-card id="convert-translation" class="convert-translation hidden">
+      <div class="card pt-2">
+        <div class="card-body card-pad pt-2 h-100">
+          <div class="justify-content-between">
+            <h4 style="margin-top: 20px;">Put back in document format</h4>
+            <p>Once you're satisfied with the translation, submit it to put it back in the document formatting.</p>
+          </div>
+          <div id="translated-doc-download" class="justify-content-between hidden">
+            <h4>Translated document</h4>
+            <p>The reformatted translation document is ready for download!</p>
+            <button id="convert-translation-download-btn" style="margin-top: 20px">Download document</button>
+          </div>
         </div>
       </div>
-
-      <!-- Keep this section for the download button -->
-      <div id="translated-doc-download" class="justify-content-between hidden">
-        <h4>Translated document</h4>
-        <p>The reformatted translation document is ready for download!</p>
-        <button id="convert-translation-download-btn" style="margin-top: 20px">Download document</button>
-      </div>
-
-    </div>
-  </div>
-</upd-card>
+    </upd-card>
 
                                   <!--requred libraries-->
                                 </main>
