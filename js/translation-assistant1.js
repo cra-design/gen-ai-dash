@@ -378,7 +378,8 @@ $("#source-upload-provide-btn").click(function() {
         frenchText = extractedText || "";
       } catch (err) {
         console.error('Error processing the second (FR) file:', err);
-        alert("Error reading your translated file. Check console for details.");
+        alert("Error reading your translated file. Check console for details."); 
+        $('#converting-spinner').addClass("hidden");
         return;
       }
     } else if (selectedOption == "second-upload-text") {
@@ -389,11 +390,13 @@ $("#source-upload-provide-btn").click(function() {
     //    (#translation-A is where we stored the first doc's structure).
     let englishHtml = $("#translation-A").html();
     if (!englishHtml || englishHtml.trim().length === 0) {
-      alert("No formatted English document found. Please complete the first step.");
+      alert("No formatted English document found. Please complete the first step."); 
+      $('#converting-spinner').addClass("hidden");
       return;
     }
     if (!frenchText || frenchText.trim().length === 0) {
-      alert("No French document/text found. Please upload or enter your translation.");
+      alert("No French document/text found. Please upload or enter your translation."); 
+      $('#converting-spinner').addClass("hidden");
       return;
     }
     // load the system prompt
@@ -402,7 +405,8 @@ $("#source-upload-provide-btn").click(function() {
     systemPrompt = await $.get("custom-instructions/translation/english2french1.txt");
   } catch (error) {
     console.error("Error loading system prompt:", error);
-    alert("Could not load translation instructions. Please check your files.");
+    alert("Could not load translation instructions. Please check your files."); 
+    $('#converting-spinner').addClass("hidden");
     return;
   }
     let combinedPrompt = systemPrompt + "\n\n" +
@@ -444,7 +448,8 @@ $("#source-upload-provide-btn").click(function() {
      console.log("Final French HTML (cleaned):", finalFrenchHtml);
 
     // 4) Display the final merged output in #review-translation
-     $("#translation-A").html(finalFrenchHtml);
+     $("#translation-A").html(finalFrenchHtml); 
+     $('#converting-spinner').addClass("hidden");
      $("#translation-preview").removeClass("hidden").show();  
       } catch (err) {
     console.error("Error during second-upload processing:", err);
