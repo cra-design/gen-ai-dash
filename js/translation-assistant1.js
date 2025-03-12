@@ -343,7 +343,8 @@ $("#source-upload-provide-btn").click(function() {
 });
 
   // Second upload: manual translation.
-  $("#second-upload-btn").click(async function() {
+  $("#second-upload-btn").click(async function() { 
+    $('#converting-spinner').removeClass("hidden");
     var selectedOption = $('input[name="second-upload-option"]:checked').val();  
     let frenchText = "";  
 
@@ -441,8 +442,14 @@ $("#source-upload-provide-btn").click(function() {
 
     // 4) Display the final merged output in #review-translation
      $("#translation-A").html(finalFrenchHtml);
-     $("#translation-preview").removeClass("hidden").show(); 
-  });
+     $("#translation-preview").removeClass("hidden").show();  
+      } catch (err) {
+    console.error("Error during second-upload processing:", err);
+  } finally {
+    // Hide spinner once processing is complete (successfully or on error)
+    $('#converting-spinner').addClass("hidden"); 
+  }
+});
     
   // Accept and edit translation button handlers.
   $("#accept-translation-A-btn").click(function() { acceptTranslation("a"); });
