@@ -185,6 +185,7 @@ $(document).ready(function() {
           } catch (err) {
             console.error('Component error:', err);
             $("#templates-spinner").addClass("hidden");
+            return;
           }
         }
     }
