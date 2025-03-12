@@ -448,7 +448,7 @@ $("#source-upload-provide-btn").click(function() {
   $("#accept-translation-B-btn").click(function() { acceptTranslation("b"); });
   $("#edit-translation-A-btn").click(function() {
     var $translation = $('#translation-A');
-    var x = $translation.attr('contenteditable') === 'true';
+    var isEditable = $translation.attr('contenteditable') === 'true';
     if (isEditable) {
       $translation.attr('contenteditable', 'false');
       $(this).attr('title', 'Edit Code');
