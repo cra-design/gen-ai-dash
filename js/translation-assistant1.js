@@ -332,7 +332,7 @@ $("#source-upload-provide-btn").click(function() {
   $("a[href='#convert-translation']").click(function(e) {
     e.preventDefault();
     if ($("#translation-preview").is(":visible")) { 
-        $("#convert-translation").removeClass("hidden");  
+       $("#convert-translation").removeClass("hidden");  
        $("#translated-doc-download").removeClass("hidden");
         // Optionally, scroll to the conversion card
         $('html, body').animate({
@@ -345,8 +345,7 @@ $("#source-upload-provide-btn").click(function() {
 
   // Second upload: manual translation.
   $("#second-upload-btn").click(async function() {  
-    $("#convert-translation").removeClass("hidden");
-    $('#converting-spinner').removeClass("hidden"); 
+     $('#processing-spinner').removeClass("hidden"); 
     console.log("Spinner should now be visible.");
     var selectedOption = $('input[name="second-upload-option"]:checked').val();  
     let frenchText = "";  
@@ -456,7 +455,7 @@ $("#source-upload-provide-btn").click(function() {
     console.error("Error during second-upload processing:", err);
   } finally {
     // Hide spinner once processing is complete (successfully or on error)
-    $('#converting-spinner').addClass("hidden"); 
+    $('#processing-spinner').addClass("hidden");  
   }
 });
     
