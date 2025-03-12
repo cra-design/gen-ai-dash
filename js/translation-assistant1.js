@@ -459,42 +459,41 @@ $("#source-upload-provide-btn").click(function() {
       $(this).find('i').removeClass('fa-edit').addClass('fa-save');
     }
   });
-
-  // Create document button flow.
-  $("#convert-translation-to-doc-btn").click(async function() {
+ 
+// Existing download button click handler remains unchanged.
+// When the user clicks the Download button, the file will be downloaded.
+$("#convert-translation-download-btn").click(async function() {
   try {
-    $('#converting-spinner').removeClass("hidden"); 
-    // 1) Grab the final, user-edited HTML from the review text area
+    $('#converting-spinner').removeClass("hidden");
+    
+    // 1) Grab the final, user-edited HTML
     let finalFrenchHtml = $("#translation-A").html();
     if (!finalFrenchHtml || finalFrenchHtml.trim().length === 0) {
       alert("No formatted French document available.");
       $('#converting-spinner').addClass("hidden");
       return;
-    } 
-    let selectedMethod = $('input[name="convert-translation-method"]:checked').val();  
-    
-    // 2) Determine the file type from the original English file.
-    let fileExtension = englishFile ? englishFile.name.split('.').pop().toLowerCase() : 'docx';
-    let mimeType;
-    if (fileExtension === 'docx') {
-      mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    } else if (fileExtension === 'pptx') {
+    }
+
+    // 2) Determine the file type from the original English file
+    let fileExtension = englishFile 
+      ? englishFile.name.split('.').pop().toLowerCase() 
+      : 'docx';
+    let mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    if (fileExtension === 'pptx') {
       mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
     } else if (fileExtension === 'xlsx') {
       mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    } else {
-      mimeType = "application/octet-stream"; // fallback
     }
-    
-    // 3) UPDATED: If the file is DOCX, use html-docx-js to convert the final HTML to a valid DOCX blob.
-      let generatedBlob; 
-    //Wrap the final HTML with a meta charset tag
-      if (fileExtension === 'docx') { 
-        let fullHtml = `
+
+    // 3) Generate the Blob (DOCX, PPTX, or XLSX)
+    let generatedBlob;
+    if (fileExtension === 'docx') {
+      // Example: using htmlDocx.asBlob with Calibri
+      let fullHtml = `
         <!DOCTYPE html>
         <html>
           <head>
-            <meta charset="UTF-8"> 
+            <meta charset="UTF-8">
             <style>
               body { font-family: Calibri, "Calibri (Body)", sans-serif; }
             </style>
@@ -503,63 +502,49 @@ $("#source-upload-provide-btn").click(function() {
             ${finalFrenchHtml}
           </body>
         </html>
-      `; 
-        console.log("DOCX final HTML:\n", fullHtml);
-        // htmlDocx.asBlob converts HTML to a DOCX blob with the correct internal structure. 
-        generatedBlob = htmlDocx.asBlob(fullHtml);
-
-      } else if (fileExtension === 'pptx') {
-        // For PPTX, use your GeminiTemplater conversion as before.
-        let englishXml = await handleFileExtraction(englishFile);
-        let updatedXml = await conversionGemini(englishXml, fileExtension);
-        let zip = new JSZip();
-      // This is a simplistic structure; for a fully valid PPTX more parts are required.
-        zip.file("ppt/slides/slide1.xml", updatedXml); 
-        generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
-    } else if (fileExtension === 'xlsx') {
-        // For XLSX, similarly use your conversionGemini function.
-        let englishXml = await handleFileExtraction(englishFile);
-        let updatedXml = await conversionGemini(englishXml, fileExtension);
-        let zip = new JSZip();
+      `;
+      generatedBlob = htmlDocx.asBlob(fullHtml);
+    } 
+    else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
+      // Fallback for PPTX/XLSX if you were using conversionGemini
+      let englishXml = await handleFileExtraction(englishFile);
+      let updatedXml = await conversionGemini(englishXml, fileExtension);
+      let zip = new JSZip();
+      if (fileExtension === 'pptx') {
+        zip.file("ppt/slides/slide1.xml", updatedXml);
+      } else {
         zip.file("xl/worksheets/sheet1.xml", updatedXml);
-        generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
-      } 
-     if (!generatedBlob) {
-        alert("File generation failed.");
-        $('#converting-spinner').addClass("hidden");
-        return;
       }
-      generatedDownloadFile = generatedBlob; 
-    
-    // Use the English file's name if available to build the download file name.
-    let englishFileName = englishFile ? englishFile.name.split('.').slice(0, -1).join('.') : "translated-file";
+      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+    }
+
+    if (!generatedBlob) {
+      alert("File generation failed.");
+      $('#converting-spinner').addClass("hidden");
+      return;
+    }
+
+    // 4) Download the file
+    let englishFileName = englishFile 
+      ? englishFile.name.split('.').slice(0, -1).join('.') 
+      : "translated-file";
     let modifiedFileName = `${englishFileName}-FR.${fileExtension}`;
-    
-    $("#translated-doc-download").removeClass("hidden");
-    $("#convert-translation-download-btn").attr("data-filename", modifiedFileName);
-    
-    $('#converting-spinner').addClass("hidden");
+
+    // Now that the file is generated, show the download button
+    // or directly trigger the download:
+    let downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(generatedBlob);
+    downloadLink.download = modifiedFileName;
+    downloadLink.click();
+    URL.revokeObjectURL(downloadLink.href);
+
   } catch (error) {
     console.error("An error occurred:", error);
   } finally {
     $('#converting-spinner').addClass("hidden");
   }
 });
- 
-// Existing download button click handler remains unchanged.
-// When the user clicks the Download button, the file will be downloaded.
-  $("#convert-translation-download-btn").click(function() {
-    if (generatedDownloadFile) {
-      let fileName = $(this).attr("data-filename") || "translated-file.docx";
-      let downloadLink = document.createElement('a');
-      downloadLink.href = URL.createObjectURL(generatedDownloadFile);
-      downloadLink.download = fileName;
-      downloadLink.click();
-      URL.revokeObjectURL(downloadLink.href);
-    } else {
-      console.error("No file generated.");
-    }
-  });
+
 
 });
 
