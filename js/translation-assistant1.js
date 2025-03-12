@@ -433,7 +433,8 @@ $("#source-upload-provide-btn").click(function() {
       break;
     }
   }
-  if (!finalFrenchHtml) {
+  try{ 
+    if (!finalFrenchHtml) {
     alert("Translation alignment failed. No valid response from any model.");
     return;
   } 
