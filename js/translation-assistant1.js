@@ -344,7 +344,8 @@ $("#source-upload-provide-btn").click(function() {
 
   // Second upload: manual translation.
   $("#second-upload-btn").click(async function() { 
-    $('#converting-spinner').removeClass("hidden");
+    $('#converting-spinner').removeClass("hidden"); 
+    console.log("Spinner should now be visible.");
     var selectedOption = $('input[name="second-upload-option"]:checked').val();  
     let frenchText = "";  
 
