@@ -179,11 +179,12 @@ $(document).ready(function() {
     $("#templates-spinner").removeClass("hidden");
     $("#templates-spinner p").text("Thinking...");
     let template = $('input[name="template-options"]:checked');
-    let templateName = template.attr("id").replace("templates-", "");
-    let method = $('input[name="template-options"]:checked');
-    //1) Strip header/footer from page code to focus prompt on page content
+    if (template.val() == "none") { //if variant
+      template = $('input[name="template-variant-options"]:checked');
+    }
+    let templateName = template.attr("id").replace("templates-", "").replace("-variant-", "");
+    let method = $('input[name="template-application-options"]:checked');
     let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate($("#fullHtml code").text());
-    //2) Send page body code + template code to genAI
     let systemGeneral = { role: "system", content: "" };
     let systemTemplate = { role: "system", content: "" };
     let systemContext = { role: "system", content: "For context, other sections include... " };
@@ -191,7 +192,7 @@ $(document).ready(function() {
     let subTemplates = template.attr('data-component').split(', ');
     let requestJson;
     //OPTIONAL PIPELINE ADDITION
-    if (subTemplates.length > 0) {
+    if (method == "thorough" && subTemplates.length > 0) {
         for (const component of subTemplates) {
           $("#templates-spinner p").text("Writing " + component.replace("-", " ") + "...");
           try {
@@ -323,8 +324,9 @@ $(document).ready(function() {
     //Process each selected task asynchronously
     if (selectedTasks.length > 0) {
         for (const task of selectedTasks) {
-          $("#genai-report-spinner p").text("Writing " + task.value.replace("-", " ") + " report...");
           try {
+            let labelText = $(`label[for='${task.id}']`).text().trim();
+            $("#genai-report-spinner p").text("Writing " + labelText + " report...");
             let fileContent = await $.get(task.value);
             let fileContentB = "";
             if (!$("#genai-analysis-llm-compare").is(':checked')) {
@@ -345,7 +347,6 @@ $(document).ready(function() {
               requestJson = [systemGeneral, systemTask, userContent, userData];
               formattedText.b = await formatORResponse(model[0], requestJson);
             }
-            let labelText = $(`label[for='${task.id}']`).text().trim();
             if (formattedText.b != "") {
               // Side-by-side comparison needed
               reportCount++;
