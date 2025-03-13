@@ -28,6 +28,22 @@ $(document).ready(function() {
         $('#word-upload').removeClass("hidden");
         $('#word-upload-input').removeClass("hidden");
       }
+    } else if (target.name == "template-options") {
+      $("#template-variant-options").addClass("hidden");
+      $('#template-application-options').addClass("hidden");
+      $(".template-variant-group").addClass("hidden");
+      $('input[name="template-variant-options"]').prop('checked', false);
+      let templateName = $(this).attr('id').replace('templates-', '');
+      $(".template-selection").text(templateName.replace("-", " "));
+      if ($("#" + templateName + "-variant-group").length) {
+        $("#" + templateName + "-variant-group").removeClass("hidden");
+        $("#template-variant-options").removeClass("hidden");
+      } else {
+        $("#template-application-options").removeClass("hidden");
+      }
+    } else if (target.name == "template-variant-options") {
+      $("#template-application-options").removeClass("hidden");
+      // $('input[name="template-application-options"]').prop('checked', false);
     }
   });
 
@@ -163,6 +179,8 @@ $(document).ready(function() {
     $("#templates-spinner").removeClass("hidden");
     $("#templates-spinner p").text("Thinking...");
     let template = $('input[name="template-options"]:checked');
+    let templateName = template.attr("id").replace("templates-", "");
+    let method = $('input[name="template-options"]:checked');
     //1) Strip header/footer from page code to focus prompt on page content
     let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate($("#fullHtml code").text());
     //2) Send page body code + template code to genAI
@@ -189,7 +207,6 @@ $(document).ready(function() {
           }
         }
     }
-    let templateName = template.attr("id").replace("templates-", "");
     $("#templates-spinner p").text("Applying " + templateName.replace("-", " ") + "...");
     // END OPTIONAL PIPELINE ADDITION
     systemGeneral.content = await $.get("custom-instructions/template/" + templateName + ".txt");
