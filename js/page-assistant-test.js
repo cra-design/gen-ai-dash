@@ -703,6 +703,8 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
     if (!hasHeaderStructure) {
       ({ extractedHtml } = await applySimpleHtmlTemplate(extractedHtml));
     }
+    //replace relative links with canada.ca links?
+    extractedHtml = extractedHtml.replace(/(href|src)="(?!https?:\/\/)([^"]+)"/g, `$1="https://www.canada.ca$2"`);
     const [headerResponse2, footerResponse2, dateResponse2] = await Promise.all([
         fetch('html-templates/canada-header-additions.html'),
         fetch('html-templates/canada-footer-additions.html'),
