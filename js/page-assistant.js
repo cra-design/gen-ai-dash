@@ -189,25 +189,30 @@ $(document).ready(function() {
     let systemTemplate = { role: "system", content: "" };
     let systemContext = { role: "system", content: "For context, other sections include... " };
     let userContent = { role: "user", content: extractedHtml};
-    let subTemplates = template.attr('data-component').split(', ');
     let requestJson;
-    //OPTIONAL PIPELINE ADDITION
-    if (method == "thorough" && subTemplates.length > 0) {
-        for (const component of subTemplates) {
-          $("#templates-spinner p").text("Writing " + component.replace("-", " ") + "...");
-          try {
-            systemGeneral.content = await $.get("custom-instructions/component/" + component + ".txt");
-            systemTemplate.content = "```" + await $.get("html-templates/components/" + component + ".html") + "```";
-            requestJson = [systemGeneral, systemTask, userContent, userData];
-            let formattedText = formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
-            systemContext.content += component + ": " + formattedText + "; ";
-          } catch (err) {
-            console.error('Component error:', err);
-            $("#templates-spinner").addClass("hidden");
-            return;
-          }
-        }
-    }
+    // if (method == "thorough") {
+    //   let subTemplates = template.attr('data-component').split(', ');
+    //
+    // }
+    //
+    //
+    // //OPTIONAL PIPELINE ADDITION
+    // if ( && subTemplates.length > 0) {
+    //     for (const component of subTemplates) {
+    //       $("#templates-spinner p").text("Writing " + component.replace("-", " ") + "...");
+    //       try {
+    //         systemGeneral.content = await $.get("custom-instructions/component/" + component + ".txt");
+    //         systemTemplate.content = "```" + await $.get("html-templates/components/" + component + ".html") + "```";
+    //         requestJson = [systemGeneral, systemTask, userContent, userData];
+    //         let formattedText = formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
+    //         systemContext.content += component + ": " + formattedText + "; ";
+    //       } catch (err) {
+    //         console.error('Component error:', err);
+    //         $("#templates-spinner").addClass("hidden");
+    //         return;
+    //       }
+    //     }
+    // }
     $("#templates-spinner p").text("Applying " + templateName.replace("-", " ") + "...");
     // END OPTIONAL PIPELINE ADDITION
     systemGeneral.content = await $.get("custom-instructions/template/" + templateName + ".txt");
