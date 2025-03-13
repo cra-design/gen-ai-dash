@@ -552,3 +552,7 @@ function extractPlainTextFromHtml(html) {
     // Extract the plain text, which now includes newlines
     return div.textContent || div.innerText;  // Browser-specific property for extracting plain text
 }
+
+function convertRelativeToAbsolute(extractedHtml, baseUrl) {
+    return extractedHtml.replace(/(href|src)="(?!https?:\/\/)([^"]+)"/g, `$1="${baseUrl}$2"`);
+}

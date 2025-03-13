@@ -703,8 +703,6 @@ async function applyCanadaHtmlTemplate(extractedHtml, metadata = "", mainClassMa
     if (!hasHeaderStructure) {
       ({ extractedHtml } = await applySimpleHtmlTemplate(extractedHtml));
     }
-    //replace relative links with canada.ca links?
-    extractedHtml = extractedHtml.replace(/(href|src)="(?!https?:\/\/)([^"]+)"/g, `$1="https://www.canada.ca$2"`);
     const [headerResponse2, footerResponse2, dateResponse2] = await Promise.all([
         fetch('html-templates/canada-header-additions.html'),
         fetch('html-templates/canada-footer-additions.html'),
@@ -890,6 +888,7 @@ async function updateIframeFromURL(url) {
             alert('Failed to fetch the webpage. Check the console for details.');
             return;
         }
+        html = convertRelativeToAbsolute(html, urlInput.host);
         // Extract fields from the HTML
         const fields = extractFields(html);
         // Render results to the page
@@ -908,7 +907,7 @@ async function updateIframeFromURL(url) {
         //Process HTML to replace header/footer
         let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
         extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
-
+        extractedHtml = convertRelativeToAbsolute(extractedHtml, "https://www.canada.ca");
         // Extract fields from the HTML
         const fields = extractFields(extractedHtml);
         // Render fields and page code
