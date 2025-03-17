@@ -18,18 +18,12 @@ function formatTranslatedOutput(rawText) {
 
 // UPDATED: Convert a PPTX file to HTML for preview using the pptx2html library.
 function pptxToHtml(file) {
-  return new Promise((resolve, reject) => {
-    // Use the pptx2html library to convert the file
-    // For example, if the library accepts a File object:
-    window.pptx2html(file)
-      .then(htmlContent => {
-        resolve(htmlContent);
-      })
-      .catch(err => {
-        console.error("pptx2html conversion error:", err);
-        reject(err);
-      });
-  });
+    return window.pptx2html(file)
+      .then(htmlContent => htmlContent)
+        .catch(err => {
+      console.error("pptx2html conversion error:", err);
+      throw err;
+    });
 }
 
 // UPDATED: Convert an XLSX file to HTML for preview.
