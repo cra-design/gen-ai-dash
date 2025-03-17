@@ -142,12 +142,23 @@ $(document).ready(function() {
           return;
       }
       try {
-          let textContent = await handleFileExtraction(uploadedFile);
-          if (!textContent) { throw new Error("No text extracted."); }
-          var detectedLanguage = detectLanguageBasedOnWords(textContent);
-          if (detectedLanguage !== "french") { detectedLanguage = "english"; }
-          $(`#${language}-doc-detecting`).addClass("hidden");
-          $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
+          let textContent = "";
+      // Use a different extraction for PPTX files.
+      if (fileExtension === "pptx") {
+        // Convert the PPTX to HTML using your pptxToHtml library function.
+        let htmlContent = await pptxToHtml(uploadedFile);
+        // Extract plain text from the resulting HTML.
+        textContent = $("<div>").html(htmlContent).text();
+      } else {
+        // Use your existing extraction function for DOCX and XLSX.
+        textContent = await handleFileExtraction(uploadedFile);
+      }
+      if (!textContent) { throw new Error("No text extracted."); }
+      var detectedLanguage = detectLanguageBasedOnWords(textContent);
+      // Fallback: if detection fails, default to english.
+      if (detectedLanguage === "unknown") { detectedLanguage = "english"; }
+      $(`#${language}-doc-detecting`).addClass("hidden");
+      $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden");
 
         if (event.target.id === "source-file") {
             englishFile = uploadedFile;
