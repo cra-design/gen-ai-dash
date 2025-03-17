@@ -127,13 +127,16 @@ $(document).ready(function() {
       }
       var uploadedFile = fileList[0];
       var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
-      var validExtensions = ["docx", "xlsx", "ppt", "pptx"];
+      var validExtensions = ["docx", "pptx", "xlsx", "ppt"];
       var validMimeTypes = [
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/vnd.openxmlformats-officedocument.presentationml.presentation",
       "application/vnd.ms-powerpoint"
     ];
+      console.log("Uploaded file extension:", fileExtension);
+      console.log("Uploaded file type:", uploadedFile.type);
+
 
       if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
           $(`#${language}-doc-error`).removeClass("hidden");
@@ -375,18 +378,14 @@ $(document).ready(function() {
   }); 
   
 $("#source-upload-provide-btn").click(function() {
-    if (!englishFile) {
-      alert("Please upload the English document first.");
-      return;
-    }
-    $("#second-upload").removeClass("hidden");
-  }); 
-  
-  // 'Provide translation' button, show the second upload section
-  $("#source-upload-provide-btn").click(function() {
-    $("#second-upload").removeClass("hidden"); 
-    console.log($("#translation-A").html());
-  });
+  // Only do the "English document" check once.
+  if (!englishFile) {
+    alert("Please upload the English document first.");
+    return;
+  }
+  $("#second-upload").removeClass("hidden");
+  console.log($("#translation-A").html());
+});
 
   function removeCodeFences(str) {
   // Remove a leading line that starts with ``` (plus any following text)
