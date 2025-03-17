@@ -107,6 +107,7 @@
 
 		}
    </style-->
+    </head>
    <body id="body-pd" class="body-pd">
       <upd-root _nghost-ng-c3392822675="" class="ng-tns-c3392822675-0" ng-version="18.2.2">
          <div _ngcontent-ng-c3392822675="" class="container vh-100 ng-tns-c3392822675-0">
@@ -245,7 +246,7 @@
                                   <p>Before we start, add an openrouter API key to make your requests.</p>
                                   <fieldset style="margin-bottom:20px;">
                                     <legend>OpenRouter API key</legend>
-                                    <input id="api-key" type="text"></span>
+                                    <input id="api-key" type="text">
                                     <button id="api-key-submit-btn" style="margin-top: 20px">Submit</button>
                                   </fieldset>
 
@@ -411,7 +412,7 @@
 
                                         <!--Streamlit embed for alt text-->
 
-                                      <!--/fieldset-->
+                                      </fieldset>
                                       <!--div class="streamlit-container">
                                           <iframe
                                               src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
@@ -443,6 +444,7 @@
                                           </upd-nav-tabs>
 
                                           <div id="word-render-preview" class="tab-content">
+
                                             <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                             Rendered HTML preview
                                             </h3>
@@ -477,7 +479,7 @@
 
                                           <!--Streamlit embed for alt text-->
 
-                                        <!--/fieldset-->
+                                        </fieldset>
                                         <!--div class="streamlit-container">
                                             <iframe
                                                 src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
@@ -491,7 +493,7 @@
     			                               <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                           Image preview
                                         </h3>
-    	                                  <img id="image-preview"></img>
+    	                                  <img id="image-preview" alt="">
                       									<p id="image-invalid-msg" class="hidden">The image you uploaded isn't in a recognized format. Please try a JPG or PNG. If you think the image format should be accepted, please reach out to the administrator.</p>
                       									<p id="image-multiple-msg" class="hidden">We currently only accept uploading image files individually. Try again with 1 image.</p>
 
@@ -505,7 +507,6 @@
                               </div>
 
                            </div>
-                        </div>
                      </upd-card>
                   </upd-projects-home>
                   <!---->
