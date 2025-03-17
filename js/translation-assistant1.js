@@ -15,6 +15,64 @@ function formatTranslatedOutput(rawText) {
   let paragraphs = rawText.split(/\n\s*\n/);
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
+}   
+
+// UPDATED: Convert a PPTX file to HTML for preview using the pptx2html library.
+function pptxToHtml(file) {
+  return new Promise((resolve, reject) => {
+    // Use the pptx2html library to convert the file
+    // For example, if the library accepts a File object:
+    window.pptx2html(file)
+      .then(htmlContent => {
+        resolve(htmlContent);
+      })
+      .catch(err => {
+        console.error("pptx2html conversion error:", err);
+        reject(err);
+      });
+  });
+}
+
+// UPDATED: Convert an XLSX file to HTML for preview.
+// (If a similar library exists for XLSX-to-HTML, use it here. Otherwise, you can leave the Gemini-based conversion.)
+function xlsxToHtml(file) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // For XLSX, we keep the original flow using extractXmlFromFile and conversionGemini.
+      let englishXml = await extractXmlFromFile(file);
+      if (!englishXml) {
+        throw new Error("No XML extracted from XLSX file.");
+      }
+      // Use your existing conversionGemini function for XLSX.
+      let updatedXml = await conversionGemini(englishXml, 'xlsx');
+      let formattedOutput = formatTranslatedOutput(updatedXml);
+      resolve(formattedOutput);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+// UPDATED: Convert HTML back to a PPTX Blob using PptxGenJS.
+function pptxFromHtml(htmlContent) {
+  return new Promise((resolve, reject) => {
+    try {
+      // Create a new PPTX presentation using PptxGenJS.
+      let pptx = new PptxGenJS();
+      // For demonstration purposes, we simply add a slide with the HTML content as text.
+      // A real conversion might parse the HTML and create shapes accordingly.
+      let slide = pptx.addSlide();
+      slide.addText(htmlContent, { x: 1, y: 1, w: 8, h: 5 });
+      pptx.write("blob").then(blob => {
+        resolve(blob);
+      }).catch(err => {
+        console.error("PptxGenJS write error:", err);
+        reject(err);
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
 }
 
 $(document).ready(function() {
@@ -248,11 +306,14 @@ $(document).ready(function() {
     alert("Error during file translation. Please check the console for details.");
   }
 }else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
-        try {
-          const englishXml = await extractXmlFromFile(file);
-          if (!englishXml) { throw new Error("No XML extracted from file."); }
-          let updatedXml = await conversionGemini(englishXml, fileExtension);
-          let formattedOutput = formatTranslatedOutput(updatedXml);
+         try {
+          // UPDATED: Use pptxToHtml for PPTX and xlsxToHtml for XLSX.
+          let formattedOutput = "";
+          if (fileExtension === 'pptx') {
+            formattedOutput = await pptxToHtml(file);
+          } else {
+            formattedOutput = await xlsxToHtml(file);
+          }
           $('#translation-A').html(formattedOutput);
           $("#translation-preview").removeClass("hidden");
         } catch (error) {
