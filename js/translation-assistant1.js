@@ -1,7 +1,6 @@
 let generatedDownloadFile = null;  
 let englishFile = null;  
 let frenchFile = null;
-
 function extractXmlFromFile(file) {
   return new Promise((resolve, reject) => {
     handleFileExtractionToXML(file, resolve, reject);
