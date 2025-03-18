@@ -482,7 +482,6 @@ $("#source-upload-provide-btn").click(function() {
     $('#converting-spinner').addClass("hidden");
     return;
   } 
-  // Closing brace was missing here
   else if (selectedOption == "second-upload-text") {
       frenchText = $("#second-text").val();
   }
