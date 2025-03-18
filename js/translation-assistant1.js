@@ -75,7 +75,7 @@ $(document).ready(function() {
       }
       var uploadedFile = fileList[0];
       var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
-      var validExtensions = ["docx", "xlsx", "ppt"];
+      var validExtensions = ["docx", "xlsx", "pptx"];
       var validMimeTypes = [
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
