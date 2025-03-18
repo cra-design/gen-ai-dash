@@ -79,7 +79,7 @@ $(document).ready(function() {
       var validMimeTypes = [
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          "application/vnd.ms-powerpoint"
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation"
       ];
       if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
           $(`#${language}-doc-error`).removeClass("hidden");
