@@ -462,31 +462,8 @@ $("#source-upload-provide-btn").click(function() {
   } else if (selectedOption == "second-upload-text") {
     frenchText = $("#second-text").val();
   } 
-
-  console.log("French text:", frenchText);
-      file.arrayBuffer().then(buffer => {
-      mammoth.convertToHtml({ arrayBuffer: buffer })
-        .then(result => {
-          console.log("Direct extraction result:", result.value);
-        })
-        .catch(err => console.error("Error with direct extraction:", err));
-    });
-      
-    try {
-    // This should extract text from the user-provided FR doc (unformatted).
-    let extractedText = await handleFileExtractionToHtml(file);
-    frenchText = extractedText || "";
-  } catch (err) {
-    console.error("Error processing the second (FR) file:", err);
-    alert("Error reading your translated file. Check console for details."); 
-    $('#converting-spinner').addClass("hidden");
-    return;
-  } 
-  else if (selectedOption == "second-upload-text") {
-      frenchText = $("#second-text").val();
-  }
-
-    console.log("French text:", frenchText);
+  console.log("French text:", frenchText);  
+  });
     // 2) Retrieve the formatted English HTML from #translation-A
     //    (#translation-A is where we stored the first doc's structure).
     let englishHtml = $("#translation-A").html();
