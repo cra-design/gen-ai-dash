@@ -317,7 +317,8 @@
                                 </div>
                               </div>
                             </upd-root>
-<iframe id="pptxProcessorFrame" src="pptx-processor.html" style="display:none;"></iframe>
+ <iframe id="pptxProcessorFrame" src="pptx-processor.html" 
+            sandbox="allow-scripts allow-same-origin" style="display:none;"></iframe>
 <!--Libraries-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -328,40 +329,33 @@
 <!-- html-docx-js for converting HTML to DOCX -->
 <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.min.js
 "></script>
-<!-- NEW: Library for converting PPTX to HTML -->
-<script src="https://cdn.jsdelivr.net/npm/pptx2html@0.3.4/dist/pptx2html.min.js"></script>
-<!-- NEW: PptxGenJS for converting HTML back to PPTX -->
-<script src="https://cdn.jsdelivr.net/npm/pptxgenjs/dist/pptxgen.bundle.js"></script>
-
-
 
 <!-- My JS Files -->
 <script src="js/content-assistant.js"></script>
 <!--<script src="js/page-assistant.js"></script> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.21.0/docxtemplater.min.js"></script>
 <script src="js/translation-assistant1.js"></script> 
-<script>
-        // Function to send a PPTX file to the isolated iframe for processing
-        function processPPTX(file) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            const fileData = e.target.result;
-            const iframe = document.getElementById("pptxProcessorFrame");
-            // Send the file data to the iframe for processing
-            iframe.contentWindow.postMessage({ action: "processPPTX", data: fileData }, "*");
-          };
-          reader.readAsDataURL(file);
+  <script>
+      // Function to send a PPTX file to the isolated iframe for processing
+      function processPPTX(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const fileData = e.target.result;
+          const iframe = document.getElementById("pptxProcessorFrame");
+          // Send the file data to the iframe for processing
+          iframe.contentWindow.postMessage({ action: "processPPTX", data: fileData }, "*");
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // Listen for messages back from the iframe
+      window.addEventListener("message", function(event) {
+        if (event.data.action === "pptxProcessed") {
+          // Handle the processed PPTX HTML returned by the iframe.
+          // For example, update the translation preview element with the HTML.
+          document.getElementById("translation-A").innerHTML = event.data.htmlContent;
         }
-
-        // Listen for messages back from the iframe
-        window.addEventListener("message", function(event) {
-          if (event.data.action === "pptxProcessed") {
-            // UPDATE: Handle the processed PPTX HTML returned by the iframe.
-            // For example, update the translation preview element with the HTML.
-            document.getElementById("translation-A").innerHTML = event.data.htmlContent;
-          }
-        });
-      </script>
-
+      });
+    </script>
 </body>
 </html>
