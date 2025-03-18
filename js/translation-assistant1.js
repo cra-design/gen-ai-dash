@@ -18,9 +18,9 @@ function formatTranslatedOutput(rawText) {
 
 // UPDATED: Convert a PPTX file to HTML for preview using the pptx2html library.
 function pptxToHtml(file) {
-    return window.pptx2html(file)
-      .then(htmlContent => htmlContent)
-        .catch(err => {
+  return window.pptx2html(file)
+    .then(htmlContent => htmlContent)
+    .catch(err => {
       console.error("pptx2html conversion error:", err);
       throw err;
     });
@@ -163,23 +163,29 @@ $(document).ready(function() {
       $(`#${language}-doc-detecting`).addClass("hidden");
       $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden");
 
-        if (event.target.id === "source-file") {
-            englishFile = uploadedFile;
-            if (fileExtension === 'docx') {
-              let arrayBuffer = await uploadedFile.arrayBuffer();
-              let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-              $("#translation-A").html(mammothResult.value);
-            }
-          } else {
-            frenchFile = uploadedFile;
-          }
-      } catch (err) {
-          console.error('Error processing source file:', err);
-          $(`#${language}-doc-error`).removeClass("hidden");
-          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+         if (event.target.id === "source-file") {
+      englishFile = uploadedFile;
+      if (fileExtension === 'docx') {
+        let arrayBuffer = await uploadedFile.arrayBuffer();
+        let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+        $("#translation-A").html(mammothResult.value);
+      } else if (fileExtension === 'pptx') {
+        // Use pptxToHtml to extract HTML from the PPTX file.
+        let htmlContent = await pptxToHtml(uploadedFile);
+        $("#translation-A").html(htmlContent);
+      } else {
+        console.warn("Unsupported file extension: " + fileExtension);
       }
+    } else {
+      // For the French file upload (second file)
+      frenchFile = uploadedFile;
     }
-  });
+  } catch (err) {
+    console.error('Error processing source file:', err);
+    $(`#${language}-doc-error`).removeClass("hidden");
+    $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+  }
+});
 
   /***********************************************************************
    * Translate Button Flow:
@@ -415,21 +421,49 @@ $("#source-upload-provide-btn").click(function() {
     console.log("Spinner should now be visible.");
     var selectedOption = $('input[name="second-upload-option"]:checked').val();  
     let frenchText = "";  
-
+    
     // Ensure the French file is uploaded if the user selected document upload.
   if (selectedOption == "second-upload-doc" && !frenchFile) {
     alert("Please upload your translated French document.");
     return;
-  }
+  } 
     
     // 1) Get the raw French text from doc or text:
     if (selectedOption == "second-upload-doc") {
-      var file = $('#second-file')[0].files[0]; 
-     
-      if (!file) {
-        alert("Please select your translated file.");
+    var file = $('#second-file')[0].files[0]; 
+    if (!file) {
+      alert("Please select your translated file.");
+      return;
+      }  
+    var fileExtension = file.name.split('.').pop().toLowerCase(); 
+
+    if (fileExtension === 'pptx') {
+      // For PPTX, use pptxToHtml to extract formatted HTML.
+      try {
+        frenchText = await pptxToHtml(file);
+      } catch (err) {
+        console.error("Error extracting PPTX HTML:", err);
+        alert("Error extracting PPTX file. Please check the console for details.");
+        $('#processing-spinner').addClass("hidden");
         return;
-      } 
+      }
+    } else {
+      // For DOCX (or other supported types), use your existing extraction.
+      try {
+        let extractedText = await handleFileExtractionToHtml(file);
+        frenchText = extractedText || "";
+      } catch (err) {
+        console.error('Error processing the second (FR) file:', err);
+        alert("Error reading your translated file. Check console for details."); 
+        $('#processing-spinner').addClass("hidden");
+        return;
+      }
+    }
+  } else if (selectedOption == "second-upload-text") {
+    frenchText = $("#second-text").val();
+  } 
+
+  console.log("French text:", frenchText);
       file.arrayBuffer().then(buffer => {
       mammoth.convertToHtml({ arrayBuffer: buffer })
         .then(result => {
