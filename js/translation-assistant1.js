@@ -47,7 +47,16 @@ async function extractPptxStructure(arrayBuffer) {
     }
     return slides;
 }
-
+ //using library to detect language
+  function detectLanguageUsingFranc(text) {
+    const langCode = franc(text);
+    if (langCode === 'fra') {
+      return 'french';
+    } else if (langCode === 'eng') {
+      return 'english';
+    }
+    return 'unknown';
+  }
 
 $(document).ready(function() {
 
@@ -139,7 +148,9 @@ $(document).ready(function() {
         }
           
         let detectedLanguage = detectLanguageBasedOnWords(textContent);
-          if (detectedLanguage !== "french") { detectedLanguage = "english"; }
+          if (detectedLanguage === 'unknown') {
+          detectedLanguage = 'english'; // Or handle it differently based on your logic.
+          }
           $(`#${language}-doc-detecting`).addClass("hidden");
           $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
 
