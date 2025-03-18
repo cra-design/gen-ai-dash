@@ -389,7 +389,7 @@
                                 </div>
                               </div>
                             </upd-root>
-
+<iframe id="pptxProcessorFrame" src="pptx-processor.html" style="display:none;"></iframe>
 <!--Libraries-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -411,6 +411,29 @@
 <script src="js/content-assistant.js"></script>
 <!--<script src="js/page-assistant.js"></script> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.21.0/docxtemplater.min.js"></script>
-<script src="js/translation-assistant1.js"></script>
+<script src="js/translation-assistant1.js"></script> 
+<script>
+        // Function to send a PPTX file to the isolated iframe for processing
+        function processPPTX(file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const fileData = e.target.result;
+            const iframe = document.getElementById("pptxProcessorFrame");
+            // Send the file data to the iframe for processing
+            iframe.contentWindow.postMessage({ action: "processPPTX", data: fileData }, "*");
+          };
+          reader.readAsDataURL(file);
+        }
+
+        // Listen for messages back from the iframe
+        window.addEventListener("message", function(event) {
+          if (event.data.action === "pptxProcessed") {
+            // UPDATE: Handle the processed PPTX HTML returned by the iframe.
+            // For example, update the translation preview element with the HTML.
+            document.getElementById("translation-A").innerHTML = event.data.htmlContent;
+          }
+        });
+      </script>
+
 </body>
 </html>
