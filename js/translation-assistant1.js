@@ -110,7 +110,8 @@ $(document).ready(function() {
   });
 
   // Handle file input change for both source and second file uploads.
-  $(document).on("change", "input", async function (event) {
+  $(document).on("change", "input", async function (event) { 
+    console.log("File input changed.");
     if (event.target.id == "source-file" || event.target.id == "second-file") {
       let language = event.target.id === "source-file" ? "source" : "second";
       $(`#${language}-doc-detecting`).removeClass("hidden");
@@ -133,8 +134,9 @@ $(document).ready(function() {
       "application/vnd.openxmlformats-officedocument.presentationml.presentation",
       "application/vnd.ms-powerpoint"
     ];
-      console.log("Uploaded file extension:", fileExtension);
-      console.log("Uploaded file type:", uploadedFile.type);
+      console.log("Uploaded file:", uploadedFile);
+      console.log("File extension:", fileExtension);
+      console.log("File type:", uploadedFile.type);
 
 
       if (!validExtensions.includes(fileExtension) || (uploadedFile.type &&       
