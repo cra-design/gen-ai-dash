@@ -416,20 +416,20 @@ $("#source-upload-provide-btn").click(function() {
 });
 
   // Second upload: manual translation.
-  $("#second-upload-btn").click(async function() {  
-     $('#processing-spinner').removeClass("hidden"); 
-    console.log("Spinner should now be visible.");
-    var selectedOption = $('input[name="second-upload-option"]:checked').val();  
-    let frenchText = "";  
-    
-    // Ensure the French file is uploaded if the user selected document upload.
+ $("#second-upload-btn").click(async function() {  
+  $('#processing-spinner').removeClass("hidden"); 
+  console.log("Spinner should now be visible.");
+  var selectedOption = $('input[name="second-upload-option"]:checked').val();  
+  let frenchText = "";  
+  
+  // Ensure the French file is uploaded if the user selected document upload.
   if (selectedOption == "second-upload-doc" && !frenchFile) {
     alert("Please upload your translated French document.");
     return;
   } 
-    
-    // 1) Get the raw French text from doc or text:
-    if (selectedOption == "second-upload-doc") {
+  
+  // 1) Get the raw French text from file or text input:
+  if (selectedOption == "second-upload-doc") {
     var file = $('#second-file')[0].files[0]; 
     if (!file) {
       alert("Please select your translated file.");
@@ -462,24 +462,25 @@ $("#source-upload-provide-btn").click(function() {
   } else if (selectedOption == "second-upload-text") {
     frenchText = $("#second-text").val();
   } 
-  console.log("French text:", frenchText);  
-  });
-    // 2) Retrieve the formatted English HTML from #translation-A
-    //    (#translation-A is where we stored the first doc's structure).
-    let englishHtml = $("#translation-A").html();
-    if (!englishHtml || englishHtml.trim().length === 0) {
-      alert("No formatted English document found. Please complete the first step."); 
-      $('#converting-spinner').addClass("hidden");
-      return;
-    }
-    if (!frenchText || frenchText.trim().length === 0) {
-      alert("No French document/text found. Please upload or enter your translation."); 
-      $('#converting-spinner').addClass("hidden");
-      return;
-    }
-    // load the system prompt
-    let systemPrompt = "";
-    try {
+
+  console.log("French text:", frenchText);
+
+  // Continue: Retrieve the formatted English HTML from #translation-A.
+  let englishHtml = $("#translation-A").html();
+  if (!englishHtml || englishHtml.trim().length === 0) {
+    alert("No formatted English document found. Please complete the first step."); 
+    $('#converting-spinner').addClass("hidden");
+    return;
+  }
+  if (!frenchText || frenchText.trim().length === 0) {
+    alert("No French document/text found. Please upload or enter your translation."); 
+    $('#converting-spinner').addClass("hidden");
+    return;
+  }
+  
+  // Load the system prompt.
+  let systemPrompt = "";
+  try {
     systemPrompt = await $.get("custom-instructions/translation/english2french1.txt");
   } catch (error) {
     console.error("Error loading system prompt:", error);
@@ -487,18 +488,19 @@ $("#source-upload-provide-btn").click(function() {
     $('#converting-spinner').addClass("hidden");
     return;
   }
-    let combinedPrompt = systemPrompt + "\n\n" +
+  
+  // Build the combined prompt.
+  let combinedPrompt = systemPrompt + "\n\n" +
     "English Document (HTML):\n" + englishHtml + "\n\n" +
     "French Text:\n" + frenchText + "\n\n" +
     "Please return the French document in HTML format that exactly follows the structure of the English document."; 
 
-    
   let requestJson = [
     { role: "system", content: systemPrompt },
     { role: "user", content: combinedPrompt }
   ]; 
 
-   let models = [
+  let models = [
     "google/gemini-2.0-flash-lite-preview-02-05:free",
     "google/gemini-2.0-pro-exp-02-05:free",
     "google/gemini-2.0-flash-thinking-exp:free",
@@ -517,25 +519,25 @@ $("#source-upload-provide-btn").click(function() {
       break;
     }
   }
-  try{ 
+  try { 
     if (!finalFrenchHtml) {
-    alert("Translation alignment failed. No valid response from any model.");
-    return;
-  } 
-     finalFrenchHtml = removeCodeFences(finalFrenchHtml);
-     console.log("Final French HTML (cleaned):", finalFrenchHtml);
+      alert("Translation alignment failed. No valid response from any model.");
+      return;
+    } 
+    finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+    console.log("Final French HTML (cleaned):", finalFrenchHtml);
 
-    // 4) Display the final merged output in #review-translation
-     $("#translation-A").html(finalFrenchHtml); 
-     $('#converting-spinner').addClass("hidden");
-     $("#translation-preview").removeClass("hidden").show();  
-      } catch (err) {
+    // Display the AI result in #translation-A.
+    $("#translation-A").html(finalFrenchHtml); 
+    $('#converting-spinner').addClass("hidden");
+    $("#translation-preview").removeClass("hidden").show();  
+  } catch (err) {
     console.error("Error during second-upload processing:", err);
   } finally {
-    // Hide spinner once processing is complete (successfully or on error)
     $('#processing-spinner').addClass("hidden");  
   }
 });
+
     
   // Accept and edit translation button handlers.
   $("#accept-translation-A-btn").click(function() { acceptTranslation("a"); });
