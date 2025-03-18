@@ -873,18 +873,16 @@ function acceptTranslation(option) {
   $("#accept-translation-A-btn, #accept-translation-B-btn").addClass("hidden");
   $(".convert-translation").removeClass("hidden");
   toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
-}
+} 
 
 function detectLanguageBasedOnWords(text) {
-  const englishWords = ['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'on', 'with'];
-  const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
-  text = text.toLowerCase();
-  function countMatches(wordList) {
-    return wordList.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0);
+  // Use franc to get the ISO 639-3 language code.
+  const langCode = franc(text);
+  if (langCode === 'fra') {
+    return 'french';
+  } else if (langCode === 'eng') {
+    return 'english';
   }
-  const englishMatches = countMatches(englishWords);
-  const frenchMatches = countMatches(frenchWords);
-  if (englishMatches > frenchMatches) { return 'english'; }
-  else if (frenchMatches > englishMatches) { return 'french'; }
-  else { return 'unknown'; }
+  // Default fallback.
+  return 'english';
 }
