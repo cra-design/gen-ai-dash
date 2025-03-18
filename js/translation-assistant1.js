@@ -434,8 +434,8 @@ $("#source-upload-provide-btn").click(function() {
     if (!file) {
       alert("Please select your translated file.");
       return;
-      }  
-    var fileExtension = file.name.split('.').pop().toLowerCase(); 
+    }  
+    var fileExtension = file.name.split('.').pop().toLowerCase();  
 
     if (fileExtension === 'pptx') {
       // For PPTX, use pptxToHtml to extract formatted HTML.
@@ -453,7 +453,7 @@ $("#source-upload-provide-btn").click(function() {
         let extractedText = await handleFileExtractionToHtml(file);
         frenchText = extractedText || "";
       } catch (err) {
-        console.error('Error processing the second (FR) file:', err);
+        console.error("Error processing the second (FR) file:", err);
         alert("Error reading your translated file. Check console for details."); 
         $('#processing-spinner').addClass("hidden");
         return;
