@@ -125,8 +125,12 @@ $(document).ready(function() {
           const fileExtension = uploadedFile.name.split('.').pop().toLowerCase(); 
           if (fileExtension === "docx" || fileExtension === "xlsx") {
               textContent = await handleFileExtraction(uploadedFile); 
-        } else if (fileExtension === "pptx") {
-              textContent = await extractAdvancedPptxStructure(uploadedFile);
+        } else if (fileExtension === "pptx") { 
+              let arrayBuffer = await uploadedFile.arrayBuffer(); 
+              let slides = await extractPptxStructure(arrayBuffer); 
+              textContent = slides
+                  .map(slide => slide.textItems.map(item => item.text).join(" "))
+                  .join("\n");
         } else {
               throw new Error("Unsupported file type");
         }
