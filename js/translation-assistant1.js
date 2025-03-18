@@ -403,36 +403,51 @@ $("#source-upload-provide-btn").click(function() {
     return;
   }
     
-    // 1) Get the raw French text from doc or text:
-    if (selectedOption == "second-upload-doc") {
-      var file = $('#second-file')[0].files[0]; 
-     
-      if (!file) {
-        alert("Please select your translated file.");
-        return;
-      } 
-      file.arrayBuffer().then(buffer => {
-      mammoth.convertToHtml({ arrayBuffer: buffer })
-        .then(result => {
-          console.log("Direct extraction result:", result.value);
+   // 1) Get the raw French text from a document upload or from plain text input.
+if (selectedOption == "second-upload-doc") {
+  var file = $('#second-file')[0].files[0]; 
+
+  if (!file) {
+    alert("Please select your translated file.");
+    return;
+  } 
+
+  try {
+    let textContent;
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    
+    if (fileExtension === "docx" || fileExtension === "xlsx") {
+      // For DOCX/XLSX, extract HTML/text using your existing extraction function.
+      textContent = await handleFileExtractionToHtml(file);
+    } else if (fileExtension === "pptx") {
+      // For PPTX, read the file as an ArrayBuffer, extract the slide structure,
+      // and then build HTML from the slide objects.
+      let arrayBuffer = await file.arrayBuffer();
+      let slides = await extractPptxStructure(arrayBuffer);
+      textContent = slides
+        .map(slide => {
+          // Wrap each text item in a paragraph and the entire slide in a div.
+          let slideHtml = slide.textItems
+            .map(item => `<p>${item.text}</p>`)
+            .join('');
+          return `<div class="slide">${slideHtml}</div>`;
         })
-        .catch(err => console.error("Error with direct extraction:", err));
-    });
-      
-      try {
-        // This should extract text from the user-provided FR doc (unformatted).
-        let extractedText = await handleFileExtractionToHtml(file);
-        frenchText = extractedText || "";
-      } catch (err) {
-        console.error('Error processing the second (FR) file:', err);
-        alert("Error reading your translated file. Check console for details."); 
-        $('#converting-spinner').addClass("hidden");
-        return;
-      }
-    } else if (selectedOption == "second-upload-text") {
-      frenchText = $("#second-text").val();
-    } 
-    console.log("French text:", frenchText);
+        .join('');
+    } else {
+      throw new Error("Unsupported file type");
+    }
+    frenchText = textContent || "";
+  } catch (err) {
+    console.error('Error processing the second (FR) file:', err);
+    alert("Error reading your translated file. Check console for details."); 
+    $('#converting-spinner').addClass("hidden");
+    return;
+  }
+} else if (selectedOption == "second-upload-text") {
+  frenchText = $("#second-text").val();
+}
+console.log("French text:", frenchText); 
+    
     // 2) Retrieve the formatted English HTML from #translation-A
     //    (#translation-A is where we stored the first doc's structure).
     let englishHtml = $("#translation-A").html();
