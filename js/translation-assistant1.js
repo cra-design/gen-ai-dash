@@ -138,11 +138,11 @@ $(document).ready(function() {
       console.log("Uploaded file type:", uploadedFile.type);
 
 
-      if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
-          $(`#${language}-doc-error`).removeClass("hidden");
-          $(`#${language}-doc-detecting`).addClass("hidden");
-          $(`#${language}-language-heading`).removeClass("hidden");
-          return;
+      if (!validExtensions.includes(fileExtension) && !validMimeTypes.includes(uploadedFile.type)) {
+      $(`#${language}-doc-error`).removeClass("hidden");
+      $(`#${language}-doc-detecting`).addClass("hidden");
+      $(`#${language}-language-heading`).removeClass("hidden");
+      return;
       }
       try {
           let textContent = "";
