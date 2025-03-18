@@ -182,66 +182,8 @@ $(document).ready(function() {
     if (template.val() == "none") { //if variant
       template = $('input[name="template-variant-options"]:checked');
     }
-    let templateName = template.attr("id").replace("templates-", "").replace("-variant-", "");
     let method = $('input[name="template-application-options"]:checked');
-    let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate($("#fullHtml code").text());
-    let systemGeneral = { role: "system", content: "" };
-    let systemTemplate = { role: "system", content: "" };
-    let systemContext = { role: "system", content: "For context, other sections include... " };
-    let userContent = { role: "user", content: extractedHtml};
-    let requestJson;
-    // if (method == "thorough") {
-    //   let subTemplates = template.attr('data-component').split(', ');
-    //
-    // }
-    //
-    //
-    // //OPTIONAL PIPELINE ADDITION
-    // if ( && subTemplates.length > 0) {
-    //     for (const component of subTemplates) {
-    //       $("#templates-spinner p").text("Writing " + component.replace("-", " ") + "...");
-    //       try {
-    //         systemGeneral.content = await $.get("custom-instructions/component/" + component + ".txt");
-    //         systemTemplate.content = "```" + await $.get("html-templates/components/" + component + ".html") + "```";
-    //         requestJson = [systemGeneral, systemTask, userContent, userData];
-    //         let formattedText = formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
-    //         systemContext.content += component + ": " + formattedText + "; ";
-    //       } catch (err) {
-    //         console.error('Component error:', err);
-    //         $("#templates-spinner").addClass("hidden");
-    //         return;
-    //       }
-    //     }
-    // }
-    $("#templates-spinner p").text("Applying " + templateName.replace("-", " ") + "...");
-    // END OPTIONAL PIPELINE ADDITION
-    systemGeneral.content = await $.get("custom-instructions/template/" + templateName + ".txt");
-    systemTemplate.content = "```" + await $.get(template.val()) + "```";
-    systemContext.content = systemContext.content.replace("For context, other sections include... ", "Please use the following, if available... ");
-    requestJson = [systemGeneral, systemTemplate, userContent];
-    // Send it to the API
-    try {
-      //qwen/qwq-32b:free
-      let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
-      console.log(aiResponse);
-      let formattedHtml = formatGenAIHtmlResponse(aiResponse);
-      // let { extractedHtml: simpleHtml } = await applySimpleHtmlTemplate(formattedHtml);
-      extractedHtml = await applyCanadaHtmlTemplate(formattedHtml, metadata, mainClassMatch);
-    } catch (err) {
-        console.error('Templating error:', err);
-        $("#templates-spinner").addClass("hidden");
-    }
-    $("#templates-spinner p").text("Loading preview...");
-    //4) make side-by-side accept/deny block in the code - use the fullHtmlCompare and iframeB?
-      //Maybe refresh the iframe with the suggested code too?
-    refreshIframe("url-frame-2", extractedHtml);
-    toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
-    $('#iframe-toolbox-A').removeClass('hidden');
-    $('#iframe-toolbox-B').removeClass('hidden');
-    //Add comparison code
-    $("#fullHtmlCompare code").text(extractedHtml);
-    Prism.highlightElement(document.querySelector("#fullHtmlCompare code"));
-    toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
+    applyTemplate(template, method);
     $("#templates-spinner").addClass("hidden");
   });
 
@@ -859,7 +801,7 @@ async function formatORResponse(model, requestJson) {
 }
 
 
-async function updateIframeFromURL(url) {
+async function updateIframeFromURL(url, template = "", method = "simple") {
   $('#upload-chooser').addClass("hidden");
   $('#url-upload-input').addClass("hidden");
   $('#url-upload-preview').removeClass("hidden");
@@ -920,6 +862,9 @@ async function updateIframeFromURL(url) {
     $("#other-site-msg").removeClass("hidden");
     $('#url-upload-input').removeClass("hidden");
   }
+  if (template != "") {
+    applyTemplate(template, method);
+  }
   //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
 }
 
@@ -961,4 +906,66 @@ function formatGenAIHtmlResponse(genaiResponse) {
   });
   // Return the cleaned-up HTML as a string
   return doc.body.innerHTML;
+}
+
+async function applyTemplate(template, method = "simple") {
+  let templateName = template.attr("id").replace("templates-", "").replace("-variant-", "");
+  let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate($("#fullHtml code").text());
+  let systemGeneral = { role: "system", content: "" };
+  let systemTemplate = { role: "system", content: "" };
+  let systemContext = { role: "system", content: "For context, other sections include... " };
+  let userContent = { role: "user", content: extractedHtml};
+  let requestJson;
+  // if (method == "thorough") {
+  //   let subTemplates = template.attr('data-component').split(', ');
+  //
+  // }
+  //
+  //
+  // //OPTIONAL PIPELINE ADDITION
+  // if ( && subTemplates.length > 0) {
+  //     for (const component of subTemplates) {
+  //       $("#templates-spinner p").text("Writing " + component.replace("-", " ") + "...");
+  //       try {
+  //         systemGeneral.content = await $.get("custom-instructions/component/" + component + ".txt");
+  //         systemTemplate.content = "```" + await $.get("html-templates/components/" + component + ".html") + "```";
+  //         requestJson = [systemGeneral, systemTask, userContent, userData];
+  //         let formattedText = formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
+  //         systemContext.content += component + ": " + formattedText + "; ";
+  //       } catch (err) {
+  //         console.error('Component error:', err);
+  //         $("#templates-spinner").addClass("hidden");
+  //         return;
+  //       }
+  //     }
+  // }
+  $("#templates-spinner p").text("Applying " + templateName.replace("-", " ") + "...");
+  // END OPTIONAL PIPELINE ADDITION
+  systemGeneral.content = await $.get("custom-instructions/template/" + templateName + ".txt");
+  systemTemplate.content = "```" + await $.get(template.val()) + "```";
+  systemContext.content = systemContext.content.replace("For context, other sections include... ", "Please use the following, if available... ");
+  requestJson = [systemGeneral, systemTemplate, userContent];
+  // Send it to the API
+  try {
+    //qwen/qwq-32b:free
+    let aiResponse = await formatORResponse("google/gemini-2.0-flash-exp:free", requestJson);
+    console.log(aiResponse);
+    let formattedHtml = formatGenAIHtmlResponse(aiResponse);
+    // let { extractedHtml: simpleHtml } = await applySimpleHtmlTemplate(formattedHtml);
+    extractedHtml = await applyCanadaHtmlTemplate(formattedHtml, metadata, mainClassMatch);
+  } catch (err) {
+      console.error('Templating error:', err);
+      $("#templates-spinner").addClass("hidden");
+  }
+  $("#templates-spinner p").text("Loading preview...");
+  //4) make side-by-side accept/deny block in the code - use the fullHtmlCompare and iframeB?
+    //Maybe refresh the iframe with the suggested code too?
+  refreshIframe("url-frame-2", extractedHtml);
+  toggleComparisonElement($('#iframe-container-A'), $('#iframe-container-B'));
+  $('#iframe-toolbox-A').removeClass('hidden');
+  $('#iframe-toolbox-B').removeClass('hidden');
+  //Add comparison code
+  $("#fullHtmlCompare code").text(extractedHtml);
+  Prism.highlightElement(document.querySelector("#fullHtmlCompare code"));
+  toggleComparisonElement($('#fullHtml'), $('#fullHtmlCompare'));
 }

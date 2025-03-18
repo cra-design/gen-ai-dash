@@ -5,6 +5,8 @@ $(document).ready(function() {
     var currentPath = window.location.pathname;
     if (keyParam) {
         var urlParam = getUrlParameter('url');
+        var templateParam = getUrlParameter('template');
+        var methodParam = getUrlParameter('method');
         //update the hidden input for the key so we can reference it as usual
         $("#api-key").val(keyParam);
         // Hide the input box if the key parameter is present
@@ -15,7 +17,7 @@ $(document).ready(function() {
         updateLinks('key=' + keyParam); // Passing only the key param here
         if (urlParam && currentPath.includes('page-assistant.html')) {
           //preload the page
-          updateIframeFromURL(urlParam);
+          updateIframeFromURL(urlParam, templateParam, methodParam);
         }
     }
     $("#api-key-submit-btn").click(function(){
