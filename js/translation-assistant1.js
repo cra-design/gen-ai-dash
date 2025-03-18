@@ -886,8 +886,19 @@ function acceptTranslation(option) {
   toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
 } 
 
-function detectLanguageBasedOnWords(text) {
-  // Use franc to get the ISO 639-3 language code.
+function detectLanguageBasedOnWords(text) { 
+  const francFn = window.franc || window.francMin; 
+    if (typeof francFn !== 'function') {
+    console.warn("franc library not available, falling back to keyword detection.");
+    // Fallback: simple keyword-based detection.
+    const englishWords = ['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'on', 'with'];
+    const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
+    text = text.toLowerCase();
+    function countMatches(wordList) {
+      return wordList.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0);
+    }
+    return countMatches(englishWords) > countMatches(frenchWords) ? 'english' : 'french';
+  }
   const langCode = franc(text);
   if (langCode === 'fra') {
     return 'french';
