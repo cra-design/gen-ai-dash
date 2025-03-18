@@ -1,361 +1,853 @@
-<html lang="en-CA" data-critters-container="">
-   <head>
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <title>Content Assistant | Translation Assistant</title>
-      <!--base href="./"-->
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="icon" type="image/x-icon" href="img/favicon-ca.ico">
-      <meta name="robots" content="noindex, nofollow">
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
-	  <style>@font-face{font-family:'Lato';font-style:normal;font-weight:400;src:url(https://fonts.gstatic.com/s/lato/v24/S6uyw4BMUTPHjxAwXjeu.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'Lato';font-style:normal;font-weight:400;src:url(https://fonts.gstatic.com/s/lato/v24/S6uyw4BMUTPHjx4wXg.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'Noto Sans';font-style:normal;font-weight:400;font-stretch:100%;src:url(https://fonts.gstatic.com/s/notosans/v38/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9X6VLKzA.woff2) format('woff2');unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;}@font-face{font-family:'Noto Sans';font-style:normal;font-weight:400;font-stretch:100%;src:url(https://fonts.gstatic.com/s/notosans/v38/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9e6VLKzA.woff2) format('woff2');unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;}@font-face{font-family:'Noto Sans';font-style:normal;font-weight:400;font-stretch:100%;src:url(https://fonts.gstatic.com/s/notosans/v38/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9b6VLKzA.woff2) format('woff2');unicode-range:U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B09;}@font-face{font-family:'Noto Sans';font-style:normal;font-weight:400;font-stretch:100%;src:url(https://fonts.gstatic.com/s/notosans/v38/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9W6VLKzA.woff2) format('woff2');unicode-range:U+1F00-1FFF;}@font-face{font-family:'Noto Sans';font-style:normal;font-weight:400;font-stretch:100%;src:url(https://fonts.gstatic.com/s/notosans/v38/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9Z6VLKzA.woff2) format('woff2');unicode-range:U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;}@font-face{font-family:'Noto Sans';font-style:normal;font-weight:400;font-stretch:100%;src:url(https://fonts.gstatic.com/s/notosans/v38/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9V6VLKzA.woff2) format('woff2');unicode-range:U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;}@font-face{font-family:'Noto Sans';font-style:normal;font-weight:400;font-stretch:100%;src:url(https://fonts.gstatic.com/s/notosans/v38/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9U6VLKzA.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'Noto Sans';font-style:normal;font-weight:400;font-stretch:100%;src:url(https://fonts.gstatic.com/s/notosans/v38/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9a6VI.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}</style>
-      <style>@font-face{font-family:'Material Icons';font-style:normal;font-weight:400;src:url(https://fonts.gstatic.com/s/materialicons/v142/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');}.material-icons{font-family:'Material Icons';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;}</style>
-      <style>@font-face{font-family:'Material Icons Outlined';font-style:normal;font-weight:400;src:url(https://fonts.gstatic.com/s/materialiconsoutlined/v109/gok-H7zzDkdnRel8-DQ6KAXJ69wP1tGnf4ZGhUce.woff2) format('woff2');}.material-icons-outlined{font-family:'Material Icons Outlined';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;}</style>
-      <style>@charset "UTF-8";:root{--bs-blue:#0d6efd;--bs-indigo:#6610f2;--bs-purple:#6f42c1;--bs-pink:#d63384;--bs-red:#dc3545;--bs-orange:#fd7e14;--bs-yellow:#ffc107;--bs-green:#198754;--bs-teal:#20c997;--bs-cyan:#0dcaf0;--bs-white:#fff;--bs-gray:#6c757d;--bs-gray-dark:#343a40;--bs-primary:#0d6efd;--bs-secondary:#6c757d;--bs-success:#198754;--bs-info:#0dcaf0;--bs-warning:#ffc107;--bs-danger:#dc3545;--bs-light:#f8f9fa;--bs-dark:#212529;--bs-font-sans-serif:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";--bs-font-monospace:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;--bs-gradient:linear-gradient(180deg, rgba(255, 255, 255, .15), rgba(255, 255, 255, 0))}*,:after,:before{box-sizing:border-box}@media (prefers-reduced-motion:no-preference){:root{scroll-behavior:smooth}}body{margin:0;font-family:var(--bs-font-sans-serif);font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#fff;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}@-webkit-keyframes progress-bar-stripes{0%{background-position-x:1rem}}@-webkit-keyframes spinner-border{to{transform:rotate(360deg)}}@-webkit-keyframes spinner-grow{0%{transform:scale(0)}50%{opacity:1;transform:none}}:root{--header-height:3rem;--nav-width:80px;--first-color:#1b1c1e;--first-color-light:#efefef;--white-color:#333;--body-font:"Noto Sans", sans-serif;--z-fixed:100}*,:before,:after{box-sizing:border-box}body{background-color:#f8f9f8;color:#333;position:relative;margin:var(--header-height) 0 0 0;padding:0 1rem;font-family:var(--body-font);transition:.5s}.body-pd{padding-left:calc(var(--nav-width) + 1rem)}@media screen and (min-width: 768px){body{margin:calc(var(--header-height) + 1rem) 0 0 0;padding-left:calc(var(--nav-width) + 2rem)}.body-pd{padding-left:calc(var(--nav-width) + 178px)}}@-webkit-keyframes fa-spin{0%{-webkit-transform:rotate(0deg);transform:rotate(0)}to{-webkit-transform:rotate(359deg);transform:rotate(359deg)}}:root{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol;--font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";--surface-a:#ffffff;--surface-b:#f8f9fa;--surface-c:#e9ecef;--surface-d:#dee2e6;--surface-e:#ffffff;--surface-f:#ffffff;--text-color:#495057;--text-color-secondary:#6c757d;--primary-color:#2196F3;--primary-color-text:#ffffff;--surface-0:#ffffff;--surface-50:#fafafa;--surface-100:#f5f5f5;--surface-200:#eeeeee;--surface-300:#e0e0e0;--surface-400:#bdbdbd;--surface-500:#9e9e9e;--surface-600:#757575;--surface-700:#616161;--surface-800:#424242;--surface-900:#212121;--gray-50:#fafafa;--gray-100:#f5f5f5;--gray-200:#eeeeee;--gray-300:#e0e0e0;--gray-400:#bdbdbd;--gray-500:#9e9e9e;--gray-600:#757575;--gray-700:#616161;--gray-800:#424242;--gray-900:#212121;--content-padding:1rem;--inline-spacing:.5rem;--border-radius:3px;--surface-ground:#f8f9fa;--surface-section:#ffffff;--surface-card:#ffffff;--surface-overlay:#ffffff;--surface-border:#dee2e6;--surface-hover:#e9ecef;--maskbg:rgba(0, 0, 0, .4);--highlight-bg:#E3F2FD;--highlight-text-color:#495057;--focus-ring:0 0 0 .2rem #a6d5fa;color-scheme:light}:root{--blue-50:#f4fafe;--blue-100:#cae6fc;--blue-200:#a0d2fa;--blue-300:#75bef8;--blue-400:#4baaf5;--blue-500:#2196f3;--blue-600:#1c80cf;--blue-700:#1769aa;--blue-800:#125386;--blue-900:#0d3c61;--green-50:#f6fbf6;--green-100:#d4ecd5;--green-200:#b2ddb4;--green-300:#90cd93;--green-400:#6ebe71;--green-500:#4caf50;--green-600:#419544;--green-700:#357b38;--green-800:#2a602c;--green-900:#1e4620;--yellow-50:#fffcf5;--yellow-100:#fef0cd;--yellow-200:#fde4a5;--yellow-300:#fdd87d;--yellow-400:#fccc55;--yellow-500:#fbc02d;--yellow-600:#d5a326;--yellow-700:#b08620;--yellow-800:#8a6a19;--yellow-900:#644d12;--cyan-50:#f2fcfd;--cyan-100:#c2eff5;--cyan-200:#91e2ed;--cyan-300:#61d5e4;--cyan-400:#30c9dc;--cyan-500:#00bcd4;--cyan-600:#00a0b4;--cyan-700:#008494;--cyan-800:#006775;--cyan-900:#004b55;--pink-50:#fef4f7;--pink-100:#fac9da;--pink-200:#f69ebc;--pink-300:#f1749e;--pink-400:#ed4981;--pink-500:#e91e63;--pink-600:#c61a54;--pink-700:#a31545;--pink-800:#801136;--pink-900:#5d0c28;--indigo-50:#f5f6fb;--indigo-100:#d1d5ed;--indigo-200:#acb4df;--indigo-300:#8893d1;--indigo-400:#6372c3;--indigo-500:#3f51b5;--indigo-600:#36459a;--indigo-700:#2c397f;--indigo-800:#232d64;--indigo-900:#192048;--teal-50:#f2faf9;--teal-100:#c2e6e2;--teal-200:#91d2cc;--teal-300:#61beb5;--teal-400:#30aa9f;--teal-500:#009688;--teal-600:#008074;--teal-700:#00695f;--teal-800:#00534b;--teal-900:#003c36;--orange-50:#fff8f2;--orange-100:#fde0c2;--orange-200:#fbc791;--orange-300:#f9ae61;--orange-400:#f79530;--orange-500:#f57c00;--orange-600:#d06900;--orange-700:#ac5700;--orange-800:#874400;--orange-900:#623200;--bluegray-50:#f7f9f9;--bluegray-100:#d9e0e3;--bluegray-200:#bbc7cd;--bluegray-300:#9caeb7;--bluegray-400:#7e96a1;--bluegray-500:#607d8b;--bluegray-600:#526a76;--bluegray-700:#435861;--bluegray-800:#35454c;--bluegray-900:#263238;--purple-50:#faf4fb;--purple-100:#e7cbec;--purple-200:#d4a2dd;--purple-300:#c279ce;--purple-400:#af50bf;--purple-500:#9c27b0;--purple-600:#852196;--purple-700:#6d1b7b;--purple-800:#561561;--purple-900:#3e1046;--red-50:#fff5f5;--red-100:#ffd1ce;--red-200:#ffada7;--red-300:#ff8980;--red-400:#ff6459;--red-500:#ff4032;--red-600:#d9362b;--red-700:#b32d23;--red-800:#8c231c;--red-900:#661a14;--primary-50:#f4fafe;--primary-100:#cae6fc;--primary-200:#a0d2fa;--primary-300:#75bef8;--primary-400:#4baaf5;--primary-500:#2196f3;--primary-600:#1c80cf;--primary-700:#1769aa;--primary-800:#125386;--primary-900:#0d3c61}@layer primeng{*{box-sizing:border-box}}@layer primeng{@-webkit-keyframes p-fadein{0%{opacity:0}to{opacity:1}}}@-webkit-keyframes p-icon-spin{0%{-webkit-transform:rotate(0);transform:rotate(0)}to{-webkit-transform:rotate(359deg);transform:rotate(359deg)}}</style>
-      <link rel="stylesheet" href="css/UPD-styles.css" media="all" onload="this.media='all'">
-      <link rel="stylesheet" href="css/ca-styles.css" media="all" onload="this.media='all'">
-	  <link rel="stylesheet" href="css/prism.css" data-noprefix />
-      <noscript>
-         <link rel="stylesheet" href="css/UPD-styles.css">
-         <link rel="stylesheet" href="css/ca-styles.css" media="all" onload="this.media='all'">
-      </noscript><link rel="stylesheet" href="https://www.canada.ca/etc/designs/canada/wet-boew/méli-mélo/2024-09-kejimkujik.min.css"/>
-      <script async=""></script>
-      <style>main[_ngcontent-ng-c3392822675]{position:relative}</style>
-      <style>.language-picker-area[_ngcontent-ng-c3122493551]{display:flex;justify-content:flex-end}.picker-label[_ngcontent-ng-c3122493551]{margin-right:20px}.language-picker[_ngcontent-ng-c3122493551]{width:100px}.langs[_ngcontent-ng-c3122493551], .langs[_ngcontent-ng-c3122493551]:hover, .langs[_ngcontent-ng-c3122493551]:visited{text-decoration:underline;color:#2e5ea7}</style>
-      <style>#menu-custom-report-label.col[_ngcontent-ng-c82967845]{flex:0 0 0%!important;flex-grow:0!important}a.cr-link[_ngcontent-ng-c82967845] > .row[_ngcontent-ng-c82967845] > .col[_ngcontent-ng-c82967845]:nth-child(2){flex-grow:0!important}a.cr-link[_ngcontent-ng-c82967845] > .row[_ngcontent-ng-c82967845] > .col[_ngcontent-ng-c82967845]:nth-child(1){flex:0 0 0%!important;flex-grow:0!important}</style>
-      <style>.bg-green[_ngcontent-ng-c2697168388]{background-color:#90ee90!important}td.validation-kpi-not-met[_ngcontent-ng-c2697168388] + td.bg-green[_ngcontent-ng-c2697168388]{background-color:#f8e6d2!important}.exportButtons[_ngcontent-ng-c2697168388]{margin:0 5px 5px 0}</style>
-      <style>@layer primeng{.p-datatable{position:relative}.p-datatable>.p-datatable-wrapper{overflow:auto}.p-datatable-table{border-spacing:0px;width:100%}.p-datatable .p-sortable-column{cursor:pointer;-webkit-user-select:none;user-select:none}.p-datatable .p-sortable-column .p-column-title,.p-datatable .p-sortable-column .p-sortable-column-icon,.p-datatable .p-sortable-column .p-sortable-column-badge{vertical-align:middle}.p-datatable .p-sortable-column .p-icon-wrapper{display:inline}.p-datatable .p-sortable-column .p-sortable-column-badge{display:inline-flex;align-items:center;justify-content:center}.p-datatable-hoverable-rows .p-selectable-row{cursor:pointer}.p-datatable-scrollable>.p-datatable-wrapper{position:relative}.p-datatable-scrollable-table>.p-datatable-thead{position:sticky;top:0;z-index:2}.p-datatable-scrollable-table>.p-datatable-frozen-tbody{position:sticky;z-index:1}.p-datatable-scrollable-table>.p-datatable-tfoot{position:sticky;bottom:0;z-index:1}.p-datatable-scrollable .p-frozen-column{position:sticky;background:inherit;z-index:1}.p-datatable-scrollable th.p-frozen-column{z-index:1}.p-datatable-flex-scrollable{display:flex;flex-direction:column;height:100%}.p-datatable-flex-scrollable>.p-datatable-wrapper{display:flex;flex-direction:column;flex:1;height:100%}.p-datatable-scrollable-table>.p-datatable-tbody>.p-rowgroup-header{position:sticky;z-index:2}.p-datatable-resizable-table>.p-datatable-thead>tr>th,.p-datatable-resizable-table>.p-datatable-tfoot>tr>td,.p-datatable-resizable-table>.p-datatable-tbody>tr>td{overflow:hidden;white-space:nowrap}.p-datatable-resizable-table>.p-datatable-thead>tr>th.p-resizable-column:not(.p-frozen-column){background-clip:padding-box;position:relative}.p-datatable-resizable-table-fit>.p-datatable-thead>tr>th.p-resizable-column:last-child .p-column-resizer{display:none}.p-datatable .p-column-resizer{display:block;position:absolute!important;top:0;right:0;margin:0;width:.5rem;height:100%;padding:0;cursor:col-resize;border:1px solid transparent}.p-datatable .p-column-resizer-helper{width:1px;position:absolute;z-index:10;display:none}.p-datatable .p-row-editor-init,.p-datatable .p-row-editor-save,.p-datatable .p-row-editor-cancel,.p-datatable .p-row-toggler{display:inline-flex;align-items:center;justify-content:center;overflow:hidden;position:relative}.p-datatable-reorder-indicator-up,.p-datatable-reorder-indicator-down{position:absolute}.p-datatable-reorderablerow-handle,[pReorderableColumn]{cursor:move}.p-datatable .p-datatable-loading-overlay{position:absolute;display:flex;align-items:center;justify-content:center;z-index:3}.p-column-filter-row{display:flex;align-items:center;width:100%}.p-column-filter-menu{display:inline-flex}.p-column-filter-row p-columnfilterformelement{flex:1 1 auto;width:1%}.p-column-filter-menu-button,.p-column-filter-clear-button{display:inline-flex;justify-content:center;align-items:center;cursor:pointer;text-decoration:none;overflow:hidden;position:relative}.p-column-filter-overlay{position:absolute;top:0;left:0}.p-column-filter-row-items{margin:0;padding:0;list-style:none}.p-column-filter-row-item{cursor:pointer}.p-column-filter-add-button,.p-column-filter-remove-button{justify-content:center}.p-column-filter-add-button .p-button-label,.p-column-filter-remove-button .p-button-label{flex-grow:0}.p-column-filter-buttonbar{display:flex;align-items:center;justify-content:space-between}.p-column-filter-buttonbar .p-button{width:auto}.p-datatable-tbody>tr>td>.p-column-title{display:none}.p-datatable-scroller-spacer{display:flex}.p-datatable .p-scroller .p-scroller-loading{transform:none!important;min-height:0;position:sticky;top:0;left:0}}</style>
-      <style>@layer primeng{.p-paginator{display:flex;align-items:center;justify-content:center;flex-wrap:wrap}.p-paginator-left-content{margin-right:auto}.p-paginator-right-content{margin-left:auto}.p-paginator-page,.p-paginator-next,.p-paginator-last,.p-paginator-first,.p-paginator-prev,.p-paginator-current{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1;-webkit-user-select:none;user-select:none;overflow:hidden;position:relative}.p-paginator-element:focus{z-index:1;position:relative}}</style>
-      <style>.dropdown-label[_ngcontent-ng-c1745413830]{font-family:Noto Sans,sans-serif;font-size:1rem}</style>
-      <style>@layer primeng{.p-dropdown{display:inline-flex;cursor:pointer;position:relative;-webkit-user-select:none;user-select:none}.p-dropdown-clear-icon{position:absolute;top:50%;margin-top:-.5rem}.p-dropdown-trigger{display:flex;align-items:center;justify-content:center;flex-shrink:0}.p-dropdown-label{display:block;white-space:nowrap;overflow:hidden;flex:1 1 auto;width:1%;text-overflow:ellipsis;cursor:pointer}.p-dropdown-label-empty{overflow:hidden;opacity:0}input.p-dropdown-label{cursor:default}.p-dropdown .p-dropdown-panel{min-width:100%}.p-dropdown-items-wrapper{overflow:auto}.p-dropdown-item{cursor:pointer;font-weight:400;white-space:nowrap;position:relative;overflow:hidden}.p-dropdown-item-group{cursor:auto}.p-dropdown-items{margin:0;padding:0;list-style-type:none}.p-dropdown-filter{width:100%}.p-dropdown-filter-container{position:relative}.p-dropdown-filter-icon{position:absolute;top:50%;margin-top:-.5rem}.p-fluid .p-dropdown{display:flex}.p-fluid .p-dropdown .p-dropdown-label{width:1%}.p-float-label .p-dropdown .p-placeholder{opacity:0}}</style>
-      <style>@layer primeng{.p-overlay{position:absolute;top:0;left:0}.p-overlay-modal{display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%}.p-overlay-content{transform-origin:inherit}.p-overlay-modal>.p-overlay-content{z-index:1;width:90%}.p-overlay-top{align-items:flex-start}.p-overlay-top-start{align-items:flex-start;justify-content:flex-start}.p-overlay-top-end{align-items:flex-start;justify-content:flex-end}.p-overlay-bottom{align-items:flex-end}.p-overlay-bottom-start{align-items:flex-end;justify-content:flex-start}.p-overlay-bottom-end{align-items:flex-end;justify-content:flex-end}.p-overlay-left{justify-content:flex-start}.p-overlay-left-start{justify-content:flex-start;align-items:flex-start}.p-overlay-left-end{justify-content:flex-start;align-items:flex-end}.p-overlay-right{justify-content:flex-end}.p-overlay-right-start{justify-content:flex-end;align-items:flex-start}.p-overlay-right-end{justify-content:flex-end;align-items:flex-end}}</style>
-      <style>.material-icon-wysiwyg[_ngcontent-ng-c948301949]{font-size:18px;vertical-align:middle}.bg-planned[_ngcontent-ng-c948301949]{background-color:#cee5ff;color:#262928}.bg-inProgress[_ngcontent-ng-c948301949]{background-color:#f7c2f4;color:#262928}.bg-completed[_ngcontent-ng-c948301949]{background-color:#b3e7bd;color:#262928}.bg-delayed[_ngcontent-ng-c948301949]{background-color:#eda7a7;color:#262928}.bg-unknown[_ngcontent-ng-c948301949]{background-color:gray;color:#fff}.text-success[_ngcontent-ng-c948301949]{color:#1d8177!important}</style>
-      <!-- for left nav styles -->
-   <body id="body-pd" class="body-pd">
-      <upd-root _nghost-ng-c3392822675="" class="ng-tns-c3392822675-0" ng-version="18.2.2">
-         <div _ngcontent-ng-c3392822675="" class="container vh-100 ng-tns-c3392822675-0">
-            <upd-header _ngcontent-ng-c3392822675="" class="ng-tns-c3392822675-0" _nghost-ng-c3122493551="">
-               <header _ngcontent-ng-c3122493551="" id="header">
-                  <div _ngcontent-ng-c3122493551="" class="row">
-                     <div _ngcontent-ng-c3122493551="" class="col-lg-3 col-md-4 col-sm-6 col-6 text-start"><img _ngcontent-ng-c3122493551="" width="834" height="76" priority="true" class="img-fluid fip-colour" alt="Government of Canada" loading="eager" fetchpriority="high" ng-img="true" src="img/CRA-FIP-9pt-e.png"></div>
-                     <div _ngcontent-ng-c3122493551="" class="col-lg-9 col-md-8 col-sm-6 col-6 text-end lang-toggle">
-                        <div _ngcontent-ng-c3122493551="" class="language-picker-area">
-                           <div _ngcontent-ng-c3122493551="" class="picker-label"></div>
-                           <a _ngcontent-ng-c3122493551="" tabindex="0" class="langs" style="cursor: pointer;"> Français </a>
-                        </div>
-                     </div>
-                  </div>
-               </header>
-            </upd-header>
-            <upd-sidebar class="ng-tns-c3392822675-0">
-               <div id="nav-bar" class="l-navbar show-n">
-                  <nav  class="nav">
-                     <div>
-                       <div class="nav_logo dropdown">
-                         <a class="nav_logo_link" href="#">
-                            <img alt="Content Assistant Logo" src="img/ca-logo.png">
-                            <span class="dropdown-icon material-icons">arrow_drop_down</span>
-                         </a>
-                         <div class="dropdown-menu">
-                            <a class="dropdown-item" href="https://cra-arc.alpha.canada.ca/en/overview/summary">
-                               <span class="material-icons">leaderboard</span> UPD
-                            </a>
-                            <a class="dropdown-item" href="inventory-assistant.html">
-                               <span class="material-icons">fact_check</span> Project Assistant
-                            </a>
-                         </div>
-                      </div>
-                      <!-- <a class="nav_logo" href=""><img alt="" src="img/ca-logo.png"></a> -->
-                        <div  class="nav_list mt-5">
-                           <a class="nav_link" href="page-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">article</span><span data-i18n="menu-overview" class="nav_name">Pages</span></a>
-                           <!-- <a class="nav_link" href="inventory-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">layers</span><span data-i18n="menu-pages" class="nav_name">Projects</span></a> -->
-                           <a class="nav_link" href="image-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">image</span><span data-i18n="menu-tasks" class="nav_name">Images</span></a>
-                           <a id="active" class="nav_link active" href="translation-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">language</span><span data-i18n="menu-tasks" class="nav_name">Translations</span></a>
-                           <a class="nav_link" href="wording-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">spellcheck</span><span data-i18n="menu-tasks" class="nav_name">Wording</span></a>
-                           <a class="nav_link" href="wizard-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">fork_left</span><span data-i18n="menu-tasks" class="nav_name">Wizards</span></a>
-                           <!-- <a class="nav_link" href="task-assistant.html"><span aria-hidden="true" class="material-icons nav_icon">adjust</span><span data-i18n="menu-tasks" class="nav_name">Tasks</span></a> -->
-                        </div>
-                     </div>
-                     <div class="mb-4">
-                       <a class="nav_link" href="about-us"><span aria-hidden="true" class="material-icons nav_icon">web_asset</span><span data-i18n="about-us" class="nav_name">About Us</span></a>
-                       <a class="nav_link" href="mailto:AIPIA-PIAAI@cra-arc.gc.ca?subject=Feedback for Content Assistant&amp;body="><span aria-hidden="true" class="material-icons nav_icon">feedback</span><span data-i18n="menu-feedback" class="nav_name">Feedback</span></a>
-                     </div>
-                  </nav>
-               </div>
-            </upd-sidebar>
-            <genai-sidebar class="r-navbar expanded">
-              <div class="toggle-btn" id="toggle-btn">
-                  <i class="fa fa-angle-right"></i>
-              </div>
-              <div>
-                <div class="flex-2-col">
-                  <h3>GenAI</h3>
-                  <button id="changeKeyBtn"><i class="fa fa-solid fa-key"></i></button>
-                </div>
-                <div id="keyPopup" class="pop-up-overlay hidden">
-                    <input type="text" id="newKeyInput" placeholder="Enter new key">
-                    <button id="saveKeyBtn">Save</button>
-                    <button id="cancelKeyBtn">Cancel</button>
-                </div>
-                <fieldset style="margin-top: 15px;">
-                  <input class="checkbox-small" type="checkbox" id="translations-glossary" name="translations-glossary" value="translations-glossary" checked>
-                  <label class="label-small" for="translations-glossary"> Use glossary</label><br>
-                </fieldset>
-                <fieldset style="margin-top: 15px;">
-                  <legend>Compare</legend>
-                  <input type="radio" id="translations-instructions-compare" name="translations-compare" value="instructions-compare" checked>
-                  <label for="translations-instructions-compare"> Instructions</label><br>
-                  <input type="radio" id="translations-llm-compare" name="translations-compare" value="llm-compare">
-                  <label for="translations-llm-compare"> Models</label><br>
-                  <input type="radio" id="translations-no-compare" name="translations-compare" value="no-compare">
-                  <label for="translations-no-compare"> None</label><br>
-                </fieldset>
-                <fieldset id="genai-model-options" class="hidden">
-                  <legend>Select a model to compare</legend>
-                  <input type="radio" id="translate-gemini" name="translate-model-b-option" value="google/gemini-2.0-flash-exp:free">
-                  <label for="translate-gemini">Gemini</label><br>
-                  <input type="radio" id="translate-dolphin" name="translate-model-b-option" value="deepseek/deepseek-r1:free">
-                  <label for="translate-deepseek">DeepSeek R1</label><br>
-                  <input type="radio" id="translate-llama" name="translate-model-b-option" value="meta-llama/llama-3.3-70b-instruct:free">
-                  <label for="translate-llama">Llama 70B</label><br>
-                  <input type="radio" id="translate-nvidia" name="translate-model-b-option" value="nvidia/llama-3.1-nemotron-70b-instruct:free">
-                  <label for="translate-nvidia">Nvidia Nemotron</label><br>
-                </fieldset>
-              </div>
-            </genai-sidebar>
-	            <h1 _ngcontent-ng-c3392822675="" class="visually-hidden ng-tns-c3392822675-0">GCA | Translation Assistant</h1>
-            <main _ngcontent-ng-c3392822675="" style="min-height: 100%;" class="ng-tns-c3392822675-0 ng-trigger ng-trigger-routeAnimations">
-               <router-outlet _ngcontent-ng-c3392822675="" class="ng-tns-c3392822675-0"></router-outlet>
-               <upd-projects _nghost-ng-c947851115="" class="ng-star-inserted" style="">
-                  <router-outlet _ngcontent-ng-c947851115=""></router-outlet>
-                  <upd-projects-home _nghost-ng-c1826793033="" class="ng-star-inserted">
-                     <h2 _ngcontent-ng-c1826793033="">Translation Assistant</h2>
+let generatedDownloadFile = null;  
+let englishFile = null;  
+let frenchFile = null;
 
-                     <upd-card>
-                        <div class="card pt-2">
-                           <div class="card-body card-pad pt-2 h-100">
-                              <div id="api-key-entry" class=" justify-content-between">
-                                <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Enter the GenAI API key</h3>
-                                <p>Before we start, add an openrouter API key to make your requests.</p>
-                                <fieldset style="margin-bottom:20px;">
-                                  <legend>OpenRouter API key</legend>
-                                  <input id="api-key" type="text" required placeholder="Enter OpenRouter API Key">
-                                  <button id="api-key-submit-btn" style="margin-top: 20px">Submit</button>
-                                </fieldset>
-                                <p>If you don't have one yet, here are some steps to create one:</p>
-                                <ol>
-                                  <li>Create an account at <a href="https://www.openrouter.ai">openrouter.ai</a></li>
-                                  <li>Under the top right hamburger menu icon, select "Keys"</li>
-                                  <li>Create key (and save it somewhere!)
-                                    <ul>
-                                      <li>the point of this is to prevent abuse if you bought credits on your account if third parties find your key</li>
-                                      <li>you don't need to buy credits for free models used in this demo</li>
-                                      <li>you will be shown your key right after creating it: copy and save it somewhere, as you can't access it again through openrouter</li>
-                  										<li>if you want to try another model, or have credits on your account and want a paid model, let Miguel know so we can update the selections</li>
-                									  </ul>
-                                  </li>
-                                  <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
-                                </ol>
-                              </div>
-                              <div id="source-upload" class="after-key-unhide hidden justify-content-between">
-                                <fieldset>
-                                  <legend>Provide the source content</legend>
-                                  <div class="inline-checkbox-container" style="margin-bottom: 15px;">
-                                    <input type="radio" id="source-upload-text" name="source-upload-option" value="source-upload-text" checked>
-                                    <label for="source-upload-text">Translate text</label><br>
-                                    <input type="radio" id="source-upload-doc" name="source-upload-option" value="source-upload-doc">
-                                    <label for="source-upload-doc">Translate/format files</label><br>
-                                  </div>
-                                  <div id="text-upload" class="translation-container">
-                                    <div class="text-box-container">
-                                      <div class="text-box-header">
-                                        <label for="source-language">Source Language: </label><span id="source-heading-detecting" class="hidden">detecting...</span><select id="source-language" class="hidden"><option value="english">English</option><option value="french">French</option></select>
-                                      </div>
-                                      <div class="translation-textarea-container">
-                                        <textarea id="source-text" name="source-text" placeholder="Enter text to translate" class="inputbox-translation"></textarea>
-                                        <p id="source-text-error" class="error-msg hidden">Text cannot be empty.</p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div id="source-doc-upload" class="hidden">
-                                    <div id="source-file-container">
-                                      <input type="file" id="source-file">
-                                      <p id="source-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
-                                      <p id="source-doc-error" class="error-msg hidden">You must upload a .docx, .pptx or .xlsx file to proceed.</p>
-                                    </div>
-                                    <div class="sidebyside-wrapper">
-                                      <p id="source-language-heading" style="margin-top: 15px;">Source language: <span id="source-doc-detecting" class="hidden">detecting...</span></p>
-                                      <select id="source-language-doc" class="hidden"><option value="english">English</option><option value="french">French</option></select>
-                                    </div>
-                                  </div>
-                                  <div class="sidebyside-wrapper">
-                                    <button id="source-upload-translate-btn">Translate</button>
-                                    <button id="source-upload-provide-btn">Provide translation</button>
-                                    <button id="source-upload-provide-update-btn">Compare with update</button>
-                                  </div>
-                                </fieldset>
-                              </div>
-                            </div>
-                          </div>
-                        </upd-card>
-                        <upd-card id="second-upload" class="hidden">
-                           <div class="card pt-2">
-                              <div class="card-body card-pad pt-2 h-100">
-                                <div class="justify-content-between">
-                                  <fieldset>
-                                    <legend id="second-upload-legend">Provide your translation</legend>
-                                    <div id="second-upload-radio" class="inline-checkbox-container" style="margin-bottom: 15px;">
-                                      <input type="radio" id="second-upload-text" name="second-upload-option" value="second-upload-text">
-                                      <label for="second-upload-text">Provide text</label><br>
-                                      <input type="radio" id="second-upload-doc" name="second-upload-option" value="second-upload-doc">
-                                      <label for="second-upload-doc">Translated document</label><br>
-                                    </div>
-                                    <div id="second-text-upload" class="translation-container">
-                                      <div class="text-box-container">
-                                        <div class="text-box-header">
-                                          <label for="source-language">Source Language:</label><span id="second-language">French</span>
-                                        </div>
-                                        <div class="translation-textarea-container">
-                                          <textarea id="second-text" name="source-text" placeholder="Enter your translation" class="inputbox-translation"></textarea>
-                                          <p id="second-text-error" class="error-msg hidden">Text cannot be empty.</p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <div id="second-doc-upload" class="hidden">
-                                      <div id="second-file-container">
-                                        <input type="file" id="second-file">
-                                        <p id="second-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
-                                        <p id="second-doc-error" class="error-msg hidden">You must upload a .docx, .pptx or .xlsx file to proceed.</p>
-                                        <p id="second-doc-mismatch-msg" class="error-msg hidden">Both documents appear to be in the same language.</p>
-                                      </div>
-                                      <div class="sidebyside-wrapper">
-                                        <p id="second-language-heading" style="margin-top: 15px;">Source language: <span id="source-doc-detecting" class="hidden">detecting...</span></p>
-                                        <select id="second-language-doc" class="hidden"><option value="english">English</option><option value="french">French</option></select>
-                                      </div>
-                                    </div>
-                                    <button id="second-upload-btn">Continue</button>
-                                  </fieldset>
-                                </div>
-                              </div>
-                            </div>
-                          </upd-card>
-                          <upd-card id="translation-preview" class="hidden">
-                            <div class="card pt-2">
-                              <div class="card-body card-pad pt-2 h-100">
-                                <div class="justify-content-between">
-                                  <!-- Add side-by-side results container here -->
-                                  <h2>Review the translation</h2>
-                                  <p class="convert-translation">If you want to put the translation back in a document, <a href="#convert-translation">convert back to document</a> below the translation preview.</p>
-                                  <div class="sidebyside-wrapper">
-                                    <div id="translation-A-container" class="sidebyside-container report-container-A">
-                                      <div id="$translation-A-toolbar" class="toolbar">
-                                        <button class="toolbar-button hidden" id="accept-translation-A-btn" title="Accept A">
-                                          <i class="fa fa-check"></i>
-                                        </button>
-                                        <button class="toolbar-button" id="edit-translation-A-btn" title="Edit A">
-                                          <i class="fa fa-edit"></i>
-                                        </button>
-                                      </div>
-                                      <div class="sidebyside-report">
-                                        <p id="translation-A"></p>
-                                        <p id="translation-model-A" class="small"></p>
-                                      </div>
-                                    </div>
-                                    <div id="translation-B-container" class="sidebyside-container report-container-B hidden">
-                                      <div id="translation-B-toolbar" class="toolbar">
-                                        <button class="toolbar-button hidden" id="accept-translation-B-btn" title="Accept B">
-                                          <i class="fa fa-check"></i>
-                                        </button>
-                                      </div>
-                                      <div class="sidebyside-report">
-                                        <p id="translation-B"></p>
-                                        <p id="translation-model-A" class="small"></p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </upd-card>
-			 	<div id="processing-spinner" class="hidden">
-      				<div class="spinner"></div>
-      				<p>Generating reports...</p>
-    				</div>
+function extractXmlFromFile(file) {
+  return new Promise((resolve, reject) => {
+    handleFileExtractionToXML(file, resolve, reject);
+  });
+}
 
-                        <upd-card id="convert-translation" class="convert-translation hidden">
-      <div class="card pt-2">
-        <div class="card-body card-pad pt-2 h-100">
-          <div class="justify-content-between">
-            <h4 style="margin-top: 20px;">Put back in document format</h4>
-            <p>Once you're satisfied with the translation, submit it to put it back in the document formatting.</p>
-          </div>
-          <div id="translated-doc-download" class="justify-content-between hidden">
-            <h4>Translated document</h4>
-            <p>The reformatted translation document is ready for download!</p>
-            <button id="convert-translation-download-btn" style="margin-top: 20px">Download document</button>
-          </div>
-        </div>
-      </div>
-    </upd-card>
+// Function to format raw translated output into structured HTML.
+function formatTranslatedOutput(rawText) {
+  if (!rawText) return "";
+  rawText = rawText.trim();
+  let paragraphs = rawText.split(/\n\s*\n/);
+  let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+  return formatted;
+}   
 
-                                  <!--requred libraries-->
-                                </main>
-                                <footer _ngcontent-ng-c3392822675="" class="mt-4 ng-tns-c3392822675-0">
-                                  <div _ngcontent-ng-c3392822675="" class="d-flex justify-content-between align-items-end mt-auto pb-4 ng-tns-c3392822675-0">
-                                    <div _ngcontent-ng-c3392822675="" class="align-self-end ng-tns-c3392822675-0"><span _ngcontent-ng-c3392822675="" class="text-muted small ng-tns-c3392822675-0">version: 0.0.1 </span></div>
-                                    <div _ngcontent-ng-c3392822675="" class="col-lg-2 col-md-3 col-sm-4 col-4 ng-tns-c3392822675-0"><img _ngcontent-ng-c3392822675="" class="img-fluid ng-tns-c3392822675-0" alt="Government of Canada" src="img/canada-black-30mm.png"></div>
-                                  </div>
-                                </footer>
-                                <!-- expanded genai nav -->
-                                <div id="genai-nav" class="overlay">
-                                  <!-- Button to close the overlay navigation -->
-                                  <a href="javascript:void(0)" class="closebtn" id="close-report-btn">&times;</a>
-                                  <div class="overlay-content" style="padding-left:300px;">
-                                    <h3>GenAI reports</h3>
-                                  </div>
-                                </div>
-                              </div>
-                            </upd-root>
- <iframe id="pptxProcessorFrame" src="pptx-processor.html" 
-            sandbox="allow-scripts allow-same-origin" style="display:none;"></iframe>
-<!--Libraries-->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="js/mammoth.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@9.2.0/dist/index.iife.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.8/dist/pizzip.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<!-- html-docx-js for converting HTML to DOCX -->
-<script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.min.js
-"></script>
-
-<!-- My JS Files -->
-<script src="js/content-assistant.js"></script>
-<!--<script src="js/page-assistant.js"></script> -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.21.0/docxtemplater.min.js"></script>
-<script src="js/translation-assistant1.js"></script> 
-  <script>
-      // Function to send a PPTX file to the isolated iframe for processing
-      function processPPTX(file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const fileData = e.target.result;
-          const iframe = document.getElementById("pptxProcessorFrame");
-          // Send the file data to the iframe for processing
-          iframe.contentWindow.postMessage({ action: "processPPTX", data: fileData }, "*");
-        };
-        reader.readAsDataURL(file);
-      }
-
-      // Listen for messages back from the iframe
-      window.addEventListener("message", function(event) {
-        if (event.data.action === "pptxProcessed") {
-          // Handle the processed PPTX HTML returned by the iframe.
-          // For example, update the translation preview element with the HTML.
-          document.getElementById("translation-A").innerHTML = event.data.htmlContent;
+// NEW: Updated pptxToHtml function that uses postMessage and processPPTX in the iframe.
+function pptxToHtml(file) {
+  return new Promise((resolve, reject) => {
+    function messageHandler(event) {
+      if (event.data && event.data.action === "pptxProcessed") {
+        window.removeEventListener("message", messageHandler);
+        if (event.data.htmlContent) {
+          resolve(event.data.htmlContent);
+        } else {
+          reject(new Error("No HTML content returned from PPTX processor"));
         }
+      }
+    }
+    window.addEventListener("message", messageHandler);
+    try {
+      processPPTX(file);  // This function sends the file to the isolated iframe.
+    } catch (err) {
+      window.removeEventListener("message", messageHandler);
+      reject(err);
+    }
+  });
+}
+
+// UPDATED: Convert an XLSX file to HTML for preview.
+function xlsxToHtml(file) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // For XLSX, we keep the original flow using extractXmlFromFile and conversionGemini.
+      let englishXml = await extractXmlFromFile(file);
+      if (!englishXml) {
+        throw new Error("No XML extracted from XLSX file.");
+      }
+      let updatedXml = await conversionGemini(englishXml, 'xlsx');
+      let formattedOutput = formatTranslatedOutput(updatedXml);
+      resolve(formattedOutput);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+// UPDATED: Convert HTML back to a PPTX Blob using PptxGenJS.
+function pptxFromHtml(htmlContent) {
+  return new Promise((resolve, reject) => {
+    try {
+      let pptx = new PptxGenJS();
+      let slide = pptx.addSlide();
+      slide.addText(htmlContent, { x: 1, y: 1, w: 8, h: 5 });
+      pptx.write("blob").then(blob => {
+        resolve(blob);
+      }).catch(err => {
+        console.error("PptxGenJS write error:", err);
+        reject(err);
       });
-    </script>
-</body>
-</html>
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+$(document).ready(function() {
+
+  // Handle radio button changes for various upload and compare options.
+  $(document).on("click", "input[type=radio]", function (event) {
+    var target = event.target;
+    if (target.name == "source-upload-option") {
+      $('#source-doc-upload, #text-upload, #second-upload, #translation-preview, #convert-translation').addClass("hidden");
+      if (target.id == "source-upload-doc") {
+        $('#source-doc-upload').removeClass("hidden");
+      } else if (target.id == "source-upload-text") {
+        $('#text-upload').removeClass("hidden");
+      }
+    } else if (target.name == "second-upload-option") {
+      $('#second-doc-upload, #second-text-upload').addClass("hidden");
+      if (target.id == "second-upload-doc") {
+        $('#second-doc-upload').removeClass("hidden");
+      } else if (target.id == "second-upload-text") {
+        $('#second-text-upload').removeClass("hidden");
+      }
+    } else if (target.name == "translations-compare") {
+      if (target.id == "translations-llm-compare") {
+        $('#genai-model-options').removeClass("hidden");
+      } else if (target.id == "translations-instructions-compare" || target.id == "translations-no-compare") {
+        $('#genai-model-options').addClass("hidden");
+      }
+    }
+  });
+
+  // Detect language from entered text as the user types.
+  $('#source-text').on('input', function() {
+    $('#source-heading-detecting').removeClass("hidden");
+    var text = $(this).val().trim();
+    if (text.length === 0) {
+      $('#source-language').addClass("hidden");
+      return;
+    }
+    var detectedLanguage = detectLanguageBasedOnWords(text);
+    if (detectedLanguage == 'unknown') { detectedLanguage = 'english'; }
+    $('#source-heading-detecting').addClass("hidden");
+    $('#source-language').removeClass("hidden").val(detectedLanguage);
+  });
+
+  // Handle file input change for both source and second file uploads.
+  $(document).on("change", "input", async function (event) { 
+    console.log("File input changed.");
+    if (event.target.id == "source-file" || event.target.id == "second-file") {
+      let language = event.target.id === "source-file" ? "source" : "second";
+      $(`#${language}-doc-detecting`).removeClass("hidden");
+      $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
+      $(`#${language}-language-heading`).removeClass("hidden");
+      $(`#${language}-language-doc`).addClass("hidden");
+      var fileList = event.target.files;
+      if (!fileList || fileList.length === 0) return;
+      if (fileList.length > 1) {
+          $(`#${language}-multiple-msg`).removeClass("hidden");
+          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+          return;
+      }
+      var uploadedFile = fileList[0];
+      var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
+      var validExtensions = ["docx", "pptx", "xlsx"];
+      var validMimeTypes = [
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/vnd.ms-powerpoint"
+      ];
+      console.log("Uploaded file:", uploadedFile);
+      console.log("File extension:", fileExtension);
+      console.log("File type:", uploadedFile.type);
+
+      if (!validExtensions.includes(fileExtension) || (uploadedFile.type && !validMimeTypes.includes(uploadedFile.type))) {
+        $(`#${language}-doc-error`).removeClass("hidden");
+        $(`#${language}-doc-detecting`).addClass("hidden");
+        $(`#${language}-language-heading`).removeClass("hidden");
+        return;
+      }
+      try {
+        let textContent = "";
+        // NEW: For PPTX files, use the updated pptxToHtml function.
+        if (fileExtension === "pptx") {
+          let htmlContent = await pptxToHtml(uploadedFile);
+          $("#translation-A").html(htmlContent);
+          // Optionally, if you need plain text:
+          // textContent = $("<div>").html(htmlContent).text();
+        } else {
+          textContent = await handleFileExtraction(uploadedFile);
+        }
+        if (!textContent && fileExtension !== "pptx") { throw new Error("No text extracted."); }
+        var detectedLanguage = detectLanguageBasedOnWords(textContent);
+        if (detectedLanguage === "unknown") { detectedLanguage = "english"; }
+        $(`#${language}-doc-detecting`).addClass("hidden");
+        $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden");
+
+        if (event.target.id === "source-file") {
+          englishFile = uploadedFile;
+          if (fileExtension === 'docx') {
+            let arrayBuffer = await uploadedFile.arrayBuffer();
+            let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+            $("#translation-A").html(mammothResult.value);
+          } else if (fileExtension === 'pptx') {
+            // Already handled above.
+          } else {
+            console.warn("Unsupported file extension: " + fileExtension);
+          }
+        } else {
+          // For the French file upload (second file)
+          frenchFile = uploadedFile;
+        }
+      } catch (err) {
+        console.error('Error processing source file:', err);
+        $(`#${language}-doc-error`).removeClass("hidden");
+        $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+      }
+    }
+  });
+
+  /***********************************************************************
+   * Translate Button Flow:
+   * (The translation flow code remains unchanged.)
+   ***********************************************************************/
+  $("#source-upload-translate-btn").click(async function() {
+    var selectedOption = $('input[name="source-upload-option"]:checked').val();
+    if (selectedOption == "source-upload-doc") {
+      var file = $('#source-file')[0].files[0];
+      if (!file) {
+        $(`#source-doc-error`).removeClass("hidden");
+        return;
+      }
+      var fileExtension = file.name.split('.').pop().toLowerCase();
+      
+      if (fileExtension === 'docx') {
+        try {
+          let arrayBuffer = await file.arrayBuffer();
+          let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+          let originalHtml = mammothResult.value;
+          let tempDiv = document.createElement("div");
+          tempDiv.innerHTML = originalHtml;
+          function getTextNodes(root) {
+            let walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+            let nodes = [];
+            let currentNode;
+            while (currentNode = walker.nextNode()) { nodes.push(currentNode); }
+            return nodes;
+          }
+          let textNodes = getTextNodes(tempDiv);
+          const delimiter = "<<<DELIM>>>";
+          let joinedText = textNodes.map(node => node.nodeValue).join(delimiter);
+          let selectedLanguage = $('#source-language').val();
+          let translationInstructions = "custom-instructions/translation/english2french1.txt";
+          if (selectedLanguage == "French") { 
+            translationInstructions = "custom-instructions/translation/french2english.txt"; 
+          }
+          let models = [
+            "mistralai/mistral-nemo:free",
+            "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+            "cognitivecomputations/dolphin3.0-mistral-24b:free",
+            "mistralai/mistral-small-24b-instruct-2501:free",
+            "mistralai/mistral-7b-instruct:free"
+          ];
+          let systemPrompt = await $.get(translationInstructions);
+          let requestJson = [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: joinedText }
+          ];
+          let translatedJoinedText = null;
+          for (let model of models) {
+            let ORjson = await getORData(model, requestJson);
+            if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
+              translatedJoinedText = ORjson.choices[0].message.content;
+              break;
+            }
+          }
+          if (!translatedJoinedText) {
+            alert("Translation failed. No valid response from any model.");
+            return;
+          }
+          function cleanTranslatedText(text, delimiter) {
+            let first = text.indexOf(delimiter);
+            if (first !== -1) { text = text.substring(first); }
+            let last = text.lastIndexOf(delimiter);
+            if (last !== -1 && last + delimiter.length < text.length) { text = text.substring(0, last + delimiter.length); }
+            return text;
+          }
+          translatedJoinedText = cleanTranslatedText(translatedJoinedText, delimiter);
+          let translatedSegments = translatedJoinedText.split(delimiter);
+          if (translatedSegments.length !== textNodes.length) {
+            console.warn("Mismatch in number of segments. Possibly some delimiters were removed.");
+            function normalizeHtmlContent(htmlContent) {
+              let $container = $("<div>").html(htmlContent);
+              $container.contents().filter(function() { return this.nodeType === 3 && !/\S/.test(this.nodeValue); }).remove();
+              return $container.html().trim();
+            }
+            let finalHtml = normalizeHtmlContent(translatedJoinedText);
+            $('#translation-A').html(finalHtml);
+          } else {
+            textNodes.forEach((node, index) => { node.nodeValue = translatedSegments[index] || ""; });
+            function normalizeHtmlContent(htmlContent) {
+              let $container = $("<div>").html(htmlContent);
+              $container.contents().filter(function() { return this.nodeType === 3 && !/\S/.test(this.nodeValue); }).remove();
+              return $container.html().trim();
+            }
+            let normalizedHtml = normalizeHtmlContent(tempDiv.innerHTML);
+            $('#translation-A').html(normalizedHtml);
+          }
+          $("#translation-preview").removeClass("hidden");
+        } catch (error) {
+          console.error("Error during DOCX translation:", error);
+          alert("Error during file translation. Please check the console for details.");
+        }
+      } else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
+        try {
+          let formattedOutput = "";
+          if (fileExtension === 'pptx') {
+            // NEW: Use the updated pptxToHtml function.
+            formattedOutput = await pptxToHtml(file);
+          } else {
+            formattedOutput = await xlsxToHtml(file);
+          }
+          $('#translation-A').html(formattedOutput);
+          $("#translation-preview").removeClass("hidden");
+        } catch (error) {
+          console.error("Error during file translation:", error);
+          alert("Error during file translation. Please check the console for details.");
+        }
+      } else {
+        alert("Unsupported file type for translation.");
+      }
+    } else if (selectedOption == "source-upload-text") {
+      var sourceText = $("#source-text").text();
+      var selectedLanguage = $('#source-language').val();
+      let translationInstructions = "custom-instructions/translation/english2french.txt";
+      if (selectedLanguage == "French") { 
+        translationInstructions = "custom-instructions/translation/french2english.txt"; 
+      }
+      $("#translation-preview").removeClass("hidden");
+      let models = [
+          "mistralai/mistral-nemo:free",
+          "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+          "cognitivecomputations/dolphin3.0-mistral-24b:free",
+          "mistralai/mistral-small-24b-instruct-2501:free",
+          "mistralai/mistral-7b-instruct:free"
+      ];
+      let translationResult = await translateText(sourceText, models, translationInstructions, selectedLanguage);
+      let formattedOutput = formatTranslatedOutput(translationResult);
+      $('#translation-A').html(formattedOutput);
+      let selectedCompare = $('input[name="translations-instructions-compare"]:checked').val();
+      let selectedModel = $('input[name="translate-model-b-option"]:checked').val();
+      if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
+        let compareResult = await translateText(sourceText, selectedModel, translationInstructions, selectedLanguage);
+        if (compareResult != "") {
+          $('#translation-B').html(formatTranslatedOutput(compareResult));
+          $('#translation-model-B').html(selectedModel);
+          $('#accept-translation-A-btn, #accept-translation-B-btn').removeClass("hidden");
+          if ($('#translation-B').hasClass("hidden")) {
+            toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
+          }
+        }
+      } else if (selectedCompare == "translations-instructions-compare") {
+        let compareResult = await translateText(sourceText, models, translationInstructions.replace(".txt", "-B.txt"), selectedLanguage);
+        if (compareResult != "") {
+          $('#translation-B').html(formatTranslatedOutput(compareResult));
+          $('#translation-model-B').html("Instructions Compare");
+          $('#accept-translation-A-btn, #accept-translation-B-btn').removeClass("hidden");
+          if ($('#translation-B').hasClass("hidden")) {
+            toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
+          }
+        }
+      }
+    }
+  }); 
+  
+  $("#source-upload-provide-btn").click(function() {
+    if (!englishFile) {
+      alert("Please upload the English document first.");
+      return;
+    }
+    $("#second-upload").removeClass("hidden");
+    console.log($("#translation-A").html());
+  });
+
+  function removeCodeFences(str) {
+    str = str.replace(/^```.*\n/, '');
+    str = str.replace(/\n\s*```+\s*$/, '');
+    return str.trim();
+  }
+  
+  $("a[href='#convert-translation']").click(function(e) {
+    e.preventDefault();
+    if ($("#translation-preview").is(":visible")) { 
+       $("#convert-translation").removeClass("hidden");  
+       $("#translated-doc-download").removeClass("hidden");
+       $('html, body').animate({ scrollTop: $("#convert-translation").offset().top }, 500);
+    } else {
+        alert("Please complete the translation before converting back to document.");
+    }
+  });
+
+  // Second upload: manual translation.
+  $("#second-upload-btn").click(async function() {  
+    $('#processing-spinner').removeClass("hidden"); 
+    console.log("Spinner should now be visible.");
+    var selectedOption = $('input[name="second-upload-option"]:checked').val();  
+    let frenchText = "";  
+    
+    if (selectedOption == "second-upload-doc" && !frenchFile) {
+      alert("Please upload your translated French document.");
+      return;
+    }  
+    
+    if (selectedOption == "second-upload-doc") {
+      var file = $('#second-file')[0].files[0]; 
+      if (!file) {
+        alert("Please select your translated file.");
+        return;
+      }  
+      var fileExtension = file.name.split('.').pop().toLowerCase();  
+
+      if (fileExtension === 'pptx') {
+        try {
+          // NEW: Use updated pptxToHtml function for the French PPTX.
+          frenchText = await pptxToHtml(file);
+        } catch (err) {
+          console.error("Error extracting PPTX HTML:", err);
+          alert("Error extracting PPTX file. Please check the console for details.");
+          $('#processing-spinner').addClass("hidden");
+          return;
+        }
+      } else {
+        try {
+          let extractedText = await handleFileExtractionToHtml(file);
+          frenchText = extractedText || "";
+        } catch (err) {
+          console.error("Error processing the second (FR) file:", err);
+          alert("Error reading your translated file. Check console for details."); 
+          $('#processing-spinner').addClass("hidden");
+          return;
+        }
+      }
+    } else if (selectedOption == "second-upload-text") {
+      frenchText = $("#second-text").val();
+    } 
+
+    console.log("French text:", frenchText);
+    let englishHtml = $("#translation-A").html();
+    if (!englishHtml || englishHtml.trim().length === 0) {
+      alert("No formatted English document found. Please complete the first step."); 
+      $('#converting-spinner').addClass("hidden");
+      return;
+    }
+    if (!frenchText || frenchText.trim().length === 0) {
+      alert("No French document/text found. Please upload or enter your translation."); 
+      $('#converting-spinner').addClass("hidden");
+      return;
+    }
+    
+    let systemPrompt = "";
+    try {
+      systemPrompt = await $.get("custom-instructions/translation/english2french1.txt");
+    } catch (error) {
+      console.error("Error loading system prompt:", error);
+      alert("Could not load translation instructions. Please check your files."); 
+      $('#converting-spinner').addClass("hidden");
+      return;
+    }
+    
+    let combinedPrompt = systemPrompt + "\n\n" +
+      "English Document (HTML):\n" + englishHtml + "\n\n" +
+      "French Text:\n" + frenchText + "\n\n" +
+      "Please return the French document in HTML format that exactly follows the structure of the English document."; 
+
+    let requestJson = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: combinedPrompt }
+    ]; 
+
+    let models = [
+      "google/gemini-2.0-flash-lite-preview-02-05:free",
+      "google/gemini-2.0-pro-exp-02-05:free",
+      "google/gemini-2.0-flash-thinking-exp:free",
+      "meta-llama/llama-3.3-70b-instruct:free",
+      "nvidia/llama-3.1-nemotron-70b-instruct:free",
+      "google/gemini-2.0-flash-exp:free",
+      "google/gemini-exp-1206:free",
+      "google/gemini-flash-1.5-8b-exp",
+      "deepseek/deepseek-r1:free"
+    ];
+    let finalFrenchHtml = "";
+    for (let model of models) {
+      let ORjson = await getORData(model, requestJson);
+      if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
+        finalFrenchHtml = ORjson.choices[0].message.content;
+        break;
+      }
+    }
+    try { 
+      if (!finalFrenchHtml) {
+        alert("Translation alignment failed. No valid response from any model.");
+        return;
+      } 
+      finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+      console.log("Final French HTML (cleaned):", finalFrenchHtml);
+      $("#translation-A").html(finalFrenchHtml); 
+      $('#converting-spinner').addClass("hidden");
+      $("#translation-preview").removeClass("hidden").show();  
+    } catch (err) {
+      console.error("Error during second-upload processing:", err);
+    } finally {
+      $('#processing-spinner').addClass("hidden");  
+    }
+  });
+
+  $("#accept-translation-A-btn").click(function() { acceptTranslation("a"); });
+  $("#accept-translation-B-btn").click(function() { acceptTranslation("b"); });
+  $("#edit-translation-A-btn").click(function() {
+    var $translation = $('#translation-A');
+    var isEditable = $translation.attr('contenteditable') === 'true';
+    if (isEditable) {
+      $translation.attr('contenteditable', 'false');
+      $(this).attr('title', 'Edit Code');
+      $(this).find('i').removeClass('fa-save').addClass('fa-edit');
+    } else {
+      $translation.attr('contenteditable', 'true');
+      $(this).attr('title', 'Save Code');
+      $(this).find('i').removeClass('fa-edit').addClass('fa-save');
+    }
+  });
+ 
+  $("#convert-translation-download-btn").click(async function() {
+    try {
+      $('#converting-spinner').removeClass("hidden");
+      let finalFrenchHtml = $("#translation-A").html();
+      if (!finalFrenchHtml || finalFrenchHtml.trim().length === 0) {
+        alert("No formatted French document available.");
+        $('#converting-spinner').addClass("hidden");
+        return;
+      }
+      let fileExtension = englishFile 
+        ? englishFile.name.split('.').pop().toLowerCase() 
+        : 'docx';
+      let mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      if (fileExtension === 'pptx') {
+        mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+      } else if (fileExtension === 'xlsx') {
+        mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      }
+      let generatedBlob;
+      if (fileExtension === 'docx') {
+        let fullHtml = `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="UTF-8">
+              <style>
+                body { font-family: Calibri, "Calibri (Body)", sans-serif; }
+              </style>
+            </head>
+            <body>
+              ${finalFrenchHtml}
+            </body>
+          </html>
+        `;
+        generatedBlob = htmlDocx.asBlob(fullHtml);
+      } 
+      else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
+        let englishXml = await handleFileExtraction(englishFile);
+        let updatedXml = await conversionGemini(englishXml, fileExtension);
+        let zip = new JSZip();
+        if (fileExtension === 'pptx') {
+          zip.file("ppt/slides/slide1.xml", updatedXml);
+        } else {
+          zip.file("xl/worksheets/sheet1.xml", updatedXml);
+        }
+        generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+      }
+      if (!generatedBlob) {
+        alert("File generation failed.");
+        $('#converting-spinner').addClass("hidden");
+        return;
+      }
+      let englishFileName = englishFile 
+        ? englishFile.name.split('.').slice(0, -1).join('.') 
+        : "translated-file";
+      let modifiedFileName = `${englishFileName}-FR.${fileExtension}`;
+      let downloadLink = document.createElement('a');
+      downloadLink.href = URL.createObjectURL(generatedBlob);
+      downloadLink.download = modifiedFileName;
+      downloadLink.click();
+      URL.revokeObjectURL(downloadLink.href);
+    } catch (error) {
+      console.error("An error occurred:", error);
+    } finally {
+      $('#converting-spinner').addClass("hidden");
+    }
+  });
+});
+
+// Function to generate a file blob from the zip and XML content.
+function generateFile(zip, xmlContent, mimeType, renderFunction) {
+  try {
+    zip.file("file.xml", xmlContent);
+    if (typeof renderFunction === 'function') { renderFunction(); }
+  } catch (error) {
+    console.error("Error during file generation:", error);
+  }
+  return zip.generateAsync({ type: "blob", mimeType: mimeType });
+}
+
+// Create XML content for the final file based on file extension.
+function createXmlContent(fileExtension, updatedXml) {
+  let xmlContent = '';
+  if (fileExtension === 'docx') {
+    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+      <w:body>
+        ${updatedXml}
+      </w:body>
+      </w:document>`;
+  } else if (fileExtension === 'pptx') {
+    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+        <p:sldMasterIdLst>${updatedXml}</p:sldMasterIdLst>
+      </p:presentation>`;
+  } else if (fileExtension === 'xlsx') {
+    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+        <sheetData>${updatedXml}</sheetData>
+      </workbook>`;
+  }
+  return xmlContent;
+}
+
+// (The functions fallbackAlignLines, conversionDocxTemplater, conversionGemini, translateText, acceptTranslation, and detectLanguageBasedOnWords remain unchanged.)
+
+function fallbackAlignLines(originalLines, adjustedText) {
+  let words = adjustedText.split(/\s+/).filter(w => w.trim() !== "");
+  let targetLineCount = originalLines.length;
+  let wordsPerLine = Math.ceil(words.length / targetLineCount);
+  let newLines = [];
+  for (let i = 0; i < targetLineCount; i++) {
+    let lineWords = words.slice(i * wordsPerLine, (i + 1) * wordsPerLine);
+    newLines.push(lineWords.join(" "));
+  }
+  return newLines;
+}
+
+async function conversionDocxTemplater(englishXml) {
+  const textNodes = [];
+  const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
+  let match;
+  while ((match = regex.exec(englishXml)) !== null) {
+    textNodes.push(match[1]);
+  }
+  console.log("Getting French...");
+
+  // Divide the text nodes into chunks (milestones).
+  const chunkSize = 10;
+  const textChunks = [];
+  for (let i = 0; i < textNodes.length; i += chunkSize) {
+    textChunks.push(textNodes.slice(i, i + chunkSize));
+  }
+  
+  const systemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml.txt") };
+  const retrySystemGeneral = { role: "system", content: await $.get("custom-instructions/system/match-syntax-for-xml-retry.txt") };
+  const translatedText = $("#translation-A").text().trim();
+  
+  let chunkCounter = 1;
+  let adjustedFrenchText = "";
+  
+  for (const chunk of textChunks) {
+    const englishReference = chunk.join("\n");
+    const requestJson = [
+      systemGeneral,
+      { role: "user", content: "English Reference (part " + chunkCounter + " of " + textChunks.length + "):" + englishReference },
+      { role: "user", content: "Translated French (for the full document): " + translatedText }
+    ];
+    
+    let ORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", requestJson);
+    let adjustedChunkText;
+    if (!ORjson || !ORjson.choices || !ORjson.choices[0] || !ORjson.choices[0].message) {
+      console.error("No response from GenAI for chunk", chunkCounter, "using fallback.");
+      adjustedChunkText = translatedText;
+    } else {
+      adjustedChunkText = ORjson.choices[0].message.content;
+    }
+    
+    let adjustedLines = adjustedChunkText.split(/[\r\n]+/).filter(line => line.trim() !== "");
+    let retryCount = 0;
+    
+    while (chunk.length !== adjustedLines.length && retryCount < 3) {
+      console.log("Mismatch detected for chunk", chunkCounter, "attempting adjustment.");
+      const retryRequestJson = [
+        retrySystemGeneral,
+        { role: "user", content: "English Reference (" + chunk.length + " lines): " + englishReference },
+        { role: "user", content: "Translated French (" + translatedText.split(/[\r\n]+/).filter(line => line.trim() !== "").length + "): " + adjustedChunkText }
+      ];
+      const retryORjson = await getORData("google/gemini-2.0-flash-lite-preview-02-05:free", retryRequestJson);
+      if (!retryORjson || !retryORjson.choices || !retryORjson.choices[0] || !retryORjson.choices[0].message) {
+        console.error("Error adjusting the French text for chunk", chunkCounter, "using fallback.");
+        adjustedLines = fallbackAlignLines(chunk, translatedText);
+        break;
+      }
+      adjustedChunkText = retryORjson.choices[0].message.content;
+      adjustedLines = adjustedChunkText.split(/[\r\n]+/).filter(line => line.trim() !== "");
+      retryCount++;
+    }
+    
+    adjustedFrenchText += adjustedLines.join("\n") + "\n";
+    chunkCounter++;
+  }
+  
+  const translatedLines = adjustedFrenchText.split(/[\r\n]+/).filter(line => line.trim() !== "");
+  if (textNodes.length !== translatedLines.length) {
+    console.error("Mismatch between full documents after alignment. Using fallback for entire document.");
+    adjustedFrenchText = fallbackAlignLines(textNodes, translatedText).join("\n");
+  }
+  
+  let updatedXml = englishXml;
+  textNodes.forEach((node, index) => {
+    const escapedNode = node.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regexNode = new RegExp(`<w:t[^>]*>${escapedNode}<\/w:t>`);
+    updatedXml = updatedXml.replace(regexNode, `<w:t>${translatedLines[index] || ""}</w:t>`);
+  });
+  return updatedXml;
+}
+
+async function conversionGemini(englishXml, fileType) {
+  let groups = [];
+  let formattedChunks = [];
+  let paragraphs = [];
+  const systemGeneral = { role: "system", content: await $.get("custom-instructions/system/xml-docx-formatting.txt") };
+  if (fileType === 'docx') {
+    paragraphs = englishXml.match(/<w:p[\s\S]*?<\/w:p>/g) || [];
+    console.log(`Total paragraphs found: ${paragraphs.length}`);
+  } else if (fileType === 'pptx') {
+    paragraphs = englishXml.match(/<p:sld[\s\S]*?<\/p:sld>/g) || [];
+    console.log(`Total slides found: ${paragraphs.length}`);
+  } else if (fileType === 'xlsx') {
+    paragraphs = englishXml.match(/<sheetData[\s\S]*?<\/sheetData>/g) || [];
+    console.log(`Total rows found: ${paragraphs.length}`);
+  }
+  const maxRequests = 30;
+  let groupSize = Math.ceil(paragraphs.length / maxRequests);
+  console.log(`Grouping paragraphs into batches of ${groupSize} (max ${maxRequests} requests)`);
+  for (let i = 0; i < paragraphs.length; i += groupSize) {
+    groups.push(paragraphs.slice(i, i + groupSize).join("\n"));
+  }
+  console.log(`Total groups to process: ${groups.length}`);
+  let model = [
+    "google/gemini-2.0-flash-lite-preview-02-05:free",
+    "google/gemini-2.0-pro-exp-02-05:free",
+    "google/gemini-2.0-flash-thinking-exp:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "nvidia/llama-3.1-nemotron-70b-instruct:free",
+    "google/gemini-2.0-flash-exp:free",
+    "google/gemini-exp-1206:free",
+    "google/gemini-flash-1.5-8b-exp",
+    "deepseek/deepseek-r1:free"
+  ];
+  let modelCount = 0;
+  for (let i = 0; i < groups.length;) {
+    console.log(`Processing group ${i + 1}/${groups.length}...`);
+    const escapedContent = groups[i].replace(/[&<>]/g, match => ({
+      '&': "&amp;",
+      '<': "&lt;",
+      '>': "&gt;"
+    }[match]));
+    const requestJson = [ systemGeneral, { role: "user", content: "English DOCX group: " + escapedContent } ];
+    let ORjson = await getORData(model[modelCount], requestJson);
+    if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
+      console.error(`API request failed for group ${i + 1} with model ${model[modelCount]}:`, ORjson);
+      modelCount++;
+      if (modelCount >= model.length) {
+        console.error(`All models exhausted for group ${i + 1}. Skipping this group.`);
+        i++;
+        modelCount = 0;
+        continue;
+      }
+      console.log(`Retrying with model ${model[modelCount]}...`);
+      continue;
+    }
+    let aiResponse = ORjson.choices[0]?.message?.content || "";
+    console.log(`Group ${i + 1} Response:\n`, aiResponse);
+    let formattedText = formatAIResponse(aiResponse);
+    formattedText = ensureCompleteXML(formattedText);
+    if (!formattedText) {
+      console.error(`Skipping group ${i + 1} due to formatting issues.`);
+      continue;
+    }
+    formattedChunks.push(formattedText);
+    i++;
+  }
+  let updatedXml;
+  if (fileType === 'docx') {
+    updatedXml = formattedChunks.map(chunk => extractBodyContent(chunk)).join("\n");
+  } else if (fileType === 'pptx') {
+    updatedXml = formattedChunks.map(chunk => extractSlideContent(chunk)).join("\n");
+  } else if (fileType === 'xlsx') {
+    updatedXml = formattedChunks.map(chunk => extractRowContent(chunk)).join("\n");
+  }
+  return updatedXml;
+}
+
+function extractBodyContent(chunk) {
+  return chunk.match(/<w:t[\s\S]*?<\/w:t>/g) || [];
+}
+function extractSlideContent(chunk) {
+  return chunk.match(/<p:sp[\s\S]*?<\/p:sp>/g) || [];
+}
+function extractRowContent(chunk) {
+  return chunk.match(/<row[\s\S]*?<\/row>/g) || [];
+}
+
+async function translateText(source, models, instructions, sourceLanguage) {
+  const systemGeneral = { role: "system", content: await $.get(instructions) };
+  var glossary;
+  var systemGlossary;
+  if ($('#translations-glossary').prop('checked')) {
+    try {
+      glossary = await $.get("custom-instructions/translation/en-fr-glossary.json");
+    } catch (error) {
+      console.error("Unexpected error in glossary get:", error);
+      return error;
+    }
+    glossary = glossary.filter(entry => {
+      return sourceLanguage === "French"
+                ? source.toLowerCase().includes(entry.FR.toLowerCase())
+                : source.toLowerCase().includes(entry.EN.toLowerCase());
+    });
+    systemGlossary = glossary.length > 0 ? { role: "system", content: glossary } : null;
+  } else {
+    systemGlossary = null;
+  }
+  let requestJson = [systemGeneral];
+  if (systemGlossary) { requestJson.push(systemGlossary); }
+  requestJson.push({ role: "user", content: source });
+  for (let model of models) {
+    try {
+      console.log(`Attempting translation with model: ${model}`);
+      let ORjson = await getORData(model, requestJson);
+      if (ORjson && ORjson.choices && ORjson.choices.length > 0) {
+        return ORjson.choices[0].message.content;
+      } else {
+        console.error(`Model ${model} returned an unexpected response:`, ORjson);
+      }
+    } catch (error) {
+      console.error(`Error calling getORData with model ${model}:`, error);
+    }
+  }
+  console.error("All models failed to translate.");
+  return "error";
+}
+
+function acceptTranslation(option) {
+  if (option == "b") { $("#translation-A").text($("#translation-B").text()); }
+  $("#edit-translation-A-btn").removeClass("hidden");
+  $("#accept-translation-A-btn, #accept-translation-B-btn").addClass("hidden");
+  $(".convert-translation").removeClass("hidden");
+  toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
+}
+
+function detectLanguageBasedOnWords(text) {
+  const englishWords = ['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'on', 'with'];
+  const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
+  text = text.toLowerCase();
+  function countMatches(wordList) {
+    return wordList.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0);
+  }
+  const englishMatches = countMatches(englishWords);
+  const frenchMatches = countMatches(frenchWords);
+  if (englishMatches > frenchMatches) { return 'english'; }
+  else if (frenchMatches > englishMatches) { return 'french'; }
+  else { return 'unknown'; }
+}
