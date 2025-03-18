@@ -183,7 +183,8 @@ $(document).ready(function() {
     console.error('Error processing source file:', err);
     $(`#${language}-doc-error`).removeClass("hidden");
     $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
-  }
+  } 
+    }
 });
 
   /***********************************************************************
