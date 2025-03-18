@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>PPTX Processor (Isolated)</title>
+    <!-- UPDATE: Load the older JSZip version required by pptx2html -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+    <!-- UPDATE: Load the PPTX-to-HTML conversion library -->
+    <script src="https://cdn.jsdelivr.net/npm/pptx2html@0.3.4/dist/pptx2html.min.js"></script>
+    <!-- UPDATE: Load PptxGenJS if needed for PPTX generation (if you plan to use it in this isolated context) -->
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs/dist/pptxgen.bundle.js"></script>
+    <script>
+      // Listen for messages from the parent window
+      window.addEventListener("message", async function(event) {
+        if (event.data && event.data.action === "processPPTX") {
+          try {
+            // The parent sends the file as a Data URL.
+            const dataUrl = event.data.data;
+            // Convert the Data URL to a Blob so pptx2html can process it.
+            const blob = dataURLtoBlob(dataUrl);
+            // UPDATE: Use pptx2html to convert the PPTX Blob to HTML.
+            // This function is assumed to return a Promise that resolves to HTML content.
+            let htmlContent = await pptx2html(blob);
+            // Send the processed HTML back to the parent window.
+            window.parent.postMessage({
+              action: "pptxProcessed",
+              htmlContent: htmlContent
+            }, "*");
+          } catch (err) {
+            console.error("Error processing PPTX:", err);
+            // In case of error, send an empty result or an error flag.
+            window.parent.postMessage({
+              action: "pptxProcessed",
+              htmlContent: ""
+            }, "*");
+          }
+        }
+      });
+
+      // Utility: Convert Data URL to Blob.
+      function dataURLtoBlob(dataurl) {
+        var arr = dataurl.split(','), 
+            mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]), 
+            n = bstr.length, 
+            u8arr = new Uint8Array(n);
+        while(n--){
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], {type: mime});
+      }
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
