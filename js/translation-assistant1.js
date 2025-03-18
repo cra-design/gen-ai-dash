@@ -47,16 +47,7 @@ async function extractPptxStructure(arrayBuffer) {
     }
     return slides;
 }
- //using library to detect language
-  function detectLanguageUsingFranc(text) {
-    const langCode = franc(text);
-    if (langCode === 'fra') {
-      return 'french';
-    } else if (langCode === 'eng') {
-      return 'english';
-    }
-    return 'unknown';
-  }
+
 
 $(document).ready(function() {
 
@@ -148,9 +139,7 @@ $(document).ready(function() {
         }
           
         let detectedLanguage = detectLanguageBasedOnWords(textContent);
-          if (detectedLanguage === 'unknown') {
-          detectedLanguage = 'english'; // Or handle it differently based on your logic.
-          }
+          if (detectedLanguage !== "french") { detectedLanguage = "english"; }
           $(`#${language}-doc-detecting`).addClass("hidden");
           $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
 
@@ -884,27 +873,18 @@ function acceptTranslation(option) {
   $("#accept-translation-A-btn, #accept-translation-B-btn").addClass("hidden");
   $(".convert-translation").removeClass("hidden");
   toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
-} 
+}
 
-function detectLanguageBasedOnWords(text) { 
-  const francFn = window.franc || window.francMin; 
-    if (typeof francFn !== 'function') {
-    console.warn("franc library not available, falling back to keyword detection.");
-    // Fallback: simple keyword-based detection.
-    const englishWords = ['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'on', 'with'];
-    const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
-    text = text.toLowerCase();
-    function countMatches(wordList) {
-      return wordList.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0);
-    }
-    return countMatches(englishWords) > countMatches(frenchWords) ? 'english' : 'french';
+function detectLanguageBasedOnWords(text) {
+  const englishWords = ['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'on', 'with'];
+  const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
+  text = text.toLowerCase();
+  function countMatches(wordList) {
+    return wordList.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0);
   }
-  const langCode = franc(text);
-  if (langCode === 'fra') {
-    return 'french';
-  } else if (langCode === 'eng') {
-    return 'english';
-  }
-  // Default fallback.
-  return 'english';
+  const englishMatches = countMatches(englishWords);
+  const frenchMatches = countMatches(frenchWords);
+  if (englishMatches > frenchMatches) { return 'english'; }
+  else if (frenchMatches > englishMatches) { return 'french'; }
+  else { return 'unknown'; }
 }
