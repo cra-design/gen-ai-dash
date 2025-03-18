@@ -14,7 +14,40 @@ function formatTranslatedOutput(rawText) {
   let paragraphs = rawText.split(/\n\s*\n/);
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
+} 
+//build an array of slode objects to extract source file and preserve its structure
+async function extractPptxStructure(arrayBuffer) {
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    const slideRegex = /^ppt\/slides\/slide\d+\.xml$/i;
+    let slides = [];
+
+    for (const fileName of Object.keys(zip.files)) {
+        if (slideRegex.test(fileName)) {
+            const slideXml = await zip.file(fileName).async("string");
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(slideXml, "application/xml");
+
+            // Create a slide object
+            let slideObj = {
+                slideName: fileName,
+                textItems: [],
+                // Additional properties could be added here (layout, position, etc.)
+            };
+
+            // Example: Extract text nodes and store them as objects.
+            const textNodes = xmlDoc.getElementsByTagName("a:t");
+            for (let i = 0; i < textNodes.length; i++) {
+                slideObj.textItems.push({
+                    text: textNodes[i].textContent,
+                    // You could add position, style, etc. if you parse additional XML
+                });
+            }
+            slides.push(slideObj);
+        }
+    }
+    return slides;
 }
+
 
 $(document).ready(function() {
 
@@ -88,9 +121,20 @@ $(document).ready(function() {
           return;
       }
       try {
-          let textContent = await handleFileExtraction(uploadedFile);
-          if (!textContent) { throw new Error("No text extracted."); }
-          var detectedLanguage = detectLanguageBasedOnWords(textContent);
+          let textContent; 
+          const fileExtension = uploadedFile.name.split('.').pop().toLowerCase(); 
+          if (fileExtension === "docx" || fileExtension === "xlsx") {
+              textContent = await handleFileExtraction(uploadedFile); 
+        } else if (fileExtension === "pptx") {
+              textContent = await extractAdvancedPptxStructure(uploadedFile);
+        } else {
+              throw new Error("Unsupported file type");
+        }
+          if (!textContent) { 
+              throw new Error("No text extracted."); 
+        }
+          
+        let detectedLanguage = detectLanguageBasedOnWords(textContent);
           if (detectedLanguage !== "french") { detectedLanguage = "english"; }
           $(`#${language}-doc-detecting`).addClass("hidden");
           $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
