@@ -126,7 +126,7 @@ $(document).ready(function() {
       }
       var uploadedFile = fileList[0];
       var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
-      var validExtensions = ["docx", "pptx", "xlsx", "ppt"];
+      var validExtensions = ["docx", "pptx", "xlsx"];
       var validMimeTypes = [
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -137,7 +137,8 @@ $(document).ready(function() {
       console.log("Uploaded file type:", uploadedFile.type);
 
 
-      if (!validExtensions.includes(fileExtension) && !validMimeTypes.includes(uploadedFile.type)) {
+      if (!validExtensions.includes(fileExtension) || (uploadedFile.type &&       
+      !validMimeTypes.includes(uploadedFile.type))) {
       $(`#${language}-doc-error`).removeClass("hidden");
       $(`#${language}-doc-detecting`).addClass("hidden");
       $(`#${language}-language-heading`).removeClass("hidden");
