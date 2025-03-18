@@ -150,8 +150,7 @@ $(document).ready(function() {
           let textContent = "";
       // Use a different extraction for PPTX files.
       if (fileExtension === "pptx") {
-        // Convert the PPTX to HTML using your pptxToHtml library function.
-        let htmlContent = await pptxToHtml(uploadedFile);
+          processPPTX(uploadedFile);
         // Extract plain text from the resulting HTML.
         textContent = $("<div>").html(htmlContent).text();
       } else {
@@ -173,9 +172,9 @@ $(document).ready(function() {
         $("#translation-A").html(mammothResult.value);
       } else if (fileExtension === 'pptx') {
         // Use pptxToHtml to extract HTML from the PPTX file.
-        let htmlContent = await pptxToHtml(uploadedFile);
-        $("#translation-A").html(htmlContent);
-      } else {
+        processPPTX(uploadedFile)
+      } else { 
+        let textContent = await handleFileExtraction(uploadedFile);
         console.warn("Unsupported file extension: " + fileExtension);
       }
     } else {
