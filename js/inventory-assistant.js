@@ -26,6 +26,5 @@ $(document).ready(function() {
     
     $('#url-input').on('input', function() {
         let lines = readLines(); // Call function when input changes
-        console.log("Logged lines:", lines); // Log lines to console separately
     });
 });
