@@ -1132,7 +1132,7 @@ align-items:flex-end
                         <legend>Enter the URLs in the project</legend>
                         <p class="small">Canada.ca is not yet supported. Use a github page!<br>
                           For example:<br>
-                          https://cra-design.github.io/gst-hst-business/en/topics/gst-hst-businesses.html <br>
+                          https://cra-design.github.io/gst-hst-business/en/topics/gst-hst-businesses.html<br>
                         </p>
                         <div style="margin-top:10px; border:black solid 1px; min-height:75px;" > <span id="url-input" class="input" role="textbox" contenteditable></span> </div>
                         <!--legend style="margin-top:20px;">(Not yet implemented) Enter the equivalent page on Canada.ca</legend>
@@ -1176,7 +1176,6 @@ align-items:flex-end
                                         </h3> --> 
                         <!-- This should theoretically allow for a page load, but Canada.ca has x-frame options set to deny, so it's being blocked - works for github for the moment though... Maybe there's a way on the AEM side to configure to specifically allow this tool to iframe pages? --> 
                         <!-- <div style="border:black solid 1px;" --> 
-                        
                         <!-- add some kind of tabbed interface with preview + code tabs? -->
                         
                         <iframe id="url-frame" src="" name="targetframe" allowTransparency="true" width="100%" height="800px" style="border: 1px solid #ddd;"></iframe>
@@ -1187,14 +1186,14 @@ align-items:flex-end
                       </div>
                       <div id="code-preview" class="tab-content hidden"> 
                         <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                          Code preview
-                                        </h3> -->
+                            Code preview
+                        </h3> -->
                         <pre id="fullHtml" class="language-markup" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap;"><code></code></pre>
                       </div>
                       <div id="field-preview" class="tab-content hidden"> 
                         <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
-                                           Field preview
-                                         </h3> -->
+                            Field preview
+                        </h3> -->
                         <div id="fields"> <!--can put something around the parsed fields of the content - heading structure, metadata, etc-->
                           <table border="1">
                             <thead>
@@ -2155,6 +2154,7 @@ align-items:flex-end
             $("#genai-task-options").removeClass("hidden");
           }
       </script> 
+<script src="js/content-assistant.js"></script> <!-- Link to your JavaScript file -->
 <script src="js/inventory-assistant.js"></script> <!-- Link to your JavaScript file -->
 </body>
 </html>
