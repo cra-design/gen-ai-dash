@@ -15,38 +15,113 @@ function formatTranslatedOutput(rawText) {
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
 } 
-//build an array of slode objects to extract source file and preserve its structure
 async function extractPptxStructure(arrayBuffer) {
-    const zip = await JSZip.loadAsync(arrayBuffer);
-    const slideRegex = /^ppt\/slides\/slide\d+\.xml$/i;
-    let slides = [];
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const slideRegex = /^ppt\/slides\/slide\d+\.xml$/i;
+  let slides = [];
+  const emuToPx = 9525; // conversion factor from EMU to pixels
 
-    for (const fileName of Object.keys(zip.files)) {
-        if (slideRegex.test(fileName)) {
-            const slideXml = await zip.file(fileName).async("string");
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(slideXml, "application/xml");
+  // Iterate over each file in the PPTX ZIP
+  for (const fileName of Object.keys(zip.files)) {
+    if (slideRegex.test(fileName)) {
+      const slideXml = await zip.file(fileName).async("string");
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
 
-            // Create a slide object
-            let slideObj = {
-                slideName: fileName,
-                textItems: [],
-                // Additional properties could be added here (layout, position, etc.)
-            };
+      // Create a slide object
+      let slideObj = {
+        slideName: fileName,
+        elements: [] // This will hold text elements along with layout & styling info.
+      };
 
-            // Example: Extract text nodes and store them as objects.
-            const textNodes = xmlDoc.getElementsByTagName("a:t");
-            for (let i = 0; i < textNodes.length; i++) {
-                slideObj.textItems.push({
-                    text: textNodes[i].textContent,
-                    // You could add position, style, etc. if you parse additional XML
-                });
+      // Get all shapes that may contain text.
+      // Typically, these are in <p:sp> (shape) or <p:txSp> (text shape). Here we assume <p:sp>.
+      const shapes = xmlDoc.getElementsByTagName("p:sp");
+      for (let i = 0; i < shapes.length; i++) {
+        let shape = shapes[i];
+
+        // Extract shape-level properties from <p:spPr>
+        let spPr = shape.querySelector("p:spPr");
+        let off = spPr ? spPr.querySelector("a:off") : null;
+        let ext = spPr ? spPr.querySelector("a:ext") : null;
+        let x = off ? parseInt(off.getAttribute("x"), 10) : 0;
+        let y = off ? parseInt(off.getAttribute("y"), 10) : 0;
+        let width = ext ? parseInt(ext.getAttribute("cx"), 10) : 0;
+        let height = ext ? parseInt(ext.getAttribute("cy"), 10) : 0;
+        x = Math.round(x / emuToPx);
+        y = Math.round(y / emuToPx);
+        width = Math.round(width / emuToPx);
+        height = Math.round(height / emuToPx);
+
+        // Extract background color if available from <a:solidFill> inside spPr.
+        let bgColor = null;
+        if (spPr) {
+          let solidFill = spPr.querySelector("a:solidFill");
+          if (solidFill) {
+            let srgbClr = solidFill.querySelector("a:srgbClr");
+            if (srgbClr) {
+              bgColor = srgbClr.getAttribute("val");
             }
-            slides.push(slideObj);
+          }
         }
+
+        // Optionally determine a shape type.
+        // For example, you might check for a placeholder tag:
+        let shapeType = shape.getAttribute("type") || "default"; // adjust as needed
+
+        // Get all text runs (<a:r>) in this shape.
+        const textRuns = shape.getElementsByTagName("a:r");
+        for (let j = 0; j < textRuns.length; j++) {
+          let r = textRuns[j];
+          let tElem = r.getElementsByTagName("a:t")[0];
+          if (!tElem) continue;
+          let text = tElem.textContent;
+
+          // Generate a unique ID for this element.
+          let elementId = `${fileName}_shape${i + 1}_text${j + 1}`;
+
+          // Extract run-level styling from <a:rPr>
+          let rPr = r.getElementsByTagName("a:rPr")[0];
+          let fontSize = null;
+          let textColor = null;
+          if (rPr) {
+            let sz = rPr.getAttribute("sz"); // font size in hundredths of a point
+            if (sz) {
+              fontSize = parseInt(sz, 10) / 100;
+            }
+            // Try to extract text color from a:solidFill > a:srgbClr.
+            let rSolidFill = rPr.querySelector("a:solidFill");
+            if (rSolidFill) {
+              let srgbClr = rSolidFill.querySelector("a:srgbClr");
+              if (srgbClr) {
+                textColor = srgbClr.getAttribute("val");
+              }
+            }
+          }
+
+          // Build the JSON element for this text run, including both shape and run properties.
+          slideObj.elements.push({
+            id: elementId,
+            text: text,
+            position: { x: x, y: y },
+            dimensions: { width: width, height: height },
+            backgroundColor: bgColor,
+            shapeType: shapeType,
+            style: {
+              fontSize: fontSize,
+              color: textColor
+              // additional styling properties can be added here
+            }
+          });
+        }
+      }
+      slides.push(slideObj);
     }
-    return slides;
+  }
+  // Return a structured JSON object containing all slides.
+  return { slides: slides };
 }
+
 
 
 $(document).ready(function() {
@@ -473,7 +548,13 @@ console.log("French text:", frenchText);
       alert("No French document/text found. Please upload or enter your translation."); 
       $('#converting-spinner').addClass("hidden");
       return;
-    }
+    } 
+
+    let fileExtensionEnglish = englishFile.name.split('.').pop().toLowerCase();
+    let promptPath = (fileExtensionEnglish === "pptx")
+      ? "custom-instructions/translation/english2french-pptx.txt"
+      : "custom-instructions/translation/english2french1.txt"; 
+    
     // load the system prompt
     let systemPrompt = "";
     try {
