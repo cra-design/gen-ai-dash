@@ -161,7 +161,7 @@ $(document).ready(function() {
         })
         .join('');
       // Set the formatted PPTX content into #translation-A.
-      $("#pptx-preview").html(pptxHtml);
+      $("#translation-A").html(pptxHtml);
             }
           } else {
             frenchFile = uploadedFile;
@@ -463,12 +463,7 @@ console.log("French text:", frenchText);
     
     // 2) Retrieve the formatted English HTML from #translation-A
     //    (#translation-A is where we stored the first doc's structure).
-    let englishHtml; 
-    if (fileExtension === 'pptx') {
-      englishHtml = $("#pptx-preview").html();
-    } else {
-      englishHtml = $("#translation-A").html();
-    }
+    let englishHtml = $("#translation-A").html();
     if (!englishHtml || englishHtml.trim().length === 0) {
       alert("No formatted English document found. Please complete the first step."); 
       $('#converting-spinner').addClass("hidden");
