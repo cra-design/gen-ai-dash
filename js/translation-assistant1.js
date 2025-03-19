@@ -149,6 +149,19 @@ $(document).ready(function() {
               let arrayBuffer = await uploadedFile.arrayBuffer();
               let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
               $("#translation-A").html(mammothResult.value);
+            } else if (fileExtension == 'pptx'){
+              let arrayBuffer = await uploadedFile.arrayBuffer();
+      let slides = await extractPptxStructure(arrayBuffer);
+      let pptxHtml = slides
+        .map(slide => {
+          let slideHtml = slide.textItems
+            .map(item => `<p>${item.text}</p>`)
+            .join('');
+          return `<div class="slide">${slideHtml}</div>`;
+        })
+        .join('');
+      // Set the formatted PPTX content into #translation-A.
+      $("#translation-A").html(pptxHtml);
             }
           } else {
             frenchFile = uploadedFile;
