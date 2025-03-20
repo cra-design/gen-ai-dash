@@ -438,15 +438,18 @@ if (selectedOption == "second-upload-doc") {
       // For PPTX, read the file as an ArrayBuffer, extract the slide structure,
       // and then build HTML from the slide objects.
       let arrayBuffer = await file.arrayBuffer();
-      let textElements = await extractPptxTextXmlWithId(arrayBuffer);
+      let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+      console.log("DEBUG: Extracted textElements:", textElements);
       let pptxHtml = textElements
         .map(item => `<p id="${item.id}">${item.text}</p>`)
-        .join(''); 
+        .join('');  
+      console.log("DEBUG: Constructed pptxHtml:", pptxHtml);
         textContent = pptxHtml;
     } else {
       throw new Error("Unsupported file type");
     }
-    frenchText = textContent || "";
+    frenchText = textContent || ""; 
+     console.log("DEBUG: frenchText after extraction:", frenchText);
   } catch (err) {
     console.error('Error processing the second (FR) file:', err);
     alert("Error reading your translated file. Check console for details."); 
