@@ -369,9 +369,12 @@ $("#source-upload-provide-btn").click(function() {
       return;
     }
     $("#second-upload").removeClass("hidden");
-  }); 
+  });  
   
-  // 'Provide translation' button, show the second upload section
+  /***********************************************************************
+   * Provide Translation Button Flow:
+   * show the second upload section
+  ***********************************************************************/
   $("#source-upload-provide-btn").click(function() {
     $("#second-upload").removeClass("hidden"); 
     console.log($("#translation-A").html());
@@ -399,7 +402,10 @@ $("#source-upload-provide-btn").click(function() {
     }
 });
 
-  // Second upload: manual translation.
+  /***********************************************************************
+   * Provide Translation Button Flow:
+   * For the second file uploads, extract and parse
+   ***********************************************************************/
   $("#second-upload-btn").click(async function() {  
      $('#processing-spinner').removeClass("hidden"); 
     console.log("Spinner should now be visible.");
@@ -435,7 +441,8 @@ if (selectedOption == "second-upload-doc") {
       let textElements = await extractPptxTextXmlWithId(arrayBuffer);
       let pptxHtml = textElements
         .map(item => `<p id="${item.id}">${item.text}</p>`)
-        .join('');
+        .join(''); 
+        textContent = pptxHtml;
     } else {
       throw new Error("Unsupported file type");
     }
