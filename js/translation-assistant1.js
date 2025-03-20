@@ -403,7 +403,7 @@ $("#source-upload-provide-btn").click(function() {
 });
 
   /***********************************************************************
-   * Provide Translation Button Flow:
+   * Second File Upload Button
    * For the second file uploads, extract and parse
    ***********************************************************************/
   $("#second-upload-btn").click(async function() {  
@@ -440,7 +440,7 @@ if (selectedOption == "second-upload-doc") {
       let arrayBuffer = await file.arrayBuffer();
       let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
       let pptxHtml = textElements
-        .map(item => `<p id="${item.id}">${item.text}</p>`)
+        .map(item => `<p>${item.text}</p>`)
         .join('');  
         textContent = pptxHtml;
     } else {
