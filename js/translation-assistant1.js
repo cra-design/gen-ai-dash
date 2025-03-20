@@ -86,7 +86,8 @@ $(document).ready(function() {
     var detectedLanguage = detectLanguageBasedOnWords(text);
     if (detectedLanguage == 'unknown') { detectedLanguage = 'english'; }
     $('#source-heading-detecting').addClass("hidden");
-    $('#source-language').removeClass("hidden").val(detectedLanguage);
+    $('#source-language').removeClass("hidden").val(detectedLanguage); 
+    });
   });
 
   // Handle file input change for both source and second file uploads.
@@ -949,7 +950,8 @@ function detectLanguageBasedOnWords(text) {
   }
   const englishMatches = countMatches(englishWords);
   const frenchMatches = countMatches(frenchWords);
-  if (englishMatches > frenchMatches) { return 'english'; }
+  <!--if (englishMatches > frenchMatches) { return 'english'; }
   else if (frenchMatches > englishMatches) { return 'french'; }
-  else { return 'unknown'; }
+  else { return 'unknown'; }--> 
+  return englishMatches > frenchMatches ? 'english' : frenchMatches > englishMatches ? 'french' : 'unknown';
 }
