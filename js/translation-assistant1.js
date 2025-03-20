@@ -72,7 +72,8 @@ $(document).ready(function() {
       } else if (target.id == "translations-instructions-compare" || target.id == "translations-no-compare") {
         $('#genai-model-options').addClass("hidden");
       }
-    }
+    } 
+  });
   });
 
   // Detect language from entered text as the user types.
