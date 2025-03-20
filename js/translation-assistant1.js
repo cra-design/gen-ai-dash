@@ -7,6 +7,7 @@ function extractXmlFromFile(file) {
     handleFileExtractionToXML(file, resolve, reject);
   });
 }
+
 // Function to format raw translated output into structured HTML.
 function formatTranslatedOutput(rawText) {
   if (!rawText) return "";
@@ -15,7 +16,8 @@ function formatTranslatedOutput(rawText) {
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
 } 
-// NEW: Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
+
+//Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide\d+\.xml$/i;
@@ -121,41 +123,45 @@ $(document).ready(function() {
           const fileExtension = uploadedFile.name.split('.').pop().toLowerCase(); 
           if (fileExtension === "docx" || fileExtension === "xlsx") {
               textContent = await handleFileExtraction(uploadedFile); 
-        } else if (fileExtension === "pptx") { 
+          } else if (fileExtension === "pptx") { 
               let arrayBuffer = await uploadedFile.arrayBuffer(); 
               let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+              console.log("Extracted PPTX Text Elements:", textElements);
               let pptxHtml = textElements
-              .map(item => `<p id="${item.id}">${item.text}</p>`)
-              .join('');
-        } else {
+                .map(item => `<p id="${item.id}">${item.text}</p>`)
+                .join('');
+              //Assign pptxHtml to textContent.
+              textContent = pptxHtml;
+          } else {
               throw new Error("Unsupported file type");
-        }
+          }
           if (!textContent) { 
               throw new Error("No text extracted."); 
-        }
+          }
           
-        let detectedLanguage = detectLanguageBasedOnWords(textContent);
+          let detectedLanguage = detectLanguageBasedOnWords(textContent);
           if (detectedLanguage !== "french") { detectedLanguage = "english"; }
           $(`#${language}-doc-detecting`).addClass("hidden");
           $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
 
-        if (event.target.id === "source-file") {
-            englishFile = uploadedFile;
-            if (fileExtension === 'docx') {
-              let arrayBuffer = await uploadedFile.arrayBuffer();
-              let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-              $("#translation-A").html(mammothResult.value);
-            } else if (fileExtension == 'pptx'){
-              let arrayBuffer = await uploadedFile.arrayBuffer();
-              let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
-              console.log("Extracted PPTX Text Elements:", pptxTextElements);
-              let pptxHtml = textElements
-              .map(item => `<p id="${item.id}">${item.text}</p>`)
-              .join('');
-            $("#translation-A").html(pptxHtml);
-            }
+          if (event.target.id === "source-file") {
+              englishFile = uploadedFile;
+              if (fileExtension === 'docx') {
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+                let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+                $("#translation-A").html(mammothResult.value);
+              } else if (fileExtension == 'pptx'){
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+                let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+                console.log("Extracted PPTX Text Elements:", textElements);
+                let pptxHtml = textElements
+                  .map(item => `<p id="${item.id}">${item.text}</p>`)
+                  .join('');
+                // NEW: Set the formatted PPTX content into #translation-A.
+                $("#translation-A").html(pptxHtml);
+              }
           } else {
-            frenchFile = uploadedFile;
+              frenchFile = uploadedFile;
           }
       } catch (err) {
           console.error('Error processing source file:', err);
