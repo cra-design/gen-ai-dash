@@ -1,5 +1,5 @@
-let generatedDownloadFile = null;  
-let englishFile = null;  
+let generatedDownloadFile = null;
+let englishFile = null;
 let frenchFile = null;
 
 function extractXmlFromFile(file) {
@@ -17,23 +17,19 @@ function formatTranslatedOutput(rawText) {
   return formatted;
 } 
 
-//Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
+// Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide\d+\.xml$/i;
   let textElements = [];
-  
-  // Iterate over each file in the PPTX ZIP
+
   for (const fileName of Object.keys(zip.files)) {
     if (slideRegex.test(fileName)) {
-      // Get the XML content of the slide
       const slideXml = await zip.file(fileName).async("string");
-      // Parse the XML using DOMParser
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(slideXml, "application/xml");
-      
-      // Extract all text nodes (<a:t>) which hold the slide's textual content.
       const textNodes = xmlDoc.getElementsByTagName("a:t");
+      
       for (let i = 0; i < textNodes.length; i++) {
         let uniqueId = `${fileName}_text_${i + 1}`;
         textElements.push({
@@ -43,9 +39,8 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
       }
     }
   }
-  
   return textElements;
-}
+} 
 
 $(document).ready(function() {
   // Handle radio button changes for various upload and compare options.
@@ -72,9 +67,8 @@ $(document).ready(function() {
         $('#genai-model-options').addClass("hidden");
       }
     }
-  });
-});
-
+  }); 
+  
   // Detect language from entered text as the user types.
   $('#source-text').on('input', function() {
     $('#source-heading-detecting').removeClass("hidden");
@@ -84,11 +78,11 @@ $(document).ready(function() {
       return;
     }
     var detectedLanguage = detectLanguageBasedOnWords(text);
-    if (detectedLanguage == 'unknown') { detectedLanguage = 'english'; }
+    if (detectedLanguage === 'unknown') { detectedLanguage = 'english'; }
     $('#source-heading-detecting').addClass("hidden");
     $('#source-language').removeClass("hidden").val(detectedLanguage); 
-    });
   });
+});
 
   // Handle file input change for both source and second file uploads.
   $(document).on("change", "input", async function (event) {
@@ -950,8 +944,6 @@ function detectLanguageBasedOnWords(text) {
   }
   const englishMatches = countMatches(englishWords);
   const frenchMatches = countMatches(frenchWords);
-  <!--if (englishMatches > frenchMatches) { return 'english'; }
-  else if (frenchMatches > englishMatches) { return 'french'; }
-  else { return 'unknown'; }--> 
   return englishMatches > frenchMatches ? 'english' : frenchMatches > englishMatches ? 'french' : 'unknown';
 }
+
