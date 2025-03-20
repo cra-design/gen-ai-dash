@@ -124,9 +124,9 @@ $(document).ready(function() {
         } else if (fileExtension === "pptx") { 
               let arrayBuffer = await uploadedFile.arrayBuffer(); 
               let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
-              textContent = slides
-                  .map(slide => slide.textItems.map(item => item.text).join(" "))
-                  .join("\n");
+              let pptxHtml = textElements
+              .map(item => `<p id="${item.id}">${item.text}</p>`)
+              .join('');
         } else {
               throw new Error("Unsupported file type");
         }
