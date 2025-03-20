@@ -126,7 +126,6 @@ $(document).ready(function() {
           } else if (fileExtension === "pptx") { 
               let arrayBuffer = await uploadedFile.arrayBuffer(); 
               let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
-              console.log("Extracted PPTX Text Elements:", textElements);
               let pptxHtml = textElements
                 .map(item => `<p id="${item.id}">${item.text}</p>`)
                 .join('');
@@ -473,8 +472,8 @@ console.log("French text:", frenchText);
     
     // load the system prompt
     let systemPrompt = "";
-    try {
-    systemPrompt = await $.get("custom-instructions/translation/english2french1.txt");
+  try {
+    systemPrompt = await $.get(promptPath);
   } catch (error) {
     console.error("Error loading system prompt:", error);
     alert("Could not load translation instructions. Please check your files."); 
