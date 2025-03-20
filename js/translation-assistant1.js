@@ -15,114 +15,35 @@ function formatTranslatedOutput(rawText) {
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
 } 
-async function extractPptxStructure(arrayBuffer) {
+// NEW: Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
+async function extractPptxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide\d+\.xml$/i;
-  let slides = [];
-  const emuToPx = 9525; // conversion factor from EMU to pixels
-
+  let textElements = [];
+  
   // Iterate over each file in the PPTX ZIP
   for (const fileName of Object.keys(zip.files)) {
     if (slideRegex.test(fileName)) {
+      // Get the XML content of the slide
       const slideXml = await zip.file(fileName).async("string");
+      // Parse the XML using DOMParser
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(slideXml, "application/xml");
-
-      // Create a slide object
-      let slideObj = {
-        slideName: fileName,
-        elements: [] // This will hold text elements along with layout & styling info.
-      };
-
-      // Get all shapes that may contain text.
-      // Typically, these are in <p:sp> (shape) or <p:txSp> (text shape). Here we assume <p:sp>.
-      const shapes = xmlDoc.getElementsByTagName("p:sp");
-      for (let i = 0; i < shapes.length; i++) {
-        let shape = shapes[i];
-
-        // Extract shape-level properties from <p:spPr>
-        let spPr = shape.querySelector("p:spPr");
-        let off = spPr ? spPr.querySelector("a:off") : null;
-        let ext = spPr ? spPr.querySelector("a:ext") : null;
-        let x = off ? parseInt(off.getAttribute("x"), 10) : 0;
-        let y = off ? parseInt(off.getAttribute("y"), 10) : 0;
-        let width = ext ? parseInt(ext.getAttribute("cx"), 10) : 0;
-        let height = ext ? parseInt(ext.getAttribute("cy"), 10) : 0;
-        x = Math.round(x / emuToPx);
-        y = Math.round(y / emuToPx);
-        width = Math.round(width / emuToPx);
-        height = Math.round(height / emuToPx);
-
-        // Extract background color if available from <a:solidFill> inside spPr.
-        let bgColor = null;
-        if (spPr) {
-          let solidFill = spPr.querySelector("a:solidFill");
-          if (solidFill) {
-            let srgbClr = solidFill.querySelector("a:srgbClr");
-            if (srgbClr) {
-              bgColor = srgbClr.getAttribute("val");
-            }
-          }
-        }
-
-        // Optionally determine a shape type.
-        // For example, you might check for a placeholder tag:
-        let shapeType = shape.getAttribute("type") || "default"; // adjust as needed
-
-        // Get all text runs (<a:r>) in this shape.
-        const textRuns = shape.getElementsByTagName("a:r");
-        for (let j = 0; j < textRuns.length; j++) {
-          let r = textRuns[j];
-          let tElem = r.getElementsByTagName("a:t")[0];
-          if (!tElem) continue;
-          let text = tElem.textContent;
-
-          // Generate a unique ID for this element.
-          let elementId = `${fileName}_shape${i + 1}_text${j + 1}`;
-
-          // Extract run-level styling from <a:rPr>
-          let rPr = r.getElementsByTagName("a:rPr")[0];
-          let fontSize = null;
-          let textColor = null;
-          if (rPr) {
-            let sz = rPr.getAttribute("sz"); // font size in hundredths of a point
-            if (sz) {
-              fontSize = parseInt(sz, 10) / 100;
-            }
-            // Try to extract text color from a:solidFill > a:srgbClr.
-            let rSolidFill = rPr.querySelector("a:solidFill");
-            if (rSolidFill) {
-              let srgbClr = rSolidFill.querySelector("a:srgbClr");
-              if (srgbClr) {
-                textColor = srgbClr.getAttribute("val");
-              }
-            }
-          }
-
-          // Build the JSON element for this text run, including both shape and run properties.
-          slideObj.elements.push({
-            id: elementId,
-            text: text,
-            position: { x: x, y: y },
-            dimensions: { width: width, height: height },
-            backgroundColor: bgColor,
-            shapeType: shapeType,
-            style: {
-              fontSize: fontSize,
-              color: textColor
-              // additional styling properties can be added here
-            }
-          });
-        }
+      
+      // Extract all text nodes (<a:t>) which hold the slide's textual content.
+      const textNodes = xmlDoc.getElementsByTagName("a:t");
+      for (let i = 0; i < textNodes.length; i++) {
+        let uniqueId = `${fileName}_text_${i + 1}`;
+        textElements.push({
+          id: uniqueId,
+          text: textNodes[i].textContent
+        });
       }
-      slides.push(slideObj);
     }
   }
-  // Return a structured JSON object containing all slides.
-  return { slides: slides };
+  
+  return textElements;
 }
-
-
 
 $(document).ready(function() {
 
@@ -202,7 +123,7 @@ $(document).ready(function() {
               textContent = await handleFileExtraction(uploadedFile); 
         } else if (fileExtension === "pptx") { 
               let arrayBuffer = await uploadedFile.arrayBuffer(); 
-              let slides = await extractPptxStructure(arrayBuffer); 
+              let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
               textContent = slides
                   .map(slide => slide.textItems.map(item => item.text).join(" "))
                   .join("\n");
@@ -226,17 +147,12 @@ $(document).ready(function() {
               $("#translation-A").html(mammothResult.value);
             } else if (fileExtension == 'pptx'){
               let arrayBuffer = await uploadedFile.arrayBuffer();
-      let slides = await extractPptxStructure(arrayBuffer);
-      let pptxHtml = slides
-        .map(slide => {
-          let slideHtml = slide.textItems
-            .map(item => `<p>${item.text}</p>`)
-            .join('');
-          return `<div class="slide">${slideHtml}</div>`;
-        })
-        .join('');
-      // Set the formatted PPTX content into #translation-A.
-      $("#translation-A").html(pptxHtml);
+              let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+              console.log("Extracted PPTX Text Elements:", pptxTextElements);
+              let pptxHtml = textElements
+              .map(item => `<p id="${item.id}">${item.text}</p>`)
+              .join('');
+            $("#translation-A").html(pptxHtml);
             }
           } else {
             frenchFile = uploadedFile;
@@ -511,15 +427,9 @@ if (selectedOption == "second-upload-doc") {
       // For PPTX, read the file as an ArrayBuffer, extract the slide structure,
       // and then build HTML from the slide objects.
       let arrayBuffer = await file.arrayBuffer();
-      let slides = await extractPptxStructure(arrayBuffer);
-      textContent = slides
-        .map(slide => {
-          // Wrap each text item in a paragraph and the entire slide in a div.
-          let slideHtml = slide.textItems
-            .map(item => `<p>${item.text}</p>`)
-            .join('');
-          return `<div class="slide">${slideHtml}</div>`;
-        })
+      let textElements = await extractPptxTextXmlWithId(arrayBuffer);
+      let pptxHtml = textElements
+        .map(item => `<p id="${item.id}">${item.text}</p>`)
         .join('');
     } else {
       throw new Error("Unsupported file type");
