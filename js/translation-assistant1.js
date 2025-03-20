@@ -524,28 +524,8 @@ console.log("French text:", frenchText);
     return;
   } 
      finalFrenchHtml = removeCodeFences(finalFrenchHtml);
-     console.log("Final French HTML (cleaned):", finalFrenchHtml); 
-     //insert slide header to the results
-     let fileExtensionEnglish = englishFile.name.split('.').pop().toLowerCase();
-     if (fileExtensionEnglish === "pptx" && window.englishPptxJson) {
-      // Calculate how many text elements were originally extracted per slide.
-      let slides = window.englishPptxJson.slides;  // Array of slide objects
-      let slideCounts = slides.map(slide => slide.elements.length);
-      // Create a temporary container for the AI output.
-      let container = $("<div>").html(finalFrenchHtml);
-      let paragraphs = container.find("p");
-      let newHtml = "";
-      let index = 0;
-      // Group the paragraphs according to the original slide counts.
-      for (let i = 0; i < slideCounts.length; i++) {
-        newHtml += `<p><strong>Slide ${i+1}</strong></p>`;
-        let count = slideCounts[i];
-        for (let j = 0; j < count && index < paragraphs.length; j++, index++) {
-          newHtml += paragraphs.eq(index).prop("outerHTML");
-        }
-      }
-      finalFrenchHtml = newHtml;
-    }
+     console.log("Final French HTML (cleaned):", finalFrenchHtml);
+
     // 4) Display the final merged output in #review-translation
      $("#translation-A").html(finalFrenchHtml); 
      $('#converting-spinner').addClass("hidden");
