@@ -600,9 +600,10 @@ $("#convert-translation-download-btn").click(async function() {
     } 
     else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
       // Fallback for PPTX/XLSX if you were using conversionGemini
-      let englishXml = await handleFileExtraction(englishFile);
       let updatedXml;
-      if (fileExtension === 'pptx') {
+      if (fileExtension === 'pptx') { 
+         let arrayBuffer = await englishFile.arrayBuffer();
+         let englishXml = await extractPptxTextXmlWithId(arrayBuffer);
          updatedXml = conversionPptxXml(englishXml, finalFrenchHtml); 
          console.log("Updated PPTX XML:", updatedXml);
       } else {
@@ -610,11 +611,26 @@ $("#convert-translation-download-btn").click(async function() {
       } 
       let zip = new JSZip();
       if (fileExtension === 'pptx') {
-         // For simplicity, we update slide1.xml. (Extend this for multiple slides if needed.)
-         zip.file("ppt/slides/slide1.xml", updatedXml);
-      } else {
-         zip.file("xl/worksheets/sheet1.xml", updatedXml);
-      }
+        let arrayBuffer = await englishFile.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer); // Load ZIP structure
+        const slideRegex = /^ppt\/slides\/slide\d+\.xml$/i; // Match all slide XML files
+        let textElements = await extractPptxTextXmlWithId(arrayBuffer); // Extract text elements
+        let slideUpdates = {}; // Store updated XML for each slide
+
+    // Iterate through all slide files
+    for (const fileName of Object.keys(zip.files)) {
+        if (slideRegex.test(fileName)) {
+            let slideXml = await zip.file(fileName).async("string"); // Get slide XML content
+            let updatedXml = conversionPptxXml(slideXml, finalFrenchHtml); // Apply translation
+            
+            slideUpdates[fileName] = updatedXml; // Store updated slide XML
+        }
+    }
+
+    // Add all updated slides back into the ZIP
+    for (const [fileName, updatedXml] of Object.entries(slideUpdates)) {
+        zip.file(fileName, updatedXml);
+      } 
       generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
     }
 
