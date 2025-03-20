@@ -553,10 +553,13 @@ console.log("French text:", frenchText);
       $(this).attr('title', 'Save Code');
       $(this).find('i').removeClass('fa-edit').addClass('fa-save');
     }
-  });
- 
-// Existing download button click handler remains unchanged.
-// When the user clicks the Download button, the file will be downloaded.
+  }); 
+  
+   /***********************************************************************
+   * Convert-translation-download-button work flow:
+   * When the user clicks the Download button, the download button will show
+   * the file will be downloaded
+   ***********************************************************************/
 $("#convert-translation-download-btn").click(async function() {
   try {
     $('#converting-spinner').removeClass("hidden");
@@ -603,12 +606,19 @@ $("#convert-translation-download-btn").click(async function() {
     else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
       // Fallback for PPTX/XLSX if you were using conversionGemini
       let englishXml = await handleFileExtraction(englishFile);
-      let updatedXml = await conversionGemini(englishXml, fileExtension);
+      let updatedXml;
+      if (fileExtension === 'pptx') {
+         updatedXml = conversionPptxXml(englishXml, finalFrenchHtml); 
+         console.log("Updated PPTX XML:", updatedXml);
+      } else {
+        updatedXml = await conversionGemini(englishXml, fileExtension);
+      } 
       let zip = new JSZip();
       if (fileExtension === 'pptx') {
-        zip.file("ppt/slides/slide1.xml", updatedXml);
+         // For simplicity, we update slide1.xml. (Extend this for multiple slides if needed.)
+         zip.file("ppt/slides/slide1.xml", updatedXml);
       } else {
-        zip.file("xl/worksheets/sheet1.xml", updatedXml);
+         zip.file("xl/worksheets/sheet1.xml", updatedXml);
       }
       generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
     }
@@ -640,9 +650,32 @@ $("#convert-translation-download-btn").click(async function() {
   }
 });
 
-
-});
-
+// Convert the final French HTML into an array of text strings.
+function convertFrenchHtmlToTextArray(finalFrenchHtml) {
+  // Create a temporary element to parse the HTML.
+  let tempDiv = document.createElement("div");
+  tempDiv.innerHTML = finalFrenchHtml;
+  // Assuming each <p> corresponds to one text element,
+  // extract the text content (trimmed).
+  let paragraphs = Array.from(tempDiv.querySelectorAll("p"));
+  let frenchTexts = paragraphs.map(p => p.textContent.trim());
+  return frenchTexts;
+}
+// New helper function to convert French HTML back to PPTX XML:
+function conversionPptxXml(englishXml, finalFrenchHtml) {
+  // Get an array of French texts from the formatted HTML.
+  let frenchTexts = convertFrenchHtmlToTextArray(finalFrenchHtml);
+  let index = 0;
+  // Use a regular expression to replace each <a:t> node's content.
+  let updatedXml = englishXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, function(match, capturedText) {
+    // Replace with the corresponding French text; if none available, use an empty string.
+    let newText = frenchTexts[index] || "";
+    index++;
+    return `<a:t>${newText}</a:t>`;
+  });
+  return updatedXml;
+} 
+  
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
