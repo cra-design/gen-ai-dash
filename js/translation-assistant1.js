@@ -599,15 +599,12 @@ $("#convert-translation-download-btn").click(async function() {
       generatedBlob = htmlDocx.asBlob(fullHtml);
     } 
     else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
-      // Fallback for PPTX/XLSX if you were using conversionGemini
       let updatedXml;
       if (fileExtension === 'pptx') { 
          let arrayBuffer = await englishFile.arrayBuffer();
          let englishXml = await extractPptxTextXmlWithId(arrayBuffer);
          updatedXml = conversionPptxXml(englishXml, finalFrenchHtml); 
          console.log("Updated PPTX XML:", updatedXml);
-      } else {
-        updatedXml = await conversionGemini(englishXml, fileExtension);
       } 
       let zip = new JSZip();
       if (fileExtension === 'pptx') {
