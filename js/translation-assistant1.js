@@ -526,6 +526,29 @@ console.log("French text:", frenchText);
      finalFrenchHtml = removeCodeFences(finalFrenchHtml);
      console.log("Final French HTML (cleaned):", finalFrenchHtml);
 
+  let fileExtensionEnglish = englishFile.name.split('.').pop().toLowerCase();
+  if (fileExtensionEnglish === "pptx" && window.englishPptxJson) {
+  // Determine how many text elements were originally extracted per slide.
+  let slides = window.englishPptxJson.slides; // Each slide object contains an "elements" array.
+  let slideCounts = slides.map(slide => slide.elements.length);
+  
+  // Create a temporary container to work with the French output.
+  let container = $("<div>").html(finalFrenchHtml);
+  let paragraphs = container.find("p");
+  let newHtml = "";
+  let index = 0;
+  
+  // For each slide, append its paragraphs and then a separator (a line).
+  for (let i = 0; i < slideCounts.length; i++) {
+    let count = slideCounts[i];
+    for (let j = 0; j < count && index < paragraphs.length; j++, index++) {
+      newHtml += paragraphs.eq(index).prop("outerHTML");
+    }
+    // NEW: Insert a separator line between slides.
+    newHtml += `<hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">`;
+  }
+  finalFrenchHtml = newHtml;
+}
     // 4) Display the final merged output in #review-translation
      $("#translation-A").html(finalFrenchHtml); 
      $('#converting-spinner').addClass("hidden");
