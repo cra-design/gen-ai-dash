@@ -48,33 +48,32 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
 }
 
 $(document).ready(function() {
-
   // Handle radio button changes for various upload and compare options.
   $(document).on("click", "input[type=radio]", function (event) {
     var target = event.target;
-    if (target.name == "source-upload-option") {
+    if (target.name === "source-upload-option") {
       $('#source-doc-upload, #text-upload, #second-upload, #translation-preview, #convert-translation').addClass("hidden");
-      if (target.id == "source-upload-doc") {
+      if (target.id === "source-upload-doc") {
         $('#source-doc-upload').removeClass("hidden");
-      } else if (target.id == "source-upload-text") {
+      } else if (target.id === "source-upload-text") {
         $('#text-upload').removeClass("hidden");
       }
-    } else if (target.name == "second-upload-option") {
+    } else if (target.name === "second-upload-option") {
       $('#second-doc-upload, #second-text-upload').addClass("hidden");
-      if (target.id == "second-upload-doc") {
+      if (target.id === "second-upload-doc") {
         $('#second-doc-upload').removeClass("hidden");
-      } else if (target.id == "second-upload-text") {
+      } else if (target.id === "second-upload-text") {
         $('#second-text-upload').removeClass("hidden");
       }
-    } else if (target.name == "translations-compare") {
-      if (target.id == "translations-llm-compare") {
+    } else if (target.name === "translations-compare") {
+      if (target.id === "translations-llm-compare") {
         $('#genai-model-options').removeClass("hidden");
-      } else if (target.id == "translations-instructions-compare" || target.id == "translations-no-compare") {
+      } else if (target.id === "translations-instructions-compare" || target.id === "translations-no-compare") {
         $('#genai-model-options').addClass("hidden");
       }
-    } 
+    }
   });
-  });
+});
 
   // Detect language from entered text as the user types.
   $('#source-text').on('input', function() {
