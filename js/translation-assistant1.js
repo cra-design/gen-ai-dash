@@ -656,7 +656,8 @@ function conversionPptxXml(englishXml, finalFrenchHtml) {
   let index = 0;
   return englishXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
     return `<a:t>${frenchTexts[index++] || ""}</a:t>`;
-  });
+  }); 
+    console.log("French Text in XML:", frenchTexts);
 }
   
 // Function to generate a file blob from the zip and XML content.
