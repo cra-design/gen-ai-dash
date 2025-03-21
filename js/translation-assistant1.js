@@ -648,11 +648,17 @@ function convertFrenchHtmlToTextArray(finalFrenchHtml) {
   let tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
   let paragraphs = Array.from(tempDiv.querySelectorAll("p"));
-  return paragraphs.map(p => p.textContent.trim());
+  let frenchTexts = paragraphs.map(p => p.textContent.trim());
+
+  console.log("Extracted French Text Array:", frenchTexts);  // DEBUG
+
+  return frenchTexts;
 }
+
 // New helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(englishXml, finalFrenchHtml) {
-  let frenchTexts = convertFrenchHtmlToTextArray(finalFrenchHtml);
+  let frenchTexts = convertFrenchHtmlToTextArray(finalFrenchHtml); 
+   console.log("French Text in XML Conversion:", frenchTexts); //DEBUG
   let index = 0;
   return englishXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
     return `<a:t>${frenchTexts[index++] || ""}</a:t>`;
