@@ -24,16 +24,18 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
   let textElements = [];
 
   for (const fileName of Object.keys(zip.files)) {
-    if (slideRegex.test(fileName)) {
+    const match = slideRegex.exec(fileName); 
+    if (match) { 
+      const slideNumber = match[1]; // Extraact slide number
       const slideXml = await zip.file(fileName).async("string");
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(slideXml, "application/xml");
       const textNodes = xmlDoc.getElementsByTagName("a:t");
       
       for (let i = 0; i < textNodes.length; i++) {
-        let uniqueId = `${fileName}_text_${i + 1}`;
+        let uniqueId = `S${slideNumber}_T${i + 1}`; // unique ID: S1_T1
         textElements.push({
-          id: uniqueId,
+          id: uniqueId, 
           text: textNodes[i].textContent
         });
       }
@@ -600,36 +602,32 @@ $("#convert-translation-download-btn").click(async function() {
     } else if (fileExtension === 'pptx') {
       let arrayBuffer = await englishFile.arrayBuffer();
       const zip = await JSZip.loadAsync(arrayBuffer);
-      const slideRegex = /^ppt\/slides\/slide\d+\.xml$/i;
-      let slideUpdates = {}; 
-
-      for (const fileName of Object.keys(zip.files)) {
-        if (slideRegex.test(fileName)) {
-          let slideXml = await zip.file(fileName).async("string");
-          let updatedXml = conversionPptxXml(slideXml, finalFrenchHtml);
-          slideUpdates[fileName] = updatedXml;
+      const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i; // corrected to capture slide number
+      for (const fileName of Object.keys(zip.files)) { 
+        const match = slideRegex.exec(fileName);
+        if (match) {
+          const slideNumber = match[1];
+          const slideXml = await zip.file(fileName).async("string");
+          const updatedSlideXml = conversionPptxXml(slideXml, finalFrenchHtml, slideNumber);
+          zip.file(fileName, updatedSlideXml);
         }
       }
-
-      for (const [fileName, updatedXml] of Object.entries(slideUpdates)) {
-      zip.file(fileName, updatedXml);
-    }
       generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+    } else if (fileExtension === 'xlsx') {
+      // Add XLSX logic 
     }
     if (!generatedBlob) {
-    alert("File generation failed.");
-    $('#converting-spinner').addClass("hidden");
-    return;
-    }  
-    
+      alert("File generation failed.");
+      $('#converting-spinner').addClass("hidden");
+      return;
+    }
+
     // 4) Download the file
     let englishFileName = englishFile 
       ? englishFile.name.split('.').slice(0, -1).join('.') 
       : "translated-file";
     let modifiedFileName = `${englishFileName}-FR.${fileExtension}`;
 
-    // Now that the file is generated, show the download button
-    // or directly trigger the download:
     let downloadLink = document.createElement('a');
     downloadLink.href = URL.createObjectURL(generatedBlob);
     downloadLink.download = modifiedFileName;
@@ -655,15 +653,27 @@ function convertFrenchHtmlToTextArray(finalFrenchHtml) {
   return frenchTexts;
 }
 
-// New helper function to convert French HTML back to PPTX XML:
-function conversionPptxXml(englishXml, finalFrenchHtml) {
-  let frenchTexts = convertFrenchHtmlToTextArray(finalFrenchHtml); 
-   console.log("French Text in XML Conversion:", frenchTexts); //DEBUG
+// Helper function to convert French HTML back to PPTX XML:
+function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
+  // Step 1: Build ID-to-text mapping from HTML 
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = finalFrenchHtml;
+  const frenchMap = {};
+  const paragraphs = tempDiv.querySelectorAll("p[id]");
+  paragraphs.forEach(p => {
+    frenchMap[p.id] = p.textContent.trim();
+  });
+
+  // Step 2: Replace each <a:t> using ID: S{slide}_T{index}
   let index = 0;
-  return englishXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
-    return `<a:t>${frenchTexts[index++] || ""}</a:t>`;
-  }); 
-    console.log("French Text in XML:", frenchTexts);
+  const updatedXml = originalXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
+    const key = `S${slideNumber}_T${index + 1}`;
+    const newText = frenchMap[key] || capturedText; // fallback to English if missing
+    index++;
+    return `<a:t>${newText}</a:t>`;
+  });
+
+  return updatedXml;
 }
   
 // Function to generate a file blob from the zip and XML content.
