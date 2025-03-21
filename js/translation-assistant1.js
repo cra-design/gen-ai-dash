@@ -941,8 +941,10 @@ function detectLanguageBasedOnWords(text) {
   function countMatches(wordList) {
     return wordList.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0);
   }
-  const englishMatches = countMatches(englishWords);
-  const frenchMatches = countMatches(frenchWords);
+  const englishMatches = countMatches(englishWords); 
+  console.log("englishMatches: ",englishMatches);
+  const frenchMatches = countMatches(frenchWords); 
+  console.log(frenchMatches);
   return englishMatches > frenchMatches ? 'english' : frenchMatches > englishMatches ? 'french' : 'unknown';
 }
 
