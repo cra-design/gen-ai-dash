@@ -137,7 +137,7 @@ $(document).ready(function() {
           if (detectedLanguage !== "french") { detectedLanguage = "english"; }
           $(`#${language}-doc-detecting`).addClass("hidden");
           $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
-
+           console.log(fileExtension);
           if (event.target.id === "source-file") {
               englishFile = uploadedFile;
               if (fileExtension === 'docx') {
