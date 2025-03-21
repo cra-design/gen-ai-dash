@@ -20,24 +20,22 @@ function formatTranslatedOutput(rawText) {
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
-  const slideRegex = /^ppt\/slides\/slide\d+\.xml$/i;
+  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
   let textElements = [];
 
   for (const fileName of Object.keys(zip.files)) {
-    const match = slideRegex.exec(fileName); 
-    if (match) { 
-      const slideNumber = match[1]; // Extraact slide number
+    const match = slideRegex.exec(fileName);
+    if (match) {
+      const slideNumber = match[1];
       const slideXml = await zip.file(fileName).async("string");
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(slideXml, "application/xml");
       const textNodes = xmlDoc.getElementsByTagName("a:t");
-      
+
       for (let i = 0; i < textNodes.length; i++) {
-        let uniqueId = `S${slideNumber}_T${i + 1}`; // unique ID: S1_T1
-        textElements.push({
-          id: uniqueId, 
-          text: textNodes[i].textContent
-        });
+        let uniqueId = `S${slideNumber}_T${i + 1}`;
+        let text = textNodes[i].textContent;
+        textElements.push({ slide: slideNumber, id: uniqueId, text });
       }
     }
   }
@@ -600,10 +598,11 @@ $("#convert-translation-download-btn").click(async function() {
       `;
       generatedBlob = htmlDocx.asBlob(fullHtml);
     } else if (fileExtension === 'pptx') {
-      let arrayBuffer = await englishFile.arrayBuffer();
+      const arrayBuffer = await englishFile.arrayBuffer();
       const zip = await JSZip.loadAsync(arrayBuffer);
-      const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i; // corrected to capture slide number
-      for (const fileName of Object.keys(zip.files)) { 
+      const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+
+      for (const fileName of Object.keys(zip.files)) {
         const match = slideRegex.exec(fileName);
         if (match) {
           const slideNumber = match[1];
@@ -655,20 +654,19 @@ function convertFrenchHtmlToTextArray(finalFrenchHtml) {
 
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
-  // Step 1: Build ID-to-text mapping from HTML 
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
+
   const frenchMap = {};
   const paragraphs = tempDiv.querySelectorAll("p[id]");
   paragraphs.forEach(p => {
     frenchMap[p.id] = p.textContent.trim();
   });
 
-  // Step 2: Replace each <a:t> using ID: S{slide}_T{index}
-  let index = 0;
+  let index = 1;
   const updatedXml = originalXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
-    const key = `S${slideNumber}_T${index + 1}`;
-    const newText = frenchMap[key] || capturedText; // fallback to English if missing
+    const key = `S${slideNumber}_T${index}`;
+    const newText = frenchMap[key] || capturedText; // fallback if not found
     index++;
     return `<a:t>${newText}</a:t>`;
   });
