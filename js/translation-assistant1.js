@@ -93,7 +93,6 @@ $(document).ready(function() {
       $(`#${language}-language-heading`).removeClass("hidden");
       $(`#${language}-language-doc`).addClass("hidden");
       var fileList = event.target.files; 
-      console.log("Hello!!!!!!!!!");
       if (!fileList || fileList.length === 0) return;
       if (fileList.length > 1) {
           $(`#${language}-multiple-msg`).removeClass("hidden");
@@ -117,7 +116,6 @@ $(document).ready(function() {
       try {
           let textContent; 
           const fileExtension = uploadedFile.name.split('.').pop().toLowerCase();  
-          console.log("Hello World: ",fileExtension);
           if (fileExtension === "docx" || fileExtension === "xlsx") {
               textContent = await handleFileExtraction(uploadedFile); 
           } else if (fileExtension === "pptx") { 
@@ -136,7 +134,6 @@ $(document).ready(function() {
           }
           
           let detectedLanguage = detectLanguageBasedOnWords(textContent); 
-            console.log("Hello World22222: ",textContent);
           if (detectedLanguage !== "french") { detectedLanguage = "english"; }
           $(`#${language}-doc-detecting`).addClass("hidden");
           $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
@@ -937,17 +934,10 @@ function detectLanguageBasedOnWords(text) {
   const englishWords = ['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'on', 'with'];
   const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
   text = text.toLowerCase(); 
-  console.log(text);
-  function countMatches(wordList) {  
-    if((text.includes(word) ? 1 : 0)){
-    console.log(word);  
-    }
     return wordList.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0);
   }
   const englishMatches = countMatches(englishWords); 
-  console.log("englishMatches: ",englishMatches);
   const frenchMatches = countMatches(frenchWords); 
-  console.log(frenchMatches);
   return englishMatches > frenchMatches ? 'english' : frenchMatches > englishMatches ? 'french' : 'unknown';
 }
 
