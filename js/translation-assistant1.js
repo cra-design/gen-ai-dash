@@ -92,7 +92,8 @@ $(document).ready(function() {
       $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
       $(`#${language}-language-heading`).removeClass("hidden");
       $(`#${language}-language-doc`).addClass("hidden");
-      var fileList = event.target.files;
+      var fileList = event.target.files; 
+      console.log("Hello!!!!!!!!!");
       if (!fileList || fileList.length === 0) return;
       if (fileList.length > 1) {
           $(`#${language}-multiple-msg`).removeClass("hidden");
@@ -115,7 +116,8 @@ $(document).ready(function() {
       }
       try {
           let textContent; 
-          const fileExtension = uploadedFile.name.split('.').pop().toLowerCase(); 
+          const fileExtension = uploadedFile.name.split('.').pop().toLowerCase();  
+          console.log("Hello World: ",fileExtension);
           if (fileExtension === "docx" || fileExtension === "xlsx") {
               textContent = await handleFileExtraction(uploadedFile); 
           } else if (fileExtension === "pptx") { 
@@ -133,11 +135,12 @@ $(document).ready(function() {
               throw new Error("No text extracted."); 
           }
           
-          let detectedLanguage = detectLanguageBasedOnWords(textContent);
+          let detectedLanguage = detectLanguageBasedOnWords(textContent); 
+            console.log("Hello World22222: ",textContent);
           if (detectedLanguage !== "french") { detectedLanguage = "english"; }
           $(`#${language}-doc-detecting`).addClass("hidden");
           $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
-           console.log(fileExtension);
+       
           if (event.target.id === "source-file") {
               englishFile = uploadedFile;
               if (fileExtension === 'docx') {
