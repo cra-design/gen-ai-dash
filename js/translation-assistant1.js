@@ -938,7 +938,10 @@ function detectLanguageBasedOnWords(text) {
   const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
   text = text.toLowerCase(); 
   console.log(text);
-  function countMatches(wordList) {
+  function countMatches(wordList) {  
+    if((text.includes(word) ? 1 : 0)){
+    console.log(word);  
+    }
     return wordList.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0);
   }
   const englishMatches = countMatches(englishWords); 
