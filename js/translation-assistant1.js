@@ -597,46 +597,31 @@ $("#convert-translation-download-btn").click(async function() {
         </html>
       `;
       generatedBlob = htmlDocx.asBlob(fullHtml);
-    } 
-    else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
-      let updatedXml;
-      if (fileExtension === 'pptx') { 
-         let arrayBuffer = await englishFile.arrayBuffer();
-         let englishXml = await extractPptxTextXmlWithId(arrayBuffer);
-         updatedXml = conversionPptxXml(englishXml, finalFrenchHtml); 
-         console.log("Updated PPTX XML:", updatedXml);
-      } 
-      let zip = new JSZip();
-      if (fileExtension === 'pptx') {
-        let arrayBuffer = await englishFile.arrayBuffer();
-        const zip = await JSZip.loadAsync(arrayBuffer); // Load ZIP structure
-        const slideRegex = /^ppt\/slides\/slide\d+\.xml$/i; // Match all slide XML files
-        let textElements = await extractPptxTextXmlWithId(arrayBuffer); // Extract text elements
-        let slideUpdates = {}; // Store updated XML for each slide
+    } else if (fileExtension === 'pptx') {
+      let arrayBuffer = await englishFile.arrayBuffer();
+      const zip = await JSZip.loadAsync(arrayBuffer);
+      const slideRegex = /^ppt\/slides\/slide\d+\.xml$/i;
+      let slideUpdates = {}; 
 
-    // Iterate through all slide files
-    for (const fileName of Object.keys(zip.files)) {
+      for (const fileName of Object.keys(zip.files)) {
         if (slideRegex.test(fileName)) {
-            let slideXml = await zip.file(fileName).async("string"); // Get slide XML content
-            let updatedXml = conversionPptxXml(slideXml, finalFrenchHtml); // Apply translation
-            
-            slideUpdates[fileName] = updatedXml; // Store updated slide XML
+          let slideXml = await zip.file(fileName).async("string");
+          let updatedXml = conversionPptxXml(slideXml, finalFrenchHtml);
+          slideUpdates[fileName] = updatedXml;
         }
-    }
+      }
 
-    // Add all updated slides back into the ZIP
-    for (const [fileName, updatedXml] of Object.entries(slideUpdates)) {
-        zip.file(fileName, updatedXml);
-      } 
+      for (const [fileName, updatedXml] of Object.entries(slideUpdates)) {
+      zip.file(fileName, updatedXml);
+    }
       generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
     }
-
     if (!generatedBlob) {
-      alert("File generation failed.");
-      $('#converting-spinner').addClass("hidden");
-      return;
-    }
-
+    alert("File generation failed.");
+    $('#converting-spinner').addClass("hidden");
+    return;
+    }  
+    
     // 4) Download the file
     let englishFileName = englishFile 
       ? englishFile.name.split('.').slice(0, -1).join('.') 
@@ -660,29 +645,19 @@ $("#convert-translation-download-btn").click(async function() {
 
 // Convert the final French HTML into an array of text strings.
 function convertFrenchHtmlToTextArray(finalFrenchHtml) {
-  // Create a temporary element to parse the HTML.
   let tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
-  // Assuming each <p> corresponds to one text element,
-  // extract the text content (trimmed).
   let paragraphs = Array.from(tempDiv.querySelectorAll("p"));
-  let frenchTexts = paragraphs.map(p => p.textContent.trim());
-  return frenchTexts;
+  return paragraphs.map(p => p.textContent.trim());
 }
 // New helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(englishXml, finalFrenchHtml) {
-  // Get an array of French texts from the formatted HTML.
   let frenchTexts = convertFrenchHtmlToTextArray(finalFrenchHtml);
   let index = 0;
-  // Use a regular expression to replace each <a:t> node's content.
-  let updatedXml = englishXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, function(match, capturedText) {
-    // Replace with the corresponding French text; if none available, use an empty string.
-    let newText = frenchTexts[index] || "";
-    index++;
-    return `<a:t>${newText}</a:t>`;
+  return englishXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
+    return `<a:t>${frenchTexts[index++] || ""}</a:t>`;
   });
-  return updatedXml;
-} 
+}
   
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
