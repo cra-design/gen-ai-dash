@@ -641,7 +641,7 @@ $("#convert-translation-download-btn").click(async function() {
 });
 
 // Convert the final French HTML into an array of text strings.
-function convertFrenchHtmlToTextArray(finalFrenchHtml) {
+<!--function convertFrenchHtmlToTextArray(finalFrenchHtml) {
   let tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
   let paragraphs = Array.from(tempDiv.querySelectorAll("p"));
@@ -650,18 +650,47 @@ function convertFrenchHtmlToTextArray(finalFrenchHtml) {
   console.log("Extracted French Text Array:", frenchTexts);  // DEBUG
 
   return frenchTexts;
-}
+}-->  
 
-// Helper function to convert French HTML back to PPTX XML:
-function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
+/************************************************************************************
+* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
+* Can be added more if needed                                                   ***** 
+*************************************************************************************/
+function buildFrenchTextMap(finalFrenchHtml) {
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
 
+  const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+
+  // Step 1: Rebuild any broken phrases like "d" + "'identifier"
+  const rebuilt = [];
+  for (let i = 0; i < rawParagraphs.length; i++) {
+    const curr = rawParagraphs[i].textContent.trim();
+    if (/^[dDeElL’']$/.test(curr) && rawParagraphs[i + 1]) {
+      // Merge with next
+      const merged = curr + rawParagraphs[i + 1].textContent.trim();
+      const newId = rawParagraphs[i].id; // keep the original id
+      rebuilt.push({ id: newId, text: merged });
+      i++; // skip next one
+    } else {
+      rebuilt.push({ id: rawParagraphs[i].id, text: curr });
+    }
+  }
+
+  // Build a map from rebuilt result
   const frenchMap = {};
-  const paragraphs = tempDiv.querySelectorAll("p[id]");
-  paragraphs.forEach(p => {
-    frenchMap[p.id] = p.textContent.trim();
-  });
+  for (const { id, text } of rebuilt) {
+    frenchMap[id] = text;
+  }
+
+  return frenchMap;
+}
+
+
+
+// Helper function to convert French HTML back to PPTX XML:
+function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
+  const frenchMap = buildFrenchTextMap(finalFrenchHtml); // use fixed French text mapping
 
   let index = 1;
   const updatedXml = originalXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
@@ -673,6 +702,7 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
 
   return updatedXml;
 }
+
   
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
