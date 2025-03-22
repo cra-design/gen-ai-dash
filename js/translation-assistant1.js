@@ -640,22 +640,10 @@ $("#convert-translation-download-btn").click(async function() {
   }
 });
 
-// Convert the final French HTML into an array of text strings.
-<!--function convertFrenchHtmlToTextArray(finalFrenchHtml) {
-  let tempDiv = document.createElement("div");
-  tempDiv.innerHTML = finalFrenchHtml;
-  let paragraphs = Array.from(tempDiv.querySelectorAll("p"));
-  let frenchTexts = paragraphs.map(p => p.textContent.trim());
-
-  console.log("Extracted French Text Array:", frenchTexts);  // DEBUG
-
-  return frenchTexts;
-}-->  
-
-/************************************************************************************
-* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
-* Can be added more if needed                                                   ***** 
-*************************************************************************************/
+//************************************************************************************
+//* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
+//* Can be added more if needed                                                   ***** 
+//*************************************************************************************/
 function buildFrenchTextMap(finalFrenchHtml) {
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
