@@ -520,52 +520,7 @@ console.log("French text:", frenchText);
     alert("Translation alignment failed. No valid response from any model.");
     return;
   } 
-     finalFrenchHtml = removeCodeFences(finalFrenchHtml); 
-    function mergeBrokenLinesInFrenchHtml(finalFrenchHtml) {
-  // 1) Parse HTML into an array of { id, text }
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = finalFrenchHtml;
-
-  const paragraphs = Array.from(tempDiv.querySelectorAll("p[id]")).map(p => ({
-    id: p.id,
-    text: p.textContent
-  }));
-
-  // 2) Merge logic. Adjust the conditions to your needs
-  const mergedParagraphs = [];
-  for (let i = 0; i < paragraphs.length; i++) {
-    const currLine = paragraphs[i].text.trim();
-    // Check if we should merge with the next line
-    if (shouldMerge(currLine, paragraphs[i + 1])) {
-      const mergedLine = currLine + " " + paragraphs[i + 1].text.trim();
-      mergedParagraphs.push({ id: paragraphs[i].id, text: mergedLine });
-      i++; // skip the next line
-    } else {
-      mergedParagraphs.push(paragraphs[i]);
-    }
-  }
-
-  // 3) Convert merged paragraphs back to HTML
-  const cleanedHtml = mergedParagraphs
-    .map(p => `<p id="${p.id}">${p.text}</p>`)
-    .join("\n");
-
-  return cleanedHtml;
-}
-
-// Example "shouldMerge" logic (customize to your actual needs)
-function shouldMerge(currLine, nextParagraph) {
-  if (!nextParagraph) return false;
-  const nextLine = nextParagraph.text.trim();
-
-  // If next line is a single-letter contraction or starts with an apostrophe, etc.
-  if (/^(?:[dljntms]|qu)['’]?$/i.test(nextLine)) {
-    return true;
-  }
-
-  return false;
-}
-
+     finalFrenchHtml = removeCodeFences(finalFrenchHtml);
      console.log("Final French HTML (cleaned):", finalFrenchHtml);
 
     // 4) Display the final merged output in #review-translation
