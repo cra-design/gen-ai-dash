@@ -688,7 +688,7 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
     return `<a:t>${newText}</a:t>`;
   });
    // ensure there's at least one space between consecutive <a:t> runs.
-   updatedXml = updatedXml.replace(/<\/a:t>\s*<a:t>/g, '</a:t> <a:t>');
+   updatedXml = updatedXml.replace(/<\/a:t>(<a:t>)(?![\s\u00A0])/g, '</a:t>$1\u00A0');
 
   return updatedXml;
 }
