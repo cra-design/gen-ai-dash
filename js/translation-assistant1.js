@@ -681,7 +681,7 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml); // use fixed French text mapping
 
   let index = 1;
-  const updatedXml = originalXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
+  let const updatedXml = originalXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
     const key = `S${slideNumber}_T${index}`;
     const newText = frenchMap[key] || capturedText; // fallback if not found
     index++;
