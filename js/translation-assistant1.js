@@ -692,7 +692,7 @@ function mergeTextRuns(texts) {
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml); // use fixed French text mapping
-  let index = 1; 
+  let groupIndex = 1; 
   
  const updatedXml = originalXml.replace(/((?:<a:t>[\s\S]*?<\/a:t>\s*)+)/g, (groupMatch) => {
     // Extract all text content from the group of <a:t> nodes.
