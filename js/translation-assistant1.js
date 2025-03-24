@@ -19,30 +19,68 @@ function formatTranslatedOutput(rawText) {
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
-  const zip = await JSZip.loadAsync(arrayBuffer); 
+  const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
-  let textElements = [];
+  const textElements = [];
 
   for (const fileName of Object.keys(zip.files)) {
     const match = slideRegex.exec(fileName);
     if (match) {
       const slideNumber = match[1];
-      const slideXml = await zip.file(fileName).async("string"); 
-
+      const slideXml = await zip.file(fileName).async("string");
       const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(slideXml, "application/xml"); 
-       console.log(xmlDoc);
-      const textNodes = xmlDoc.getElementsByTagName("a:t");
+      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
 
-      for (let i = 0; i < textNodes.length; i++) {
-        let uniqueId = `S${slideNumber}_T${i + 1}`;
-        let text = textNodes[i].textContent;
-        textElements.push({ slide: slideNumber, id: uniqueId, text });
+      // Get all paragraph <a:p> elements.
+      const paragraphNodes = xmlDoc.getElementsByTagName("a:p");
+      let paragraphIndex = 1;
+
+      for (let i = 0; i < paragraphNodes.length; i++) {
+        const paragraphNode = paragraphNodes[i]; 
+        
+        // Get all run (<a:r>) elements within this paragraph.
+        const runNodes = paragraphNode.getElementsByTagName("a:r");
+        const collectedTexts = [];
+
+        for (let r = 0; r < runNodes.length; r++) {
+          // Each <a:r> typically contains one <a:t> child (the text).
+          const textNode = runNodes[r].getElementsByTagName("a:t")[0];
+          if (textNode) {
+            collectedTexts.push(textNode.textContent);
+          }
+        }
+
+        // Merge them into a single string with a space between runs.
+        const paragraphText = joinRuns(collectedTexts);
+
+        // If there's any text, assign it a unique ID and store it.
+        if (paragraphText.trim().length > 0) {
+          const uniqueId = `S${slideNumber}_T${paragraphIndex++}`;
+          textElements.push({ slide: slideNumber, id: uniqueId, text: paragraphText });
+        }
       }
     }
   }
   return textElements;
-} 
+}
+
+// Helper function to safely join runs with spacing.
+function joinRuns(runs) {
+  let result = "";
+  runs.forEach((runText, idx) => {
+    if (idx === 0) {
+      result = runText;
+    } else {
+      // Insert a space if the previous run doesn’t end with one 
+      // and this run doesn’t start with one.
+      if (!result.endsWith(" ") && !runText.startsWith(" ")) {
+        result += " ";
+      }
+      result += runText;
+    }
+  });
+  return result;
+}
 
 $(document).ready(function() {
   // Handle radio button changes for various upload and compare options.
