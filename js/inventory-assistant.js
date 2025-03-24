@@ -291,15 +291,6 @@ $(document).ready(function () {
 
 }); //close document ready
 
-function isValidUrl(url) {
-  try {
-    new URL(url);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
 function populateUrlTable() {
   let lines = [];
   let content = $('#url-input').html();
