@@ -40,19 +40,20 @@ $(document).ready(function () {
     $('#upload-chooser').addClass("hidden");
     $('#url-upload-input').addClass("hidden");
     $('#url-upload-preview').removeClass("hidden");
+    $('#table-init').removeClass("hidden");
     $("#url-frame").addClass("hidden"); //reset iframe hidden
     $("#url-invalid-msg").addClass("hidden");
     $("#canada-ca-msg").addClass("hidden");
     $("#other-site-msg").addClass("hidden");
     //load the iframe with the html preview
-    var bUrlInput = isValidUrl($('#url-input').val());
-    if (bUrlInput == false) { //invalid url
-      //unhide URL invalid message
-      $("#url-invalid-msg").removeClass("hidden");
-      $('#url-upload-input').removeClass("hidden");
-      return;
-    }
-    const urlInput = new URL($('#url-input').val());
+    //var bUrlInput = isValidUrl($('#url-input').val());
+    //if (bUrlInput == false) { //invalid url
+    //unhide URL invalid message
+    //$("#url-invalid-msg").removeClass("hidden");
+    //$('#url-upload-input').removeClass("hidden");
+    //return;
+    populateUrlTable();
+    /*const urlInput = new URL($('#url-input').val());
     // Currently configuring it to specific github organizations:
     if (urlInput.host == "cra-design.github.io" || urlInput.host == "gc-proto.github.io" || urlInput.host == "test.canada.ca" || urlInput.host == "cra-proto.github.io") { //github links
       $("#url-frame").attr("src", urlInput.href);
@@ -83,7 +84,7 @@ $(document).ready(function () {
       //unhide unsupported site message
       $("#other-site-msg").removeClass("hidden");
       $('#url-upload-input').removeClass("hidden");
-    }
+    }*/
     //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
   });
 
@@ -94,7 +95,6 @@ $(document).ready(function () {
     let extractedHtml = convertTextToHTML($("#html-input").html());
     RefineSyntax(extractedHtml);
   });
-
 
   $(document).on("change", "input", async function (event) {
     if (event.target.id == "img-file") {
@@ -258,7 +258,6 @@ $(document).ready(function () {
     $("#loading-indicator").addClass("hidden"); // Hide spinner when done
   });
 
-
   $("#genai-open-report-btn").click(function () {
     /* Open when someone clicks on the span element */
     //function openNav() {
@@ -272,6 +271,7 @@ $(document).ready(function () {
     $('input[name="html-upload-genai-analysis"]').prop('checked', false);
     $('input[name="html-upload-genai-model"]').prop('checked', false);
   });
+
   $("#close-report-btn").click(function () {
     /* Open when someone clicks on the span element */
     document.getElementById("genai-nav").style.width = "0%";
@@ -289,37 +289,37 @@ $(document).ready(function () {
 
   });
 
-
-  $('#url-input').on('input', function () {
-    let lines = readLines(); // Call function when input changes
-  });
-
 }); //close document ready
 
+function isValidUrl(url) {
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
-function readLines() { //Read lines text input box and populate table
+function populateUrlTable() {
   let lines = [];
   let content = $('#url-input').html();
 
-  // Convert <div> and <br> to new lines
   content = content.replace(/<div>/g, '\n').replace(/<br>/g, '\n');
   content = content.replace(/<\/div>/g, '');
 
   lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
-  console.log("Lines read:", lines); // Log the lines to the console
-  updateTable(lines); // Update table with URLs
-  return lines;
-}
+  console.log("Lines read:", lines);
 
-function updateTable(lines) { //empty table rows and add rows for each input url
   let tbody = $('#table-init tbody');
-  tbody.empty(); // Clear existing rows
+  tbody.empty();
 
   lines.forEach(line => {
-    let row = `<tr><td>${line}</td><td>Dummy Data</td></tr>`;
+    let displayText = isValidUrl(line) ? line : 'Invalid URL';
+    let row = `<tr><td>${displayText}</td><td>Dummy Data</td></tr>`;
     tbody.append(row);
   });
+  return lines;
 }
 
 function resetHiddenUploadOptions() {
