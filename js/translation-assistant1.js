@@ -672,22 +672,47 @@ function buildFrenchTextMap(finalFrenchHtml) {
   }
 
   return frenchMap;
+} 
+
+// Helper function to merge an array of text runs while ensuring proper spacing.
+function mergeTextRuns(texts) {
+  let merged = "";
+  texts.forEach((text, i) => {
+    if (i > 0) {
+      // Insert a space if the previous text doesn't end with one and the current text doesn't start with one.
+      if (!merged.endsWith(" ") && !text.startsWith(" ")) {
+        merged += " ";
+      }
+    }
+    merged += text;
+  });
+  return merged;
 }
-
-
 
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml); // use fixed French text mapping
+  let index = 1; 
+  
+ const updatedXml = originalXml.replace(/((?:<a:t>[\s\S]*?<\/a:t>\s*)+)/g, (groupMatch) => {
+    // Extract all text content from the group of <a:t> nodes.
+    const texts = [];
+    groupMatch.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, textContent) => {
+      texts.push(textContent);
+    }); 
 
-  let index = 1;
-  const updatedXml = originalXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
-    const key = `S${slideNumber}_T${index}`;
-    const newText = frenchMap[key] || capturedText; // fallback if not found
-    index++;
-    return `<a:t>${newText}</a:t>`;
-  });
+   // Merge the texts with proper spacing between them.
+   const mergedText = mergeTextRuns(texts); 
 
+   // Construct the mapping key using the slide number and current group index.
+   const key = `S${slideNumber}_T${groupIndex}`;
+   groupIndex++; 
+
+   // Use the French translation if available, otherwise fall back to the merged original text.
+    const newText = frenchMap[key] || mergedText;
+
+   return `<a:t>${newText}</a:t>`; 
+    }); 
   return updatedXml;
 }
 
