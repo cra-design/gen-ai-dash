@@ -686,7 +686,9 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
     const newText = frenchMap[key] || capturedText; // fallback if not found
     index++;
     return `<a:t>${newText}</a:t>`;
-  });
+  }); 
+   // ensure there's at least one space between consecutive <a:t> runs.
+   updatedXml = updatedXml.replace(/<\/a:t>\s*<a:t>/g, '</a:t> <a:t>');
 
   return updatedXml;
 }
