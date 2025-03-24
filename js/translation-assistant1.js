@@ -682,16 +682,21 @@ function buildFrenchTextMap(finalFrenchHtml) {
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml); // use fixed French text mapping
 
-  let index = 1;
-  let updatedXml = originalXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
-    const key = `S${slideNumber}_T${index}`;
-    const newText = frenchMap[key] || capturedText; // fallback if not found
-    index++;
-    return `<a:t>${newText}</a:t>`;
-  });
-   // ensure there's at least one space between consecutive <a:t> runs.
-   updatedXml = updatedXml.replace(/<\/a:t>(<a:t>)(?![\s\u00A0])/g, '</a:t>$1\u00A0');
+  let runIndex = 1; 
+   const updatedXml = originalXml.replace(
+    /<a:r[\s\S]*?>\s*<a:t>([\s\S]*?)<\/a:t>\s*<\/a:r>/g,
+    (match, capturedText) => {
+      // e.g. key = S3_T1, S3_T2, etc.
+      const key = `S${slideNumber}_T${runIndex++}`;
+      const newText = frenchMap[key];
 
+      // If there's no translated text or it's blank, remove the entire run.
+      if (!newText || !newText.trim()) {
+        return "";
+      } 
+      return match.replace(capturedText, newText);
+    }
+  );
   return updatedXml;
 }
 
