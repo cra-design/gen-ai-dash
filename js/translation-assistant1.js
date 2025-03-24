@@ -20,7 +20,6 @@ function formatTranslatedOutput(rawText) {
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer); 
-  console.log(zip);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
   let textElements = [];
 
@@ -28,9 +27,11 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
     const match = slideRegex.exec(fileName);
     if (match) {
       const slideNumber = match[1];
-      const slideXml = await zip.file(fileName).async("string");
+      const slideXml = await zip.file(fileName).async("string"); 
+
       const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
+      const xmlDoc = parser.parseFromString(slideXml, "application/xml"); 
+       console.log(xmlDoc);
       const textNodes = xmlDoc.getElementsByTagName("a:t");
 
       for (let i = 0; i < textNodes.length; i++) {
