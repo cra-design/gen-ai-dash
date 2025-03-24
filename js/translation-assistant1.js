@@ -678,20 +678,30 @@ function buildFrenchTextMap(finalFrenchHtml) {
 
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
-  const frenchMap = buildFrenchTextMap(finalFrenchHtml); // use fixed French text mapping
+  const frenchMap = buildFrenchTextMap(finalFrenchHtml); // use fixed French text mapping  
 
   let index = 1;
+  let frenchKeysUsed = new Set(); // Track keys used
+
   const updatedXml = originalXml.replace(/<a:t>([\s\S]*?)<\/a:t>/g, (match, capturedText) => {
-    const key = `S${slideNumber}_T${index}`;
-    const newText = frenchMap[key] || capturedText; // fallback if not found
-    index++;
-    return `<a:t>${newText}</a:t>`;
+  const key = `S${slideNumber}_T${index}`;
+  index++;
+if (frenchMap[key]) {
+      frenchKeysUsed.add(key);
+      return `<a:t>${frenchMap[key]}</a:t>`;
+    } else {
+      // If a previous replacement already contained the content, suppress duplicate fragments
+      const prevKey = `S${slideNumber}_T${index - 2}`;
+      if (frenchMap[prevKey] && frenchMap[prevKey].includes(capturedText)) {
+        return `<a:t></a:t>`; // blank out duplicate fragments
+      }
+      return match; // fallback to original English
+    }
   });
 
   return updatedXml;
 }
 
-  
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
