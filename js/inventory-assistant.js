@@ -364,14 +364,6 @@ async function getORData(model, requestJson) {
   return ORjson;
 }
 
-/*const isValidUrl = urlString => {
-  try {
-    return Boolean(new URL(urlString));
-  } catch (e) {
-    return false;
-  }
-} */
-
 function parsePageHTML(url, callback) {
   $.ajax({
     url: url,
