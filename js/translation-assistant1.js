@@ -16,7 +16,6 @@ function formatTranslatedOutput(rawText) {
   return formatted;
 } 
 
-
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer); 
