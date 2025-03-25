@@ -526,7 +526,12 @@ console.log("French text:", frenchText);
     finalFrenchHtml = removeCodeFences(finalFrenchHtml); 
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = finalFrenchHtml;
-      *******************************************************/
+      *******************************************************/ 
+    finalFrenchHtml = removeCodeFences(finalFrenchHtml); 
+
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = finalFrenchHtml; 
+    
     const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
     const rebuilt = [];
     for (let i = 0; i < rawParagraphs.length; i++) {
