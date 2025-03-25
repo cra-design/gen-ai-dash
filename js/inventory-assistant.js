@@ -1,41 +1,45 @@
 // JavaScript Document
 $(document).ready(function () {
 
-$('#export-excel').click(function() { // Function to export table to Excel
+  $('#export-excel').click(function () { // Function to export table to Excel
     var wb = XLSX.utils.book_new(); // Create a new workbook
     var ws_data = []; // Array to hold table data
-    
+
     // Add the header row (if you want headers)
     ws_data.push(['Link to page', 'Description metadata', 'Keywords metadata']);
-    
+
     // Loop through each row in the table and extract the data
-    $('table tbody tr').each(function() {
-        var row = [];
-        $(this).find('td').each(function(index) {
-            var cellText = $(this).text().trim(); // Use .text() to get the cell content
-            
-            // Check for hyperlink in the cell and add it
-            var link = $(this).find('a');
-            if (link.length) {
-                var hyperlink = link.attr('href');
-                row.push({t: 's', v: cellText, l: { Target: hyperlink }}); // Add the hyperlink
-            } else {
-                row.push(cellText); // Just text if no hyperlink
+    $('table tbody tr').each(function () {
+      var row = [];
+      $(this).find('td').each(function (index) {
+        var cellText = $(this).text().trim();
+
+        // Check for hyperlink in the cell and add it
+        if ($(this).find('a').length) {
+          var hyperlink = $(this).find('a').attr('href');
+          row.push({
+            t: 's',
+            v: cellText,
+            l: {
+              Target: hyperlink
             }
-        });
-        ws_data.push(row);
+          }); // Add the hyperlink
+        } else {
+          row.push(cellText); // Just text if no hyperlink
+        }
+      });
+      ws_data.push(row);
     });
 
     // Convert data to worksheet
     var ws = XLSX.utils.aoa_to_sheet(ws_data);
-    
+
     // Add worksheet to the workbook
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-    
+
     // Generate Excel file and trigger download
     XLSX.writeFile(wb, 'table_data.xlsx');
-});
-
+  });
 
   $("#reset-btn").click(function () {
     resetHiddenUploadOptions();
