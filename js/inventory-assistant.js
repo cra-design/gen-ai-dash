@@ -323,49 +323,7 @@ function extractMetadata(html, url) {
   
   return { title, description, keywords };
 }
-
-/*function populateUrlTable() {
-  let lines = [];
-  let content = $('#url-input').html();
-
-  content = content.replace(/<div>/g, '\n').replace(/<br>/g, '\n');
-  content = content.replace(/<\/div>/g, '');
-
-  lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-
-  console.log("Lines read:", lines);
-
-  let tbody = $('#table-init tbody');
-  tbody.empty();
-
-  lines.forEach(line => {
-    if (isValidUrl(line)) {
-      parsePageHTML(line, function (err, html) {
-        let metadata;
-        if (err) {
-          metadata = { title: line, description: 'Could not fetch metadata', keywords: '' };
-        } else {
-          metadata = extractMetadata(html, line);
-        }
-
-        let row = `<tr>
-                     <td><a href="${line}" target="_blank">${metadata.title}</a></td>
-                     <td>${metadata.description}</td>
-                     <td>${metadata.keywords}</td>
-                   </tr>`;
-        tbody.append(row);
-      });
-    } else {
-      let row = `<tr>
-                   <td>Invalid URL</td>
-                   <td>N/A</td>
-                   <td>N/A</td>
-                 </tr>`;
-      tbody.append(row);
-    }
-  });
-}
-*/
+  
 function populateUrlTable() {
   let lines = [];
   let content = $('#url-input').html();
@@ -392,6 +350,9 @@ function populateUrlTable() {
           metadata = extractMetadata(html, line);
         }
 
+        // Remove " - canada.ca" from the title if present
+        metadata.title = metadata.title.replace(' - canada.ca', '');
+
         rows[index] = `<tr>
                          <td><a href="${line}" target="_blank">${metadata.title}</a></td>
                          <td>${metadata.description}</td>
@@ -414,7 +375,7 @@ function populateUrlTable() {
       }
     }
   });
-}  
+}
 
 function resetHiddenUploadOptions() {
   $('#url-upload').addClass("hidden");
