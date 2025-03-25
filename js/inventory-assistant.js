@@ -313,30 +313,23 @@ $(document).ready(function () {
   return lines;
 }*/
 
-
-async function fetchPageMetadata(url) {
-  try {
-    let response = await fetch(url);
-    let text = await response.text();
-    let parser = new DOMParser();
-    let doc = parser.parseFromString(text, 'text/html');
-    
-    let title = doc.querySelector('title')?.innerText || url;
-    let description = doc.querySelector('meta[name="description"]')?.content || 'No Description';
-    let keywords = doc.querySelector('meta[name="keywords"]')?.content || 'No Keywords';
-    
-    return { title, description, keywords };
-  } catch (error) {
-    return { title: url, description: 'Could not fetch metadata', keywords: '' };
-  }
+function extractMetadata(html, url) {
+  let parser = new DOMParser();
+  let doc = parser.parseFromString(html, 'text/html');
+  
+  let title = doc.querySelector('title')?.innerText || url;
+  let description = doc.querySelector('meta[name="description"]')?.content || 'No Description';
+  let keywords = doc.querySelector('meta[name="keywords"]')?.content || 'No Keywords';
+  
+  return { title, description, keywords };
 }
 
-async function populateUrlTable() {
+function populateUrlTable() {
   let lines = [];
   let content = $('#url-input').html();
 
   content = content.replace(/<div>/g, '\n').replace(/<br>/g, '\n');
-  content = content.replace(/</div>/g, '');
+  content = content.replace(/<\/div>/g, '');
 
   lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
@@ -345,15 +338,23 @@ async function populateUrlTable() {
   let tbody = $('#table-init tbody');
   tbody.empty();
 
-  for (let line of lines) {
+  lines.forEach(line => {
     if (isValidUrl(line)) {
-      let metadata = await fetchPageMetadata(line);
-      let row = `<tr>
-                   <td><a href="${line}" target="_blank">${metadata.title}</a></td>
-                   <td>${metadata.description}</td>
-                   <td>${metadata.keywords}</td>
-                 </tr>`;
-      tbody.append(row);
+      parsePageHTML(line, function (err, html) {
+        let metadata;
+        if (err) {
+          metadata = { title: line, description: 'Could not fetch metadata', keywords: '' };
+        } else {
+          metadata = extractMetadata(html, line);
+        }
+
+        let row = `<tr>
+                     <td><a href="${line}" target="_blank">${metadata.title}</a></td>
+                     <td>${metadata.description}</td>
+                     <td>${metadata.keywords}</td>
+                   </tr>`;
+        tbody.append(row);
+      });
     } else {
       let row = `<tr>
                    <td>Invalid URL</td>
@@ -362,8 +363,7 @@ async function populateUrlTable() {
                  </tr>`;
       tbody.append(row);
     }
-  }
-  return lines;
+  });
 }
 
 
