@@ -741,12 +741,10 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       const key = `S${slideNumber}_T${runIndex++}`;
       let newText = frenchMap[key];
 
-     if (newText === undefined) {
-      return match;
-    }
-    if (!newText.trim()) {
-      return '';
-    }
+      if (!newText || !newText.trim()) {
+        return "";
+      }  
+      
       const escaped = escapeXml(newText);
       return match.replace(capturedText, newText);
     }
