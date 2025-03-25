@@ -654,16 +654,18 @@ function buildFrenchTextMap(finalFrenchHtml) {
 
   // Step 1: Rebuild any broken phrases like "d" + "'identifier"
   const rebuilt = [];
-  for (let i = 0; i < rawParagraphs.length; i++) {
+   for (let i = 0; i < rawParagraphs.length; i++) {
     const curr = rawParagraphs[i].textContent.trim();
-    if (/^.{1,2}$/.test(curr) && rawParagraphs[i + 1]) {
-      // Merge with next
-      const merged = curr + rawParagraphs[i + 1].textContent.trim();
-      const newId = rawParagraphs[i].id; // keep the original id
-      rebuilt.push({ id: newId, text: merged });
-      i++; // skip next one
+    const next = rawParagraphs[i + 1]?.textContent.trim();
+    const currId = rawParagraphs[i].id;
+
+    // If it's a very short fragment (e.g., "d", "l’", etc.), merge with the next one
+    if (/^.{1,2}$/.test(curr) && next) {
+      const merged = curr + next;
+      rebuilt.push({ id: currId, text: merged });
+      i++; // skip next
     } else {
-      rebuilt.push({ id: rawParagraphs[i].id, text: curr });
+      rebuilt.push({ id: currId, text: curr });
     }
   }
 
@@ -690,11 +692,11 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       const key = `S${slideNumber}_T${runIndex++}`;
       const newText = frenchMap[key];
 
-      // If there's no translated text or it's blank, remove the entire run.
-      if (!newText || !newText.trim()) {
-        return "";
-      } 
-      return match.replace(capturedText, newText);
+      if (newText !== undefined) {
+        return match.replace(capturedText, newText);
+      } else {
+        return match; // fallback to original
+      }
     }
   );
   return updatedXml;
