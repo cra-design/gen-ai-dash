@@ -6,7 +6,7 @@ $('#export-excel').click(function () {
     var ws_data = [];
 
     // Add header row
-    ws_data.push(['Link to page', 'Description metadata', 'Keywords metadata']);
+    ws_data.push(['URL', 'Page Title', 'Description metadata', 'Keywords metadata']);
 
     // Loop through each table row
     $('table tbody tr').each(function () {
@@ -23,11 +23,11 @@ $('#export-excel').click(function () {
                     hyperlink = 'http://' + hyperlink;
                 }
 
-                // Set as an Excel formula
-                row.push({ 
-                    t: 'n',  // 'n' ensures it's treated as a formula
-                    f: `HYPERLINK("${hyperlink}", "${cellText}")`  // Excel will evaluate this
-                });
+                // Remove "-canada.ca" from the title
+                var cleanedTitle = cellText.replace('-canada.ca', '').trim();
+
+                // Add URL to column 1, cleaned title to column 2
+                row.push(hyperlink, cleanedTitle);
             } else {
                 row.push(cellText);
             }
@@ -38,11 +38,12 @@ $('#export-excel').click(function () {
     var ws = XLSX.utils.aoa_to_sheet(ws_data);
 
     // Adjust column width for better visibility
-    ws['!cols'] = [{ wch: 40 }, { wch: 30 }, { wch: 30 }];
+    ws['!cols'] = [{ wch: 50 }, { wch: 30 }, { wch: 30 }, { wch: 30 }];
 
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
     XLSX.writeFile(wb, 'table_data.xlsx');
 });
+
 
   $("#reset-btn").click(function () {
     resetHiddenUploadOptions();
