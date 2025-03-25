@@ -18,16 +18,13 @@ $('#export-excel').click(function () {
             if (linkElement.length) {
                 var hyperlink = linkElement.attr('href');
 
-                // Ensure the hyperlink starts with "http://" or "https://" for Excel to format it as a link
+                // Ensure hyperlink starts with "http://" or "https://"
                 if (!hyperlink.startsWith('http')) {
-                    hyperlink = 'http://' + hyperlink; // Add protocol if missing
+                    hyperlink = 'http://' + hyperlink;
                 }
 
-                row.push({ 
-                    t: 's', 
-                    v: cellText, 
-                    l: { Target: hyperlink } 
-                });
+                // Use Excel's HYPERLINK formula to ensure proper formatting
+                row.push(`=HYPERLINK("${hyperlink}", "${cellText}")`);
             } else {
                 row.push(cellText);
             }
@@ -37,13 +34,12 @@ $('#export-excel').click(function () {
 
     var ws = XLSX.utils.aoa_to_sheet(ws_data);
 
-    // Ensure hyperlinks are clickable and formatted
-    ws['!cols'] = [{ wch: 40 }, { wch: 30 }, { wch: 30 }]; // Adjust column width
+    // Ensure hyperlinks are visible with enough width
+    ws['!cols'] = [{ wch: 40 }, { wch: 30 }, { wch: 30 }];
 
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
     XLSX.writeFile(wb, 'table_data.xlsx');
 });
-
 
 
   $("#reset-btn").click(function () {
