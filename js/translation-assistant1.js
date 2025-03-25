@@ -16,6 +16,7 @@ function formatTranslatedOutput(rawText) {
   return formatted;
 } 
 
+
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer); 
@@ -673,46 +674,33 @@ function buildFrenchTextMap(finalFrenchHtml) {
   }
 
   return frenchMap;
-} 
-
-function xmlEscape(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
 }
 
+
+
+// Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
-  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
-  let runIndex = 1;
+  const frenchMap = buildFrenchTextMap(finalFrenchHtml); // use fixed French text mapping
 
-  let updatedXml = originalXml.replace(
-    // Capture the entire run, including attributes, plus the text.
-    /<a:r([\s\S]*?)>\s*<a:t>([\s\S]*?)<\/a:t>\s*<\/a:r>/g,
-    (match, runAttrs, oldText) => {
+  let runIndex = 1; 
+   const updatedXml = originalXml.replace(
+    /<a:r[\s\S]*?>\s*<a:t>([\s\S]*?)<\/a:t>\s*<\/a:r>/g,
+    (match, capturedText) => {
+      // e.g. key = S3_T1, S3_T2, etc.
       const key = `S${slideNumber}_T${runIndex++}`;
-      let newText = frenchMap[key] || "";
+      const newText = frenchMap[key];
 
-      newText = xmlEscape(newText);
-
-      if (!newText.trim()) {
+      // If there's no translated text or it's blank, remove the entire run.
+      if (!newText || !newText.trim()) {
         return "";
-      }
-
-      if (!/\s$/.test(newText)) {
-        newText += " ";
-      }
-
-      return `<a:r${runAttrs}><a:t>${newText}</a:t></a:r>`;
+      } 
+      return match.replace(capturedText, newText);
     }
   );
-
-  // Optional second pass: ensure a space or non-breaking space between consecutive <a:t> tags
-  updatedXml = updatedXml.replace(/<\/a:t>\s*<a:t>/g, "</a:t> <a:t>");
-
   return updatedXml;
 }
 
+  
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
