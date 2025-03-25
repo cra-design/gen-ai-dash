@@ -13,15 +13,20 @@ $('#export-excel').click(function () {
         var row = [];
         $(this).find('td').each(function (index) {
             var cellText = $(this).text().trim();
-
-            // Check if there's a hyperlink inside the cell
             var linkElement = $(this).find('a');
+
             if (linkElement.length) {
                 var hyperlink = linkElement.attr('href');
+
+                // Ensure the hyperlink starts with "http://" or "https://" for Excel to format it as a link
+                if (!hyperlink.startsWith('http')) {
+                    hyperlink = 'http://' + hyperlink; // Add protocol if missing
+                }
+
                 row.push({ 
                     t: 's', 
                     v: cellText, 
-                    l: { Target: hyperlink } // Embed hyperlink directly
+                    l: { Target: hyperlink } 
                 });
             } else {
                 row.push(cellText);
@@ -30,18 +35,15 @@ $('#export-excel').click(function () {
         ws_data.push(row);
     });
 
-    // Convert data to worksheet
     var ws = XLSX.utils.aoa_to_sheet(ws_data);
 
-    // Ensure hyperlinks are recognized
-    ws['!cols'] = [{ wch: 30 }, { wch: 30 }, { wch: 30 }]; // Adjust column width
+    // Ensure hyperlinks are clickable and formatted
+    ws['!cols'] = [{ wch: 40 }, { wch: 30 }, { wch: 30 }]; // Adjust column width
 
-    // Add worksheet to the workbook
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-
-    // Generate Excel file and trigger download
     XLSX.writeFile(wb, 'table_data.xlsx');
 });
+
 
 
   $("#reset-btn").click(function () {
