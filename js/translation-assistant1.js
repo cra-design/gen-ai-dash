@@ -656,7 +656,7 @@ function buildFrenchTextMap(finalFrenchHtml) {
   const rebuilt = [];
   for (let i = 0; i < rawParagraphs.length; i++) {
     const curr = rawParagraphs[i].textContent.trim();
-    if (/^.{1,2}$/.test(curr) && rawParagraphs[i + 1]) {
+    if (/^[dDeElL’']$/.test(curr) && rawParagraphs[i + 1]) {
       // Merge with next
       const merged = curr + rawParagraphs[i + 1].textContent.trim();
       const newId = rawParagraphs[i].id; // keep the original id
