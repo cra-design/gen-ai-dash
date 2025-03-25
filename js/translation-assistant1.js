@@ -646,8 +646,26 @@ $("#convert-translation-download-btn").click(async function() {
 //* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
 //* Can be added more if needed                                                   ***** 
 //*************************************************************************************/
+function deduplicateFrenchParagraphs(finalFrenchHtml) {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = finalFrenchHtml;
+
+  const seenTexts = new Set();
+  const cleanedParagraphs = [];
+
+  const paragraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+  for (const p of paragraphs) {
+    const cleanText = p.textContent.trim();
+    if (!seenTexts.has(cleanText)) {
+      seenTexts.add(cleanText);
+      cleanedParagraphs.push(p.outerHTML);
+    }
+  }
+
+  return cleanedParagraphs.join("");
+} 
 function buildFrenchTextMap(finalFrenchHtml) { 
-  
+  finalFrenchHtml = deduplicateFrenchParagraphs(finalFrenchHtml);
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
 
