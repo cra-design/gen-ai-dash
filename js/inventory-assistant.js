@@ -1,28 +1,39 @@
 // JavaScript Document
 $(document).ready(function () {
   
-  $('#export-csv').click(function() { // Function to export table to CSV
-    var csv = 'Link to page,Description metadata,Keywords metadata\n';
+$('#export-csv').click(function() { // Function to export table to Excel
+    var wb = XLSX.utils.book_new(); // Create a new workbook
+    var ws_data = []; // Array to hold table data
     
-    // Loop through each row in the table and append to CSV string
+    // Add the header row (if you want headers)
+    ws_data.push(['Link to page', 'Description metadata', 'Keywords metadata']);
+    
+    // Loop through each row in the table and extract the data
     $('table tbody tr').each(function() {
-      var row = '';
-      $(this).find('td').each(function() {
-        row += '"' + $(this).text().replace(/"/g, '""') + '",';
-      });
-      row = row.slice(0, -1); // Remove last comma
-      csv += row + '\n';
+        var row = [];
+        $(this).find('td').each(function(index) {
+            var cellText = $(this).text().trim();
+            
+            // Check for hyperlink in the cell and add it
+            if ($(this).find('a').length) {
+                var hyperlink = $(this).find('a').attr('href');
+                row.push({t: 's', v: cellText, l: { Target: hyperlink }}); // Add the hyperlink
+            } else {
+                row.push(cellText); // Just text if no hyperlink
+            }
+        });
+        ws_data.push(row);
     });
+
+    // Convert data to worksheet
+    var ws = XLSX.utils.aoa_to_sheet(ws_data);
     
-    // Create a hidden link element
-    var hiddenLink = document.createElement('a');
-    hiddenLink.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-    hiddenLink.target = '_blank';
-    hiddenLink.download = 'table_data.csv';
+    // Add worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
     
-    // Programmatically click the link to trigger the download
-    hiddenLink.click();
-  });
+    // Generate Excel file and trigger download
+    XLSX.writeFile(wb, 'table_data.xlsx');
+});
 
   $("#reset-btn").click(function () {
     resetHiddenUploadOptions();
