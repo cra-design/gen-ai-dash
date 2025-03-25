@@ -677,7 +677,6 @@ function buildFrenchTextMap(finalFrenchHtml) {
 }
 
 
-
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml); // use fixed French text mapping
