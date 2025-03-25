@@ -682,36 +682,37 @@ function xmlEscape(str) {
     .replace(/>/g, "&gt;");
 }
 
-
-// Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
-  const frenchMap = buildFrenchTextMap(finalFrenchHtml); // use fixed French text mapping
+  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
+  let runIndex = 1;
 
-  let runIndex = 1; 
-   let updatedXml = originalXml.replace(
-    /<a:r[\s\S]*?>\s*<a:t>([\s\S]*?)<\/a:t>\s*<\/a:r>/g,
+  let updatedXml = originalXml.replace(
+    // Capture the entire run, including attributes, plus the text.
+    /<a:r([\s\S]*?)>\s*<a:t>([\s\S]*?)<\/a:t>\s*<\/a:r>/g,
     (match, runAttrs, oldText) => {
-    
       const key = `S${slideNumber}_T${runIndex++}`;
-      let newText = frenchMap[key]; 
+      let newText = frenchMap[key] || "";
 
       newText = xmlEscape(newText);
 
-      // If there's no translated text or it's blank, remove the entire run.
-      if (!newText || !newText.trim()) {
+      if (!newText.trim()) {
         return "";
-      }  
+      }
+
       if (!/\s$/.test(newText)) {
         newText += " ";
       }
+
       return `<a:r${runAttrs}><a:t>${newText}</a:t></a:r>`;
     }
-  ); 
-  updatedXml = updatedXml.replace(/<\/a:t>\s*<a:t>/g, "</a:t>\u00A0<a:t>");
+  );
+
+  // Optional second pass: ensure a space or non-breaking space between consecutive <a:t> tags
+  updatedXml = updatedXml.replace(/<\/a:t>\s*<a:t>/g, "</a:t> <a:t>");
+
   return updatedXml;
 }
 
-  
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
