@@ -680,28 +680,25 @@ function buildFrenchTextMap(finalFrenchHtml) {
 
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
-  const frenchMap = buildFrenchTextMap(finalFrenchHtml); // use fixed French text mapping
+  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
 
-  let runIndex = 1; 
-   const updatedXml = originalXml.replace(
+  let runIndex = 1;
+
+  // Use "let" here, not "const"
+  let updatedXml = originalXml.replace(
     /<a:r[\s\S]*?>\s*<a:t>([\s\S]*?)<\/a:t>\s*<\/a:r>/g,
     (match, capturedText) => {
-      // e.g. key = S3_T1, S3_T2, etc.
       const key = `S${slideNumber}_T${runIndex++}`;
-      const newText = frenchMap[key];
-
-      // If there's no translated text or it's blank, remove the entire run.
-      if (!newText || !newText.trim()) {
-        return "";
-      } 
-      return match.replace(capturedText, newText);
+      const newText = frenchMap[key] || "";
+      return newText.trim() ? match.replace(capturedText, newText) : "";
     }
-  ); 
-  // 2) Ensure there is at least one space between consecutive <a:t> runs
+  );
+
+  // Second pass: ensure there is a space between consecutive <a:t> runs
   updatedXml = updatedXml.replace(/<\/a:t>([^\S\r\n]*)<a:t>/g, "</a:t> <a:t>");
+
   return updatedXml;
 }
-
   
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
