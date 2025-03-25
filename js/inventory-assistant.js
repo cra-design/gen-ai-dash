@@ -1,6 +1,28 @@
 // JavaScript Document
-
 $(document).ready(function () {
+  
+  $('#export-csv').click(function() { // Function to export table to CSV
+    var csv = 'Link to page,Description metadata,Keywords metadata\n';
+    
+    // Loop through each row in the table and append to CSV string
+    $('table tbody tr').each(function() {
+      var row = '';
+      $(this).find('td').each(function() {
+        row += '"' + $(this).text().replace(/"/g, '""') + '",';
+      });
+      row = row.slice(0, -1); // Remove last comma
+      csv += row + '\n';
+    });
+    
+    // Create a hidden link element
+    var hiddenLink = document.createElement('a');
+    hiddenLink.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    hiddenLink.target = '_blank';
+    hiddenLink.download = 'table_data.csv';
+    
+    // Programmatically click the link to trigger the download
+    hiddenLink.click();
+  });
 
   $("#reset-btn").click(function () {
     resetHiddenUploadOptions();
