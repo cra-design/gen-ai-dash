@@ -2,40 +2,47 @@
 $(document).ready(function () {
   
 $('#export-excel').click(function () {
-  var wb = XLSX.utils.book_new();
-  var ws_data = [];
+    var wb = XLSX.utils.book_new();
+    var ws_data = [];
 
-  // Add header row
-  ws_data.push(['Link to page', 'Description metadata', 'Keywords metadata']);
+    // Add header row
+    ws_data.push(['Link to page', 'Description metadata', 'Keywords metadata']);
 
-  var hyperlinks = []; // Store hyperlink metadata
+    // Loop through each table row
+    $('table tbody tr').each(function () {
+        var row = [];
+        $(this).find('td').each(function (index) {
+            var cellText = $(this).text().trim();
 
-  // Loop through each table row
-  $('table tbody tr').each(function (rowIndex) {
-    var row = [];
-    $(this).find('td').each(function (colIndex) {
-      var cellText = $(this).text().trim();
-      var cellAddress = XLSX.utils.encode_cell({ r: rowIndex + 1, c: colIndex }); // Excel cell address
-
-      if ($(this).find('a').length) {
-        var hyperlink = $(this).find('a').attr('href');
-        row.push(cellText); // Add display text
-        hyperlinks.push({ ref: cellAddress, l: { Target: hyperlink } }); // Store hyperlink
-      } else {
-        row.push(cellText);
-      }
+            // Check if there's a hyperlink inside the cell
+            var linkElement = $(this).find('a');
+            if (linkElement.length) {
+                var hyperlink = linkElement.attr('href');
+                row.push({ 
+                    t: 's', 
+                    v: cellText, 
+                    l: { Target: hyperlink } // Embed hyperlink directly
+                });
+            } else {
+                row.push(cellText);
+            }
+        });
+        ws_data.push(row);
     });
-    ws_data.push(row);
-  });
 
-  var ws = XLSX.utils.aoa_to_sheet(ws_data);
+    // Convert data to worksheet
+    var ws = XLSX.utils.aoa_to_sheet(ws_data);
 
-  // Add hyperlinks to the worksheet
-  ws['!hyperlinks'] = hyperlinks;
+    // Ensure hyperlinks are recognized
+    ws['!cols'] = [{ wch: 30 }, { wch: 30 }, { wch: 30 }]; // Adjust column width
 
-  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-  XLSX.writeFile(wb, 'table_data.xlsx');
+    // Add worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+    // Generate Excel file and trigger download
+    XLSX.writeFile(wb, 'table_data.xlsx');
 });
+
 
   $("#reset-btn").click(function () {
     resetHiddenUploadOptions();
