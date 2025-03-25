@@ -1,7 +1,7 @@
 // JavaScript Document
 $(document).ready(function () {
   
-$('#export-csv').click(function () {
+$('#export-excel').click(function () {
   var wb = XLSX.utils.book_new();
   var ws_data = [];
 
