@@ -673,8 +673,14 @@ function buildFrenchTextMap(finalFrenchHtml) {
   }
 
   return frenchMap;
-}
+} 
 
+function xmlEscape(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 
 // Helper function to convert French HTML back to PPTX XML:
@@ -684,10 +690,12 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   let runIndex = 1; 
    let updatedXml = originalXml.replace(
     /<a:r[\s\S]*?>\s*<a:t>([\s\S]*?)<\/a:t>\s*<\/a:r>/g,
-    (match, capturedText) => {
-      // e.g. key = S3_T1, S3_T2, etc.
+    (match, runAttrs, oldText) => {
+    
       const key = `S${slideNumber}_T${runIndex++}`;
-      let newText = frenchMap[key];
+      let newText = frenchMap[key]; 
+
+      newText = xmlEscape(newText);
 
       // If there's no translated text or it's blank, remove the entire run.
       if (!newText || !newText.trim()) {
@@ -696,7 +704,7 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       if (!/\s$/.test(newText)) {
         newText += " ";
       }
-      return match.replace(capturedText, newText);
+      return `<a:r${runAttrs}><a:t>${newText}</a:t></a:r>`;
     }
   ); 
   updatedXml = updatedXml.replace(/<\/a:t>\s*<a:t>/g, "</a:t>\u00A0<a:t>");
