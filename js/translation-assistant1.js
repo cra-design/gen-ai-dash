@@ -646,7 +646,8 @@ $("#convert-translation-download-btn").click(async function() {
 //* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
 //* Can be added more if needed                                                   ***** 
 //*************************************************************************************/
-function buildFrenchTextMap(finalFrenchHtml) {
+function buildFrenchTextMap(finalFrenchHtml) { 
+  finalFrenchHtml = finalFrenchHtml.replace(/<p[^>]*>\s*<\/p>/g, '');
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
 
@@ -698,7 +699,7 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       }
 
       const escaped = escapeXml(newText);
-      return match.replace(capturedText, escaped);
+      return `<a:r><a:t>${newText}</a:t></a:r>`;
     }
   );
 
