@@ -291,28 +291,6 @@ $(document).ready(function () {
 
 }); //close document ready
 
-/*function populateUrlTable() {
-  let lines = [];
-  let content = $('#url-input').html();
-
-  content = content.replace(/<div>/g, '\n').replace(/<br>/g, '\n');
-  content = content.replace(/<\/div>/g, '');
-
-  lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-
-  console.log("Lines read:", lines);
-
-  let tbody = $('#table-init tbody');
-  tbody.empty();
-
-  lines.forEach(line => {
-    let displayText = isValidUrl(line) ? line : 'Invalid URL';
-    let row = `<tr><td>${displayText}</td><td>Dummy Data</td></tr>`;
-    tbody.append(row);
-  });
-  return lines;
-}*/
-
 function extractMetadata(html, url) {
   let parser = new DOMParser();
   let doc = parser.parseFromString(html, 'text/html');
@@ -324,7 +302,7 @@ function extractMetadata(html, url) {
   return { title, description, keywords };
 }
 
-function populateUrlTable() {
+/*function populateUrlTable() {
   let lines = [];
   let content = $('#url-input').html();
 
@@ -365,7 +343,56 @@ function populateUrlTable() {
     }
   });
 }
+*/
+function populateUrlTable() {
+  let lines = [];
+  let content = $('#url-input').html();
 
+  content = content.replace(/<div>/g, '\n').replace(/<br>/g, '\n');
+  content = content.replace(/<\/div>/g, '');
+
+  lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+  console.log("Lines read:", lines);
+
+  let tbody = $('#table-init tbody');
+  tbody.empty();
+
+  let rows = new Array(lines.length).fill(null);
+
+  lines.forEach((line, index) => {
+    if (isValidUrl(line)) {
+      parsePageHTML(line, function (err, html) {
+        let metadata;
+        if (err) {
+          metadata = { title: line, description: 'Could not fetch metadata', keywords: '' };
+        } else {
+          metadata = extractMetadata(html, line);
+        }
+
+        rows[index] = `<tr>
+                         <td><a href="${line}" target="_blank">${metadata.title}</a></td>
+                         <td>${metadata.description}</td>
+                         <td>${metadata.keywords}</td>
+                       </tr>`;
+        
+        if (!rows.includes(null)) {
+          tbody.html(rows.join(''));
+        }
+      });
+    } else {
+      rows[index] = `<tr>
+                       <td>Invalid URL</td>
+                       <td>N/A</td>
+                       <td>N/A</td>
+                     </tr>`;
+      
+      if (!rows.includes(null)) {
+        tbody.html(rows.join(''));
+      }
+    }
+  });
+}  
 
 function resetHiddenUploadOptions() {
   $('#url-upload').addClass("hidden");
