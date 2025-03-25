@@ -520,7 +520,31 @@ console.log("French text:", frenchText);
     alert("Translation alignment failed. No valid response from any model.");
     return;
   } 
-     finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+     /*******************************************************
+        ensures verbs like d’identifier, l’expérience,  
+      à résoudre don’t get split across separate
+    finalFrenchHtml = removeCodeFences(finalFrenchHtml); 
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = finalFrenchHtml;
+      *******************************************************/
+    const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+    const rebuilt = [];
+    for (let i = 0; i < rawParagraphs.length; i++) {
+    const currText = rawParagraphs[i].textContent.trim();
+    const currId = rawParagraphs[i].id;
+
+  // If current text is a single letter (e.g., "d", "l", "à", etc.), merge it with the next line
+  if (/^[dlLcsà'‘’`’“”]$/.test(currText) && rawParagraphs[i + 1]) {
+    const nextText = rawParagraphs[i + 1].textContent.trim();
+    rebuilt.push(`<p id="${currId}">${currText}${nextText}</p>`);
+    i++; // Skip the next line
+  } else {
+    rebuilt.push(`<p id="${currId}">${currText}</p>`);
+  }
+}
+
+// Reconstruct the full HTML
+finalFrenchHtml = rebuilt.join('');
      console.log("Final French HTML (cleaned):", finalFrenchHtml);
 
     // 4) Display the final merged output in #review-translation
@@ -712,10 +736,12 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       const key = `S${slideNumber}_T${runIndex++}`;
       let newText = frenchMap[key];
 
-      if (newText === undefined || !newText.trim()) {
-        newText = " "; // fallback to keep structure
-      }
-
+     if (newText === undefined) {
+      return match;
+    }
+    if (!newText.trim()) {
+      return '';
+    }
       const escaped = escapeXml(newText);
       return match.replace(capturedText, newText);
     }
