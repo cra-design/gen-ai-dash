@@ -398,15 +398,15 @@ main[_ngcontent-ng-c3392822675]{position:relative}
                         </div>
                       </upd-nav-tabs>
                       <div id="table-init" class="tab-content">
-                        <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
-                          <caption style="font-weight: bold; margin-bottom: 8px;">
+                          <table border="1">
+                          <caption>
                           Information on URLs uploaded
                           </caption>
                           <thead>
                             <tr>
                               <th>Link to page</th>
-                              <th>Description</th>
-                              <th>Keywords</th>
+                              <th>Description metadata</th>
+                              <th>Keywords metadata</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -422,18 +422,18 @@ main[_ngcontent-ng-c3392822675]{position:relative}
                         <!-- <div style="border:black solid 1px;" --> 
                         <!-- add some kind of tabbed interface with preview + code tabs? -->
                         
-                        <iframe id="url-frame" src="" name="targetframe" allowTransparency="true" width="100%" height="800px" style="border: 1px solid #ddd;"></iframe>
+                       <!-- <iframe id="url-frame" src="" name="targetframe" allowTransparency="true" width="100%" height="800px" style="border: 1px solid #ddd;"></iframe>-->
                         <p id="url-invalid-msg" class="error-msg hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>
                         <p id="canada-ca-msg" class="error-msg hidden">Due to technical limitations, Canada.ca pages are not yet compatible with this tool. Try a Github URL to test it out!</p>
                         <p id="other-site-msg" class="error-msg hidden">The tool is only for validation of Canada.ca design work. If you believe this URL should be in scope, please reach out to the tool adminstrators to whitelist the domain.</p>
                         <!-- </div> --> 
                       </div>
-                      <div id="code-preview" class="tab-content hidden"> 
+                      <!--<div id="code-preview" class="tab-content hidden"> 
                         <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                             Code preview
                         </h3> -->
                         <pre id="fullHtml" class="language-markup" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap;"><code></code></pre>
-                      </div>
+                      </div>-->
                       <div id="field-preview" class="tab-content hidden"> 
                         <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                             Field preview
