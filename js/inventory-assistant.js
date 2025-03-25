@@ -351,7 +351,7 @@ function populateUrlTable() {
         }
 
         // Remove " - canada.ca" from the title if present
-        metadata.title = metadata.title.replace(' - canada.ca', '');
+        metadata.title = metadata.title.replace(' - Canada.ca', '');
 
         rows[index] = `<tr>
                          <td><a href="${line}" target="_blank">${metadata.title}</a></td>
