@@ -647,7 +647,7 @@ $("#convert-translation-download-btn").click(async function() {
 //* Can be added more if needed                                                   ***** 
 //*************************************************************************************/
 function buildFrenchTextMap(finalFrenchHtml) { 
-  finalFrenchHtml = finalFrenchHtml.replace(/<p[^>]*>\s*<\/p>/g, '');
+  
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
 
@@ -699,7 +699,7 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       }
 
       const escaped = escapeXml(newText);
-      return `<a:r><a:t>${newText}</a:t></a:r>`;
+      return match.replace(capturedText, newText);
     }
   );
 
