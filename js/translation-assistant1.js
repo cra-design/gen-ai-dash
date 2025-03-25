@@ -696,7 +696,9 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       } 
       return match.replace(capturedText, newText);
     }
-  );
+  ); 
+  // 2) Ensure there is at least one space between consecutive <a:t> runs
+  updatedXml = updatedXml.replace(/<\/a:t>([^\S\r\n]*)<a:t>/g, "</a:t> <a:t>");
   return updatedXml;
 }
 
