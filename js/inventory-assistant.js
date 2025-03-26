@@ -52,8 +52,7 @@ $(document).ready(function () {
     XLSX.writeFile(wb, 'table_data.xlsx');
   });
 
-  $('#create-word').click(function () {
-    // Prompt the user for a URL when the button is clicked
+  $('#create-word').click(function () { // Prompt the user for a URL when the button is clicked
     let url = prompt("Please enter the URL of the page:");
 
     if (!url) {
@@ -63,11 +62,21 @@ $(document).ready(function () {
 
     // Fetch the content of the page using $.get()
     $.get(url, function (data) {
-      // Extract the body content
-      let bodyContent = $(data).find('body').html();
+      // Log the entire response to the console to debug
+      console.log("Page content:", data);
 
-      // If there's no body content, show a message
-      if (!bodyContent) {
+      // Try to extract content from the <main> tag
+      let mainContent = $(data).find('main').html();
+
+      // If main content is empty, try to get content from <body> as a fallback
+      if (!mainContent) {
+        console.log("No <main> content found, using <body> content instead.");
+        mainContent = $(data).find('body').html();
+      }
+
+      // If no content is found at all, show an error message
+      if (!mainContent) {
+        console.log("No content found.");
         alert("No content found on this page!");
         return;
       }
@@ -81,7 +90,7 @@ $(document).ready(function () {
             body { font-family: Arial, sans-serif; }
           </style>
         </head>
-        <body>${bodyContent}</body>
+        <body>${mainContent}</body>
       </html>
     `;
 
