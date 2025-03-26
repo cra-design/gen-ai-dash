@@ -52,47 +52,53 @@ $(document).ready(function () {
     XLSX.writeFile(wb, 'table_data.xlsx');
   });
 
-
   $('#create-word').click(function () {
-    $('#table-init tbody tr').each(function (index) {
-      let url = $(this).find('td:first-child a').attr('href');
-      if (!url) return;
+    // Prompt the user for a URL when the button is clicked
+    let url = prompt("Please enter the URL of the page:");
 
-      $.get(url, function (data) {
-        // Extract the main content inside the <body>, or you can modify this selector to be more specific if needed
-        let bodyContent = $(data).find('body').html();
+    if (!url) {
+      alert("URL is required!");
+      return;
+    }
 
-        // Ensure that we are getting valid content
-        if (!bodyContent) {
-          bodyContent = 'No content found on this page';
-        }
+    // Fetch the content of the page using $.get()
+    $.get(url, function (data) {
+      // Extract the body content
+      let bodyContent = $(data).find('body').html();
 
-        // Structure the content for the Word document
-        let docContent = `
-        <html>
-          <head>
-            <meta charset="UTF-8">
-            <style>
-              body { font-family: Arial, sans-serif; }
-            </style>
-          </head>
-          <body>${bodyContent}</body>
-        </html>
-      `;
+      // If there's no body content, show a message
+      if (!bodyContent) {
+        alert("No content found on this page!");
+        return;
+      }
 
-        // Create a Blob to download as a Word document
-        let blob = new Blob(['\ufeff' + docContent], {
-          type: 'application/msword'
-        });
+      // Structure the content for the Word document
+      let docContent = `
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; }
+          </style>
+        </head>
+        <body>${bodyContent}</body>
+      </html>
+    `;
 
-        // Create a link to download the Word file
-        let link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'Webpage_Content_' + (index + 1) + '.doc';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      // Create a Blob to download as a Word document
+      let blob = new Blob(['\ufeff' + docContent], {
+        type: 'application/msword'
       });
+
+      // Create a link to download the Word file
+      let link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'Webpage_Content.doc';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }).fail(function () {
+      alert("Failed to fetch the URL. Please check if the URL is correct.");
     });
   });
 
