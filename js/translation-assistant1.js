@@ -704,7 +704,7 @@ function buildFrenchTextMap(finalFrenchHtml) {
   const rebuilt = [];
   for (let i = 0; i < rawParagraphs.length; i++) {
     const curr = rawParagraphs[i].textContent.trim();
-    if (/^[dDeElL’']$/.test(curr) && rawParagraphs[i + 1]) {
+    <!--if (/^[dDeElL’']$/.test(curr) && rawParagraphs[i + 1]) {
       // Merge with next
       const merged = curr + rawParagraphs[i + 1].textContent.trim();
       const newId = rawParagraphs[i].id; // keep the original id
@@ -712,7 +712,12 @@ function buildFrenchTextMap(finalFrenchHtml) {
       i++; // skip next one
     } else {
       rebuilt.push({ id: rawParagraphs[i].id, text: curr });
-    }
+    }--> 
+     if (i > 0 && !rebuilt[rebuilt.length - 1].text.endsWith(" ") && !curr.startsWith(" ")) {
+  rebuilt[rebuilt.length - 1].text += " ";
+}
+rebuilt.push({ id: rawParagraphs[i].id, text: curr });
+ 
   }
 
   // Build a map from rebuilt result
