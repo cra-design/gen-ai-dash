@@ -733,7 +733,7 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
 
  const updatedXml = originalXml.replace(/<a:r>[\s\S]*?<a:t>([\s\S]*?)<\/a:t>[\s\S]*?<\/a:r>/g, (match, capturedText) => {
       const key = `S${slideNumber}_T${runIndex++}`;
-      const newText = frenchMap[key] || capturedText;
+      let newText = frenchMap[key] || capturedText;
 
       if (newText === undefined || !newText.trim()) {
         newText = " "; // fallback to keep structure
