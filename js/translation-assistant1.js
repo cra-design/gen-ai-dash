@@ -32,13 +32,33 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(slideXml, "application/xml"); 
        console.log(xmlDoc);
-      const textNodes = xmlDoc.getElementsByTagName("a:t");
+    const paragraphs = xmlDoc.getElementsByTagName("a:p");
+let textIndex = 1;
 
-      for (let i = 0; i < textNodes.length; i++) {
-        let uniqueId = `S${slideNumber}_T${i + 1}`;
-        let text = textNodes[i].textContent;
-        textElements.push({ slide: slideNumber, id: uniqueId, text });
-      }
+for (let p of paragraphs) {
+  let runs = p.getElementsByTagName("a:r");
+  let combinedText = "";
+  for (let i = 0; i < runs.length; i++) {
+    const t = runs[i].getElementsByTagName("a:t")[0];
+    if (!t) continue;
+
+    const text = t.textContent;
+
+    // Add space if the previous doesn't end with punctuation or space
+    if (i > 0 && !combinedText.endsWith(" ") && !text.startsWith(" ") && !/^[,.:;!?]/.test(text)) {
+      combinedText += " ";
+    }
+
+    combinedText += text;
+  }
+
+  // Skip empty lines
+  if (combinedText.trim().length === 0) continue;
+
+  const uniqueId = `S${slideNumber}_T${textIndex++}`;
+  textElements.push({ slide: slideNumber, id: uniqueId, text: combinedText.trim() });
+}
+
     }
   }
   return textElements;
