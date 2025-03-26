@@ -52,37 +52,38 @@ $(document).ready(function () {
     XLSX.writeFile(wb, 'table_data.xlsx');
   });
 
-  $('#create-word').click(function () { // Prompt the user for a URL when the button is clicked
-    let url = prompt("Please enter the URL of the page:");
+$('#create-word').click(function () {
+  // Prompt the user for a URL when the button is clicked
+  let url = prompt("Please enter the URL of the page:");
 
-    if (!url) {
-      alert("URL is required!");
+  if (!url) {
+    alert("URL is required!");
+    return;
+  }
+
+  // Fetch the content of the page using $.get()
+  $.get(url, function (data) {
+    // Log the entire response to the console to debug
+    console.log("Page content:", data);
+
+    // Try to extract content from the <main> tag using its attributes
+    let mainContent = $(data).find('main[property="mainContentOfPage"][resource="#wb-main"][typeof="WebPageElement"]').html();
+
+    // If main content is empty, try to get content from <body> as a fallback
+    if (!mainContent) {
+      console.log("No <main> content found, using <body> content instead.");
+      mainContent = $(data).find('body').html();
+    }
+
+    // If no content is found at all, show an error message
+    if (!mainContent) {
+      console.log("No content found.");
+      alert("No content found on this page!");
       return;
     }
 
-    // Fetch the content of the page using $.get()
-    $.get(url, function (data) {
-      // Log the entire response to the console to debug
-      console.log("Page content:", data);
-
-      // Try to extract content from the <main> tag
-      let mainContent = $(data).find('main').html();
-
-      // If main content is empty, try to get content from <body> as a fallback
-      if (!mainContent) {
-        console.log("No <main> content found, using <body> content instead.");
-        mainContent = $(data).find('body').html();
-      }
-
-      // If no content is found at all, show an error message
-      if (!mainContent) {
-        console.log("No content found.");
-        alert("No content found on this page!");
-        return;
-      }
-
-      // Structure the content for the Word document
-      let docContent = `
+    // Structure the content for the Word document
+    let docContent = `
       <html>
         <head>
           <meta charset="UTF-8">
@@ -94,22 +95,23 @@ $(document).ready(function () {
       </html>
     `;
 
-      // Create a Blob to download as a Word document
-      let blob = new Blob(['\ufeff' + docContent], {
-        type: 'application/msword'
-      });
-
-      // Create a link to download the Word file
-      let link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'Webpage_Content.doc';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }).fail(function () {
-      alert("Failed to fetch the URL. Please check if the URL is correct.");
+    // Create a Blob to download as a Word document
+    let blob = new Blob(['\ufeff' + docContent], {
+      type: 'application/msword'
     });
+
+    // Create a link to download the Word file
+    let link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'Webpage_Content.doc';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }).fail(function () {
+    alert("Failed to fetch the URL. Please check if the URL is correct.");
   });
+});
+
 
 
   $("#reset-btn").click(function () {
