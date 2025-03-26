@@ -51,13 +51,13 @@ $('#export-excel').click(function () {
     $('#upload-chooser').addClass("hidden");
   });
 
-  $("#api-key-submit-btn").click(function () {
+  /*$("#api-key-submit-btn").click(function () {
     //validate the key to see if it's legit?
 
     $('#api-key-entry').addClass("hidden");
     $('#upload-chooser').removeClass("hidden");
     $('#url-upload').removeClass("hidden");
-  });
+  });*/
 
   $(document).on("click", "input[type=radio]", function (event) {
     var target = event.target;
