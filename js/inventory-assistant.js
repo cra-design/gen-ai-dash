@@ -1,7 +1,7 @@
 // JavaScript Document
 $(document).ready(function () {
-  
-$('#export-excel').click(function () {
+
+  $('#export-excel').click(function () {
     var wb = XLSX.utils.book_new();
     var ws_data = [];
 
@@ -9,40 +9,71 @@ $('#export-excel').click(function () {
     ws_data.push(['URL', 'Page Title', 'Description metadata', 'Keywords metadata']);
 
     // Loop through each table row
-    $('table tbody tr').each(function () {
-        var row = [];
-        $(this).find('td').each(function (index) {
-            var cellText = $(this).text().trim();
-            var linkElement = $(this).find('a');
+    $('#table-init tbody tr').each(function () {
+      var row = [];
+      $(this).find('td').each(function (index) {
+        var cellText = $(this).text().trim();
+        var linkElement = $(this).find('a');
 
-            if (linkElement.length) {
-                var hyperlink = linkElement.attr('href');
+        if (linkElement.length) {
+          var hyperlink = linkElement.attr('href');
 
-                // Ensure the hyperlink starts with "http://" or "https://"
-                if (!hyperlink.startsWith('http')) {
-                    hyperlink = 'http://' + hyperlink;
-                }
+          // Ensure the hyperlink starts with "http://" or "https://"
+          if (!hyperlink.startsWith('http')) {
+            hyperlink = 'http://' + hyperlink;
+          }
 
-                // Remove "-canada.ca" from the title
-                var cleanedTitle = cellText.replace('-canada.ca', '').trim();
+          // Remove "-canada.ca" from the title
+          var cleanedTitle = cellText.replace('-canada.ca', '').trim();
 
-                // Add URL to column 1, cleaned title to column 2
-                row.push(hyperlink, cleanedTitle);
-            } else {
-                row.push(cellText);
-            }
-        });
-        ws_data.push(row);
+          // Add URL to column 1, cleaned title to column 2
+          row.push(hyperlink, cleanedTitle);
+        } else {
+          row.push(cellText);
+        }
+      });
+      ws_data.push(row);
     });
 
     var ws = XLSX.utils.aoa_to_sheet(ws_data);
 
     // Adjust column width for better visibility
-    ws['!cols'] = [{ wch: 50 }, { wch: 30 }, { wch: 30 }, { wch: 30 }];
+    ws['!cols'] = [{
+      wch: 50
+    }, {
+      wch: 30
+    }, {
+      wch: 30
+    }, {
+      wch: 30
+    }];
 
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
     XLSX.writeFile(wb, 'table_data.xlsx');
-});
+  });
+
+
+  $('#create-word').click(function () {
+    $('#table-init tbody tr').each(function (index) {
+      let url = $(this).find('td:first-child a').attr('href');
+      if (!url) return;
+
+      $.get(url, function (data) {
+        let bodyContent = $(data).find('body').html();
+        let docContent = '<html><head><meta charset="UTF-8"></head><body>' + bodyContent + '</body></html>';
+
+        let blob = new Blob(['\ufeff' + docContent], {
+          type: 'application/msword'
+        });
+        let link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Webpage_Content_' + (index + 1) + '.doc';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    });
+  });
 
 
   $("#reset-btn").click(function () {
@@ -337,14 +368,18 @@ $('#export-excel').click(function () {
 function extractMetadata(html, url) {
   let parser = new DOMParser();
   let doc = parser.parseFromString(html, 'text/html');
-  
-  let title = doc.querySelector('title')?.innerText || url;
-  let description = doc.querySelector('meta[name="description"]')?.content || 'No Description';
-  let keywords = doc.querySelector('meta[name="keywords"]')?.content || 'No Keywords';
-  
-  return { title, description, keywords };
+
+  let title = doc.querySelector('title') ? .innerText || url;
+  let description = doc.querySelector('meta[name="description"]') ? .content || 'No Description';
+  let keywords = doc.querySelector('meta[name="keywords"]') ? .content || 'No Keywords';
+
+  return {
+    title,
+    description,
+    keywords
+  };
 }
-  
+
 function populateUrlTable() {
   let lines = [];
   let content = $('#url-input').html();
@@ -366,7 +401,11 @@ function populateUrlTable() {
       parsePageHTML(line, function (err, html) {
         let metadata;
         if (err) {
-          metadata = { title: line, description: 'Could not fetch metadata', keywords: '' };
+          metadata = {
+            title: line,
+            description: 'Could not fetch metadata',
+            keywords: ''
+          };
         } else {
           metadata = extractMetadata(html, line);
         }
@@ -379,7 +418,7 @@ function populateUrlTable() {
                          <td>${metadata.description}</td>
                          <td>${metadata.keywords}</td>
                        </tr>`;
-        
+
         if (!rows.includes(null)) {
           tbody.html(rows.join(''));
         }
@@ -390,7 +429,7 @@ function populateUrlTable() {
                        <td>N/A</td>
                        <td>N/A</td>
                      </tr>`;
-      
+
       if (!rows.includes(null)) {
         tbody.html(rows.join(''));
       }
