@@ -1019,9 +1019,21 @@ function detectLanguageBasedOnWords(text) {
   const englishWords = ['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'on', 'with'];
   const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
   text = text.toLowerCase();  
-  function countMatches(wordList) {
-  return wordList.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0); }
+ function countMatches(wordList) {
+    return wordList.reduce((count, word) => {
+      const regex = new RegExp(`\\b${word}\\b`, 'g');
+      return count + ((text.match(regex) || []).length);
+    }, 0);
+  }
   const englishMatches = countMatches(englishWords); 
-  const frenchMatches = countMatches(frenchWords); 
-  return englishMatches > frenchMatches ? 'english' : frenchMatches > englishMatches ? 'french' : 'unknown';
+  const frenchMatches = countMatches(frenchWords);  
+
+  const hasAccents = /[àâçéèêëîïôûùüÿœæ]/.test(text); 
+  if (frenchMatches > englishMatches || (hasAccents && frenchMatches >= englishMatches - 1)) {
+    return 'french';
+  } else if (englishMatches > frenchMatches) {
+    return 'english';
+  } else {
+    return 'unknown';
+  }
 }
