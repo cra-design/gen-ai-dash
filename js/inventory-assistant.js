@@ -59,12 +59,33 @@ $(document).ready(function () {
       if (!url) return;
 
       $.get(url, function (data) {
+        // Extract the main content inside the <body>, or you can modify this selector to be more specific if needed
         let bodyContent = $(data).find('body').html();
-        let docContent = '<html><head><meta charset="UTF-8"></head><body>' + bodyContent + '</body></html>';
 
+        // Ensure that we are getting valid content
+        if (!bodyContent) {
+          bodyContent = 'No content found on this page';
+        }
+
+        // Structure the content for the Word document
+        let docContent = `
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              body { font-family: Arial, sans-serif; }
+            </style>
+          </head>
+          <body>${bodyContent}</body>
+        </html>
+      `;
+
+        // Create a Blob to download as a Word document
         let blob = new Blob(['\ufeff' + docContent], {
           type: 'application/msword'
         });
+
+        // Create a link to download the Word file
         let link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = 'Webpage_Content_' + (index + 1) + '.doc';
@@ -369,9 +390,9 @@ function extractMetadata(html, url) {
   let parser = new DOMParser();
   let doc = parser.parseFromString(html, 'text/html');
 
-  let title = doc.querySelector('title')?.innerText || url;
-  let description = doc.querySelector('meta[name="description"]')?.content || 'No Description';
-  let keywords = doc.querySelector('meta[name="keywords"]')?.content || 'No Keywords';
+  let title = doc.querySelector('title') ? .innerText || url;
+  let description = doc.querySelector('meta[name="description"]') ? .content || 'No Description';
+  let keywords = doc.querySelector('meta[name="keywords"]') ? .content || 'No Keywords';
 
   return {
     title,
