@@ -28,11 +28,14 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
   for (let i = 0; i < textNodes.length; i++) {
     let uniqueId = `D_T${i + 1}`;
     let text = textNodes[i].textContent;
-    // Optionally, add an attribute if needed.
+    // Add the attribute to the XML document in memory
     textNodes[i].setAttribute("data-unique-id", uniqueId);
     textElements.push({ id: uniqueId, text });
   }
-  return { zip, originalXml: docXmlStr, textElements };
+  // Serialize the updated XML document back to a string
+  const serializer = new XMLSerializer();
+  const updatedXmlStr = serializer.serializeToString(xmlDoc);
+  return { zip, originalXml: updatedXmlStr, textElements };
 }
 
 
@@ -773,7 +776,8 @@ function conversionDocxXml(originalXml, finalFrenchHtml) {
   }
   const serializer = new XMLSerializer();
   return serializer.serializeToString(xmlDoc);
-}
+} 
+
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
