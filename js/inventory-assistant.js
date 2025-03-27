@@ -1,58 +1,7 @@
 // JavaScript Document
 $(document).ready(function () {
 
-  $('#export-excel-btn').click(function () { //Created excel to contain all saveable data
-    var wb = XLSX.utils.book_new();
-    var ws_data = [];
-
-    // Add header row
-    ws_data.push(['URL', 'Page Title', 'Description metadata', 'Keywords metadata']);
-
-    // Loop through each table row
-    $('#table-init tbody tr').each(function () {
-      var row = [];
-      $(this).find('td').each(function (index) {
-        var cellText = $(this).text().trim();
-        var linkElement = $(this).find('a');
-
-        if (linkElement.length) {
-          var hyperlink = linkElement.attr('href');
-
-          // Ensure the hyperlink starts with "http://" or "https://"
-          if (!hyperlink.startsWith('http')) {
-            hyperlink = 'http://' + hyperlink;
-          }
-
-          // Remove "-canada.ca" from the title
-          var cleanedTitle = cellText.replace('-canada.ca', '').trim();
-
-          // Add URL to column 1, cleaned title to column 2
-          row.push(hyperlink, cleanedTitle);
-        } else {
-          row.push(cellText);
-        }
-      });
-      ws_data.push(row);
-    });
-
-    var ws = XLSX.utils.aoa_to_sheet(ws_data);
-
-    // Adjust column width for better visibility
-    ws['!cols'] = [{
-      wch: 50
-    }, {
-      wch: 30
-    }, {
-      wch: 30
-    }, {
-      wch: 30
-    }];
-
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-    XLSX.writeFile(wb, 'table_data.xlsx');
-  });
-
-  $('#create-word-docs-btn').click(function () {
+  $('#create-word-docs-btn').click(async function () {
     try {
       // Prompt the user for a URL
       let url = prompt("Please enter the URL of the page:");
@@ -115,6 +64,58 @@ $(document).ready(function () {
       console.error("Failed to fetch or process the page:", error);
       alert("Failed to retrieve content. Please check the URL.");
     }
+  });
+
+
+  $('#export-excel').click(function () {
+    var wb = XLSX.utils.book_new();
+    var ws_data = [];
+
+    // Add header row
+    ws_data.push(['URL', 'Page Title', 'Description metadata', 'Keywords metadata']);
+
+    // Loop through each table row
+    $('#table-init tbody tr').each(function () {
+      var row = [];
+      $(this).find('td').each(function (index) {
+        var cellText = $(this).text().trim();
+        var linkElement = $(this).find('a');
+
+        if (linkElement.length) {
+          var hyperlink = linkElement.attr('href');
+
+          // Ensure the hyperlink starts with "http://" or "https://"
+          if (!hyperlink.startsWith('http')) {
+            hyperlink = 'http://' + hyperlink;
+          }
+
+          // Remove "-canada.ca" from the title
+          var cleanedTitle = cellText.replace('-canada.ca', '').trim();
+
+          // Add URL to column 1, cleaned title to column 2
+          row.push(hyperlink, cleanedTitle);
+        } else {
+          row.push(cellText);
+        }
+      });
+      ws_data.push(row);
+    });
+
+    var ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+    // Adjust column width for better visibility
+    ws['!cols'] = [{
+      wch: 50
+    }, {
+      wch: 30
+    }, {
+      wch: 30
+    }, {
+      wch: 30
+    }];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    XLSX.writeFile(wb, 'table_data.xlsx');
   });
 
   $("#reset-btn").click(function () {
@@ -274,10 +275,10 @@ $(document).ready(function () {
     }
   });
 
-  /*$("#genai-select-tasks-btn").click(function () {
+  $("#genai-select-tasks-btn").click(function () {
     $("#genai-task-options").addClass("hidden");
     $("#genai-model-options").removeClass("hidden");
-  }); */
+  });
 
   $("#genai-run-report-btn").click(async function () {
     $("#genai-model-options").addClass("hidden");
@@ -373,24 +374,24 @@ $(document).ready(function () {
     $("#loading-indicator").addClass("hidden"); // Hide spinner when done
   });
 
-  /* $("#genai-open-report-btn").click(function () {
-     /* Open when someone clicks on the span element */
-  //function openNav() {
-  /* document.getElementById("genai-nav").style.width = "100%";
+  $("#genai-open-report-btn").click(function () {
+    /* Open when someone clicks on the span element */
+    //function openNav() {
+    document.getElementById("genai-nav").style.width = "100%";
     //}
-  }); */
+  });
 
-  /*$("#genai-reset-report-btn").click(function () {
+  $("#genai-reset-report-btn").click(function () {
     $("#genai-model-options").addClass("hidden");
     $("#genai-task-options").removeClass("hidden");
     $('input[name="html-upload-genai-analysis"]').prop('checked', false);
     $('input[name="html-upload-genai-model"]').prop('checked', false);
-  });*/
+  });
 
-  /*$("#close-report-btn").click(function () {
+  $("#close-report-btn").click(function () {
     /* Open when someone clicks on the span element */
-  /*  document.getElementById("genai-nav").style.width = "0%";
-  });*/
+    document.getElementById("genai-nav").style.width = "0%";
+  });
 
   //tab interface - page/code preview for urls
 
@@ -618,7 +619,7 @@ function formatAIResponse(aiResponse) {
     .join(""); // Join everything back together
 }
 
-/*// Function to render the full HTML and extracted fields
+// Function to render the full HTML and extracted fields
 function renderHTMLFields(fullHtml, fields) {
   // Display the full HTML in the <pre> tag
   $('#fullHtml code').text(fullHtml);
@@ -666,9 +667,9 @@ function convertTextToHTML(text) {
 
   // Join all paragraphs into a single string
   return htmlParagraphs.join('');
-}*/
+}
 
-/*async function RefineSyntax(extractedHtml) {
+async function RefineSyntax(extractedHtml) {
   // Define the HTML header and footer
   let htmlHeader = `
                 <!DOCTYPE html>
@@ -907,4 +908,4 @@ function convertTextToHTML(text) {
   $("#url-upload-preview").removeClass("hidden");
   $("#genai-upload-msg").addClass("hidden");
   $("#genai-task-options").removeClass("hidden");
-}*/
+}
