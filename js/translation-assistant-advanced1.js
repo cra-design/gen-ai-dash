@@ -25,16 +25,16 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
   const textNodes = xmlDoc.getElementsByTagName("w:t");
   let textElements = [];
 
-  // Assign unique IDs to each <w:t> element.
   for (let i = 0; i < textNodes.length; i++) {
-    let uniqueId = `T${i + 1}`;
+    let uniqueId = `D_T${i + 1}`;
     let text = textNodes[i].textContent;
-    // Optionally add an attribute so later you can find the element
+    // Optionally, add an attribute if needed.
     textNodes[i].setAttribute("data-unique-id", uniqueId);
     textElements.push({ id: uniqueId, text });
   }
   return { zip, originalXml: docXmlStr, textElements };
 }
+
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
@@ -171,13 +171,21 @@ $(document).ready(function() {
        
           if (event.target.id === "source-file") {
               englishFile = uploadedFile;
-              if (fileExtension === 'docx') {
-                let arrayBuffer = await uploadedFile.arrayBuffer();
-                const { textElements } = await extractDocxTextXmlWithId(arrayBuffer);
-                 let docxHtml = textElements
-                    .map(item => `<p id="${item.id}">${item.text}</p>`)
-                    .join('');
-                    $("#translation-A").html(docxHtml);
+             if (fileExtension === 'docx') {
+                try {
+                  let arrayBuffer = await uploadedFile.arrayBuffer();
+                  const { textElements } = await extractDocxTextXmlWithId(arrayBuffer);
+                  console.log("Extracted textElements:", textElements);
+                  if (!textElements.length) {
+                  throw new Error("No <w:t> elements found in DOCX.");
+                  }
+                  let docxHtml = textElements
+                  .map(item => `<p id="${item.id}">${item.text}</p>`)
+                  .join('');
+                  $("#translation-A").html(docxHtml);
+                } catch (err) {
+                console.error("Error processing DOCX file:", err);
+                }
               } else if (fileExtension == 'pptx'){
                 let arrayBuffer = await uploadedFile.arrayBuffer();
                 let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
