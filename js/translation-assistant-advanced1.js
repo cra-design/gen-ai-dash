@@ -465,7 +465,7 @@ $("#second-upload-btn").click(async function () {
       const fileExtension = file.name.split('.').pop().toLowerCase();
 
       if (fileExtension === "docx") {
-        let arrayBuffer = await uploadedFile.arrayBuffer();
+        let arrayBuffer = await file.arrayBuffer();
         const zip = await JSZip.loadAsync(arrayBuffer);
         const docXmlStr = await zip.file("word/document.xml").async("string");
         const parser = new DOMParser();
@@ -477,7 +477,7 @@ $("#second-upload-btn").click(async function () {
           .map(node => `<p>${node.textContent}</p>`)
           .join('');
       } else if (fileExtension === "pptx") {
-        const arrayBuffer = await uploadedfile.arrayBuffer();
+        const arrayBuffer = await file.arrayBuffer();
         const textElements = await extractPptxTextXmlWithId(arrayBuffer);
         frenchText = textElements.map(item => `<p>${item.text}</p>`).join('');
       } else {
