@@ -84,7 +84,7 @@ $(document).ready(function() {
     $('#source-heading-detecting').addClass("hidden");
     $('#source-language').removeClass("hidden").val(detectedLanguage); 
   });
-});
+
 
   // Handle file input change for both source and second file uploads.
   $(document).on("change", "input", async function (event) {
@@ -359,14 +359,15 @@ $(document).ready(function() {
       }
     }
   }); 
-  
+ 
+// 'Provide translation' button, show the second upload section
 $("#source-upload-provide-btn").click(function() {
     if (!englishFile) {
       alert("Please upload the English document first.");
       return;
     }
     $("#second-upload").removeClass("hidden");
-  });  
+  }); 
   
   /***********************************************************************
    * Provide Translation Button Flow:
@@ -403,100 +404,88 @@ $("#source-upload-provide-btn").click(function() {
    * Second File Upload Button
    * For the second file uploads, extract and parse
    ***********************************************************************/
-  $("#second-upload-btn").click(async function() {  
-     $('#processing-spinner').removeClass("hidden"); 
-    console.log("Spinner should now be visible.");
-    var selectedOption = $('input[name="second-upload-option"]:checked').val();  
-    let frenchText = "";  
+$("#second-upload-btn").click(async function () {
+  $('#processing-spinner').removeClass("hidden");
+  console.log("Spinner should now be visible.");
 
-    // Ensure the French file is uploaded if the user selected document upload.
-  if (selectedOption == "second-upload-doc" && !frenchFile) {
-    alert("Please upload your translated French document.");
-    return;
-  }
-    
-   // 1) Get the raw French text from a document upload or from plain text input.
-if (selectedOption == "second-upload-doc") {
-  var file = $('#second-file')[0].files[0]; 
+  const selectedOption = $('input[name="second-upload-option"]:checked').val();
+  let frenchText = "";
 
-  if (!file) {
-    alert("Please select your translated file.");
-    return;
-  } 
+  if (selectedOption === "second-upload-doc") {
+    const file = $('#second-file')[0].files[0];
 
-  try {
-    let textContent;
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-    
-    if (fileExtension === "docx" || fileExtension === "xlsx") {
-      // For DOCX/XLSX, extract HTML/text using your existing extraction function.
-      textContent = await handleFileExtractionToHtml(file);
-    } else if (fileExtension === "pptx") {
-      // For PPTX, read the file as an ArrayBuffer, extract the slide structure,
-      // and then build HTML from the slide objects.
-      let arrayBuffer = await file.arrayBuffer();
-      let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
-      let pptxHtml = textElements
-        .map(item => `<p>${item.text}</p>`)
-        .join('');  
-        textContent = pptxHtml;
-    } else {
-      throw new Error("Unsupported file type");
+    if (!file) {
+      alert("Please select your translated file.");
+      $('#processing-spinner').addClass("hidden");
+      return;
     }
-    frenchText = textContent || ""; 
-     console.log("frenchText after extraction:", frenchText);
-  } catch (err) {
-    console.error('Error processing the second (FR) file:', err);
-    alert("Error reading your translated file. Check console for details."); 
+
+    try {
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+
+      if (fileExtension === "docx" || fileExtension === "xlsx") {
+        frenchText = await handleFileExtractionToHtml(file);
+      } else if (fileExtension === "pptx") {
+        const arrayBuffer = await file.arrayBuffer();
+        const textElements = await extractPptxTextXmlWithId(arrayBuffer);
+        frenchText = textElements.map(item => `<p>${item.text}</p>`).join('');
+      } else {
+        throw new Error("Unsupported file type");
+      }
+
+      console.log("French text after extraction:", frenchText);
+    } catch (err) {
+      console.error('Error processing the second (FR) file:', err);
+      alert("Error reading your translated file. Check console for details.");
+      $('#converting-spinner').addClass("hidden");
+      $('#processing-spinner').addClass("hidden");
+      return;
+    }
+  } else if (selectedOption === "second-upload-text") {
+    frenchText = $("#second-text").val();
+  }
+
+  if (!frenchText || frenchText.trim().length === 0) {
+    alert("No French document/text found. Please upload or enter your translation.");
     $('#converting-spinner').addClass("hidden");
+    $('#processing-spinner').addClass("hidden");
     return;
   }
-} else if (selectedOption == "second-upload-text") {
-  frenchText = $("#second-text").val();
-}
-console.log("French text:", frenchText); 
-    
-    // 2) Retrieve the formatted English HTML from #translation-A
-    //    (#translation-A is where we stored the first doc's structure).
-    let englishHtml = $("#translation-A").html();
-    if (!englishHtml || englishHtml.trim().length === 0) {
-      alert("No formatted English document found. Please complete the first step."); 
-      $('#converting-spinner').addClass("hidden");
-      return;
-    }
-    if (!frenchText || frenchText.trim().length === 0) {
-      alert("No French document/text found. Please upload or enter your translation."); 
-      $('#converting-spinner').addClass("hidden");
-      return;
-    } 
 
-    let fileExtensionEnglish = englishFile.name.split('.').pop().toLowerCase();
-    let promptPath = (fileExtensionEnglish === "pptx")
-      ? "custom-instructions/translation/english2french-pptx.txt"
-      : "custom-instructions/translation/english2french1.txt"; 
-    
-    // load the system prompt
-    let systemPrompt = "";
+  // 2) Get the English HTML from the first upload section
+  let englishHtml = $("#translation-A").html();
+  if (!englishHtml || englishHtml.trim().length === 0) {
+    alert("No formatted English document found. Please complete the first step.");
+    $('#converting-spinner').addClass("hidden");
+    $('#processing-spinner').addClass("hidden");
+    return;
+  }
+
+  // Determine prompt based on original English file extension
+  const fileExtensionEnglish = (englishFile?.name || "").split('.').pop().toLowerCase();
+  const promptPath = (fileExtensionEnglish === "pptx")
+    ? "custom-instructions/translation/english2french-pptx.txt"
+    : "custom-instructions/translation/english2french1.txt";
+
+  let systemPrompt = "";
   try {
     systemPrompt = await $.get(promptPath);
   } catch (error) {
     console.error("Error loading system prompt:", error);
-    alert("Could not load translation instructions. Please check your files."); 
+    alert("Could not load translation instructions. Please check your files.");
     $('#converting-spinner').addClass("hidden");
+    $('#processing-spinner').addClass("hidden");
     return;
   }
-    let combinedPrompt = systemPrompt + "\n\n" +
-    "English Document (HTML):\n" + englishHtml + "\n\n" +
-    "French Text:\n" + frenchText + "\n\n" +
-    "Please return the French document in HTML format that exactly follows the structure of the English document."; 
 
-    
-  let requestJson = [
+  const combinedPrompt = `${systemPrompt}\n\nEnglish Document (HTML):\n${englishHtml}\n\nFrench Text:\n${frenchText}\n\nPlease return the French document in HTML format that exactly follows the structure of the English document.`;
+
+  const requestJson = [
     { role: "system", content: systemPrompt },
     { role: "user", content: combinedPrompt }
-  ]; 
+  ];
 
-   let models = [
+  const models = [
     "google/gemini-2.0-flash-lite-preview-02-05:free",
     "google/gemini-2.0-pro-exp-02-05:free",
     "google/gemini-2.0-flash-thinking-exp:free",
@@ -507,79 +496,67 @@ console.log("French text:", frenchText);
     "google/gemini-flash-1.5-8b-exp",
     "deepseek/deepseek-r1:free"
   ];
+
   let finalFrenchHtml = "";
   for (let model of models) {
-    let ORjson = await getORData(model, requestJson);
-    if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
+    const ORjson = await getORData(model, requestJson);
+    if (ORjson?.choices?.[0]?.message) {
       finalFrenchHtml = ORjson.choices[0].message.content;
       break;
     }
   }
-  try{ 
+
+  try {
     if (!finalFrenchHtml) {
-    alert("Translation alignment failed. No valid response from any model.");
-    return;
-  } 
-     /*******************************************************
-        ensures verbs like d’identifier, l’expérience,  
-      à résoudre don’t get split across separate
-    finalFrenchHtml = removeCodeFences(finalFrenchHtml); 
+      alert("Translation alignment failed. No valid response from any model.");
+      return;
+    }
+
+    finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = finalFrenchHtml;
-      *******************************************************/ 
-    finalFrenchHtml = removeCodeFences(finalFrenchHtml); 
-
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = finalFrenchHtml; 
-    
     const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
     const rebuilt = [];
+
     for (let i = 0; i < rawParagraphs.length; i++) {
-    const currText = rawParagraphs[i].textContent.trim();
-    const currId = rawParagraphs[i].id;
+      const currText = rawParagraphs[i].textContent.trim();
+      const currId = rawParagraphs[i].id;
 
-  // If current text is a single letter (e.g., "d", "l", "à", etc.), merge it with the next line
-  if (/^[dlLcsà'‘’`’“”]$/.test(currText) && rawParagraphs[i + 1]) {
-    const nextText = rawParagraphs[i + 1].textContent.trim();
-    rebuilt.push(`<p id="${currId}">${currText}${nextText}</p>`);
-    i++; // Skip the next line
-  } else {
-    rebuilt.push(`<p id="${currId}">${currText}</p>`);
-  }
-}
+      if (/^[dlLcsà'‘’`’“”]$/.test(currText) && rawParagraphs[i + 1]) {
+        const nextText = rawParagraphs[i + 1].textContent.trim();
+        rebuilt.push(`<p id="${currId}">${currText}${nextText}</p>`);
+        i++;
+      } else {
+        rebuilt.push(`<p id="${currId}">${currText}</p>`);
+      }
+    }
 
-// Reconstruct the full HTML
-finalFrenchHtml = rebuilt.join('');
-     console.log("Final French HTML (cleaned):", finalFrenchHtml);
+    finalFrenchHtml = rebuilt.join('');
+    console.log("Final French HTML (cleaned):", finalFrenchHtml);
 
-    // 4) Display the final merged output in #review-translation
-     $("#translation-A").html(finalFrenchHtml); 
-     $('#converting-spinner').addClass("hidden");
-     $("#translation-preview").removeClass("hidden").show();  
-      } catch (err) {
+    $("#translation-A").html(finalFrenchHtml);
+    $('#converting-spinner').addClass("hidden");
+    $("#translation-preview").removeClass("hidden").show();
+  } catch (err) {
     console.error("Error during second-upload processing:", err);
   } finally {
-    // Hide spinner once processing is complete (successfully or on error)
-    $('#processing-spinner').addClass("hidden");  
+    $('#processing-spinner').addClass("hidden");
   }
 });
-    
-  // Accept and edit translation button handlers.
-  $("#accept-translation-A-btn").click(function() { acceptTranslation("a"); });
-  $("#accept-translation-B-btn").click(function() { acceptTranslation("b"); });
-  $("#edit-translation-A-btn").click(function() {
-    var $translation = $('#translation-A');
-    var isEditable = $translation.attr('contenteditable') === 'true';
-    if (isEditable) {
-      $translation.attr('contenteditable', 'false');
-      $(this).attr('title', 'Edit Code');
-      $(this).find('i').removeClass('fa-save').addClass('fa-edit');
-    } else {
-      $translation.attr('contenteditable', 'true');
-      $(this).attr('title', 'Save Code');
-      $(this).find('i').removeClass('fa-edit').addClass('fa-save');
-    }
-  }); 
+
+// Accept and edit translation button handlers
+$("#accept-translation-A-btn").click(function () { acceptTranslation("a"); });
+$("#accept-translation-B-btn").click(function () { acceptTranslation("b"); });
+$("#edit-translation-A-btn").click(function () {
+  const $translation = $('#translation-A');
+  const isEditable = $translation.attr('contenteditable') === 'true';
+  $translation.attr('contenteditable', !isEditable);
+  $(this).attr('title', isEditable ? 'Edit Code' : 'Save Code');
+  $(this).find('i').toggleClass('fa-edit fa-save');
+});
+
+
   
    /***********************************************************************
    * Convert-translation-download-button work flow:
