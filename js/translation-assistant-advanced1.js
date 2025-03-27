@@ -138,7 +138,7 @@ $(document).ready(function() {
           let textContent; 
           const fileExtension = uploadedFile.name.split('.').pop().toLowerCase();  
           if (fileExtension === "docx") {
-            let arrayBuffer = await file.arrayBuffer();
+            let arrayBuffer = await uploadedFile.arrayBuffer();
             const zip = await JSZip.loadAsync(arrayBuffer);
             const docXmlStr = await zip.file("word/document.xml").async("string");
             const parser = new DOMParser();
@@ -221,7 +221,7 @@ $(document).ready(function() {
       if (fileExtension === 'docx') {
   try {
     // Convert DOCX to HTML using Mammoth.
-    let arrayBuffer = await file.arrayBuffer();
+    let arrayBuffer = await uploadedFile.arrayBuffer();
     let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
     let originalHtml = mammothResult.value;
     
@@ -456,7 +456,7 @@ $("#second-upload-btn").click(async function () {
       const fileExtension = file.name.split('.').pop().toLowerCase();
 
       if (fileExtension === "docx") {
-        let arrayBuffer = await file.arrayBuffer();
+        let arrayBuffer = await uploadedFile.arrayBuffer();
         const zip = await JSZip.loadAsync(arrayBuffer);
         const docXmlStr = await zip.file("word/document.xml").async("string");
         const parser = new DOMParser();
@@ -468,7 +468,7 @@ $("#second-upload-btn").click(async function () {
           .map(node => `<p>${node.textContent}</p>`)
           .join('');
       } else if (fileExtension === "pptx") {
-        const arrayBuffer = await file.arrayBuffer();
+        const arrayBuffer = await uploadedfile.arrayBuffer();
         const textElements = await extractPptxTextXmlWithId(arrayBuffer);
         frenchText = textElements.map(item => `<p>${item.text}</p>`).join('');
       } else {
