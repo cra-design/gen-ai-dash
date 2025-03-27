@@ -515,7 +515,11 @@ $("#second-upload-btn").click(async function () {
   }
 
   finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+   
+  const fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
+  let formattedOutput; 
 
+  if (fileExtension === 'pptx') {
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
   const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
@@ -534,25 +538,19 @@ $("#second-upload-btn").click(async function () {
     }
   }
  
-  finalFrenchHtml = rebuilt.join('');
-  console.log("Final French HTML (cleaned):", finalFrenchHtml);
-
-  const fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
-  let formattedOutput;
-
-  if (fileExtension === 'docx') {
-    formattedOutput = formatTranslatedOutput(finalFrenchHtml);
+  finalFrenchHtml = rebuilt.join('');  
+  formattedOutput = finalFrenchHtml;
   } else {
-    formattedOutput = finalFrenchHtml;
-  }
+    formattedOutput = formatTranslatedOutput(finalFrenchHtml);
+  } 
 
   if (!formattedOutput || formattedOutput.trim() === "") {
-    alert("Formatted output is empty. Please check the AI response.");
-  } else {
-    $("#translation-A").html(formattedOutput);
-    $("#translation-preview").removeClass("hidden").show(); 
-    $('#processing-spinner').addClass("hidden");
-  }
+  alert("Formatted output is empty. Please check the AI response.");
+} else {
+  $("#translation-A").html(formattedOutput);
+  $("#translation-preview").removeClass("hidden").show();
+}
+  console.log("Final French HTML (cleaned):", finalFrenchHtml);
 
 } catch (err) {
   console.error("Error during final output processing:", err);
