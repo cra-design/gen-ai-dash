@@ -507,44 +507,57 @@ $("#second-upload-btn").click(async function () {
   }
 
   try {
-    if (!finalFrenchHtml) {
-      alert("Translation alignment failed. No valid response from any model.");
-      return;
-    }
-
-    finalFrenchHtml = removeCodeFences(finalFrenchHtml);
-
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = finalFrenchHtml;
-    const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
-    const rebuilt = [];
-
-    for (let i = 0; i < rawParagraphs.length; i++) {
-      const currText = rawParagraphs[i].textContent.trim();
-      const currId = rawParagraphs[i].id;
-
-      if (/^[dlLcsà'‘’`’“”]$/.test(currText) && rawParagraphs[i + 1]) {
-        const nextText = rawParagraphs[i + 1].textContent.trim();
-        rebuilt.push(`<p id="${currId}">${currText}${nextText}</p>`);
-        i++;
-      } else {
-        rebuilt.push(`<p id="${currId}">${currText}</p>`);
-      }
-    }
-
-    finalFrenchHtml = rebuilt.join('');
-    console.log("Final French HTML (cleaned):", finalFrenchHtml);
-
-    $("#translation-A").html(finalFrenchHtml);
-    $('#converting-spinner').addClass("hidden");
-    $("#translation-preview").removeClass("hidden").show();
-  } catch (err) {
-    console.error("Error during second-upload processing:", err);
-  } finally {
-    $('#processing-spinner').addClass("hidden");
+  if (!finalFrenchHtml) {
+    alert("Translation alignment failed. No valid response from any model.");
+    return;
   }
-});
 
+  finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = finalFrenchHtml;
+  const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+  const rebuilt = [];
+
+  for (let i = 0; i < rawParagraphs.length; i++) {
+    const currText = rawParagraphs[i].textContent.trim();
+    const currId = rawParagraphs[i].id;
+
+    if (/^[dlLcsà'‘’`’“”]$/.test(currText) && rawParagraphs[i + 1]) {
+      const nextText = rawParagraphs[i + 1].textContent.trim();
+      rebuilt.push(`<p id="${currId}">${currText}${nextText}</p>`);
+      i++;
+    } else {
+      rebuilt.push(`<p id="${currId}">${currText}</p>`);
+    }
+  }
+ 
+  finalFrenchHtml = rebuilt.join('');
+  console.log("Final French HTML (cleaned):", finalFrenchHtml);
+
+  const fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
+  let formattedOutput;
+
+  if (fileExtension === 'docx') {
+    formattedOutput = formatTranslatedOutput(finalFrenchHtml);
+  } else {
+    formattedOutput = finalFrenchHtml;
+  }
+
+  if (!formattedOutput || formattedOutput.trim() === "") {
+    alert("Formatted output is empty. Please check the AI response.");
+  } else {
+    $("#translation-A").html(formattedOutput);
+    $("#translation-preview").removeClass("hidden").show();
+  }
+
+} catch (err) {
+  console.error("Error during final output processing:", err);
+  alert("An error occurred while processing the AI output.");
+} finally {
+  $('#converting-spinner').addClass("hidden");
+}
+ });
 // Accept and edit translation button handlers
 $("#accept-translation-A-btn").click(function () { acceptTranslation("a"); });
 $("#accept-translation-B-btn").click(function () { acceptTranslation("b"); });
@@ -555,8 +568,6 @@ $("#edit-translation-A-btn").click(function () {
   $(this).attr('title', isEditable ? 'Edit Code' : 'Save Code');
   $(this).find('i').toggleClass('fa-edit fa-save');
 });
-
-
   
    /***********************************************************************
    * Convert-translation-download-button work flow:
