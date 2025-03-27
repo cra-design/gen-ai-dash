@@ -14,8 +14,27 @@ function formatTranslatedOutput(rawText) {
   let paragraphs = rawText.split(/\n\s*\n/);
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
-} 
+}   
 
+//Function to unzip DOCX, and extract textual content with unique identifiers.
+async function extractDocxTextXmlWithId(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const docXmlStr = await zip.file("word/document.xml").async("string");
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
+  const textNodes = xmlDoc.getElementsByTagName("w:t");
+  let textElements = [];
+
+  // Assign unique IDs to each <w:t> element.
+  for (let i = 0; i < textNodes.length; i++) {
+    let uniqueId = `T${i + 1}`;
+    let text = textNodes[i].textContent;
+    // Optionally add an attribute so later you can find the element
+    textNodes[i].setAttribute("data-unique-id", uniqueId);
+    textElements.push({ id: uniqueId, text });
+  }
+  return { zip, originalXml: docXmlStr, textElements };
+}
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
@@ -144,8 +163,11 @@ $(document).ready(function() {
               englishFile = uploadedFile;
               if (fileExtension === 'docx') {
                 let arrayBuffer = await uploadedFile.arrayBuffer();
-                let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-                $("#translation-A").html(mammothResult.value);
+                const { textElements } = await extractDocxTextXmlWithId(arrayBuffer);
+                 let docxHtml = textElements
+                    .map(item => `<p id="${item.id}">${item.text}</p>`)
+                    .join('');
+                    $("#translation-A").html(docxHtml);
               } else if (fileExtension == 'pptx'){
                 let arrayBuffer = await uploadedFile.arrayBuffer();
                 let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
@@ -423,8 +445,18 @@ $("#second-upload-btn").click(async function () {
     try {
       const fileExtension = file.name.split('.').pop().toLowerCase();
 
-      if (fileExtension === "docx" || fileExtension === "xlsx") {
-        frenchText = await handleFileExtractionToHtml(file);
+      if (fileExtension === "docx") {
+        let arrayBuffer = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        const docXmlStr = await zip.file("word/document.xml").async("string");
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
+        const textNodes = xmlDoc.getElementsByTagName("w:t");
+
+  // Rebuild the HTML by wrapping each extracted text in a paragraph.
+        frenchText = Array.from(textNodes)
+          .map(node => `<p>${node.textContent}</p>`)
+          .join('');
       } else if (fileExtension === "pptx") {
         const arrayBuffer = await file.arrayBuffer();
         const textElements = await extractPptxTextXmlWithId(arrayBuffer);
@@ -433,7 +465,6 @@ $("#second-upload-btn").click(async function () {
         throw new Error("Unsupported file type");
       }
 
-      console.log("French text after extraction:", frenchText);
     } catch (err) {
       console.error('Error processing the second (FR) file:', err);
       alert("Error reading your translated file. Check console for details.");
@@ -602,22 +633,14 @@ $("#convert-translation-download-btn").click(async function() {
     // 3) Generate the Blob (DOCX, PPTX, or XLSX)
     let generatedBlob;
     if (fileExtension === 'docx') {
-      // Example: using htmlDocx.asBlob with Calibri
-      let fullHtml = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="UTF-8">
-            <style>
-              body { font-family: Calibri, "Calibri (Body)", sans-serif; }
-            </style>
-          </head>
-          <body>
-            ${finalFrenchHtml}
-          </body>
-        </html>
-      `;
-      generatedBlob = htmlDocx.asBlob(fullHtml);
+      const arrayBuffer = await englishFile.arrayBuffer();
+      const { zip, originalXml } = await extractDocxTextXmlWithId(arrayBuffer);
+      // Convert the original DOCX XML with the translated French content.
+      const updatedDocXml = conversionDocxXml(originalXml, finalFrenchHtml);
+      // Update the DOCX zip with the new document.xml
+      zip.file("word/document.xml", updatedDocXml);
+      // Generate the updated blob.
+      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
     } else if (fileExtension === 'pptx') {
       const arrayBuffer = await englishFile.arrayBuffer();
       const zip = await JSZip.loadAsync(arrayBuffer);
@@ -714,8 +737,24 @@ function escapeXml(str) {
   return str.replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
-}
+}  
 
+// It looks for <w:t> elements with a "data-unique-id" attribute and replaces their text.
+function conversionDocxXml(originalXml, finalFrenchHtml) {
+  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(originalXml, "application/xml");
+  const textNodes = xmlDoc.getElementsByTagName("w:t");
+
+  for (let i = 0; i < textNodes.length; i++) {
+    const uniqueId = textNodes[i].getAttribute("data-unique-id");
+    if (uniqueId && frenchMap[uniqueId]) {
+      textNodes[i].textContent = frenchMap[uniqueId];
+    }
+  }
+  const serializer = new XMLSerializer();
+  return serializer.serializeToString(xmlDoc);
+}
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
