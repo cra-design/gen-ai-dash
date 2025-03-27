@@ -46,6 +46,12 @@ $(document).ready(function () {
       // Remove invalid characters for filenames
       fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
 
+      // Add the URL at the top of the document, above the main content
+      let formattedContent = `
+      <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
+      ${mainContent}
+    `;
+
       // Structure the content for the Word document
       let docContent = `
       <!DOCTYPE html>
@@ -54,9 +60,11 @@ $(document).ready(function () {
           <meta charset="UTF-8">
           <style>
             body { font-family: Arial, sans-serif; }
+            a { color: blue; text-decoration: underline; }
+            p { font-size: 14px; }
           </style>
         </head>
-        <body>${mainContent}</body>
+        <body>${formattedContent}</body>
       </html>
     `;
 
