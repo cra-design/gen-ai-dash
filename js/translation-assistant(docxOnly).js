@@ -288,7 +288,7 @@ $(document).ready(function() {
       } 
       finalFrenchHtml = removeCodeFences(finalFrenchHtml);
       console.log("Final French HTML (raw):", finalFrenchHtml);
-
+       $("#debug-preview").html(finalFrenchHtml);
       // NEW: Instead of directly displaying the output, split the final French text
       // into segments (by newline) and update the original English HTML structure.
       let frenchSegments = finalFrenchHtml.split(/\n+/).filter(seg => seg.trim() !== "");
@@ -304,7 +304,12 @@ $(document).ready(function() {
     } finally {
       // Hide spinner once processing is complete
       $('#processing-spinner').addClass("hidden");  
-    }
+    } 
+    function decodeHtml(htmlString) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, "text/html");
+    return doc.body.innerHTML;
+  }
   });
     
   // Accept and edit translation button handlers.
