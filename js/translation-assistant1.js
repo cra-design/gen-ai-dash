@@ -502,7 +502,8 @@ $("#second-upload-btn").click(async function () {
     const ORjson = await getORData(model, requestJson); 
     console.log(`Model: ${model}`, ORjson);
     if (ORjson?.choices?.[0]?.message) {
-      finalFrenchHtml = ORjson.choices[0].message.content;
+      finalFrenchHtml = ORjson.choices[0].message.content; 
+        console.log("Raw AI output:", finalFrenchHtml);
       break;
     }
   }
