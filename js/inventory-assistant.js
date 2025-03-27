@@ -17,7 +17,7 @@ $(document).ready(function () {
       // Create a temporary container to parse HTML properly
       let tempDiv = $('<div>').html(response);
 
-      // Extract content from the <main> tag (more flexible selector)
+      // Extract content from the <main> tag
       let mainContent = tempDiv.find('main').html();
 
       // If <main> is empty, fallback to <body>
@@ -32,6 +32,19 @@ $(document).ready(function () {
         alert("No content found on this page!");
         return;
       }
+
+      // Extract the second <h1> if available, otherwise use the first, else default
+      let h1Tags = tempDiv.find('h1');
+      let fileName = h1Tags.length > 1
+        ? h1Tags.eq(1).text().trim() // Use the second <h1>
+        : h1Tags.first().text().trim(); // Use the first if only one exists
+
+      if (!fileName) {
+        fileName = "Webpage_Content"; // Default if no <h1> is found
+      }
+
+      // Remove invalid characters for filenames
+      fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
 
       // Structure the content for the Word document
       let docContent = `
@@ -55,7 +68,7 @@ $(document).ready(function () {
       // Create a download link
       let link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'Webpage_Content.doc';
+      link.download = `${fileName}.doc`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
