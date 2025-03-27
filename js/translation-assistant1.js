@@ -499,7 +499,8 @@ $("#second-upload-btn").click(async function () {
 
   let finalFrenchHtml = "";
   for (let model of models) {
-    const ORjson = await getORData(model, requestJson);
+    const ORjson = await getORData(model, requestJson); 
+    console.log(`Model: ${model}`, ORjson);
     if (ORjson?.choices?.[0]?.message) {
       finalFrenchHtml = ORjson.choices[0].message.content;
       break;
@@ -548,14 +549,16 @@ $("#second-upload-btn").click(async function () {
     alert("Formatted output is empty. Please check the AI response.");
   } else {
     $("#translation-A").html(formattedOutput);
-    $("#translation-preview").removeClass("hidden").show();
+    $("#translation-preview").removeClass("hidden").show(); 
+    $('#processing-spinner').addClass("hidden");
   }
 
 } catch (err) {
   console.error("Error during final output processing:", err);
   alert("An error occurred while processing the AI output.");
 } finally {
-  $('#converting-spinner').addClass("hidden");
+  $('#converting-spinner').addClass("hidden"); 
+  $('#processing-spinner').addClass("hidden");
 }
  });
 // Accept and edit translation button handlers
