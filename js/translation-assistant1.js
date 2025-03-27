@@ -119,7 +119,17 @@ $(document).ready(function() {
           let textContent; 
           const fileExtension = uploadedFile.name.split('.').pop().toLowerCase();  
           if (fileExtension === "docx" || fileExtension === "xlsx") {
-              textContent = await handleFileExtraction(uploadedFile); 
+              let arrayBuffer = await file.arrayBuffer();
+              const zip = await JSZip.loadAsync(arrayBuffer);
+              const docXmlStr = await zip.file("word/document.xml").async("string");
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
+            const textNodes = xmlDoc.getElementsByTagName("w:t");
+
+  // Rebuild the HTML by wrapping each extracted text in a paragraph.
+  frenchText = Array.from(textNodes)
+    .map(node => `<p>${node.textContent}</p>`)
+    .join(''); 
           } else if (fileExtension === "pptx") { 
               let arrayBuffer = await uploadedFile.arrayBuffer(); 
               let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
