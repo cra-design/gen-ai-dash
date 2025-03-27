@@ -1,7 +1,7 @@
 // JavaScript Document
 $(document).ready(function () {
 
-  $('#create-word-docs-btn').click(function () {
+  $('#create-word-docs-btn').click(async function () {
     try {
       // Prompt the user for a URL
       let url = prompt("Please enter the URL of the page:");
