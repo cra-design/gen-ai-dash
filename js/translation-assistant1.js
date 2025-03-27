@@ -70,7 +70,7 @@ $(document).ready(function() {
       }
     }
   }); 
-  
+
   // Detect language from entered text as the user types.
   $('#source-text').on('input', function() {
     $('#source-heading-detecting').removeClass("hidden");
@@ -647,7 +647,7 @@ $("#convert-translation-download-btn").click(async function() {
     $('#converting-spinner').addClass("hidden");
   }
 });
-
+  }); 
 //************************************************************************************
 //* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
 //* Can be added more if needed                                                   ***** 
