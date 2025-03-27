@@ -2,59 +2,11 @@ let generatedDownloadFile = null;
 let englishFile = null;  
 let frenchFile = null;
 
-// Function to extract XML from a file (unchanged)
-function extractXmlFromFile(file) {
-  return new Promise((resolve, reject) => {
-    handleFileExtractionToXML(file, resolve, reject);
-  });
-}
-
-// Function to format raw translated output into structured HTML.
-function formatTranslatedOutput(rawText) {
-  if (!rawText) return "";
-  rawText = rawText.trim();
-  let paragraphs = rawText.split(/\n\s*\n/);
-  let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
-  return formatted;
-}
-
-// NEW: Function to update text nodes in the English HTML with French segments.
-function updateTextNodes(englishHtml, frenchTranslations) {
-  // Create a temporary DOM element with the English HTML
-  let tempDiv = document.createElement("div");
-  tempDiv.innerHTML = englishHtml;
-  
-  // Recursive helper to collect all non-empty text nodes
-  function getTextNodes(node, nodes = []) {
-    node.childNodes.forEach(child => {
-      if (child.nodeType === Node.TEXT_NODE && child.textContent.trim() !== "") {
-        nodes.push(child);
-      } else {
-        getTextNodes(child, nodes);
-      }
-    });
-    return nodes;
-  }
-  
-  let textNodes = getTextNodes(tempDiv);
-  
-  // If the number of text nodes doesn’t match the French segments, use a fallback:
-  if (textNodes.length !== frenchTranslations.length) {
-    console.error("Mismatch between text nodes and translation segments. Using fallback alignment.");
-    // Fallback: Divide the entire French translation (joined) evenly by word count.
-    let words = frenchTranslations.join(" ").split(/\s+/);
-    let wordsPerNode = Math.ceil(words.length / textNodes.length);
-    frenchTranslations = textNodes.map((_, index) =>
-      words.slice(index * wordsPerNode, (index + 1) * wordsPerNode).join(" ")
-    );
-  }
-  
-  // Replace each text node with the corresponding French segment
-  textNodes.forEach((node, index) => {
-    node.textContent = frenchTranslations[index];
-  });
-  
-  return tempDiv.innerHTML;
+// Function to extract DOCX file as HTML using Mammoth.
+async function extractHtmlFromFile(file) {
+  let arrayBuffer = await file.arrayBuffer();
+  let result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+  return result.value;
 }
 
 $(document).ready(function() {
@@ -139,14 +91,19 @@ $(document).ready(function() {
           if (event.target.id === "source-file") {
             englishFile = uploadedFile;
             if (fileExtension === 'docx') {
-              let arrayBuffer = await uploadedFile.arrayBuffer();
-              let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-              // NEW: Store the original HTML structure (with styling/structure) in a data attribute
-              $("#translation-A").data("originalHtml", mammothResult.value);
-              $("#translation-A").html(mammothResult.value);
+                let enHtml = await extractHtmlFromFile(uploadedFile);
+            $("#translation-A").data("originalHtml", enHtml); 
+               $("#translation-A").html(enHtml);
             }
-          } else {
-            frenchFile = uploadedFile;
+          } else { // For the French file:
+          frenchFile = uploadedFile;
+          if (fileExtension === 'docx') {
+            let frHtml = await extractHtmlFromFile(uploadedFile);
+            // Store the French HTML in a data attribute (for later merging)
+            $("#translation-B").data("originalHtml", frHtml);
+            // Optionally preview the French extraction in another element.
+            $("#translation-B").html(frHtml);
+          }
           }
       } catch (err) {
           console.error('Error processing source file:', err);
@@ -195,115 +152,111 @@ $(document).ready(function() {
 
   // Second upload: manual translation.
   $("#second-upload-btn").click(async function() {  
-    $('#processing-spinner').removeClass("hidden"); 
-    console.log("Spinner should now be visible.");
-    var selectedOption = $('input[name="second-upload-option"]:checked').val();  
-    let frenchText = "";  
+  $('#processing-spinner').removeClass("hidden"); 
+  console.log("Spinner should now be visible."); 
+  
+  let selectedOption = $('input[name="second-upload-option"]:checked').val();
+  let frenchHtml = "";
 
-    // Ensure the French file is uploaded if user selected document upload.
-    if (selectedOption == "second-upload-doc" && !frenchFile) {
+  if (selectedOption === "second-upload-doc") {
+    if (!frenchFile) {
       alert("Please upload your translated French document.");
-      return;
-    }
-    
-    // 1) Get raw French text from doc or text input.
-    if (selectedOption == "second-upload-doc") {
-      var file = $('#second-file')[0].files[0]; 
-     
-      if (!file) {
-        alert("Please select your translated file.");
-        return;
-      } 
-      try {
-        // Extract text from the user-provided French doc (unformatted)
-        let extractedText = await handleFileExtractionToHtml(file);
-        frenchText = extractedText || "";
-      } catch (err) {
-        console.error('Error processing the second (FR) file:', err);
-        alert("Error reading your translated file. Check console for details."); 
-        $('#processing-spinner').addClass("hidden");
-        return;
-      }
-    } else if (selectedOption == "second-upload-text") {
-      frenchText = $("#second-text").val();
-    } 
-    console.log("French text:", frenchText);
-    
-    // 2) Retrieve the original English HTML stored during upload.
-    let englishHtml = $("#translation-A").data("originalHtml");
-    if (!englishHtml || englishHtml.trim().length === 0) {
-      alert("No formatted English document found. Please complete the first step."); 
       $('#processing-spinner').addClass("hidden");
       return;
     }
-    if (!frenchText || frenchText.trim().length === 0) {
-      alert("No French document/text found. Please upload or enter your translation."); 
-      $('#processing-spinner').addClass("hidden");
-      return;
-    }
-    
-    // 3) Load system prompt and prepare combined prompt for translation.
-    let systemPrompt = "";
     try {
-      systemPrompt = await $.get("custom-instructions/translation/english2french1.txt");
-    } catch (error) {
-      console.error("Error loading system prompt:", error);
-      alert("Could not load translation instructions. Please check your files."); 
+      frenchHtml = await extractHtmlFromFile(frenchFile);
+    } catch (err) {
+      console.error('Error processing the French document:', err);
+      alert("Error reading your translated file. Check console for details."); 
       $('#processing-spinner').addClass("hidden");
       return;
     }
-    let combinedPrompt = systemPrompt + "\n\n" +
-      "English Document (HTML):\n" + englishHtml + "\n\n" +
-      "French Text:\n" + frenchText + "\n\n" +
-      "Please return the French document in HTML format that exactly follows the structure of the English document."; 
-
-    let requestJson = [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: combinedPrompt }
-    ]; 
-
-    let models = [
-      "google/gemini-2.0-flash-lite-preview-02-05:free",
-      "google/gemini-2.0-pro-exp-02-05:free",
-      "google/gemini-2.0-flash-thinking-exp:free",
-      "meta-llama/llama-3.3-70b-instruct:free",
-      "nvidia/llama-3.1-nemotron-70b-instruct:free",
-      "google/gemini-2.0-flash-exp:free",
-      "google/gemini-exp-1206:free",
-      "google/gemini-flash-1.5-8b-exp",
-      "deepseek/deepseek-r1:free"
-    ];
-    let finalFrenchHtml = "";
-    for (let model of models) {
-      let ORjson = await getORData(model, requestJson);
-      if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
-        finalFrenchHtml = ORjson.choices[0].message.content;
-        break;
-      }
+  } else if (selectedOption === "second-upload-text") {
+    let plainText = $("#second-text").val();
+    if (!plainText || plainText.trim().length === 0) {
+      alert("No French text provided.");
+      $('#processing-spinner').addClass("hidden");
+      return;
     }
-    try { 
-      if (!finalFrenchHtml) {
-        alert("Translation alignment failed. No valid response from any model.");
-        return;
-      } 
-      finalFrenchHtml = removeCodeFences(finalFrenchHtml);
-      console.log("Final French HTML (raw):", finalFrenchHtml);
-       $("#debug-preview").html(finalFrenchHtml);
-      // NEW: Instead of directly displaying the output, split the final French text
-      // into segments (by newline) and update the original English HTML structure.
-      let frenchSegments = finalFrenchHtml.split(/\n+/).filter(seg => seg.trim() !== "");
-      let updatedHtml = updateTextNodes(englishHtml, frenchSegments);
-      console.log("Updated French HTML (aligned):", updatedHtml);
+    frenchHtml = `<p>${plainText.replace(/\n/g, '<br>')}</p>`;
+  }
+  console.log("Extracted French HTML:", frenchHtml);
+  
+  // 2) Retrieve the original English HTML stored during upload.
+  let englishHtml = $("#translation-A").data("originalHtml");
+  if (!englishHtml || englishHtml.trim().length === 0) {
+    alert("No formatted English document found. Please complete the first step."); 
+    $('#processing-spinner').addClass("hidden");
+    return;
+  }
+  if (!frenchHtml || frenchHtml.trim().length === 0) {
+    alert("No French document/text found. Please upload or enter your translation."); 
+    $('#processing-spinner').addClass("hidden");
+    return;
+  }
+  
+  // 3) Load system prompt and prepare combined prompt for translation.
+  let systemPrompt = "";
+  try {
+    systemPrompt = await $.get("custom-instructions/translation/english2french1.txt");
+  } catch (error) {
+    console.error("Error loading system prompt:", error);
+    alert("Could not load translation instructions. Please check your files."); 
+    $('#processing-spinner').addClass("hidden");
+    return;
+  }
+  let combinedPrompt = systemPrompt + "\n\n" +
+    "English Document (HTML):\n" + englishHtml + "\n\n" +
+    "French Document (HTML):\n" + frenchHtml + "\n\n" +
+    "Please return the French document in HTML format that exactly follows the structure of the English document."; 
 
-      // 4) Display the final merged output in #translation-preview
-      $("#translation-A").html(updatedHtml); 
-      $('#converting-spinner').addClass("hidden");
-      $("#translation-preview").removeClass("hidden").show();  
-    } catch (err) {
-      console.error("Error during second-upload processing:", err);
-    } finally {
-      // Hide spinner once processing is complete
-      $('#processing-spinner').addClass("hidden");  
+  let requestJson = [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: combinedPrompt }
+  ]; 
+
+  let models = [
+    "google/gemini-2.0-flash-lite-preview-02-05:free",
+    "google/gemini-2.0-pro-exp-02-05:free",
+    "google/gemini-2.0-flash-thinking-exp:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "nvidia/llama-3.1-nemotron-70b-instruct:free",
+    "google/gemini-2.0-flash-exp:free",
+    "google/gemini-exp-1206:free",
+    "google/gemini-flash-1.5-8b-exp",
+    "deepseek/deepseek-r1:free"
+  ];
+  let finalFrenchHtml = "";
+  for (let model of models) {
+    let ORjson = await getORData(model, requestJson);
+    if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
+      finalFrenchHtml = ORjson.choices[0].message.content;
+      break;
+    }
+  }
+  try { 
+    if (!finalFrenchHtml) {
+      alert("Translation alignment failed. No valid response from any model.");
+      return;
+    } 
+    finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+    console.log("Final French HTML (raw):", finalFrenchHtml);
+    $("#debug-preview").html(finalFrenchHtml);
+
+    // Split the French HTML into segments and update the original English HTML structure.
+    let frenchSegments = finalFrenchHtml.split(/\n+/).filter(seg => seg.trim() !== "");
+    let updatedHtml = updateTextNodes(englishHtml, frenchSegments);
+    console.log("Updated French HTML (aligned):", updatedHtml);
+
+    // Display the final merged output in #translation-preview
+    $("#translation-A").html(updatedHtml); 
+    $('#converting-spinner').addClass("hidden");
+    $("#translation-preview").removeClass("hidden").show();  
+  } catch (err) {
+    console.error("Error during second-upload processing:", err);
+  } finally {
+    $('#processing-spinner').addClass("hidden");  
     } 
     function decodeHtml(htmlString) {
     const parser = new DOMParser();
