@@ -368,54 +368,44 @@ function generateWordDocsFromTable() {
   });
 }
 
-// Function to fetch content and generate a Word document
 async function generateWordDocumentFromURL(url) {
   try {
     console.log(`Processing: ${url}`);
 
-    // Fetch the content of the page using $.get()
-    let response = await $.get(url);
-    console.log(`Page content received from ${url}`);
-
-    // Create a temporary container to parse HTML properly
-    let tempDiv = $('<div>').html(response);
-
-    // Extract content from the <main> tag
-    let mainContent = tempDiv.find('main').html();
-
-    // If <main> is empty, fallback to <body>
-    if (!mainContent || mainContent.trim().length === 0) {
-      console.log(`No <main> content found for ${url}, using <body> instead.`);
-      mainContent = tempDiv.find('body').html();
+    // Ensure URL starts with http/https
+    if (!url.startsWith("http")) {
+      url = "https://" + url;
     }
 
-    // If no content is found at all, show an error message
+    // Fetch the HTML content
+    let response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    let text = await response.text();
+    console.log(`Page content received from ${url}`);
+
+    // Create a temporary container to parse HTML
+    let tempDiv = $('<div>').html(text);
+
+    // Extract content from <main> tag
+    let mainContent = tempDiv.find('main').html() || tempDiv.find('body').html();
+
     if (!mainContent || mainContent.trim().length === 0) {
-      console.error(`No extractable content found for ${url}.`);
       alert(`No content found for ${url}`);
       return;
     }
 
-    // Extract the second <h1> if available, otherwise use the first, else default
+    // Extract H1 (use second one if available)
     let h1Tags = tempDiv.find('h1');
-    let fileName = h1Tags.length > 1
-      ? h1Tags.eq(1).text().trim() // Use the second <h1>
-      : h1Tags.first().text().trim(); // Use the first if only one exists
-
-    if (!fileName) {
-      fileName = "Webpage_Content"; // Default if no <h1> is found
-    }
-
-    // Remove invalid characters for filenames
+    let fileName = h1Tags.length > 1 ? h1Tags.eq(1).text().trim() : h1Tags.first().text().trim();
+    fileName = fileName || "Webpage_Content";  // Default filename
     fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
 
-    // Add the URL at the top of the document, above the main content
-    let formattedContent = `
-      <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
-      ${mainContent}
-    `;
+    // Add URL at the top of the document
+    let formattedContent = `<p><strong>Source:</strong> <a href="${url}">${url}</a></p>${mainContent}`;
 
-    // Structure the content for the Word document
     let docContent = `
       <!DOCTYPE html>
       <html>
@@ -424,19 +414,14 @@ async function generateWordDocumentFromURL(url) {
           <style>
             body { font-family: Arial, sans-serif; }
             a { color: blue; text-decoration: underline; }
-            p { font-size: 14px; }
           </style>
         </head>
         <body>${formattedContent}</body>
       </html>
     `;
 
-    // Create a Blob to download as a Word document
-    let blob = new Blob(['\ufeff' + docContent], {
-      type: 'application/msword'
-    });
+    let blob = new Blob(['\ufeff' + docContent], { type: 'application/msword' });
 
-    // Create a download link
     let link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `${fileName}.doc`;
@@ -445,10 +430,11 @@ async function generateWordDocumentFromURL(url) {
     document.body.removeChild(link);
 
   } catch (error) {
-    console.error(`Failed to fetch or process the page: ${url}`, error);
-    alert(`Failed to retrieve content for: ${url}`);
+    console.error(`Failed to fetch ${url}:`, error);
+    alert(`Could not retrieve content from: ${url}`);
   }
 }
+
 
 function extractMetadata(html, url) {
   let parser = new DOMParser();
