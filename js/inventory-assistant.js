@@ -556,7 +556,7 @@ function populateUrlTable() {
 
         rows[index] = `<tr>
                          <td><a href="${line}" target="_blank">${metadata.title}</a></td>
-                         <td><button onclick="createWordDoc('${line}')">Create docx</button></td>
+                         <td><button onclick="createWordDoc('${line}')">Create&nbsp;docx</button></td>
                          <td>${metadata.description}</td>
                          <td>${metadata.keywords}</td>
                        </tr>`;
