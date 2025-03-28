@@ -391,7 +391,6 @@ async function createWordDoc(url) {
       domainSuffix = ' - dotca';
     }
     fileName = `${fileName} - ${formattedDate}${domainSuffix}`;
-    console.log(`FileName: ${fileName}`);
 
     // Full HTML content
     let formattedContent = `
@@ -411,7 +410,7 @@ async function createWordDoc(url) {
         </body>
       </html>
     `;
-    console.log(`Formatted content: ${formattedContent}`);
+    console.log(`Formatted content was successful`);
 
     // Convert HTML to .docx
     let converted = window.htmlDocx.asBlob(formattedContent);
