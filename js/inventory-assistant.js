@@ -1,8 +1,8 @@
 // JavaScript Document
 $(document).ready(function () {
-    
+
   $('#create-word-docs-btn').click(function () {
-    generateWordDocumentFromURL();
+    generateWordDocumentsFromTable();
   });
 
   $('#export-excel').click(function () {
@@ -345,58 +345,71 @@ $(document).ready(function () {
 
 }); //close document ready
 
-async function generateWordDocumentFromURL() {
+async function generateWordDocumentsFromTable() {
   try {
-    // Prompt the user for a URL
-    let url = prompt("Please enter the URL of the page:");
-    if (!url) {
-      alert("URL is required!");
+    // Find all URLs in #table-init
+    let urls = [];
+    $('#table-init tbody tr').each(function () {
+      // Assuming the URL is in a specific column (e.g., first column)
+      let url = $(this).find('td').eq(0).text().trim();
+      if (url) {
+        urls.push(url);
+      }
+    });
+
+    if (urls.length === 0) {
+      alert("No URLs found in the table!");
       return;
     }
 
+    // Loop over each URL
+    for (let url of urls) {
+      await processURLToWord(url);
+    }
+
+    alert("All documents generated!");
+  } catch (error) {
+    console.error("Error processing table URLs:", error);
+    alert("Something went wrong while processing the table.");
+  }
+}
+
+async function processURLToWord(url) {
+  try {
     // Fetch the content of the page using $.get()
     let response = await $.get(url);
-    console.log("Page content received.");
+    console.log(`Content received from ${url}`);
 
-    // Create a temporary container to parse HTML properly
+    // Parse HTML
     let tempDiv = $('<div>').html(response);
 
-    // Extract content from the <main> tag
+    // Extract <main> or fallback to <body>
     let mainContent = tempDiv.find('main').html();
-
-    // If <main> is empty, fallback to <body>
     if (!mainContent || mainContent.trim().length === 0) {
-      console.log("No <main> content found, using <body> instead.");
       mainContent = tempDiv.find('body').html();
     }
-
-    // If no content is found at all, show an error message
     if (!mainContent || mainContent.trim().length === 0) {
-      console.error("No extractable content found.");
-      alert("No content found on this page!");
+      console.error(`No content found for ${url}`);
       return;
     }
 
-    // Extract the second <h1> if available, otherwise use the first, else default
+    // Extract filename from <h1>
     let h1Tags = tempDiv.find('h1');
-    let fileName = h1Tags.length > 1 
-      ? h1Tags.eq(1).text().trim()  // Use the second <h1>
-      : h1Tags.first().text().trim(); // Use the first if only one exists
-
+    let fileName = h1Tags.length > 1
+      ? h1Tags.eq(1).text().trim()
+      : h1Tags.first().text().trim();
     if (!fileName) {
-      fileName = "Webpage_Content"; // Default if no <h1> is found
+      fileName = "Webpage_Content";
     }
-
-    // Remove invalid characters for filenames
     fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
 
-    // Add the URL at the top of the document, above the main content
+    // Format content
     let formattedContent = `
       <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
       ${mainContent}
     `;
 
-    // Structure the content for the Word document
+    // Structure Word document
     let docContent = `
       <!DOCTYPE html>
       <html>
@@ -413,7 +426,9 @@ async function generateWordDocumentFromURL() {
     `;
 
     // Create a Blob to download as a Word document
-    let blob = new Blob(['\ufeff' + docContent], { type: 'application/msword' });
+    let blob = new Blob(['\ufeff' + docContent], {
+      type: 'application/msword'
+    });
 
     // Create a download link
     let link = document.createElement('a');
@@ -424,8 +439,7 @@ async function generateWordDocumentFromURL() {
     document.body.removeChild(link);
 
   } catch (error) {
-    console.error("Failed to fetch or process the page:", error);
-    alert("Failed to retrieve content. Please check the URL.");
+    console.error(`Failed to process ${url}:`, error);
   }
 }
 
@@ -434,9 +448,9 @@ function extractMetadata(html, url) {
   let parser = new DOMParser();
   let doc = parser.parseFromString(html, 'text/html');
 
-  let title = doc.querySelector('title')?.innerText || url;
-  let description = doc.querySelector('meta[name="description"]')?.content || 'No Description';
-  let keywords = doc.querySelector('meta[name="keywords"]')?.content || 'No Keywords';
+  let title = doc.querySelector('title') ? .innerText || url;
+  let description = doc.querySelector('meta[name="description"]') ? .content || 'No Description';
+  let keywords = doc.querySelector('meta[name="keywords"]') ? .content || 'No Keywords';
 
   return {
     title,
