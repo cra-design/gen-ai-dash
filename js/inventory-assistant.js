@@ -381,11 +381,9 @@ async function createWordDoc(url) {
     }
     fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
 
-    // Get current date in yyyy-mm-dd format
+    // Date & domain suffix
     let currentDate = new Date();
     let formattedDate = currentDate.toISOString().split('T')[0];
-
-    // Domain suffix
     let domainSuffix = '';
     if (url.includes('github')) {
       domainSuffix = ' - github';
@@ -394,10 +392,10 @@ async function createWordDoc(url) {
     }
     fileName = `${fileName} - ${formattedDate}${domainSuffix}`;
 
-    // Convert main content to plain text
+    // Convert to plain text
     let textContent = $('<div>').html(mainContent).text();
 
-    // --- Create DOCX content ---
+    // --- Create DOCX ---
     const {
       Document,
       Packer,
@@ -407,13 +405,12 @@ async function createWordDoc(url) {
 
     const doc = new Document({
       sections: [{
-        properties: {},
         children: [
           new Paragraph({
             children: [
               new TextRun({
                 text: `Source: ${url}`,
-                bold: true,
+                bold: true
               }),
             ],
           }),
