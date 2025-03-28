@@ -423,7 +423,7 @@ async function createWordDoc(url) {
     });
     let link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${fileName}.docx`;  // Change extension to .docx
+    link.download = `${fileName}.docx`; // Change extension to .docx
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -435,7 +435,6 @@ async function createWordDoc(url) {
     alert(`Failed to retrieve content from: ${url}`);
   }
 }
-
 
 
 /*async function generateWordDocumentsFromTable() {
