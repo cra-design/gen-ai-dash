@@ -348,72 +348,87 @@ async function createWordDoc(url) {
       return;
     }
 
+    // Fetch content
     let response = await new Promise((resolve, reject) => {
       $.get(url)
         .done(data => resolve(data))
         .fail(err => reject(err));
     });
 
+    console.log(`Content received from ${url}`);
+
+    // Parse HTML
     let tempDiv = $('<div>').html(response);
+
+    // Extract <main> or fallback to <body>
     let mainContent = tempDiv.find('main').html();
     if (!mainContent || mainContent.trim().length === 0) {
       mainContent = tempDiv.find('body').html();
     }
     if (!mainContent || mainContent.trim().length === 0) {
+      console.error(`No content found for ${url}`);
       alert(`No content found on: ${url}`);
       return;
     }
 
+    // Extract filename
     let h1Tags = tempDiv.find('h1');
     let fileName = h1Tags.length > 1
       ? h1Tags.eq(1).text().trim()
       : h1Tags.first().text().trim();
-    if (!fileName) fileName = "Webpage_Content";
+    if (!fileName) {
+      fileName = "Webpage_Content";
+    }
     fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
 
-    let currentDate = new Date().toISOString().split('T')[0];
+    // Add date and suffix
+    let currentDate = new Date();
+    let formattedDate = currentDate.toISOString().split('T')[0];
     let domainSuffix = '';
-    if (url.includes('github')) domainSuffix = ' - github';
-    else if (url.includes('canada.ca')) domainSuffix = ' - dotca';
-    fileName = `${fileName} - ${currentDate}${domainSuffix}`;
+    if (url.includes('github')) {
+      domainSuffix = ' - github';
+    } else if (url.includes('canada.ca')) {
+      domainSuffix = ' - dotca';
+    }
+    fileName = `${fileName} - ${formattedDate}${domainSuffix}`;
 
-    let textContent = $('<div>').html(mainContent).text();
+    // Full HTML content
+    let formattedContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; }
+            a { color: blue; text-decoration: underline; }
+            p { font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
+          ${mainContent}
+        </body>
+      </html>
+    `;
 
-    const doc = new docx.Document({
-      sections: [{
-        children: [
-          new docx.Paragraph({
-            children: [
-              new docx.TextRun({
-                text: `Source: ${url}`,
-                bold: true
-              }),
-            ],
-          }),
-          new docx.Paragraph({
-            text: ""
-          }),
-          ...textContent.split('\n').map(line =>
-            new docx.Paragraph(line.trim())
-          ),
-        ],
-      }],
-    });
+    // Convert HTML to .docx
+    let converted = window.htmlDocx.asBlob(formattedContent);
 
-    const blob = await docx.Packer.toBlob(doc);
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    // Download link
+    let link = document.createElement('a');
+    link.href = URL.createObjectURL(converted);
     link.download = `${fileName}.docx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
     console.log(`Document created: ${fileName}.docx`);
-  } catch (err) {
-    console.error(err);
-    alert('Failed to generate Word document');
+  } catch (error) {
+    console.error(`Failed to process ${url}:`, error);
+    alert(`Failed to retrieve content from: ${url}`);
   }
 }
+
 
 function populateUrlTable() {
   let lines = [];
