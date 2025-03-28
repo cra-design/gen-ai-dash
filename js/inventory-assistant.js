@@ -341,17 +341,18 @@ $(document).ready(function () {
 }); //close document ready
 
 async function createWordDoc(url) {
+  let button = event.target;
+  let originalText = button.innerHTML;
+
   try {
     if (!url) {
       alert("URL is missing!");
       return;
     }
 
-    // Find the clicked button and show spinner
-    let button = event.target;
-    let originalText = button.innerHTML;
+    // Show spinner
     button.innerHTML = '⏳ Generating...';
-    button.disabled = true; // Optional: prevent double click during process
+    button.disabled = true;
 
     // Fetch the content of the page
     let response = await $.get(url);
@@ -368,8 +369,6 @@ async function createWordDoc(url) {
     if (!mainContent || mainContent.trim().length === 0) {
       console.error(`No content found for ${url}`);
       alert(`No content found on: ${url}`);
-      button.innerHTML = originalText;
-      button.disabled = false;
       return;
     }
 
@@ -406,7 +405,9 @@ async function createWordDoc(url) {
     `;
 
     // Create a Blob to download as a Word document
-    let blob = new Blob(['\ufeff' + docContent], { type: 'application/msword' });
+    let blob = new Blob(['\ufeff' + docContent], {
+      type: 'application/msword'
+    });
 
     // Create a download link
     let link = document.createElement('a');
@@ -423,14 +424,13 @@ async function createWordDoc(url) {
     alert(`Failed to retrieve content from: ${url}`);
   } finally {
     // Restore button text and state
-    let button = event.target;
     button.innerHTML = originalText;
     button.disabled = false;
   }
 }
 
 
-async function generateWordDocumentsFromTable() {
+/*async function generateWordDocumentsFromTable() {
   const rows = $('#table-init tbody tr');
   if (rows.length === 0) {
     alert("No rows found in the table!");
@@ -512,7 +512,7 @@ async function generateWordDocumentFromURL(url) {
   } catch (error) {
     console.error(`Failed to process URL ${url}:`, error);
   }
-}
+}*/
 
 function extractMetadata(html, url) {
   let parser = new DOMParser();
