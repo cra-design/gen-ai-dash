@@ -380,6 +380,23 @@ async function createWordDoc(url) {
     }
     fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
 
+    // Get current date in yyyy-mm-dd format
+    let currentDate = new Date();
+    let formattedDate = currentDate.toISOString().split('T')[0]; // "yyyy-mm-dd"
+
+    // Determine domain-specific suffix
+    let domainSuffix = '';
+    if (url.includes('github')) {
+      domainSuffix = ' - github';
+    } else if (url.includes('canada.ca')) {
+      domainSuffix = ' - dotca';
+    } else if (url.includes('canada-preview')) {
+      domainSuffix = ' - preview';
+    }
+
+    // Add date and domain-specific suffix to the filename
+    fileName = `${fileName} - ${formattedDate}${domainSuffix}`;
+
     // Format content
     let formattedContent = `
       <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
@@ -404,16 +421,16 @@ async function createWordDoc(url) {
 
     // Create a Blob and download link
     let blob = new Blob(['\ufeff' + docContent], {
-      type: 'application/msword'
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // for .docx format
     });
     let link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${fileName}.doc`;
+    link.download = `${fileName}.docx`; // Change extension to .docx
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    console.log(`Document created: ${fileName}.doc`);
+    console.log(`Document created: ${fileName}.docx`);
 
   } catch (error) {
     console.error(`Failed to process ${url}:`, error);
