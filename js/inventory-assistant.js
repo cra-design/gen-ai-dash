@@ -1,10 +1,5 @@
 // JavaScript Document
 $(document).ready(function () {
-
-  $('#create-word-docs-btn').click(function () {
-    generateWordDocumentsFromTable();
-  });
-
   $('#export-excel').click(function () {
     var wb = XLSX.utils.book_new();
     var ws_data = [];
@@ -345,6 +340,96 @@ $(document).ready(function () {
 
 }); //close document ready
 
+async function createWordDoc(url) {
+  try {
+    if (!url) {
+      alert("URL is missing!");
+      return;
+    }
+
+    // Find the clicked button and show spinner
+    let button = event.target;
+    let originalText = button.innerHTML;
+    button.innerHTML = '⏳ Generating...';
+    button.disabled = true; // Optional: prevent double click during process
+
+    // Fetch the content of the page
+    let response = await $.get(url);
+    console.log(`Content received from ${url}`);
+
+    // Parse HTML
+    let tempDiv = $('<div>').html(response);
+
+    // Extract <main> or fallback to <body>
+    let mainContent = tempDiv.find('main').html();
+    if (!mainContent || mainContent.trim().length === 0) {
+      mainContent = tempDiv.find('body').html();
+    }
+    if (!mainContent || mainContent.trim().length === 0) {
+      console.error(`No content found for ${url}`);
+      alert(`No content found on: ${url}`);
+      button.innerHTML = originalText;
+      button.disabled = false;
+      return;
+    }
+
+    // Extract filename from <h1>
+    let h1Tags = tempDiv.find('h1');
+    let fileName = h1Tags.length > 1
+      ? h1Tags.eq(1).text().trim()
+      : h1Tags.first().text().trim();
+    if (!fileName) {
+      fileName = "Webpage_Content";
+    }
+    fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
+
+    // Format content
+    let formattedContent = `
+      <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
+      ${mainContent}
+    `;
+
+    // Structure Word document
+    let docContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; }
+            a { color: blue; text-decoration: underline; }
+            p { font-size: 14px; }
+          </style>
+        </head>
+        <body>${formattedContent}</body>
+      </html>
+    `;
+
+    // Create a Blob to download as a Word document
+    let blob = new Blob(['\ufeff' + docContent], { type: 'application/msword' });
+
+    // Create a download link
+    let link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${fileName}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    console.log(`Document created: ${fileName}.doc`);
+
+  } catch (error) {
+    console.error(`Failed to process ${url}:`, error);
+    alert(`Failed to retrieve content from: ${url}`);
+  } finally {
+    // Restore button text and state
+    let button = event.target;
+    button.innerHTML = originalText;
+    button.disabled = false;
+  }
+}
+
+
 async function generateWordDocumentsFromTable() {
   const rows = $('#table-init tbody tr');
   if (rows.length === 0) {
@@ -479,7 +564,7 @@ function populateUrlTable() {
 
         rows[index] = `<tr>
                          <td><a href="${line}" target="_blank">${metadata.title}</a></td>
-                         <td><button onclick="createWordDoc('${line}')">Create Word Doc</button></td>
+                         <td><button onclick="createWordDoc('${line}')">Create docx</button></td>
                          <td>${metadata.description}</td>
                          <td>${metadata.keywords}</td>
                        </tr>`;
