@@ -390,8 +390,6 @@ async function createWordDoc(url) {
       domainSuffix = ' - github';
     } else if (url.includes('canada.ca')) {
       domainSuffix = ' - dotca';
-    } else if (url.includes('canada-preview')) {
-      domainSuffix = ' - preview';
     }
 
     // Add date and domain-specific suffix to the filename
@@ -425,7 +423,7 @@ async function createWordDoc(url) {
     });
     let link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${fileName}.docx`; // Change extension to .docx
+    link.download = `${fileName}.docx`;  // Change extension to .docx
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -437,6 +435,7 @@ async function createWordDoc(url) {
     alert(`Failed to retrieve content from: ${url}`);
   }
 }
+
 
 
 /*async function generateWordDocumentsFromTable() {
