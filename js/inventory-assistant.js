@@ -419,16 +419,16 @@ async function createWordDoc(url) {
 
     // Create a Blob and download link
     let blob = new Blob(['\ufeff' + docContent], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // for .docx format
+      type: 'application/msword'
     });
     let link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${fileName}.docx`; // Change extension to .docx
+    link.download = `${fileName}.doc`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    console.log(`Document created: ${fileName}.docx`);
+    console.log(`Document created: ${fileName}.doc`);
 
   } catch (error) {
     console.error(`Failed to process ${url}:`, error);
