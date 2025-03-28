@@ -354,8 +354,13 @@ async function createWordDoc(url) {
     button.innerHTML = '⏳ Generating...';
     button.disabled = true;
 
-    // Fetch the content of the page
-    let response = await $.get(url);
+    // Proper Promise-wrapped jQuery GET
+    let response = await new Promise((resolve, reject) => {
+      $.get(url)
+        .done(data => resolve(data))
+        .fail(err => reject(err));
+    });
+
     console.log(`Content received from ${url}`);
 
     // Parse HTML
