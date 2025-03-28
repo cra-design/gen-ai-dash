@@ -645,8 +645,8 @@ th, td {
 <script src="js/mammoth.js"></script> 
 <script src="https://www.canada.ca/etc/designs/canada/wet-boew/js/theme.min.js"></script> 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script> 
-<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.1.0/docx.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.1.0/build/index.umd.js"></script>-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.1.0/docx.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.1.0/build/index.umd.js"></script>
 <script src="https://unpkg.com/docx@6.1.0/build/docx.js"></script>
 <script src="js/prism.js"></script> 
 <!-- <script src="polyfills-VMRJL7IV.js" type="module"></script><script src="main-BEEWNT6W.js" type="module"></script> --> 
@@ -1167,6 +1167,7 @@ th, td {
                   const escapedParagraph = paragraph
                       .replace(/&/g, '&amp;')
                       .replace(/</g, '&lt;')
+
                       .replace(/>/g, '&gt;')
                       .replace(/"/g, '&quot;')
                       .replace(/'/g, '&#39;');
