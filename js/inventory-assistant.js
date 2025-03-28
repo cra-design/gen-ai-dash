@@ -1,5 +1,6 @@
 // JavaScript Document
 $(document).ready(function () {
+
   $('#export-excel').click(function () {
     var wb = XLSX.utils.book_new();
     var ws_data = [];
@@ -382,159 +383,67 @@ async function createWordDoc(url) {
 
     // Get current date in yyyy-mm-dd format
     let currentDate = new Date();
-    let formattedDate = currentDate.toISOString().split('T')[0]; // "yyyy-mm-dd"
+    let formattedDate = currentDate.toISOString().split('T')[0];
 
-    // Determine domain-specific suffix
+    // Domain suffix
     let domainSuffix = '';
     if (url.includes('github')) {
       domainSuffix = ' - github';
     } else if (url.includes('canada.ca')) {
       domainSuffix = ' - dotca';
     }
-
-    // Add date and domain-specific suffix to the filename
     fileName = `${fileName} - ${formattedDate}${domainSuffix}`;
 
-    // Format content
-    let formattedContent = `
-      <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
-      ${mainContent}
-    `;
+    // Convert main content to plain text
+    let textContent = $('<div>').html(mainContent).text();
 
-    // Structure Word document
-    let docContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <style>
-            body { font-family: Arial, sans-serif; }
-            a { color: blue; text-decoration: underline; }
-            p { font-size: 14px; }
-          </style>
-        </head>
-        <body>${formattedContent}</body>
-      </html>
-    `;
+    // --- Create DOCX content ---
+    const {
+      Document,
+      Packer,
+      Paragraph,
+      TextRun
+    } = window.docx;
 
-    // Create a Blob and download link
-    let blob = new Blob(['\ufeff' + docContent], {
-      type: 'application/msword'
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Source: ${url}`,
+                bold: true,
+              }),
+            ],
+          }),
+          new Paragraph({
+            text: ""
+          }),
+          ...textContent.split('\n').map(line =>
+            new Paragraph(line.trim())
+          ),
+        ],
+      }],
     });
-    let link = document.createElement('a');
+
+    const blob = await Packer.toBlob(doc);
+
+    // Download
+    const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${fileName}.doc`;
+    link.download = `${fileName}.docx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    console.log(`Document created: ${fileName}.doc`);
-
+    console.log(`Document created: ${fileName}.docx`);
   } catch (error) {
     console.error(`Failed to process ${url}:`, error);
     alert(`Failed to retrieve content from: ${url}`);
   }
 }
 
-
-/*async function generateWordDocumentsFromTable() {
-  const rows = $('#table-init tbody tr');
-  if (rows.length === 0) {
-    alert("No rows found in the table!");
-    return;
-  }
-
-  for (let i = 0; i < rows.length; i++) {
-    const url = $(rows[i]).find('td a').attr('href'); // Modify this selector based on how the URL is structured in the row
-
-    if (!url) {
-      console.warn(`No URL found in row ${i + 1}`);
-      continue;
-    }
-
-    await generateWordDocumentFromURL(url); // Process each URL one at a time
-  }
-}
-
-async function generateWordDocumentFromURL(url) {
-  try {
-    let response = await $.get(url);
-    console.log(`Content received from ${url}`);
-
-    let tempDiv = $('<div>').html(response);
-
-    let mainContent = tempDiv.find('main').html();
-    if (!mainContent || mainContent.trim().length === 0) {
-      console.log("No <main> content found, using <body> instead.");
-      mainContent = tempDiv.find('body').html();
-    }
-
-    if (!mainContent || mainContent.trim().length === 0) {
-      console.error(`No extractable content found in ${url}`);
-      return;
-    }
-
-    let h1Tags = tempDiv.find('h1');
-    let fileName = h1Tags.length > 1
-      ? h1Tags.eq(1).text().trim()
-      : h1Tags.first().text().trim();
-
-    if (!fileName) {
-      fileName = "Webpage_Content";
-    }
-
-    fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
-
-    let formattedContent = `
-      <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
-      ${mainContent}
-    `;
-
-    let docContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <style>
-            body { font-family: Arial, sans-serif; }
-            a { color: blue; text-decoration: underline; }
-            p { font-size: 14px; }
-          </style>
-        </head>
-        <body>${formattedContent}</body>
-      </html>
-    `;
-
-    let blob = new Blob(['\ufeff' + docContent], {
-      type: 'application/msword'
-    });
-
-    let link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${fileName}.doc`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-  } catch (error) {
-    console.error(`Failed to process URL ${url}:`, error);
-  }
-}*/
-
-function extractMetadata(html, url) {
-  let parser = new DOMParser();
-  let doc = parser.parseFromString(html, 'text/html');
-
-  let title = doc.querySelector('title')?.innerText || url;
-  let description = doc.querySelector('meta[name="description"]')?.content || 'No Description';
-  let keywords = doc.querySelector('meta[name="keywords"]')?.content || 'No Keywords';
-
-  return {
-    title,
-    description,
-    keywords
-  };
-}
 
 function populateUrlTable() {
   let lines = [];
@@ -595,6 +504,20 @@ function populateUrlTable() {
   });
 }
 
+function extractMetadata(html, url) {
+  let parser = new DOMParser();
+  let doc = parser.parseFromString(html, 'text/html');
+
+  let title = doc.querySelector('title')?.innerText || url;
+  let description = doc.querySelector('meta[name="description"]')?.content || 'No Description';
+  let keywords = doc.querySelector('meta[name="keywords"]')?.content || 'No Keywords';
+
+  return {
+    title,
+    description,
+    keywords
+  };
+}
 
 function resetHiddenUploadOptions() {
   $('#url-upload').addClass("hidden");
@@ -645,19 +568,6 @@ async function getORData(model, requestJson) {
     return undefined;
   }
   return ORjson;
-}
-
-function parsePageHTML(url, callback) {
-  $.ajax({
-    url: url,
-    method: 'GET',
-    success: function (response) {
-      callback(null, response);
-    },
-    error: function (err) {
-      callback(err);
-    }
-  });
 }
 
 // Function to extract fields from the HTML
@@ -754,36 +664,6 @@ function renderHTMLFields(fullHtml, fields) {
                       </tr>
                   `);
   });
-}
-
-function formatHTML(htmlString) { // Create a new DOMParser instance
-  const parser = new DOMParser();
-  // Parse the HTML string into a Document
-  const doc = parser.parseFromString(htmlString, 'text/html');
-  // Serialize the Document back to a string with indentation
-  const formattedHTML = doc.documentElement.outerHTML;
-  // Return the formatted HTML
-  return formattedHTML;
-}
-
-function convertTextToHTML(text) {
-  // Split the text into paragraphs based on double newlines
-  const paragraphs = text.split(/\n\s*\n/);
-
-  // Wrap each paragraph with <p> tags and replace single newlines with <br>
-  const htmlParagraphs = paragraphs.map(paragraph => {
-    const escapedParagraph = paragraph
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-    const withLineBreaks = escapedParagraph.replace(/\n/g, '<br>');
-    return `<p>${withLineBreaks}</p>`;
-  });
-
-  // Join all paragraphs into a single string
-  return htmlParagraphs.join('');
 }
 
 async function RefineSyntax(extractedHtml) {
@@ -1026,3 +906,119 @@ async function RefineSyntax(extractedHtml) {
   $("#genai-upload-msg").addClass("hidden");
   $("#genai-task-options").removeClass("hidden");
 }
+
+
+/*async function generateWordDocumentsFromTable() {
+  const rows = $('#table-init tbody tr');
+  if (rows.length === 0) {
+    alert("No rows found in the table!");
+    return;
+  }
+
+  for (let i = 0; i < rows.length; i++) {
+    const url = $(rows[i]).find('td a').attr('href'); // Modify this selector based on how the URL is structured in the row
+
+    if (!url) {
+      console.warn(`No URL found in row ${i + 1}`);
+      continue;
+    }
+
+    await generateWordDocumentFromURL(url); // Process each URL one at a time
+  }
+}
+
+async function generateWordDocumentFromURL(url) {
+  try {
+    let response = await $.get(url);
+    console.log(`Content received from ${url}`);
+
+    let tempDiv = $('<div>').html(response);
+
+    let mainContent = tempDiv.find('main').html();
+    if (!mainContent || mainContent.trim().length === 0) {
+      console.log("No <main> content found, using <body> instead.");
+      mainContent = tempDiv.find('body').html();
+    }
+
+    if (!mainContent || mainContent.trim().length === 0) {
+      console.error(`No extractable content found in ${url}`);
+      return;
+    }
+
+    let h1Tags = tempDiv.find('h1');
+    let fileName = h1Tags.length > 1
+      ? h1Tags.eq(1).text().trim()
+      : h1Tags.first().text().trim();
+
+    if (!fileName) {
+      fileName = "Webpage_Content";
+    }
+
+    fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
+
+    let formattedContent = `
+      <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
+      ${mainContent}
+    `;
+
+    let docContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; }
+            a { color: blue; text-decoration: underline; }
+            p { font-size: 14px; }
+          </style>
+        </head>
+        <body>${formattedContent}</body>
+      </html>
+    `;
+
+    let blob = new Blob(['\ufeff' + docContent], {
+      type: 'application/msword'
+    });
+
+    let link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${fileName}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+  } catch (error) {
+    console.error(`Failed to process URL ${url}:`, error);
+  }
+  
+  
+  function formatHTML(htmlString) { // Create a new DOMParser instance
+  const parser = new DOMParser();
+  // Parse the HTML string into a Document
+  const doc = parser.parseFromString(htmlString, 'text/html');
+  // Serialize the Document back to a string with indentation
+  const formattedHTML = doc.documentElement.outerHTML;
+  // Return the formatted HTML
+  return formattedHTML;
+}
+
+function convertTextToHTML(text) {
+  // Split the text into paragraphs based on double newlines
+  const paragraphs = text.split(/\n\s*\n/);
+
+  // Wrap each paragraph with <p> tags and replace single newlines with <br>
+  const htmlParagraphs = paragraphs.map(paragraph => {
+    const escapedParagraph = paragraph
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    const withLineBreaks = escapedParagraph.replace(/\n/g, '<br>');
+    return `<p>${withLineBreaks}</p>`;
+  });
+
+  // Join all paragraphs into a single string
+  return htmlParagraphs.join('');
+}
+}*/
