@@ -383,7 +383,7 @@ async function generateWordDocumentFromURL(url) {
     }
 
     let h1Tags = tempDiv.find('h1');
-    let fileName = h1Tags.length > 1 
+    let fileName = h1Tags.length > 1
       ? h1Tags.eq(1).text().trim()
       : h1Tags.first().text().trim();
 
@@ -413,7 +413,9 @@ async function generateWordDocumentFromURL(url) {
       </html>
     `;
 
-    let blob = new Blob(['\ufeff' + docContent], { type: 'application/msword' });
+    let blob = new Blob(['\ufeff' + docContent], {
+      type: 'application/msword'
+    });
 
     let link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -472,11 +474,12 @@ function populateUrlTable() {
           metadata = extractMetadata(html, line);
         }
 
-        // Remove " - canada.ca" from the title if present
+        // Remove " - Canada.ca" from the title if present
         metadata.title = metadata.title.replace(' - Canada.ca', '');
 
         rows[index] = `<tr>
                          <td><a href="${line}" target="_blank">${metadata.title}</a></td>
+                         <td><button onclick="createWordDoc('${line}')">Create Word Doc</button></td>
                          <td>${metadata.description}</td>
                          <td>${metadata.keywords}</td>
                        </tr>`;
@@ -490,6 +493,7 @@ function populateUrlTable() {
                        <td>Invalid URL</td>
                        <td>N/A</td>
                        <td>N/A</td>
+                       <td>N/A</td>
                      </tr>`;
 
       if (!rows.includes(null)) {
@@ -498,6 +502,7 @@ function populateUrlTable() {
     }
   });
 }
+
 
 function resetHiddenUploadOptions() {
   $('#url-upload').addClass("hidden");
