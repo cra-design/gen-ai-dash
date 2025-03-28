@@ -355,8 +355,6 @@ async function createWordDoc(url) {
         .fail(err => reject(err));
     });
 
-    console.log(`Content received from ${url}`);
-
     // Parse HTML
     let tempDiv = $('<div>').html(response);
 
@@ -410,11 +408,9 @@ async function createWordDoc(url) {
         </body>
       </html>
     `;
-    console.log(`Formatted content was successful`);
 
     // Convert HTML to .docx
     let converted = window.htmlDocx.asBlob(formattedContent);
-    console.log(`Blob: ${converted}`);
 
     // Download link
     let link = document.createElement('a');
@@ -424,7 +420,6 @@ async function createWordDoc(url) {
     link.click();
     document.body.removeChild(link);
 
-    console.log(`Document created: ${fileName}.docx`);
   } catch (error) {
     console.error(`Failed to process ${url}:`, error);
     alert(`Failed to retrieve content from: ${url}`);
@@ -440,8 +435,6 @@ function populateUrlTable() {
   content = content.replace(/<\/div>/g, '');
 
   lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-
-  console.log("Lines read:", lines);
 
   let tbody = $('#table-init tbody');
   tbody.empty();
