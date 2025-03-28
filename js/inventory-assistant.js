@@ -377,6 +377,7 @@ async function generateWordDocumentsFromTable() {
 async function processURLToWord(url) {
   try {
     // Fetch the content of the page using $.get()
+      console.log(url);
     let response = await $.get(url);
     console.log(`Content received from ${url}`);
 
