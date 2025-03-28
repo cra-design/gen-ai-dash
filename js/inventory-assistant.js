@@ -341,20 +341,13 @@ $(document).ready(function () {
 }); //close document ready
 
 async function createWordDoc(url) {
-  let button = event.target;
-  let originalText = button.innerHTML;
-
   try {
     if (!url) {
       alert("URL is missing!");
       return;
     }
 
-    // Show spinner
-    button.innerHTML = '⏳ Generating...';
-    button.disabled = true;
-
-    // Proper Promise-wrapped jQuery GET
+    // Fetch content
     let response = await new Promise((resolve, reject) => {
       $.get(url)
         .done(data => resolve(data))
@@ -409,12 +402,10 @@ async function createWordDoc(url) {
       </html>
     `;
 
-    // Create a Blob to download as a Word document
+    // Create a Blob and download link
     let blob = new Blob(['\ufeff' + docContent], {
       type: 'application/msword'
     });
-
-    // Create a download link
     let link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `${fileName}.doc`;
@@ -427,10 +418,6 @@ async function createWordDoc(url) {
   } catch (error) {
     console.error(`Failed to process ${url}:`, error);
     alert(`Failed to retrieve content from: ${url}`);
-  } finally {
-    // Restore button text and state
-    button.innerHTML = originalText;
-    button.disabled = false;
   }
 }
 
