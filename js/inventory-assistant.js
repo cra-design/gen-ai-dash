@@ -346,71 +346,58 @@ $(document).ready(function () {
 }); //close document ready
 
 async function generateWordDocumentsFromTable() {
-  try {
-    // Find all URLs in #table-init
-    let urls = [];
-    $('#table-init tbody tr').each(function () {
-      // Assuming the URL is in a specific column (e.g., first column)
-      let url = $(this).find('td').eq(0).text().trim();
-      if (url) {
-        urls.push(url);
-      }
-    });
+  const rows = $('#table-init tbody tr');
+  if (rows.length === 0) {
+    alert("No rows found in the table!");
+    return;
+  }
 
-    if (urls.length === 0) {
-      alert("No URLs found in the table!");
-      return;
+  for (let i = 0; i < rows.length; i++) {
+    const url = $(rows[i]).find('td a').attr('href'); // Modify this selector based on how the URL is structured in the row
+
+    if (!url) {
+      console.warn(`No URL found in row ${i + 1}`);
+      continue;
     }
 
-    // Loop over each URL
-    for (let url of urls) {
-      await processURLToWord(url);
-    }
-
-    alert("All documents generated!");
-  } catch (error) {
-    console.error("Error processing table URLs:", error);
-    alert("Something went wrong while processing the table.");
+    await generateWordDocumentFromURL(url); // Process each URL one at a time
   }
 }
 
-async function processURLToWord(url) {
+async function generateWordDocumentFromURL(url) {
   try {
-    // Fetch the content of the page using $.get()
-      console.log(url);
     let response = await $.get(url);
     console.log(`Content received from ${url}`);
 
-    // Parse HTML
     let tempDiv = $('<div>').html(response);
 
-    // Extract <main> or fallback to <body>
     let mainContent = tempDiv.find('main').html();
     if (!mainContent || mainContent.trim().length === 0) {
+      console.log("No <main> content found, using <body> instead.");
       mainContent = tempDiv.find('body').html();
     }
+
     if (!mainContent || mainContent.trim().length === 0) {
-      console.error(`No content found for ${url}`);
+      console.error(`No extractable content found in ${url}`);
       return;
     }
 
-    // Extract filename from <h1>
     let h1Tags = tempDiv.find('h1');
-    let fileName = h1Tags.length > 1
+    let fileName = h1Tags.length > 1 
       ? h1Tags.eq(1).text().trim()
       : h1Tags.first().text().trim();
+
     if (!fileName) {
       fileName = "Webpage_Content";
     }
+
     fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
 
-    // Format content
     let formattedContent = `
       <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
       ${mainContent}
     `;
 
-    // Structure Word document
     let docContent = `
       <!DOCTYPE html>
       <html>
@@ -426,12 +413,8 @@ async function processURLToWord(url) {
       </html>
     `;
 
-    // Create a Blob to download as a Word document
-    let blob = new Blob(['\ufeff' + docContent], {
-      type: 'application/msword'
-    });
+    let blob = new Blob(['\ufeff' + docContent], { type: 'application/msword' });
 
-    // Create a download link
     let link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `${fileName}.doc`;
@@ -440,10 +423,9 @@ async function processURLToWord(url) {
     document.body.removeChild(link);
 
   } catch (error) {
-    console.error(`Failed to process ${url}:`, error);
+    console.error(`Failed to process URL ${url}:`, error);
   }
 }
-
 
 function extractMetadata(html, url) {
   let parser = new DOMParser();
