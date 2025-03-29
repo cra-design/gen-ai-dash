@@ -259,14 +259,23 @@
                                     <div class="sidebyside-wrapper">
                                       <p id="source-language-heading" style="margin-top: 15px;">Source language: <span id="source-doc-detecting" class="hidden">detecting...</span></p>
                                       <select id="source-language-doc" class="hidden"><option value="english">English</option><option value="french">French</option></select>
-                                    </div>
+                                    </div> 
                                   </div>
                                   <div class="sidebyside-wrapper">
                                    <!-- <button id="source-upload-translate-btn">Translate</button> -->
-                                    <button id="source-upload-provide-btn">Upload formatted Enligsh file</button>
+                                    <button id="source-upload-provide-btn">Upload formatted Enligsh file</button> 
+				  <button id="extract-source-text-btn">Extract source text</button>
                                   <!--<button id="source-upload-provide-update-btn">Compare with update</button>-->
                                   </div>
-                                </fieldset>
+                                </fieldset> 
+<div class="card pt-2">
+    <div class="card-body card-pad pt-2 h-100">
+      <h4>Source text preview</h4>
+      <p>This is the raw text extracted from the uploaded document.</p>
+      <textarea id="source-text-preview" class="inputbox-translation" style="height:200px;"></textarea>
+    </div>
+  </div>
+				      
                               </div>
                             </div>
                           </div>
