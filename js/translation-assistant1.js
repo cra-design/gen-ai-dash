@@ -126,9 +126,9 @@ $(document).ready(function() {
             const textNodes = xmlDoc.getElementsByTagName("w:t");
 
   // Rebuild the HTML by wrapping each extracted text in a paragraph.
-  frenchText = Array.from(textNodes)
-    .map(node => `<p>${node.textContent}</p>`)
-    .join(''); 
+ textContent = Array.from(textNodes)
+  .map(node => `<p>${node.textContent}</p>`)
+  .join('');
           } else if (fileExtension === "pptx") { 
               let arrayBuffer = await uploadedFile.arrayBuffer(); 
               let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
