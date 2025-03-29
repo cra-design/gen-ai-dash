@@ -118,7 +118,7 @@ $(document).ready(function() {
       try {
           let textContent;
           if (fileExtension === "docx" || fileExtension === "xlsx") {
-              let arrayBuffer = await file.arrayBuffer();
+              let arrayBuffer = await uploadedFile.arrayBuffer();
               const zip = await JSZip.loadAsync(arrayBuffer);
               const docXmlStr = await zip.file("word/document.xml").async("string");
             const parser = new DOMParser();
