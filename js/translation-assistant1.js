@@ -174,8 +174,52 @@ $(document).ready(function() {
           $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
       }
     }
-  });
+  }); 
 
+  
+ $(document).on("click", "#extract-source-text-btn", async function () {
+    if (!englishFile) {
+      alert("No source file uploaded. Please upload a file first!");
+      return;
+    }
+   
+    $("#source-doc-error").addClass("hidden");
+    $("#source-text-preview").val("");
+
+    try {
+      const fileExtension = englishFile.name.split('.').pop().toLowerCase();
+      let extractedText = "";
+
+      if (fileExtension === "docx") {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+        // Convert HTML to plain text using jQuery.
+        extractedText = $(mammothResult.value).text();
+      } else if (fileExtension === "pptx") {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        let textElements = await extractPptxTextXmlWithId(arrayBuffer);
+        // Combine all text from each slide.
+        extractedText = textElements.map(el => el.text).join("\n\n");
+      } else if (fileExtension === "xlsx") {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        let workbook = XLSX.read(arrayBuffer, { type: "array" });
+        let sheetName = workbook.SheetNames[0];
+        let worksheet = workbook.Sheets[sheetName];
+        let csvData = XLSX.utils.sheet_to_csv(worksheet);
+        extractedText = csvData;
+      } else {
+        throw new Error("Unsupported file type for extraction");
+      }
+
+      // Populate the preview textarea with the extracted text.
+      $("#source-text-preview").val(extractedText);
+      // Reveal the preview card.
+      $("#source-preview").removeClass("hidden");
+    } catch (err) {
+      console.error("Error extracting source text:", err);
+      $("#source-doc-error").removeClass("hidden");
+    }
+  });
   /***********************************************************************
    * Translate Button Flow:
    * For file uploads, if DOCX, convert the file to HTML via Mammoth, then traverse the
