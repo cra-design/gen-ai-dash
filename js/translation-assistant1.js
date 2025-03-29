@@ -116,8 +116,7 @@ $(document).ready(function() {
           return;
       }
       try {
-          let textContent; 
-          const fileExtension = uploadedFile.name.split('.').pop().toLowerCase();  
+          let textContent;
           if (fileExtension === "docx" || fileExtension === "xlsx") {
               let arrayBuffer = await file.arrayBuffer();
               const zip = await JSZip.loadAsync(arrayBuffer);
