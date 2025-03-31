@@ -16,6 +16,33 @@ function formatTranslatedOutput(rawText) {
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
 }  
+async function extractDocxParagraphs(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const docXml = await zip.file("word/document.xml").async("string");
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(docXml, "application/xml");
+
+  const paragraphs = xmlDoc.getElementsByTagName("w:p");
+  let fullText = [];
+
+  for (let i = 0; i < paragraphs.length; i++) {
+    let paragraph = paragraphs[i];
+    let paragraphText = "";
+
+    // Extract all <w:t> (text) elements within the paragraph
+    let textNodes = paragraph.getElementsByTagName("w:t");
+    for (let j = 0; j < textNodes.length; j++) {
+      paragraphText += textNodes[j].textContent;
+    }
+
+    if (paragraphText.trim()) {
+      fullText.push(paragraphText.trim());
+    }
+  }
+
+  // Join paragraphs with double newline to separate them
+  return fullText.join("\n\n");
+}
 
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
@@ -187,9 +214,8 @@ $(document).ready(function() {
           if (event.target.id === "source-file") {
               englishFile = uploadedFile;
               if (fileExtension === 'docx') {
-                let arrayBuffer = await uploadedFile.arrayBuffer();
-                let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-                $("#translation-A").html(mammothResult.value);
+                const arrayBuffer = await englishFile.arrayBuffer();
+                extractedText = await extractDocxParagraphs(arrayBuffer);
               } else if (fileExtension == 'pptx'){
                 let arrayBuffer = await uploadedFile.arrayBuffer();
                 let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
