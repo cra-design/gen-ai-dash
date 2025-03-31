@@ -369,18 +369,21 @@ async function createWordDoc(url) {
       return;
     }
 
-    // Clone main content to avoid modifying the original
+    // Clone content to avoid modifying the original
     let mainClone = mainElement.clone();
 
-    // Preserve inline styles and computed styles
+    // Extract and inline computed styles
     mainClone.find('*').each(function () {
       let $this = $(this);
       let computedStyle = window.getComputedStyle(this);
       let inlineStyle = '';
 
-      // Copy computed styles (only necessary ones)
-      let propertiesToCopy = ['color', 'font-size', 'font-weight', 'font-style', 'text-decoration',
-        'background-color', 'border', 'margin', 'padding', 'text-align'];
+      // Copy necessary properties
+      let propertiesToCopy = [
+        'color', 'font-size', 'font-weight', 'font-style', 'text-decoration',
+        'background-color', 'border', 'border-bottom', 'margin', 'padding',
+        'text-align', 'line-height'
+      ];
 
       propertiesToCopy.forEach(prop => {
         let value = computedStyle.getPropertyValue(prop);
@@ -393,6 +396,25 @@ async function createWordDoc(url) {
         $this.attr('style', inlineStyle);
       }
     });
+
+    // Extract critical external stylesheets (WET-BOEW)
+    let stylesheets = tempDiv.find('link[rel="stylesheet"]')
+      .map((_, link) => $(link).attr('href'))
+      .get()
+      .filter(href => href && (href.includes('wet-boew') || href.includes('theme.css')));
+
+    let styleRules = '';
+
+    // Fetch and extract WET-BOEW styles
+    for (let sheet of stylesheets) {
+      try {
+        let cssResponse = await fetch(sheet);
+        let cssText = await cssResponse.text();
+        styleRules += cssText;
+      } catch (err) {
+        console.warn(`Failed to fetch stylesheet: ${sheet}`);
+      }
+    }
 
     // Extract filename from <h1>
     let h1Tags = tempDiv.find('h1');
@@ -411,7 +433,7 @@ async function createWordDoc(url) {
                        url.includes('canada.ca') ? ' - dotca' : '';
     fileName = `${fileName} - ${formattedDate}${domainSuffix}`;
 
-    // Full HTML content with extracted inline styles
+    // Full HTML content with extracted WET-BOEW styles
     let formattedContent = `
       <!DOCTYPE html>
       <html>
@@ -423,6 +445,8 @@ async function createWordDoc(url) {
             table { width: 100%; border-collapse: collapse; }
             th, td { border: 1px solid #ddd; padding: 8px; }
             th { background-color: #f1f1f1; text-align: left; }
+            h1 { border-bottom: 4px solid #d3080c; } /* WET-BOEW red underline */
+            ${styleRules}
           </style>
         </head>
         <body>
