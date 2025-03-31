@@ -22,32 +22,35 @@ async function extractPptxText(arrayBuffer) {
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
   let allParagraphs = [];
 
+  // Loop over each file in the ZIP that matches a slide XML.
   for (const fileName of Object.keys(zip.files)) {
     if (slideRegex.test(fileName)) {
       const slideXml = await zip.file(fileName).async("string");
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(slideXml, "application/xml");
 
-      // Get all <a:p> elements for each slide
+      // Get all <a:p> elements for this slide.
       const paraNodes = xmlDoc.getElementsByTagName("a:p");
       for (let i = 0; i < paraNodes.length; i++) {
         const paraNode = paraNodes[i];
         let paragraphText = "";
-        // Concatenate text from each <a:t> element within the paragraph
+
+        // Within each paragraph, concatenate the text from all <a:t> elements.
         const textNodes = paraNode.getElementsByTagName("a:t");
         for (let j = 0; j < textNodes.length; j++) {
           paragraphText += textNodes[j].textContent;
         }
-        // Only add paragraphs with non-empty text
+        // If the paragraph has any non-empty text, add it to the array.
         if (paragraphText.trim().length > 0) {
           allParagraphs.push(paragraphText.trim());
         }
       }
     }
   }
-  // Join paragraphs with double newline to indicate paragraph breaks
+  // Join paragraphs with two newlines to denote paragraph breaks.
   return allParagraphs.join("\n\n");
 }
+
 
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
@@ -210,47 +213,48 @@ $(document).ready(function() {
   }); 
 
   
- $(document).on("click", "#extract-source-text-btn", async function () {
-    if (!englishFile) {
-      alert("No source file uploaded. Please upload a file first!");
-      return;
+$(document).on("click", "#extract-source-text-btn", async function () {
+  if (!englishFile) {
+    alert("No source file uploaded. Please upload a file first!");
+    return;
+  }
+  
+  $("#source-doc-error").addClass("hidden");
+  $("#source-text-preview").val("");
+
+  try {
+    const fileExtension = englishFile.name.split('.').pop().toLowerCase();
+    let extractedText = "";
+
+    if (fileExtension === "docx") {
+      let arrayBuffer = await englishFile.arrayBuffer();
+      let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+      // Convert HTML to plain text using jQuery.
+      extractedText = $(mammothResult.value).text();
+    } else if (fileExtension === "pptx") {
+      let arrayBuffer = await englishFile.arrayBuffer();
+      extractedText = await extractPptxText(arrayBuffer);
+    } else if (fileExtension === "xlsx") {
+      let arrayBuffer = await englishFile.arrayBuffer();
+      let workbook = XLSX.read(arrayBuffer, { type: "array" });
+      let sheetName = workbook.SheetNames[0];
+      let worksheet = workbook.Sheets[sheetName];
+      let csvData = XLSX.utils.sheet_to_csv(worksheet);
+      extractedText = csvData;
+    } else {
+      throw new Error("Unsupported file type for extraction");
     }
-   
-    $("#source-doc-error").addClass("hidden");
-    $("#source-text-preview").val("");
 
-    try {
-      const fileExtension = englishFile.name.split('.').pop().toLowerCase();
-      let extractedText = "";
+    // Populate the preview textarea with the extracted text.
+    $("#source-text-preview").val(extractedText);
+    // Reveal the preview card.
+    $("#source-preview").removeClass("hidden");
+  } catch (err) {
+    console.error("Error extracting source text:", err);
+    $("#source-doc-error").removeClass("hidden");
+  }
+});
 
-      if (fileExtension === "docx") {
-        let arrayBuffer = await englishFile.arrayBuffer();
-        let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-        // Convert HTML to plain text using jQuery.
-        extractedText = $(mammothResult.value).text();
-      } else if (fileExtension === "pptx") {
-        let arrayBuffer = await englishFile.arrayBuffer();
-        extractedText = await extractPptxText(arrayBuffer);
-      } else if (fileExtension === "xlsx") {
-        let arrayBuffer = await englishFile.arrayBuffer();
-        let workbook = XLSX.read(arrayBuffer, { type: "array" });
-        let sheetName = workbook.SheetNames[0];
-        let worksheet = workbook.Sheets[sheetName];
-        let csvData = XLSX.utils.sheet_to_csv(worksheet);
-        extractedText = csvData;
-      } else {
-        throw new Error("Unsupported file type for extraction");
-      } 
-
-      // Populate the preview textarea with the extracted text.
-      $("#source-text-preview").val(extractedText);
-      // Reveal the preview card.
-      $("#source-preview").removeClass("hidden");
-    } catch (err) {
-      console.error("Error extracting source text:", err);
-      $("#source-doc-error").removeClass("hidden");
-    }
-  });
   /***********************************************************************
    * Translate Button Flow:
    * For file uploads, if DOCX, convert the file to HTML via Mammoth, then traverse the
