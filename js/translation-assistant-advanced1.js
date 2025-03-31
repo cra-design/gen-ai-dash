@@ -14,26 +14,33 @@ function formatTranslatedOutput(rawText) {
   let paragraphs = rawText.split(/\n\s*\n/);
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
-}   
+}  
 
-//Function to unzip DOCX, and extract textual content with unique identifiers.
-async function extractDocxTextXmlWithId(arrayBuffer) {
-  const zip = await JSZip.loadAsync(arrayBuffer);
-  const docXmlStr = await zip.file("word/document.xml").async("string");
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
-  const textNodes = xmlDoc.getElementsByTagName("w:t");
-  let textElements = [];
+function normalizeExtractedText(rawText) {
+  // Split by newlines
+  const lines = rawText.split(/\r?\n/);
+  let normalized = "";
+  
+  for (let i = 0; i < lines.length; i++) {
+    let currentLine = lines[i].trim();
+    if (!currentLine) continue; // skip empty lines
 
-  for (let i = 0; i < textNodes.length; i++) {
-    let uniqueId = `D_T${i + 1}`;
-    let text = textNodes[i].textContent;
-    textNodes[i].setAttribute("data-unique-id", uniqueId);
-    textElements.push({ id: uniqueId, text });
+    // Check if currentLine looks like a title or ends with punctuation.
+    // You might need more sophisticated logic here.
+    if (normalized) {
+      // If the previous text doesn't end with punctuation, then join with a space.
+      if (!/[.?!]$/.test(normalized.slice(-1))) {
+        normalized += " ";
+      }
+    }
+    normalized += currentLine;
+    
+    // If the current line ends with punctuation, assume end of a paragraph.
+    if (/[.?!]$/.test(currentLine)) {
+      normalized += "\n\n"; // add a paragraph break
+    }
   }
-  const serializer = new XMLSerializer();
-  const updatedXmlStr = serializer.serializeToString(xmlDoc);
-  return { zip, originalXml: updatedXmlStr, textElements };
+  return normalized;
 }
 
 
@@ -108,108 +115,142 @@ $(document).ready(function() {
 
 
   // Handle file input change for both source and second file uploads.
- $(document).on("change", "input", async function (event) {
-  if (event.target.id == "source-file" || event.target.id == "second-file") {
-    let language = event.target.id === "source-file" ? "source" : "second";
-    $(`#${language}-doc-detecting`).removeClass("hidden");
-    $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
-    $(`#${language}-language-heading`).removeClass("hidden");
-    $(`#${language}-language-doc`).addClass("hidden");
-    var fileList = event.target.files; 
-    if (!fileList || fileList.length === 0) return;
-    if (fileList.length > 1) {
-      $(`#${language}-multiple-msg`).removeClass("hidden");
-      $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
-      return;
-    }
-    var uploadedFile = fileList[0];
-    var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
-    var validExtensions = ["docx", "xlsx", "pptx"];
-    var validMimeTypes = [
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-    ];
-    if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
-      $(`#${language}-doc-error`).removeClass("hidden");
-      $(`#${language}-doc-detecting`).addClass("hidden");
+  $(document).on("change", "input", async function (event) {
+    if (event.target.id == "source-file" || event.target.id == "second-file") {
+      let language = event.target.id === "source-file" ? "source" : "second";
+      $(`#${language}-doc-detecting`).removeClass("hidden");
+      $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
       $(`#${language}-language-heading`).removeClass("hidden");
+      $(`#${language}-language-doc`).addClass("hidden");
+      var fileList = event.target.files; 
+      if (!fileList || fileList.length === 0) return;
+      if (fileList.length > 1) {
+          $(`#${language}-multiple-msg`).removeClass("hidden");
+          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+          return;
+      }
+      var uploadedFile = fileList[0];
+      var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
+      var validExtensions = ["docx", "xlsx", "pptx"];
+      var validMimeTypes = [
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      ];
+      if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
+          $(`#${language}-doc-error`).removeClass("hidden");
+          $(`#${language}-doc-detecting`).addClass("hidden");
+          $(`#${language}-language-heading`).removeClass("hidden");
+          return;
+      }
+      try {
+          let textContent;
+          if (fileExtension === "docx" || fileExtension === "xlsx") {
+              let arrayBuffer = await uploadedFile.arrayBuffer();
+              const zip = await JSZip.loadAsync(arrayBuffer);
+              const docXmlStr = await zip.file("word/document.xml").async("string");
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
+            const textNodes = xmlDoc.getElementsByTagName("w:t");
+
+  // Rebuild the HTML by wrapping each extracted text in a paragraph.
+ textContent = Array.from(textNodes)
+  .map(node => `<p>${node.textContent}</p>`)
+  .join('');
+          } else if (fileExtension === "pptx") { 
+              let arrayBuffer = await uploadedFile.arrayBuffer(); 
+              let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+              let pptxHtml = textElements
+                .map(item => `<p id="${item.id}">${item.text}</p>`)
+                .join('');
+              //Assign pptxHtml to textContent.
+              textContent = pptxHtml;
+          } else {
+              throw new Error("Unsupported file type");
+          }
+          if (!textContent) { 
+              throw new Error("No text extracted."); 
+          }
+          
+          let detectedLanguage = detectLanguageBasedOnWords(textContent); 
+          if (detectedLanguage !== "french") { detectedLanguage = "english"; }
+          $(`#${language}-doc-detecting`).addClass("hidden");
+          $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
+       
+          if (event.target.id === "source-file") {
+              englishFile = uploadedFile;
+              if (fileExtension === 'docx') {
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+                let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+                $("#translation-A").html(mammothResult.value);
+              } else if (fileExtension == 'pptx'){
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+                let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+                console.log("Extracted PPTX Text Elements:", textElements);
+                let pptxHtml = textElements
+                  .map(item => `<p id="${item.id}">${item.text}</p>`)
+                  .join('');
+                // NEW: Set the formatted PPTX content into #translation-A.
+                $("#translation-A").html(pptxHtml);
+              }
+          } else {
+              frenchFile = uploadedFile;
+          }
+      } catch (err) {
+          console.error('Error processing source file:', err);
+          $(`#${language}-doc-error`).removeClass("hidden");
+          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+      }
+    }
+  }); 
+
+  
+ $(document).on("click", "#extract-source-text-btn", async function () {
+    if (!englishFile) {
+      alert("No source file uploaded. Please upload a file first!");
       return;
     }
-    try {
-      let textContent; 
-      // Process DOCX files: extract all <w:t> elements and rebuild HTML
-      if (fileExtension === "docx") {
-        let arrayBuffer = await uploadedFile.arrayBuffer();
-        const zip = await JSZip.loadAsync(arrayBuffer);
-        const docXmlStr = await zip.file("word/document.xml").async("string");
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
-        const textNodes = xmlDoc.getElementsByTagName("w:t");
-
-        // Rebuild the HTML by wrapping each extracted text in a paragraph.
-        let frenchText = Array.from(textNodes)
-          .map(node => `<p>${node.textContent}</p>`)
-          .join('');
-        // Assign extracted HTML to both frenchText and textContent
-        textContent = frenchText;
-      } else if (fileExtension === "pptx") { 
-        let arrayBuffer = await uploadedFile.arrayBuffer(); 
-        let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
-        let pptxHtml = textElements
-          .map(item => `<p id="${item.id}">${item.text}</p>`)
-          .join('');
-        // Assign pptxHtml to textContent.
-        textContent = pptxHtml;
-      } else {
-        throw new Error("Unsupported file type");
-      }
-      if (!textContent) { 
-        throw new Error("No text extracted."); 
-      }
-      
-      let detectedLanguage = detectLanguageBasedOnWords(textContent); 
-      if (detectedLanguage !== "french") { detectedLanguage = "english"; }
-      $(`#${language}-doc-detecting`).addClass("hidden");
-      $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
    
-      if (event.target.id === "source-file") {
-        englishFile = uploadedFile;
-        if (fileExtension === 'docx') {
-          try {
-            let arrayBuffer = await uploadedFile.arrayBuffer();
-            const { textElements } = await extractDocxTextXmlWithId(arrayBuffer);
-            console.log("Extracted textElements:", textElements);
-            if (!textElements.length) {
-              throw new Error("No <w:t> elements found in DOCX.");
-            }
-            let docxHtml = textElements
-              .map(item => `<p id="${item.id}">${item.text}</p>`)
-              .join('');
-            $("#translation-A").html(docxHtml);
-          } catch (err) {
-            console.error("Error processing DOCX file:", err);
-          }
-        } else if (fileExtension == 'pptx'){
-          let arrayBuffer = await uploadedFile.arrayBuffer();
-          let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
-          console.log("Extracted PPTX Text Elements:", textElements);
-          let pptxHtml = textElements
-            .map(item => `<p id="${item.id}">${item.text}</p>`)
-            .join('');
-          $("#translation-A").html(pptxHtml);
-        }
-      } else {
-        frenchFile = uploadedFile;
-      }
-    } catch (err) {
-      console.error('Error processing source file:', err);
-      $(`#${language}-doc-error`).removeClass("hidden");
-      $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
-    }
-  }
-});
+    $("#source-doc-error").addClass("hidden");
+    $("#source-text-preview").val("");
 
+    try {
+      const fileExtension = englishFile.name.split('.').pop().toLowerCase();
+      let extractedText = "";
+
+      if (fileExtension === "docx") {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+        // Convert HTML to plain text using jQuery.
+        extractedText = $(mammothResult.value).text();
+      } else if (fileExtension === "pptx") {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        let textElements = await extractPptxTextXmlWithId(arrayBuffer);
+        // Combine all text from each slide.
+        extractedText = textElements.map(el => el.text).join("\n\n");
+      } else if (fileExtension === "xlsx") {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        let workbook = XLSX.read(arrayBuffer, { type: "array" });
+        let sheetName = workbook.SheetNames[0];
+        let worksheet = workbook.Sheets[sheetName];
+        let csvData = XLSX.utils.sheet_to_csv(worksheet);
+        extractedText = csvData;
+      } else {
+        throw new Error("Unsupported file type for extraction");
+      } 
+
+      // Normalize the extracted text by joining lines and removing extra breaks.
+      let normalizedText = normalizeExtractedText(extractedText);
+
+      // Populate the preview textarea with the extracted text.
+      $("#source-text-preview").val(extractedText);
+      // Reveal the preview card.
+      $("#source-preview").removeClass("hidden");
+    } catch (err) {
+      console.error("Error extracting source text:", err);
+      $("#source-doc-error").removeClass("hidden");
+    }
+  });
   /***********************************************************************
    * Translate Button Flow:
    * For file uploads, if DOCX, convert the file to HTML via Mammoth, then traverse the
@@ -232,7 +273,7 @@ $(document).ready(function() {
       if (fileExtension === 'docx') {
   try {
     // Convert DOCX to HTML using Mammoth.
-    let arrayBuffer = await uploadedFile.arrayBuffer();
+    let arrayBuffer = await file.arrayBuffer();
     let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
     let originalHtml = mammothResult.value;
     
@@ -466,18 +507,8 @@ $("#second-upload-btn").click(async function () {
     try {
       const fileExtension = file.name.split('.').pop().toLowerCase();
 
-      if (fileExtension === "docx") {
-        let arrayBuffer = await file.arrayBuffer();
-        const zip = await JSZip.loadAsync(arrayBuffer);
-        const docXmlStr = await zip.file("word/document.xml").async("string");
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
-        const textNodes = xmlDoc.getElementsByTagName("w:t");
-
-  // Rebuild the HTML by wrapping each extracted text in a paragraph.
-        frenchText = Array.from(textNodes)
-          .map(node => `<p>${node.textContent}</p>`)
-          .join('');
+      if (fileExtension === "docx" || fileExtension === "xlsx") {
+        frenchText = await handleFileExtractionToHtml(file);
       } else if (fileExtension === "pptx") {
         const arrayBuffer = await file.arrayBuffer();
         const textElements = await extractPptxTextXmlWithId(arrayBuffer);
@@ -486,6 +517,7 @@ $("#second-upload-btn").click(async function () {
         throw new Error("Unsupported file type");
       }
 
+      console.log("French text after extraction:", frenchText);
     } catch (err) {
       console.error('Error processing the second (FR) file:', err);
       alert("Error reading your translated file. Check console for details.");
@@ -654,14 +686,22 @@ $("#convert-translation-download-btn").click(async function() {
     // 3) Generate the Blob (DOCX, PPTX, or XLSX)
     let generatedBlob;
     if (fileExtension === 'docx') {
-      const arrayBuffer = await englishFile.arrayBuffer();
-      const { zip, originalXml } = await extractDocxTextXmlWithId(arrayBuffer);
-      // Convert the original DOCX XML with the translated French content.
-      const updatedDocXml = conversionDocxXml(originalXml, finalFrenchHtml);
-      // Update the DOCX zip with the new document.xml
-      zip.file("word/document.xml", updatedDocXml);
-      // Generate the updated blob.
-      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+      // Example: using htmlDocx.asBlob with Calibri
+      let fullHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              body { font-family: Calibri, "Calibri (Body)", sans-serif; }
+            </style>
+          </head>
+          <body>
+            ${finalFrenchHtml}
+          </body>
+        </html>
+      `;
+      generatedBlob = htmlDocx.asBlob(fullHtml);
     } else if (fileExtension === 'pptx') {
       const arrayBuffer = await englishFile.arrayBuffer();
       const zip = await JSZip.loadAsync(arrayBuffer);
@@ -758,25 +798,7 @@ function escapeXml(str) {
   return str.replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
-}  
-
-// It looks for <w:t> elements with a "data-unique-id" attribute and replaces their text.
-function conversionDocxXml(originalXml, finalFrenchHtml) {
-  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(originalXml, "application/xml");
-  const textNodes = xmlDoc.getElementsByTagName("w:t");
-
-  for (let i = 0; i < textNodes.length; i++) {
-    const uniqueId = textNodes[i].getAttribute("data-unique-id");
-    if (uniqueId && frenchMap[uniqueId]) {
-      textNodes[i].textContent = frenchMap[uniqueId];
-    }
-  }
-  const serializer = new XMLSerializer();
-  return serializer.serializeToString(xmlDoc);
 }
- 
 
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
