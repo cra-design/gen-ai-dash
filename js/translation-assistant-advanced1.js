@@ -213,7 +213,8 @@ $(document).ready(function() {
   }); 
 
   
-$(document).on("click", "#extract-source-text-btn", async function () {
+$(document).on("click", "#extract-source-text-btn", async function () { 
+  console.log("Extract source text button clicked");
   if (!englishFile) {
     alert("No source file uploaded. Please upload a file first!");
     return;
