@@ -406,7 +406,7 @@ async function createWordDoc(url) {
     // Apply inline styles
     applyInlineStyles(contentClone);
 
-    // Handle WET-BOEW-specific styles manually
+    // 🔥 Handle WET-BOEW-specific styles manually
     contentClone.find('h1').each(function () {
       $(this).css('border-bottom', '5px solid red'); // Add red underline to H1
     });
@@ -426,7 +426,42 @@ async function createWordDoc(url) {
       $(this).html(`<p><strong>[Tab: ${tabTitle}]</strong></p>` + tabContent);
     });
 
-    // Full HTML content with inlined styles
+    // 🎨 Handle WET-BOEW Icons
+    async function replaceIcons() {
+      let iconElements = contentClone.find('i.wb-icon');
+      let iconPromises = iconElements.map(async function () {
+        let $icon = $(this);
+        let iconClass = $icon.attr("class").split(/\s+/).find(cls => cls.startsWith("wb-icon-"));
+        if (!iconClass) return;
+
+        let iconName = iconClass.replace("wb-icon-", ""); // e.g., wb-icon-info -> info
+        let iconUrl = `https://wet-boew.github.io/wet-boew/assets/icons/${iconName}.png`; // Adjust if necessary
+
+        try {
+          let imgResponse = await fetch(iconUrl);
+          let imgBlob = await imgResponse.blob();
+          let reader = new FileReader();
+
+          return new Promise(resolve => {
+            reader.onloadend = function () {
+              let base64Data = reader.result;
+              let imgElement = `<img src="${base64Data}" alt="${iconName}" style="height: 16px; vertical-align: middle;">`;
+              $icon.replaceWith(imgElement);
+              resolve();
+            };
+            reader.readAsDataURL(imgBlob);
+          });
+        } catch (error) {
+          console.error(`Failed to fetch icon: ${iconUrl}`, error);
+        }
+      }).get();
+
+      await Promise.all(iconPromises);
+    }
+
+    await replaceIcons(); // Ensure icons are replaced before conversion
+
+    // Full HTML content with inlined styles and icons
     let formattedContent = `
       <!DOCTYPE html>
       <html>
