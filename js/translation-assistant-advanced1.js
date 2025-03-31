@@ -214,8 +214,9 @@ $(document).ready(function() {
           if (event.target.id === "source-file") {
               englishFile = uploadedFile;
               if (fileExtension === 'docx') {
-                const arrayBuffer = await englishFile.arrayBuffer();
-                extractedText = await extractDocxParagraphs(arrayBuffer);
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+                let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+                $("#translation-A").html(mammothResult.value);
               } else if (fileExtension == 'pptx'){
                 let arrayBuffer = await uploadedFile.arrayBuffer();
                 let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
@@ -251,14 +252,8 @@ $(document).on("click", "#extract-source-text-btn", async function () {
     let extractedText = "";
 
     if (fileExtension === "docx") {
-      let arrayBuffer = await englishFile.arrayBuffer();
-      let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-      // Parse the HTML and extract text from each <p> element
-      let html = mammothResult.value;
-      let paragraphs = $(html).filter("p").map(function() {
-      return $(this).text().trim();
-      }).get();
-      extractedText = paragraphs.join("\n\n");
+      const arrayBuffer = await englishFile.arrayBuffer();
+      extractedText = await extractDocxParagraphs(arrayBuffer);
     } else if (fileExtension === "pptx") {
       let arrayBuffer = await englishFile.arrayBuffer();
       extractedText = await extractPptxText(arrayBuffer);
