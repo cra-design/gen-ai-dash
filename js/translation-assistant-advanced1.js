@@ -66,8 +66,7 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
       const slideXml = await zip.file(fileName).async("string"); 
 
       const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(slideXml, "application/xml"); 
-       console.log(xmlDoc);
+      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
       const textNodes = xmlDoc.getElementsByTagName("a:t");
 
       for (let i = 0; i < textNodes.length; i++) {
