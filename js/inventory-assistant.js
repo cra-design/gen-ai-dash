@@ -382,24 +382,28 @@ async function createWordDoc(url) {
     // Add date and suffix
     let currentDate = new Date();
     let formattedDate = currentDate.toISOString().split('T')[0];
-    let domainSuffix = '';
-    if (url.includes('github')) {
-      domainSuffix = ' - github';
-    } else if (url.includes('canada.ca')) {
-      domainSuffix = ' - dotca';
-    }
+    let domainSuffix = url.includes('github') ? ' - github'
+      : url.includes('canada.ca') ? ' - dotca' : '';
     fileName = `${fileName} - ${formattedDate}${domainSuffix}`;
 
-    // Full HTML content
+    // Full HTML content with WET-BOEW styling
     let formattedContent = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="UTF-8">
           <style>
-            body { font-family: Arial, sans-serif; }
-            a { color: blue; text-decoration: underline; }
-            p { font-size: 14px; }
+            body { font-family: "Noto Sans", Arial, sans-serif; line-height: 1.6; }
+            h1, h2, h3, h4, h5, h6 { font-family: "Noto Sans", Arial, sans-serif; }
+            h1 { color: #26374a; font-size: 24px; }
+            h2 { color: #0056a5; font-size: 20px; }
+            h3 { color: #31708f; font-size: 18px; }
+            p { font-size: 14px; color: #333; }
+            a { color: #337ab7; text-decoration: underline; }
+            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; }
+            th { background-color: #f1f1f1; text-align: left; }
+            blockquote { border-left: 4px solid #ddd; padding-left: 10px; color: #555; }
           </style>
         </head>
         <body>
@@ -425,7 +429,6 @@ async function createWordDoc(url) {
     alert(`Failed to retrieve content from: ${url}`);
   }
 }
-
 
 function populateUrlTable() {
   let lines = [];
