@@ -383,7 +383,7 @@ $(document).on("click", "#copy-all-btn", function () {
     document.execCommand("copy");
   }
 });
-
+});
   /***********************************************************************
    * Translate Button Flow:
    * For file uploads, if DOCX, convert the file to HTML via Mammoth, then traverse the
