@@ -137,6 +137,18 @@ main[_ngcontent-ng-c3392822675]{position:relative}
 </style>
 <style>
 .material-icon-wysiwyg[_ngcontent-ng-c948301949]{font-size:18px;vertical-align:middle}.bg-planned[_ngcontent-ng-c948301949]{background-color:#cee5ff;color:#262928}.bg-inProgress[_ngcontent-ng-c948301949]{background-color:#f7c2f4;color:#262928}.bg-completed[_ngcontent-ng-c948301949]{background-color:#b3e7bd;color:#262928}.bg-delayed[_ngcontent-ng-c948301949]{background-color:#eda7a7;color:#262928}.bg-unknown[_ngcontent-ng-c948301949]{background-color:gray;color:#fff}.text-success[_ngcontent-ng-c948301949]{color:#1d8177!important}
+    
+table {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid #ddd;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 0px;
+}
+
 </style>
 <!-- for left nav styles --> 
 
@@ -321,7 +333,7 @@ main[_ngcontent-ng-c3392822675]{position:relative}
           <upd-card _ngcontent-ng-c1826793033="" titlesize="h5">
             <div tabindex="0" class="card pt-2">
               <div class="card-body card-pad pt-2 h-100">
-                <div class=" justify-content-between"> 
+                <div class="justify-content-between"> 
                   
                   <!-- probably want to add some kind of reset button --> 
                   <!-- <button id="reset-btn" style="margin-bottom:20px;">Restart</button> -->
@@ -398,50 +410,52 @@ main[_ngcontent-ng-c3392822675]{position:relative}
                         </div>
                       </upd-nav-tabs>
                       <div id="table-init" class="tab-content">
-                        <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
-                          <caption style="font-weight: bold; margin-bottom: 8px;">
-                          Information on URLs uploaded
+                        <table>
+                          <caption>
+                          <strong>CAPTION: Information on URLs uploaded (Why are captions showing below tables?)</strong>
                           </caption>
                           <thead>
                             <tr>
                               <th>Link to page</th>
-                              <th>Description metadata</th>
-                              <th>Keywords metadata</th>
+                              <th>Button</th>
+                              <th>Description meta</th>
+                              <th>Keywords meta</th>
                             </tr>
                           </thead>
                           <tbody>
                           </tbody>
                         </table>
-                          <!-- Button to export table to Excel -->
-                          <button id="export-excel">Export to Excel</button>
+                        <!-- Button to export table to Excel -->
+                        <button id="export-excel-btn">Export to Excel</button>
                       </div>
-                      <div id="url-preview" class="tab-content"> 
-                        
-                        <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                    </div>
+                    <!--<div id="url-preview" class="tab-content"> --> 
+                    
+                    <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                           Page preview
                                         </h3> --> 
-                        <!-- This should theoretically allow for a page load, but Canada.ca has x-frame options set to deny, so it's being blocked - works for github for the moment though... Maybe there's a way on the AEM side to configure to specifically allow this tool to iframe pages? --> 
-                        <!-- <div style="border:black solid 1px;" --> 
-                        <!-- add some kind of tabbed interface with preview + code tabs? -->
-                        
-                       <!-- <iframe id="url-frame" src="" name="targetframe" allowTransparency="true" width="100%" height="800px" style="border: 1px solid #ddd;"></iframe>-->
-                        <p id="url-invalid-msg" class="error-msg hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>
+                    <!-- This should theoretically allow for a page load, but Canada.ca has x-frame options set to deny, so it's being blocked - works for github for the moment though... Maybe there's a way on the AEM side to configure to specifically allow this tool to iframe pages? --> 
+                    <!-- <div style="border:black solid 1px;" --> 
+                    <!-- add some kind of tabbed interface with preview + code tabs? --> 
+                    
+                    <!-- <iframe id="url-frame" src="" name="targetframe" allowTransparency="true" width="100%" height="800px" style="border: 1px solid #ddd;"></iframe>--> 
+                    <!--<p id="url-invalid-msg" class="error-msg hidden">The URL you input is invalid, please ensure it has proper syntax and try again.</p>
                         <p id="canada-ca-msg" class="error-msg hidden">Due to technical limitations, Canada.ca pages are not yet compatible with this tool. Try a Github URL to test it out!</p>
-                        <p id="other-site-msg" class="error-msg hidden">The tool is only for validation of Canada.ca design work. If you believe this URL should be in scope, please reach out to the tool adminstrators to whitelist the domain.</p>
-                        <!-- </div> --> 
-                      </div>
-                      <!--<div id="code-preview" class="tab-content hidden"> -->
-                        <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                        <p id="other-site-msg" class="error-msg hidden">The tool is only for validation of Canada.ca design work. If you believe this URL should be in scope, please reach out to the tool adminstrators to whitelist the domain.</p>--> 
+                    <!-- </div> --> 
+                    <!--</div>--> 
+                    <!--<div id="code-preview" class="tab-content hidden"> --> 
+                    <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                             Code preview
-                        </h3> -->
-                       <!-- <pre id="fullHtml" class="language-markup" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap;"><code></code></pre>
-                      </div>-->
-                      <div id="field-preview" class="tab-content hidden"> 
-                        <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                        </h3> --> 
+                    <!-- <pre id="fullHtml" class="language-markup" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap;"><code></code></pre>
+                      </div>--> 
+                    <!-- <div id="field-preview" class="tab-content hidden"> --> 
+                    <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                             Field preview
-                        </h3> -->
-                        <div id="fields"> <!--can put something around the parsed fields of the content - heading structure, metadata, etc-->
-                          <table border="1">
+                        </h3> --> 
+                    <!--<div id="fields"> <!--can put something around the parsed fields of the content - heading structure, metadata, etc--> 
+                    <!--<table border="1">
                             <thead>
                               <tr>
                                 <th>Field</th>
@@ -453,11 +467,11 @@ main[_ngcontent-ng-c3392822675]{position:relative}
                           </table>
                         </div>
                       </div>
-                      <div id="data-tab" class="tab-content hidden"> 
-                        <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
+                      <div id="data-tab" class="tab-content hidden"> --> 
+                    <!-- <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">
                                            Data context
-                                         </h3> -->
-                        <p>Add data to these fields to help the AI give meaningful recommendations based on pain points it can identify. Once you complete these fields, rerun your genAI report.</p>
+                                         </h3> --> 
+                    <!-- <p>Add data to these fields to help the AI give meaningful recommendations based on pain points it can identify. Once you complete these fields, rerun your genAI report.</p>
                         <p>Search terms</p>
                         <div id="search-terms-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" > <span id="search-terms-input" class="input" role="textbox" contenteditable></span> </div>
                         <p style="margin-top:20px;">Page feedback summary</p>
@@ -466,7 +480,7 @@ main[_ngcontent-ng-c3392822675]{position:relative}
                         <div id="heuristic-commentary-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" > <span id="heuristic-commentary-input" class="input" role="textbox" contenteditable></span> </div>
                       </div>
                     </div>
-                  </div>
+                  </div> 
                   <div id="html-upload" class="hidden">
                     <div id="html-upload-input" style="margin-top:20px">
                       <fieldset>
@@ -478,13 +492,13 @@ main[_ngcontent-ng-c3392822675]{position:relative}
                     <div id="html-upload-loading-spinner" class="hidden">
                       <div class="spinner"></div>
                       <p>Converting content to HTML...</p>
-                    </div>
+                    </div>--> 
                     <!-- <div id="html-upload-preview" class="hidden">
                   									<div id="html-upload-inputbox" style="margin-top:10px; border:black solid 1px; min-height:75px;" >
                   										<pre id="html-preview"></pre>
                   									</div>
-                                  </div> -->
-                    <div id="html-upload-no-action-error" class="hidden">
+                                  </div> --> 
+                    <!--  <div id="html-upload-no-action-error" class="hidden">
                       <p>You must select an option for an action and model to run a report.</p>
                     </div>
                   </div>
@@ -492,28 +506,25 @@ main[_ngcontent-ng-c3392822675]{position:relative}
                     <div id="word-upload-input" class="" style="margin-top:20px">
                       <fieldset>
                         <legend>Upload .docx word documents to generate HTML markup</legend>
-                        <input type="file" id="word-file" name="word-file">
-                        <!--div id="image-drop-upload-area">
+                        <input type="file" id="word-file" name="word-file">--> 
+                    <!--div id="image-drop-upload-area">
             															<i class="fas fa-upload"></i>
             															Drag and drop files here
             															<span id="file-upload-btn">Browse files
             																<input type="file" id="img-file" name="img-file">
             															</span>
-            														</div>-->
-                        
-                        <input type="submit" id="word-upload-btn">
-                        
-                        <!--Streamlit embed for alt text-->
-                        
-                      </fieldset>
-                      <!--div class="streamlit-container">
+            														</div>--> 
+                    <!--    <input type="submit" id="word-upload-btn"> --> 
+                    <!--Streamlit embed for alt text--> 
+                    <!--  </fieldset> --> 
+                    <!--div class="streamlit-container">
                                           <iframe
                                               src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
                                               class="streamlit-embed"
                                               allow="camera;microphone"
                                               scrolling="yes">
                                           </iframe--> 
-                    </div>
+                    <!--  </div>
                   </div>
                   <div id="word-upload-preview" class="hidden" style="margin-top:20px;">
                     <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted"> Word document preview </h3>
@@ -522,7 +533,7 @@ main[_ngcontent-ng-c3392822675]{position:relative}
                     <div id="word-upload-loading-spinner" class="hidden">
                       <div class="spinner"></div>
                       <p>Converting word doc to HTML...</p>
-                    </div>
+                    </div> --> 
                     <!-- <div id="word-preview" class="hidden">
                                           <upd-nav-tabs>
                                             <div class="tabs sticky" style="z-index: 0 !important;">
@@ -551,33 +562,30 @@ main[_ngcontent-ng-c3392822675]{position:relative}
                                           </div>
                                       </div> --> 
                     
-                  </div>
+                    <!--  </div>
                   <div id="image-upload" class="hidden">
                     <div id="image-upload-input" class="" style="margin-top:20px">
                       <fieldset>
                         <legend>Upload images or PDFs to create image alt text</legend>
-                        <input type="file" id="img-file" name="img-file">
-                        <!--div id="image-drop-upload-area">
+                        <input type="file" id="img-file" name="img-file"> --> 
+                    <!--div id="image-drop-upload-area">
               															<i class="fas fa-upload"></i>
               															Drag and drop files here
               															<span id="file-upload-btn">Browse files
               																<input type="file" id="img-file" name="img-file">
               															</span>
-              														</div-->
-                        
-                        <input type="submit" id="img-upload-btn">
-                        
-                        <!--Streamlit embed for alt text-->
-                        
-                      </fieldset>
-                      <!--div class="streamlit-container">
+              														</div--> 
+                    <!--    <input type="submit" id="img-upload-btn"> --> 
+                    <!--Streamlit embed for alt text--> 
+                    <!--   </fieldset> --> 
+                    <!--div class="streamlit-container">
                                             <iframe
                                                 src="https://imagealt-mwe2vpjxnnutmqf8docapm.streamlit.app/?embed=true"
                                                 class="streamlit-embed"
                                                 allow="camera;microphone"
                                                 scrolling="yes">
                                             </iframe--> 
-                    </div>
+                    <!--  </div>
                   </div>
                   <div id="image-upload-preview" class="hidden" style="margin-top:20px;">
                     <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted"> Image preview </h3>
@@ -586,61 +594,60 @@ main[_ngcontent-ng-c3392822675]{position:relative}
                     <p id="image-multiple-msg" class="hidden">We currently only accept uploading image files individually. Try again with 1 image.</p>
                   </div>
                 </div>
-                
-                <!---->
                 <upd-card-secondary-title _nghost-ng-c334178256=""> 
-                  <!----><!----> 
-                </upd-card-secondary-title>
+                </upd-card-secondary-title>--> 
+                  </div>
+                </div>
               </div>
             </div>
           </upd-card>
         </upd-projects-home>
-        <!----> 
       </upd-projects>
-      <!----> 
+      
       <!-- Creating the right-hand nav --> 
-      
     </main>
-    <footer _ngcontent-ng-c3392822675="" class="mt-4 ng-tns-c3392822675-0">
-      <div _ngcontent-ng-c3392822675="" class="d-flex justify-content-between align-items-end mt-auto pb-4 ng-tns-c3392822675-0">
-        <div _ngcontent-ng-c3392822675="" class="align-self-end ng-tns-c3392822675-0"><span _ngcontent-ng-c3392822675="" class="text-muted small ng-tns-c3392822675-0">version: 0.0.1 </span></div>
-        <div _ngcontent-ng-c3392822675="" class="col-lg-2 col-md-3 col-sm-4 col-4 ng-tns-c3392822675-0"><img _ngcontent-ng-c3392822675="" class="img-fluid ng-tns-c3392822675-0" alt="Government of Canada" src="img/canada-black-30mm.png"></div>
-      </div>
-    </footer>
-    <!-- expanded genai nav -->
-    <div id="genai-nav" class="overlay"> 
-      
-      <!-- Button to close the overlay navigation --> 
-      <a href="javascript:void(0)" class="closebtn" id="close-report-btn">&times;</a>
-      <div class="overlay-content">
-        <h3>GenAI reports</h3>
-        <div id="accessibility-report" class="hidden">
-          <h4>Accessibility validation summary</h4>
-        </div>
-        <div id="metadata-report" class="hidden">
-          <h4>Metadata recommendations</h4>
-          <p><strong>Description:</strong> <span id="report-genai-description-output"></span></p>
-          <p><strong>Keywords:</strong> <span id="report-genai-keywords-output"></span></p>
-        </div>
-        <div id="content-report" class="hidden">
-          <h4>Content recommendations</h4>
-          <p><strong>Conversational rewrite:</strong> <span id="report-genai-conversational-output"></span></p>
-          <p><strong>Shortened rewrite:</strong> <span id="report-genai-trim-output"></span></p>
-        </div>
-      </div>
-    </div>
   </div>
 </upd-root>
+<footer _ngcontent-ng-c3392822675="" class="mt-4 ng-tns-c3392822675-0">
+  <div _ngcontent-ng-c3392822675="" class="d-flex justify-content-between align-items-end mt-auto pb-4 ng-tns-c3392822675-0">
+    <div _ngcontent-ng-c3392822675="" class="align-self-end ng-tns-c3392822675-0"><span _ngcontent-ng-c3392822675="" class="text-muted small ng-tns-c3392822675-0">version: 0.0.1 </span></div>
+    <div _ngcontent-ng-c3392822675="" class="col-lg-2 col-md-3 col-sm-4 col-4 ng-tns-c3392822675-0"><img _ngcontent-ng-c3392822675="" class="img-fluid ng-tns-c3392822675-0" alt="Government of Canada" src="img/canada-black-30mm.png"></div>
+  </div>
+</footer>
+<!-- expanded genai nav -->
+<div id="genai-nav" class="overlay"> 
+  
+  <!-- Button to close the overlay navigation --> 
+  <a href="javascript:void(0)" class="closebtn" id="close-report-btn">&times;</a>
+  <div class="overlay-content">
+    <h3>GenAI reports</h3>
+    <div id="accessibility-report" class="hidden">
+      <h4>Accessibility validation summary</h4>
+    </div>
+    <div id="metadata-report" class="hidden">
+      <h4>Metadata recommendations</h4>
+      <p><strong>Description:</strong> <span id="report-genai-description-output"></span></p>
+      <p><strong>Keywords:</strong> <span id="report-genai-keywords-output"></span></p>
+    </div>
+    <div id="content-report" class="hidden">
+      <h4>Content recommendations</h4>
+      <p><strong>Conversational rewrite:</strong> <span id="report-genai-conversational-output"></span></p>
+      <p><strong>Shortened rewrite:</strong> <span id="report-genai-trim-output"></span></p>
+    </div>
+  </div>
+</div>
+
 <!-- <link rel="modulepreload" href="chunk-UUN4AIJG.js">
       <link rel="modulepreload" href="chunk-GGWSDF3Q.js">
       <link rel="modulepreload" href="chunk-ODN5LVDJ.js"> --> 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script> 
 <script src="js/beautify.js"></script> 
 <script src="js/mammoth.js"></script> 
-<script src="https://www.canada.ca/etc/designs/canada/wet-boew/js/theme.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
-<!-- <script src="polyfills-VMRJL7IV.js" type="module"></script><script src="main-BEEWNT6W.js" type="module"></script> --> 
+<script src="https://www.canada.ca/etc/designs/canada/wet-boew/js/theme.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.min.js"></script>
 <script src="js/prism.js"></script> 
+<!-- <script src="polyfills-VMRJL7IV.js" type="module"></script><script src="main-BEEWNT6W.js" type="module"></script> --> 
 <!--<script type="text/javascript">
           $(document).ready(function() {
 
@@ -1158,6 +1165,7 @@ main[_ngcontent-ng-c3392822675]{position:relative}
                   const escapedParagraph = paragraph
                       .replace(/&/g, '&amp;')
                       .replace(/</g, '&lt;')
+
                       .replace(/>/g, '&gt;')
                       .replace(/"/g, '&quot;')
                       .replace(/'/g, '&#39;');
@@ -1403,7 +1411,7 @@ main[_ngcontent-ng-c3392822675]{position:relative}
             $("#genai-upload-msg").addClass("hidden");
             $("#genai-task-options").removeClass("hidden");
           }
-      </script> -->
+      </script> --> 
 <script src="js/content-assistant.js"></script> 
 <script src="js/inventory-assistant.js"></script>
 </body>
