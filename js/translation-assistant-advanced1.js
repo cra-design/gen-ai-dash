@@ -231,8 +231,6 @@ $(document).ready(function() {
       } else if (fileExtension === "pptx") {
         let arrayBuffer = await englishFile.arrayBuffer();
         extractedText = await extractPptxText(arrayBuffer);
-        // Combine all text from each slide.
-        extractedText = textElements.map(el => el.text).join("\n\n");
       } else if (fileExtension === "xlsx") {
         let arrayBuffer = await englishFile.arrayBuffer();
         let workbook = XLSX.read(arrayBuffer, { type: "array" });
