@@ -359,17 +359,42 @@ async function createWordDoc(url) {
     let tempDiv = $('<div>').html(response);
 
     // Extract <main> or fallback to <body>
-    let mainContent = tempDiv.find('main').html();
-    if (!mainContent || mainContent.trim().length === 0) {
-      mainContent = tempDiv.find('body').html();
+    let mainElement = tempDiv.find('main');
+    if (mainElement.length === 0) {
+      mainElement = tempDiv.find('body');
     }
-    if (!mainContent || mainContent.trim().length === 0) {
+    if (mainElement.length === 0) {
       console.error(`No content found for ${url}`);
       alert(`No content found on: ${url}`);
       return;
     }
 
-    // Extract filename
+    // Clone main content to avoid modifying the original
+    let mainClone = mainElement.clone();
+
+    // Preserve inline styles and computed styles
+    mainClone.find('*').each(function () {
+      let $this = $(this);
+      let computedStyle = window.getComputedStyle(this);
+      let inlineStyle = '';
+
+      // Copy computed styles (only necessary ones)
+      let propertiesToCopy = ['color', 'font-size', 'font-weight', 'font-style', 'text-decoration',
+        'background-color', 'border', 'margin', 'padding', 'text-align'];
+
+      propertiesToCopy.forEach(prop => {
+        let value = computedStyle.getPropertyValue(prop);
+        if (value && value !== 'auto' && value !== 'none' && value !== '0px') {
+          inlineStyle += `${prop}: ${value}; `;
+        }
+      });
+
+      if (inlineStyle) {
+        $this.attr('style', inlineStyle);
+      }
+    });
+
+    // Extract filename from <h1>
     let h1Tags = tempDiv.find('h1');
     let fileName = h1Tags.length > 1
       ? h1Tags.eq(1).text().trim()
@@ -382,11 +407,11 @@ async function createWordDoc(url) {
     // Add date and suffix
     let currentDate = new Date();
     let formattedDate = currentDate.toISOString().split('T')[0];
-    let domainSuffix = url.includes('github') ? ' - github'
-      : url.includes('canada.ca') ? ' - dotca' : '';
+    let domainSuffix = url.includes('github') ? ' - github' :
+                       url.includes('canada.ca') ? ' - dotca' : '';
     fileName = `${fileName} - ${formattedDate}${domainSuffix}`;
 
-    // Full HTML content with WET-BOEW styling
+    // Full HTML content with extracted inline styles
     let formattedContent = `
       <!DOCTYPE html>
       <html>
@@ -394,21 +419,15 @@ async function createWordDoc(url) {
           <meta charset="UTF-8">
           <style>
             body { font-family: "Noto Sans", Arial, sans-serif; line-height: 1.6; }
-            h1, h2, h3, h4, h5, h6 { font-family: "Noto Sans", Arial, sans-serif; }
-            h1 { color: #26374a; font-size: 24px; }
-            h2 { color: #0056a5; font-size: 20px; }
-            h3 { color: #31708f; font-size: 18px; }
-            p { font-size: 14px; color: #333; }
             a { color: #337ab7; text-decoration: underline; }
-            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            table { width: 100%; border-collapse: collapse; }
             th, td { border: 1px solid #ddd; padding: 8px; }
             th { background-color: #f1f1f1; text-align: left; }
-            blockquote { border-left: 4px solid #ddd; padding-left: 10px; color: #555; }
           </style>
         </head>
         <body>
           <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
-          ${mainContent}
+          ${mainClone.prop('outerHTML')}
         </body>
       </html>
     `;
@@ -429,6 +448,7 @@ async function createWordDoc(url) {
     alert(`Failed to retrieve content from: ${url}`);
   }
 }
+
 
 function populateUrlTable() {
   let lines = [];
