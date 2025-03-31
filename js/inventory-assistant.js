@@ -504,9 +504,9 @@ function extractMetadata(html, url) {
   let parser = new DOMParser();
   let doc = parser.parseFromString(html, 'text/html');
 
-  let title = doc.querySelector('title') ? .innerText || url;
-  let description = doc.querySelector('meta[name="description"]') ? .content || 'No Description';
-  let keywords = doc.querySelector('meta[name="keywords"]') ? .content || 'No Keywords';
+  let title = doc.querySelector('title')?.innerText || url;
+  let description = doc.querySelector('meta[name="description"]')?.content || 'No Description';
+  let keywords = doc.querySelector('meta[name="keywords"]')?.content || 'No Keywords';
 
   return {
     title,
