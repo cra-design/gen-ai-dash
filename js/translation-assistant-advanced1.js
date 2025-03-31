@@ -241,7 +241,7 @@ $(document).ready(function() {
       } 
 
       // Normalize the extracted text by joining lines and removing extra breaks.
-      let normalizedText = normalizeExtractedText(extractedText);
+      let normalizedText = normalizeExtractedText(textElements);
 
       // Populate the preview textarea with the extracted text.
       $("#source-text-preview").val(normalizedText);
