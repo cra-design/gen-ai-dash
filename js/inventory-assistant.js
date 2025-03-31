@@ -359,64 +359,17 @@ async function createWordDoc(url) {
     let tempDiv = $('<div>').html(response);
 
     // Extract <main> or fallback to <body>
-    let mainElement = tempDiv.find('main');
-    if (mainElement.length === 0) {
-      mainElement = tempDiv.find('body');
+    let mainContent = tempDiv.find('main').html();
+    if (!mainContent || mainContent.trim().length === 0) {
+      mainContent = tempDiv.find('body').html();
     }
-    if (mainElement.length === 0) {
+    if (!mainContent || mainContent.trim().length === 0) {
       console.error(`No content found for ${url}`);
       alert(`No content found on: ${url}`);
       return;
     }
 
-    // Clone content to avoid modifying the original
-    let mainClone = mainElement.clone();
-
-    // Extract and inline computed styles
-    mainClone.find('*').each(function () {
-      let $this = $(this);
-      let computedStyle = window.getComputedStyle(this);
-      let inlineStyle = '';
-
-      // Copy necessary properties
-      let propertiesToCopy = [
-        'color', 'font-size', 'font-weight', 'font-style', 'text-decoration',
-        'background-color', 'border', 'border-bottom', 'margin', 'padding',
-        'text-align', 'line-height'
-      ];
-
-      propertiesToCopy.forEach(prop => {
-        let value = computedStyle.getPropertyValue(prop);
-        if (value && value !== 'auto' && value !== 'none' && value !== '0px') {
-          inlineStyle += `${prop}: ${value}; `;
-        }
-      });
-
-      if (inlineStyle) {
-        $this.attr('style', inlineStyle);
-      }
-    });
-
-    // Extract critical external stylesheets (WET-BOEW)
-    let stylesheets = tempDiv.find('link[rel="stylesheet"]')
-      .map((_, link) => $(link).attr('href'))
-      .get()
-      .filter(href => href && (href.includes('wet-boew') || href.includes('theme.css')));
-
-    let styleRules = '';
-
-    // Fetch and extract WET-BOEW styles
-    for (let sheet of stylesheets) {
-      try {
-        let cssResponse = await fetch(sheet);
-        let cssText = await cssResponse.text();
-        styleRules += cssText;
-      } catch (err) {
-        console.warn(`Failed to fetch stylesheet: ${sheet}`);
-      }
-    }
-
-    // Extract filename from <h1>
+    // Extract filename
     let h1Tags = tempDiv.find('h1');
     let fileName = h1Tags.length > 1
       ? h1Tags.eq(1).text().trim()
@@ -429,29 +382,45 @@ async function createWordDoc(url) {
     // Add date and suffix
     let currentDate = new Date();
     let formattedDate = currentDate.toISOString().split('T')[0];
-    let domainSuffix = url.includes('github') ? ' - github' :
-                       url.includes('canada.ca') ? ' - dotca' : '';
+    let domainSuffix = url.includes('github') ? ' - github' : url.includes('canada.ca') ? ' - dotca' : '';
     fileName = `${fileName} - ${formattedDate}${domainSuffix}`;
 
-    // Full HTML content with extracted WET-BOEW styles
+    // Clone the main content to preserve styles
+    let contentClone = $('<div>').html(mainContent);
+
+    // Function to inline computed styles
+    function applyInlineStyles(element) {
+      let elements = element.find('*');
+      elements.each(function () {
+        let computedStyle = window.getComputedStyle(this);
+        let inlineStyle = '';
+        for (let i = 0; i < computedStyle.length; i++) {
+          let property = computedStyle[i];
+          let value = computedStyle.getPropertyValue(property);
+          inlineStyle += `${property}: ${value}; `;
+        }
+        $(this).attr('style', inlineStyle);
+      });
+    }
+
+    // Apply inline styles
+    applyInlineStyles(contentClone);
+
+    // Full HTML content with inlined styles
     let formattedContent = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="UTF-8">
           <style>
-            body { font-family: "Noto Sans", Arial, sans-serif; line-height: 1.6; }
-            a { color: #337ab7; text-decoration: underline; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ddd; padding: 8px; }
-            th { background-color: #f1f1f1; text-align: left; }
-            h1 { border-bottom: 4px solid #d3080c; } /* WET-BOEW red underline */
-            ${styleRules}
+            body { font-family: Arial, sans-serif; }
+            a { color: blue; text-decoration: underline; }
+            p { font-size: 14px; }
           </style>
         </head>
         <body>
           <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
-          ${mainClone.prop('outerHTML')}
+          ${contentClone.html()}
         </body>
       </html>
     `;
@@ -535,9 +504,9 @@ function extractMetadata(html, url) {
   let parser = new DOMParser();
   let doc = parser.parseFromString(html, 'text/html');
 
-  let title = doc.querySelector('title')?.innerText || url;
-  let description = doc.querySelector('meta[name="description"]')?.content || 'No Description';
-  let keywords = doc.querySelector('meta[name="keywords"]')?.content || 'No Keywords';
+  let title = doc.querySelector('title') ? .innerText || url;
+  let description = doc.querySelector('meta[name="description"]') ? .content || 'No Description';
+  let keywords = doc.querySelector('meta[name="keywords"]') ? .content || 'No Keywords';
 
   return {
     title,
