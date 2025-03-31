@@ -17,33 +17,37 @@ function formatTranslatedOutput(rawText) {
   return formatted;
 }  
 
-function normalizeExtractedText(rawText) {
-  // Split by newlines
-  const lines = rawText.split(/\r?\n/);
-  let normalized = "";
-  
-  for (let i = 0; i < lines.length; i++) {
-    let currentLine = lines[i].trim();
-    if (!currentLine) continue; // skip empty lines
+async function extractPptxText(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  let allParagraphs = [];
 
-    // Check if currentLine looks like a title or ends with punctuation.
-    // You might need more sophisticated logic here.
-    if (normalized) {
-      // If the previous text doesn't end with punctuation, then join with a space.
-      if (!/[.?!]$/.test(normalized.slice(-1))) {
-        normalized += " ";
+  for (const fileName of Object.keys(zip.files)) {
+    if (slideRegex.test(fileName)) {
+      const slideXml = await zip.file(fileName).async("string");
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
+
+      // Get all <a:p> elements for each slide
+      const paraNodes = xmlDoc.getElementsByTagName("a:p");
+      for (let i = 0; i < paraNodes.length; i++) {
+        const paraNode = paraNodes[i];
+        let paragraphText = "";
+        // Concatenate text from each <a:t> element within the paragraph
+        const textNodes = paraNode.getElementsByTagName("a:t");
+        for (let j = 0; j < textNodes.length; j++) {
+          paragraphText += textNodes[j].textContent;
+        }
+        // Only add paragraphs with non-empty text
+        if (paragraphText.trim().length > 0) {
+          allParagraphs.push(paragraphText.trim());
+        }
       }
     }
-    normalized += currentLine;
-    
-    // If the current line ends with punctuation, assume end of a paragraph.
-    if (/[.?!]$/.test(currentLine)) {
-      normalized += "\n\n"; // add a paragraph break
-    }
   }
-  return normalized;
+  // Join paragraphs with double newline to indicate paragraph breaks
+  return allParagraphs.join("\n\n");
 }
-
 
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
@@ -226,7 +230,7 @@ $(document).ready(function() {
         extractedText = $(mammothResult.value).text();
       } else if (fileExtension === "pptx") {
         let arrayBuffer = await englishFile.arrayBuffer();
-        let textElements = await extractPptxTextXmlWithId(arrayBuffer);
+        extractedText = await extractPptxText(arrayBuffer);
         // Combine all text from each slide.
         extractedText = textElements.map(el => el.text).join("\n\n");
       } else if (fileExtension === "xlsx") {
@@ -240,11 +244,8 @@ $(document).ready(function() {
         throw new Error("Unsupported file type for extraction");
       } 
 
-      // Normalize the extracted text by joining lines and removing extra breaks.
-      let normalizedText = normalizeExtractedText(textElements);
-
       // Populate the preview textarea with the extracted text.
-      $("#source-text-preview").val(normalizedText);
+      $("#source-text-preview").val(extractedText);
       // Reveal the preview card.
       $("#source-preview").removeClass("hidden");
     } catch (err) {
