@@ -146,7 +146,7 @@ $(document).ready(function () {
     RefineSyntax(extractedHtml);
   });
 
-  $(document).on("change", "input", async function (event) {
+  /*$(document).on("change", "input", async function (event) {
     if (event.target.id == "img-file") {
       $("#image-invalid-msg").addClass("hidden");
       $("#image-multiple-msg").addClass("hidden");
@@ -210,126 +210,124 @@ $(document).ready(function () {
   });
 
   $("#genai-select-tasks-btn").click(function () {
-    $("#genai-task-options").addClass("hidden");
-    $("#genai-model-options").removeClass("hidden");
-  });
-
-  $("#genai-run-report-btn").click(async function () {
-    $("#genai-model-options").addClass("hidden");
-    $("#genai-open-report-btn").addClass("hidden"); // Hide report button initially
-    $("#loading-indicator").removeClass("hidden"); // Show spinner
-    //$("#genai-report-reset-options").removeClass("hidden");
-    let selectedTasks = [];
-    let model = $('input[name="html-upload-genai-model"]:checked').val();
-    let systemGeneral = {
-      role: "system",
-      content: "You are an expert web editor. Analyze the provided web page content according to the guidelines in the following system prompt to provide actionable recommendations in plain text. Never include code or HTML in your response. The contextual data may include search terms, user feedback or ux test findings to help you understand the pain points or user behaviour your recommendations should address."
-    }
-    let systemTask = {
-      role: "system",
-      content: ""
-    }
-    let userContent = {
-      role: "user",
-      content: "Web page content: "
-    }
-    let userData = {
-      role: "user",
-      content: "Contextual data: "
-    }
-    let reportContainer = $(".overlay-content");
-    reportContainer.find(".generated-report").remove();
-
-
-    //triage which content to feed to the AI for analysis if free content input
-    // if ($('#html-upload-preview').is(':visible')) {
-    // userContent.content += $("#html-input").html();
-    // } else if ($('#url-upload-preview').is(':visible')) {
-    userContent.content += $("#fullHtml").text(); //give it the full page html
-    userData.content += "Search terms: " + $("#search-terms-input").text(); //give it any data we have
-    userData.content += "Page feedback summary: " + $("#feedback-summary-input").text();
-    userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").text();
-    // }
-
-    //Gather selected tasks
-    $('input[name="html-upload-genai-analysis"]:checked').each(function () {
-      selectedTasks.push({
-        id: $(this).attr('id'),
-        value: $(this).val()
-      });
+      $("#genai-task-options").addClass("hidden");
+      $("#genai-model-options").removeClass("hidden");
     });
 
-    //Process each selected task asynchronously
-    if (selectedTasks.length > 0) {
-      for (const task of selectedTasks) {
-        try {
-          let fileContent = await $.get(task.value);
-          systemTask.content = "Custom instruction: " + fileContent;
-          // Create the JSON with the prompt and instructions
-          let requestJson = [systemGeneral, systemTask, userContent, userData];
-
-          // Send it to the API
-          let ORjson = await getORData(model, requestJson);
-          let aiResponse = ORjson.choices[0].message.content;
-          let formattedText = formatAIResponse(aiResponse);
-          //console.log(formattedText);
-
-          // Find the corresponding label text
-          let labelText = $(`label[for='${task.id}']`).text().trim();
-
-          // Create new report section dynamically
-          let newReport = $(
-            '<div class="generated-report">'
-            + '<h4>' + labelText + '</h4>'
-            + '<p>' + formattedText + '</p>'
-            + '</div>'
-          );
-          // Append to the report container
-          reportContainer.append(newReport);
-          $("#genai-open-report-btn").removeClass("hidden"); // Show report button
-        } catch (error) {
-          console.error(`Error generating report:`, error);
-          // $("#html-upload-preview").addClass("hidden");
-          $("#html-upload-no-action-error").removeClass("hidden");
-        }
+    $("#genai-run-report-btn").click(async function () {
+      $("#genai-model-options").addClass("hidden");
+      $("#genai-open-report-btn").addClass("hidden"); // Hide report button initially
+      $("#loading-indicator").removeClass("hidden"); // Show spinner
+      //$("#genai-report-reset-options").removeClass("hidden");
+      let selectedTasks = [];
+      let model = $('input[name="html-upload-genai-model"]:checked').val();
+      let systemGeneral = {
+        role: "system",
+        content: "You are an expert web editor. Analyze the provided web page content according to the guidelines in the following system prompt to provide actionable recommendations in plain text. Never include code or HTML in your response. The contextual data may include search terms, user feedback or ux test findings to help you understand the pain points or user behaviour your recommendations should address."
       }
-    } else {
-      // $("#html-upload-preview").addClass("hidden");
-      $("#html-upload-no-action-error").removeClass("hidden");
-    }
+      let systemTask = {
+        role: "system",
+        content: ""
+      }
+      let userContent = {
+        role: "user",
+        content: "Web page content: "
+      }
+      let userData = {
+        role: "user",
+        content: "Contextual data: "
+      }
+      let reportContainer = $(".overlay-content");
+      reportContainer.find(".generated-report").remove();
 
-    /*var htmlObject = ;
-    if (.length < 1 || fileList == undefined) {
-    	$("#html-invalid-msg").removeClass("hidden");
-    }
-    $("#image-preview").attr("data-src", URL.createObjectURL(htmlObject));
-    $("#image-upload-preview").removeClass("hidden");
-    */
-    $("#loading-indicator").addClass("hidden"); // Hide spinner when done
-  });
 
-  $("#genai-open-report-btn").click(function () {
-    /* Open when someone clicks on the span element */
-    //function openNav() {
-    document.getElementById("genai-nav").style.width = "100%";
-    //}
-  });
+      //triage which content to feed to the AI for analysis if free content input
+      // if ($('#html-upload-preview').is(':visible')) {
+      // userContent.content += $("#html-input").html();
+      // } else if ($('#url-upload-preview').is(':visible')) {
+      userContent.content += $("#fullHtml").text(); //give it the full page html
+      userData.content += "Search terms: " + $("#search-terms-input").text(); //give it any data we have
+      userData.content += "Page feedback summary: " + $("#feedback-summary-input").text();
+      userData.content += "Heuristic commentary: " + $("#heuristic-commentary-input").text();
+      // }
 
-  $("#genai-reset-report-btn").click(function () {
-    $("#genai-model-options").addClass("hidden");
-    $("#genai-task-options").removeClass("hidden");
-    $('input[name="html-upload-genai-analysis"]').prop('checked', false);
-    $('input[name="html-upload-genai-model"]').prop('checked', false);
-  });
+      //Gather selected tasks
+      $('input[name="html-upload-genai-analysis"]:checked').each(function () {
+        selectedTasks.push({
+          id: $(this).attr('id'),
+          value: $(this).val()
+        });
+      });
 
-  $("#close-report-btn").click(function () {
-    /* Open when someone clicks on the span element */
-    document.getElementById("genai-nav").style.width = "0%";
-  });
+      //Process each selected task asynchronously
+      if (selectedTasks.length > 0) {
+        for (const task of selectedTasks) {
+          try {
+            let fileContent = await $.get(task.value);
+            systemTask.content = "Custom instruction: " + fileContent;
+            // Create the JSON with the prompt and instructions
+            let requestJson = [systemGeneral, systemTask, userContent, userData];
 
-  //tab interface - page/code preview for urls
+            // Send it to the API
+            let ORjson = await getORData(model, requestJson);
+            let aiResponse = ORjson.choices[0].message.content;
+            let formattedText = formatAIResponse(aiResponse);
+            //console.log(formattedText);
 
-  $('.tabs ul li a').on('click', function (e) {
+            // Find the corresponding label text
+            let labelText = $(`label[for='${task.id}']`).text().trim();
+
+            // Create new report section dynamically
+            let newReport = $(
+              '<div class="generated-report">'
+              + '<h4>' + labelText + '</h4>'
+              + '<p>' + formattedText + '</p>'
+              + '</div>'
+            );
+            // Append to the report container
+            reportContainer.append(newReport);
+            $("#genai-open-report-btn").removeClass("hidden"); // Show report button
+          } catch (error) {
+            console.error(`Error generating report:`, error);
+            // $("#html-upload-preview").addClass("hidden");
+            $("#html-upload-no-action-error").removeClass("hidden");
+          }
+        }
+      } else {
+        // $("#html-upload-preview").addClass("hidden");
+        $("#html-upload-no-action-error").removeClass("hidden");
+      }
+
+      /*var htmlObject = ;
+      if (.length < 1 || fileList == undefined) {
+      	$("#html-invalid-msg").removeClass("hidden");
+      }
+      $("#image-preview").attr("data-src", URL.createObjectURL(htmlObject));
+      $("#image-upload-preview").removeClass("hidden");
+      */
+  /* $("#loading-indicator").addClass("hidden"); // Hide spinner when done
+});
+
+$("#genai-open-report-btn").click(function () {
+  //Open when someone clicks on the span element
+  //function openNav() {
+  document.getElementById("genai-nav").style.width = "100%";
+  //}
+});
+
+$("#genai-reset-report-btn").click(function () {
+  $("#genai-model-options").addClass("hidden");
+  $("#genai-task-options").removeClass("hidden");
+  $('input[name="html-upload-genai-analysis"]').prop('checked', false);
+  $('input[name="html-upload-genai-model"]').prop('checked', false);
+});
+
+$("#close-report-btn").click(function () {
+  // Open when someone clicks on the span element
+  document.getElementById("genai-nav").style.width = "0%";
+});*/
+
+  $('.tabs ul li a').on('click', function (e) { //tab interface - page/code preview for urls
     e.preventDefault();
     $('.tabs ul li a').removeClass('active');
     $(this).addClass('active');
@@ -426,7 +424,6 @@ async function createWordDoc(url) {
   }
 }
 
-
 function populateUrlTable() {
   let lines = [];
   let content = $('#url-input').html();
@@ -488,9 +485,9 @@ function extractMetadata(html, url) {
   let parser = new DOMParser();
   let doc = parser.parseFromString(html, 'text/html');
 
-  let title = doc.querySelector('title')?.innerText || url;
-  let description = doc.querySelector('meta[name="description"]')?.content || 'No Description';
-  let keywords = doc.querySelector('meta[name="keywords"]')?.content || 'No Keywords';
+  let title = doc.querySelector('title') ? .innerText || url;
+  let description = doc.querySelector('meta[name="description"]') ? .content || 'No Description';
+  let keywords = doc.querySelector('meta[name="keywords"]') ? .content || 'No Keywords';
 
   return {
     title,
@@ -550,8 +547,7 @@ async function getORData(model, requestJson) {
   return ORjson;
 }
 
-// Function to extract fields from the HTML
-function extractFields(html) {
+function extractFields(html) { // Function to extract fields from the HTML 
 
   const $html = $('<div>').append(html); // Wrap in a parent container
 
@@ -626,8 +622,7 @@ function formatAIResponse(aiResponse) {
     .join(""); // Join everything back together
 }
 
-// Function to render the full HTML and extracted fields
-function renderHTMLFields(fullHtml, fields) {
+function renderHTMLFields(fullHtml, fields) { // Function to render the full HTML and extracted fields
   // Display the full HTML in the <pre> tag
   $('#fullHtml code').text(fullHtml);
   Prism.highlightElement(document.querySelector("#fullHtml code"));
@@ -887,7 +882,6 @@ async function RefineSyntax(extractedHtml) {
   $("#genai-task-options").removeClass("hidden");
 }
 
-
 /*async function generateWordDocumentsFromTable() {
   const rows = $('#table-init tbody tr');
   if (rows.length === 0) {
@@ -1001,4 +995,4 @@ function convertTextToHTML(text) {
   // Join all paragraphs into a single string
   return htmlParagraphs.join('');
 }
-}*/
+} */
