@@ -263,7 +263,6 @@ $(document).on("click", "#copy-all-btn", function () {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(textToCopy)
       .then(() => {
-        alert("Text copied to clipboard!");
       })
       .catch(err => {
         console.error("Failed to copy: ", err);
@@ -273,7 +272,6 @@ $(document).on("click", "#copy-all-btn", function () {
     // Fallback for older browsers
     $("#source-text-preview").select();
     document.execCommand("copy");
-    alert("Text copied to clipboard!");
   }
 });
 
