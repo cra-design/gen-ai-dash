@@ -212,7 +212,6 @@ $(document).ready(function() {
 
   
 $(document).on("click", "#extract-source-text-btn", async function () { 
-  console.log("Extract source text button clicked");
   if (!englishFile) {
     alert("No source file uploaded. Please upload a file first!");
     return;
@@ -228,8 +227,12 @@ $(document).on("click", "#extract-source-text-btn", async function () {
     if (fileExtension === "docx") {
       let arrayBuffer = await englishFile.arrayBuffer();
       let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-      // Convert HTML to plain text using jQuery.
-      extractedText = $(mammothResult.value).text();
+      // Parse the HTML and extract text from each <p> element
+      let html = mammothResult.value;
+      let paragraphs = $(html).filter("p").map(function() {
+      return $(this).text().trim();
+      }).get();
+      extractedText = paragraphs.join("\n\n");
     } else if (fileExtension === "pptx") {
       let arrayBuffer = await englishFile.arrayBuffer();
       extractedText = await extractPptxText(arrayBuffer);
