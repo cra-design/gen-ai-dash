@@ -406,6 +406,26 @@ async function createWordDoc(url) {
     // Apply inline styles
     applyInlineStyles(contentClone);
 
+    // Handle WET-BOEW-specific styles manually
+    contentClone.find('h1').each(function () {
+      $(this).css('border-bottom', '5px solid red'); // Add red underline to H1
+    });
+
+    contentClone.find('ul.cnjnctn-type-or.cnjnctn-sm').each(function () {
+      $(this).css({
+        'background-color': '#f8f8f8', 
+        'border-left': '4px solid #0056b3',
+        'padding': '10px'
+      });
+    });
+
+    // 🏷 Convert tabs into markers
+    contentClone.find('.wb-tabs > .tabpanels > .tabpanel').each(function () {
+      let tabTitle = $(this).attr('aria-labelledby');
+      let tabContent = $(this).html();
+      $(this).html(`<p><strong>[Tab: ${tabTitle}]</strong></p>` + tabContent);
+    });
+
     // Full HTML content with inlined styles
     let formattedContent = `
       <!DOCTYPE html>
@@ -441,7 +461,6 @@ async function createWordDoc(url) {
     alert(`Failed to retrieve content from: ${url}`);
   }
 }
-
 
 function populateUrlTable() {
   let lines = [];
