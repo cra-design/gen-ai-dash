@@ -244,7 +244,7 @@ $(document).ready(function() {
       let normalizedText = normalizeExtractedText(extractedText);
 
       // Populate the preview textarea with the extracted text.
-      $("#source-text-preview").val(extractedText);
+      $("#source-text-preview").val(normalizedText);
       // Reveal the preview card.
       $("#source-preview").removeClass("hidden");
     } catch (err) {
