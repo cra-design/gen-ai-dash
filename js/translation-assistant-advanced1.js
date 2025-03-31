@@ -193,7 +193,6 @@ $(document).ready(function() {
               } else if (fileExtension == 'pptx'){
                 let arrayBuffer = await uploadedFile.arrayBuffer();
                 let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
-                console.log("Extracted PPTX Text Elements:", textElements);
                 let pptxHtml = textElements
                   .map(item => `<p id="${item.id}">${item.text}</p>`)
                   .join('');
