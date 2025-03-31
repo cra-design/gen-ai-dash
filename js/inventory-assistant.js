@@ -372,13 +372,37 @@ async function createWordDoc(url) {
     // Clone content to avoid modifying the original
     let mainClone = mainElement.clone();
 
+    // Handle WET-BOEW tabs
+    mainClone.find('.wb-tabs').each(function () {
+      let $tabsContainer = $(this);
+      let tabsHtml = '';
+
+      // Extract tab titles
+      let tabTitles = $tabsContainer.find('.nav-tabs li a').map((_, el) => {
+        return {
+          title: $(el).text().trim(),
+          target: $(el).attr('href').replace('#', '') // Get tab content ID
+        };
+      }).get();
+
+      // Extract tab content
+      tabTitles.forEach(tab => {
+        let tabContent = $tabsContainer.find(`#${tab.target}`).html();
+        if (tabContent) {
+          tabsHtml += `<h2 style="color: #0056b3;">${tab.title}</h2>\n${tabContent}\n<hr>\n`;
+        }
+      });
+
+      // Replace the original tab structure with formatted text
+      $tabsContainer.replaceWith(tabsHtml);
+    });
+
     // Extract and inline computed styles
     mainClone.find('*').each(function () {
       let $this = $(this);
       let computedStyle = window.getComputedStyle(this);
       let inlineStyle = '';
 
-      // Copy necessary properties
       let propertiesToCopy = [
         'color', 'font-size', 'font-weight', 'font-style', 'text-decoration',
         'background-color', 'border', 'border-bottom', 'margin', 'padding',
@@ -433,7 +457,7 @@ async function createWordDoc(url) {
                        url.includes('canada.ca') ? ' - dotca' : '';
     fileName = `${fileName} - ${formattedDate}${domainSuffix}`;
 
-    // Full HTML content with extracted WET-BOEW styles
+    // Full HTML content with extracted WET-BOEW styles and tab handling
     let formattedContent = `
       <!DOCTYPE html>
       <html>
@@ -446,6 +470,7 @@ async function createWordDoc(url) {
             th, td { border: 1px solid #ddd; padding: 8px; }
             th { background-color: #f1f1f1; text-align: left; }
             h1 { border-bottom: 4px solid #d3080c; } /* WET-BOEW red underline */
+            h2 { color: #0056b3; margin-top: 20px; } /* Tab headers */
             ${styleRules}
           </style>
         </head>
@@ -472,7 +497,6 @@ async function createWordDoc(url) {
     alert(`Failed to retrieve content from: ${url}`);
   }
 }
-
 
 function populateUrlTable() {
   let lines = [];
