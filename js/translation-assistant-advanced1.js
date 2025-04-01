@@ -703,7 +703,6 @@ $("#edit-translation-A-btn").click(function () {
   $(this).attr('title', isEditable ? 'Edit Code' : 'Save Code');
   $(this).find('i').toggleClass('fa-edit fa-save');
 });
-  
    /***********************************************************************
    * Convert-translation-download-button work flow:
    * When the user clicks the Download button, the download button will show
