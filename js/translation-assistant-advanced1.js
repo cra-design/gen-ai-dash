@@ -184,7 +184,8 @@ $(document).ready(function() {
               const zip = await JSZip.loadAsync(arrayBuffer);
               const docXmlStr = await zip.file("word/document.xml").async("string");
             const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
+            const xmlDoc = parser.parseFromString(docXmlStr, "application/xml"); 
+            console.log(xmlDoc);
             const textNodes = xmlDoc.getElementsByTagName("w:t");
 
   // Rebuild the HTML by wrapping each extracted text in a paragraph.
