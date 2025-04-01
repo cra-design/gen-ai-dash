@@ -15,7 +15,80 @@ function formatTranslatedOutput(rawText) {
   let paragraphs = rawText.split(/\n\s*\n/);
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
-}  
+}   
+
+async function extractDocxWithStyles(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const docXml = await zip.file("word/document.xml").async("string");
+  const stylesXml = await zip.file("word/styles.xml")?.async("string") || null;
+
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(docXml, "application/xml");
+
+  const paragraphs = xmlDoc.getElementsByTagName("w:p");
+  let formattedOutput = [];
+
+  for (let i = 0; i < paragraphs.length; i++) {
+    let para = paragraphs[i];
+    let styleText = "";
+    let paragraphText = "";
+
+    // Get paragraph style if any
+    const pPr = para.getElementsByTagName("w:pPr")[0];
+    if (pPr) {
+      const pStyle = pPr.getElementsByTagName("w:pStyle")[0];
+      if (pStyle) {
+        const styleVal = pStyle.getAttribute("w:val");
+        if (styleVal?.toLowerCase().includes("heading1")) {
+          styleText += "font-size: 20pt; font-weight: bold; border-bottom: 2px solid red;";
+        } else if (styleVal?.toLowerCase().includes("heading2")) {
+          styleText += "font-size: 16pt; font-weight: bold;";
+        }
+      }
+    }
+
+    // Process runs and styles within paragraph
+    const runs = para.getElementsByTagName("w:r");
+    for (let j = 0; j < runs.length; j++) {
+      const run = runs[j];
+      let runText = "";
+      const textEl = run.getElementsByTagName("w:t")[0];
+      if (!textEl) continue;
+
+      runText = textEl.textContent;
+      let runStyle = "";
+
+      const rPr = run.getElementsByTagName("w:rPr")[0];
+      if (rPr) {
+        if (rPr.getElementsByTagName("w:b")[0]) runStyle += "font-weight: bold;";
+        if (rPr.getElementsByTagName("w:i")[0]) runStyle += "font-style: italic;";
+        const fontEl = rPr.getElementsByTagName("w:rFonts")[0];
+        const sizeEl = rPr.getElementsByTagName("w:sz")[0];
+
+        if (fontEl) {
+          const fontName = fontEl.getAttribute("w:ascii") || fontEl.getAttribute("w:hAnsi");
+          if (fontName) runStyle += `font-family: ${fontName};`;
+        }
+        if (sizeEl) {
+          const sizeVal = parseInt(sizeEl.getAttribute("w:val"));
+          if (!isNaN(sizeVal)) runStyle += `font-size: ${sizeVal / 2}pt;`;
+        }
+      }
+
+      if (runStyle) {
+        paragraphText += `<span style=\"${runStyle}\">${runText}</span>`;
+      } else {
+        paragraphText += runText;
+      }
+    }
+
+    if (paragraphText.trim()) {
+      formattedOutput.push(`<p style=\"${styleText}\">${paragraphText}</p>`);
+    }
+  }
+
+  return formattedOutput.join("\n");
+}
 async function extractDocxParagraphs(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const docXml = await zip.file("word/document.xml").async("string");
@@ -215,9 +288,9 @@ $(document).ready(function() {
           if (event.target.id === "source-file") {
               englishFile = uploadedFile;
               if (fileExtension === 'docx') {
-                let arrayBuffer = await uploadedFile.arrayBuffer();
-                let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-                $("#translation-A").html(mammothResult.value);
+                 let arrayBuffer = await uploadedFile.arrayBuffer();
+                let styledHtml = await extractDocxWithStyles(arrayBuffer);
+                $("#translation-A").html(styledHtml);
               } else if (fileExtension == 'pptx'){
                 let arrayBuffer = await uploadedFile.arrayBuffer();
                 let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
