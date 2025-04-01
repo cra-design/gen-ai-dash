@@ -138,7 +138,7 @@ $(document).ready(function () {
     //do we also want a tab to view the code? Maybe this is where we can make edits or changes with GenAI, then reload in the iframe? Could we do this with some html manipulation in the javascript of the already-loaded iframe? Or would we need to rebuild the page in the script?
   });
 
-  $("#html-upload-btn").click(function () {
+  /*$("#html-upload-btn").click(function () {
     // $("#html-preview").html($("#html-input").html());
     // $("#html-upload-preview").removeClass("hidden");
     $("#html-upload-loading-spinner").removeClass("hidden");
@@ -296,25 +296,27 @@ $(document).ready(function () {
     } else {
       // $("#html-upload-preview").addClass("hidden");
       $("#html-upload-no-action-error").removeClass("hidden");
-    }
+    }*/
 
-    /*var htmlObject = ;
-    if (.length < 1 || fileList == undefined) {
-    	$("#html-invalid-msg").removeClass("hidden");
-    }
-    $("#image-preview").attr("data-src", URL.createObjectURL(htmlObject));
-    $("#image-upload-preview").removeClass("hidden");
-    */
+  /*var htmlObject = ;
+  if (.length < 1 || fileList == undefined) {
+  	$("#html-invalid-msg").removeClass("hidden");
+  }
+  $("#image-preview").attr("data-src", URL.createObjectURL(htmlObject));
+  $("#image-upload-preview").removeClass("hidden");
+  */
+  /*
     $("#loading-indicator").addClass("hidden"); // Hide spinner when done
   });
 
   $("#genai-open-report-btn").click(function () {
-    /* Open when someone clicks on the span element */
+    // Open when someone clicks on the span element //
     //function openNav() {
     document.getElementById("genai-nav").style.width = "100%";
     //}
-  });
+  });*/
 
+  /*
   $("#genai-reset-report-btn").click(function () {
     $("#genai-model-options").addClass("hidden");
     $("#genai-task-options").removeClass("hidden");
@@ -323,10 +325,10 @@ $(document).ready(function () {
   });
 
   $("#close-report-btn").click(function () {
-    /* Open when someone clicks on the span element */
+    //Open when someone clicks on the span element
     document.getElementById("genai-nav").style.width = "0%";
   });
-
+*/
   //tab interface - page/code preview for urls
 
   $('.tabs ul li a').on('click', function (e) {
@@ -413,7 +415,7 @@ async function createWordDoc(url) {
 
     contentClone.find('ul.cnjnctn-type-or.cnjnctn-sm').each(function () {
       $(this).css({
-        'background-color': '#f8f8f8', 
+        'background-color': '#f8f8f8',
         'border-left': '4px solid #0056b3',
         'padding': '10px'
       });
@@ -558,9 +560,9 @@ function extractMetadata(html, url) {
   let parser = new DOMParser();
   let doc = parser.parseFromString(html, 'text/html');
 
-  let title = doc.querySelector('title')?.innerText || url;
-  let description = doc.querySelector('meta[name="description"]')?.content || 'No Description';
-  let keywords = doc.querySelector('meta[name="keywords"]')?.content || 'No Keywords';
+  let title = doc.querySelector('title') ? .innerText || url;
+  let description = doc.querySelector('meta[name="description"]') ? .content || 'No Description';
+  let keywords = doc.querySelector('meta[name="keywords"]') ? .content || 'No Keywords';
 
   return {
     title,
@@ -620,6 +622,7 @@ async function getORData(model, requestJson) {
   return ORjson;
 }
 
+/*
 // Function to extract fields from the HTML
 function extractFields(html) {
 
@@ -683,19 +686,21 @@ function extractFields(html) {
     // bodyContent,
   };
 }
+*/
 
-function formatAIResponse(aiResponse) {
-  return aiResponse
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold (**text** → <strong>text</strong>)
-    .replace(/\*(.*?)\*/g, "<em>$1</em>") // Italics (*text* → <em>text</em>)
-    .replace(/\n\s*-\s*(.*?)(?=\n|$)/g, "<li>$1</li>") // Convert "- item" to list items
-    .replace(/(<li>.*<\/li>)/g, "<ul>$1</ul>") // Wrap list items in <ul>
-    .split("\n") // Split by line breaks
-    .filter(line => line.trim() !== "") // Remove empty lines
-    .map(line => `<p>${line}</p>`) // Wrap remaining text in <p> tags
-    .join(""); // Join everything back together
-}
+//function formatAIResponse(aiResponse) {
+ // return aiResponse
+    //.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold (**text** → <strong>text</strong>)
+    //.replace(/\*(.*?)\*/g, "<em>$1</em>") // Italics (*text* → <em>text</em>)
+    //.replace(/\n\s*-\s*(.*?)(?=\n|$)/g, "<li>$1</li>") // Convert "- item" to list items
+   // .replace(/(<li>.*<\/li>)/g, "<ul>$1</ul>") // Wrap list items in <ul>
+   // .split("\n") // Split by line breaks
+   // .filter(line => line.trim() !== "") // Remove empty lines
+   // .map(line => `<p>${line}</p>`) // Wrap remaining text in <p> tags
+   // .join(""); // Join everything back together
+//}
 
+/*
 // Function to render the full HTML and extracted fields
 function renderHTMLFields(fullHtml, fields) {
   // Display the full HTML in the <pre> tag
@@ -715,7 +720,6 @@ function renderHTMLFields(fullHtml, fields) {
                   `);
   });
 }
-
 async function RefineSyntax(extractedHtml) {
   // Define the HTML header and footer
   let htmlHeader = `
@@ -956,7 +960,7 @@ async function RefineSyntax(extractedHtml) {
   $("#genai-upload-msg").addClass("hidden");
   $("#genai-task-options").removeClass("hidden");
 }
-
+*/
 
 /*async function generateWordDocumentsFromTable() {
   const rows = $('#table-init tbody tr');
