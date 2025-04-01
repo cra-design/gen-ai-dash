@@ -48,47 +48,47 @@ function formatTranslatedOutput(rawText) {
 //     }
 
     // Process runs and styles within paragraph
-    const runs = para.getElementsByTagName("w:r");
-    for (let j = 0; j < runs.length; j++) {
-      const run = runs[j];
-      let runText = "";
-      const textEl = run.getElementsByTagName("w:t")[0];
-      if (!textEl) continue;
+//     const runs = para.getElementsByTagName("w:r");
+//     for (let j = 0; j < runs.length; j++) {
+//       const run = runs[j];
+//       let runText = "";
+//       const textEl = run.getElementsByTagName("w:t")[0];
+//       if (!textEl) continue;
 
-      runText = textEl.textContent;
-      let runStyle = "";
+//       runText = textEl.textContent;
+//       let runStyle = "";
 
-      const rPr = run.getElementsByTagName("w:rPr")[0];
-      if (rPr) {
-        if (rPr.getElementsByTagName("w:b")[0]) runStyle += "font-weight: bold;";
-        if (rPr.getElementsByTagName("w:i")[0]) runStyle += "font-style: italic;";
-        const fontEl = rPr.getElementsByTagName("w:rFonts")[0];
-        const sizeEl = rPr.getElementsByTagName("w:sz")[0];
+//       const rPr = run.getElementsByTagName("w:rPr")[0];
+//       if (rPr) {
+//         if (rPr.getElementsByTagName("w:b")[0]) runStyle += "font-weight: bold;";
+//         if (rPr.getElementsByTagName("w:i")[0]) runStyle += "font-style: italic;";
+//         const fontEl = rPr.getElementsByTagName("w:rFonts")[0];
+//         const sizeEl = rPr.getElementsByTagName("w:sz")[0];
 
-        if (fontEl) {
-          const fontName = fontEl.getAttribute("w:ascii") || fontEl.getAttribute("w:hAnsi");
-          if (fontName) runStyle += `font-family: ${fontName};`;
-        }
-        if (sizeEl) {
-          const sizeVal = parseInt(sizeEl.getAttribute("w:val"));
-          if (!isNaN(sizeVal)) runStyle += `font-size: ${sizeVal / 2}pt;`;
-        }
-      }
+//         if (fontEl) {
+//           const fontName = fontEl.getAttribute("w:ascii") || fontEl.getAttribute("w:hAnsi");
+//           if (fontName) runStyle += `font-family: ${fontName};`;
+//         }
+//         if (sizeEl) {
+//           const sizeVal = parseInt(sizeEl.getAttribute("w:val"));
+//           if (!isNaN(sizeVal)) runStyle += `font-size: ${sizeVal / 2}pt;`;
+//         }
+//       }
 
-      if (runStyle) {
-        paragraphText += `<span style=\"${runStyle}\">${runText}</span>`;
-      } else {
-        paragraphText += runText;
-      }
-    }
+//       if (runStyle) {
+//         paragraphText += `<span style=\"${runStyle}\">${runText}</span>`;
+//       } else {
+//         paragraphText += runText;
+//       }
+//     }
 
-    if (paragraphText.trim()) {
-      formattedOutput.push(`<p style=\"${styleText}\">${paragraphText}</p>`);
-    }
-  }
+//     if (paragraphText.trim()) {
+//       formattedOutput.push(`<p style=\"${styleText}\">${paragraphText}</p>`);
+//     }
+//   }
 
-  return formattedOutput.join("\n");
-}
+//   return formattedOutput.join("\n");
+// }
 async function extractDocxParagraphs(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const docXml = await zip.file("word/document.xml").async("string");
