@@ -1,12 +1,12 @@
-let generatedDownloadFile = null;  
-let englishFile = null;  
+let generatedDownloadFile = null;
+let englishFile = null;
 let frenchFile = null;
 
 function extractXmlFromFile(file) {
   return new Promise((resolve, reject) => {
     handleFileExtractionToXML(file, resolve, reject);
   });
-}
+} 
 
 // Function to format raw translated output into structured HTML.
 function formatTranslatedOutput(rawText) {
@@ -15,35 +15,123 @@ function formatTranslatedOutput(rawText) {
   let paragraphs = rawText.split(/\n\s*\n/);
   let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return formatted;
+}  
+async function extractDocxParagraphs(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const docXml = await zip.file("word/document.xml").async("string");
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(docXml, "application/xml");
+
+  const paragraphs = xmlDoc.getElementsByTagName("w:p");
+  let fullText = [];
+
+  for (let i = 0; i < paragraphs.length; i++) {
+    let paragraph = paragraphs[i];
+    let paragraphText = "";
+
+    // Extract all <w:t> (text) elements within the paragraph
+    let textNodes = paragraph.getElementsByTagName("w:t");
+    for (let j = 0; j < textNodes.length; j++) {
+      paragraphText += textNodes[j].textContent;
+    }
+
+    if (paragraphText.trim()) {
+      fullText.push(paragraphText.trim());
+    }
+  }
+
+  // Join paragraphs with double newline to separate them
+  return fullText.join("\n\n");
 }
 
-$(document).ready(function() {
+async function extractPptxText(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  let allParagraphs = [];
 
+  // Loop over each file in the ZIP that matches a slide XML.
+  for (const fileName of Object.keys(zip.files)) {
+    if (slideRegex.test(fileName)) {
+      const slideXml = await zip.file(fileName).async("string");
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
+
+      // Get all <a:p> elements for this slide.
+      const paraNodes = xmlDoc.getElementsByTagName("a:p");
+      for (let i = 0; i < paraNodes.length; i++) {
+        const paraNode = paraNodes[i];
+        let paragraphText = "";
+
+        // Within each paragraph, concatenate the text from all <a:t> elements.
+        const textNodes = paraNode.getElementsByTagName("a:t");
+        for (let j = 0; j < textNodes.length; j++) {
+          paragraphText += textNodes[j].textContent;
+        }
+        // If the paragraph has any non-empty text, add it to the array.
+        if (paragraphText.trim().length > 0) {
+          allParagraphs.push(paragraphText.trim());
+        }
+      }
+    }
+  }
+  // Join paragraphs with two newlines to denote paragraph breaks.
+  return allParagraphs.join("\n\n");
+}
+
+
+
+// Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
+async function extractPptxTextXmlWithId(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer); 
+  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  let textElements = [];
+
+  for (const fileName of Object.keys(zip.files)) {
+    const match = slideRegex.exec(fileName);
+    if (match) {
+      const slideNumber = match[1];
+      const slideXml = await zip.file(fileName).async("string"); 
+
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
+      const textNodes = xmlDoc.getElementsByTagName("a:t");
+
+      for (let i = 0; i < textNodes.length; i++) {
+        let uniqueId = `S${slideNumber}_T${i + 1}`;
+        let text = textNodes[i].textContent;
+        textElements.push({ slide: slideNumber, id: uniqueId, text });
+      }
+    }
+  }
+  return textElements;
+} 
+
+$(document).ready(function() {
   // Handle radio button changes for various upload and compare options.
   $(document).on("click", "input[type=radio]", function (event) {
     var target = event.target;
-    if (target.name == "source-upload-option") {
+    if (target.name === "source-upload-option") {
       $('#source-doc-upload, #text-upload, #second-upload, #translation-preview, #convert-translation').addClass("hidden");
-      if (target.id == "source-upload-doc") {
+      if (target.id === "source-upload-doc") {
         $('#source-doc-upload').removeClass("hidden");
-      } else if (target.id == "source-upload-text") {
+      } else if (target.id === "source-upload-text") {
         $('#text-upload').removeClass("hidden");
       }
-    } else if (target.name == "second-upload-option") {
+    } else if (target.name === "second-upload-option") {
       $('#second-doc-upload, #second-text-upload').addClass("hidden");
-      if (target.id == "second-upload-doc") {
+      if (target.id === "second-upload-doc") {
         $('#second-doc-upload').removeClass("hidden");
-      } else if (target.id == "second-upload-text") {
+      } else if (target.id === "second-upload-text") {
         $('#second-text-upload').removeClass("hidden");
       }
-    } else if (target.name == "translations-compare") {
-      if (target.id == "translations-llm-compare") {
+    } else if (target.name === "translations-compare") {
+      if (target.id === "translations-llm-compare") {
         $('#genai-model-options').removeClass("hidden");
-      } else if (target.id == "translations-instructions-compare" || target.id == "translations-no-compare") {
+      } else if (target.id === "translations-instructions-compare" || target.id === "translations-no-compare") {
         $('#genai-model-options').addClass("hidden");
       }
     }
-  });
+  }); 
 
   // Detect language from entered text as the user types.
   $('#source-text').on('input', function() {
@@ -54,10 +142,11 @@ $(document).ready(function() {
       return;
     }
     var detectedLanguage = detectLanguageBasedOnWords(text);
-    if (detectedLanguage == 'unknown') { detectedLanguage = 'english'; }
+    if (detectedLanguage === 'unknown') { detectedLanguage = 'english'; }
     $('#source-heading-detecting').addClass("hidden");
-    $('#source-language').removeClass("hidden").val(detectedLanguage);
+    $('#source-language').removeClass("hidden").val(detectedLanguage); 
   });
+
 
   // Handle file input change for both source and second file uploads.
   $(document).on("change", "input", async function (event) {
@@ -67,7 +156,7 @@ $(document).ready(function() {
       $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
       $(`#${language}-language-heading`).removeClass("hidden");
       $(`#${language}-language-doc`).addClass("hidden");
-      var fileList = event.target.files;
+      var fileList = event.target.files; 
       if (!fileList || fileList.length === 0) return;
       if (fileList.length > 1) {
           $(`#${language}-multiple-msg`).removeClass("hidden");
@@ -76,11 +165,11 @@ $(document).ready(function() {
       }
       var uploadedFile = fileList[0];
       var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
-      var validExtensions = ["docx", "xlsx", "ppt"];
+      var validExtensions = ["docx", "xlsx", "pptx"];
       var validMimeTypes = [
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          "application/vnd.ms-powerpoint"
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation"
       ];
       if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
           $(`#${language}-doc-error`).removeClass("hidden");
@@ -89,22 +178,57 @@ $(document).ready(function() {
           return;
       }
       try {
-          let textContent = await handleFileExtraction(uploadedFile);
-          if (!textContent) { throw new Error("No text extracted."); }
-          var detectedLanguage = detectLanguageBasedOnWords(textContent);
+          let textContent;
+          if (fileExtension === "docx" || fileExtension === "xlsx") {
+              let arrayBuffer = await uploadedFile.arrayBuffer();
+              const zip = await JSZip.loadAsync(arrayBuffer);
+              const docXmlStr = await zip.file("word/document.xml").async("string");
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(docXmlStr, "application/xml"); 
+            console.log(xmlDoc);
+            const textNodes = xmlDoc.getElementsByTagName("w:t");
+
+  // Rebuild the HTML by wrapping each extracted text in a paragraph.
+ textContent = Array.from(textNodes)
+  .map(node => `<p>${node.textContent}</p>`)
+  .join('');
+          } else if (fileExtension === "pptx") { 
+              let arrayBuffer = await uploadedFile.arrayBuffer(); 
+              let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+              let pptxHtml = textElements
+                .map(item => `<p id="${item.id}">${item.text}</p>`)
+                .join('');
+              //Assign pptxHtml to textContent.
+              textContent = pptxHtml;
+          } else {
+              throw new Error("Unsupported file type");
+          }
+          if (!textContent) { 
+              throw new Error("No text extracted."); 
+          }
+          
+          let detectedLanguage = detectLanguageBasedOnWords(textContent); 
           if (detectedLanguage !== "french") { detectedLanguage = "english"; }
           $(`#${language}-doc-detecting`).addClass("hidden");
           $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
-
-        if (event.target.id === "source-file") {
-            englishFile = uploadedFile;
-            if (fileExtension === 'docx') {
-              let arrayBuffer = await uploadedFile.arrayBuffer();
-              let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-              $("#translation-A").html(mammothResult.value);
-            }
+       
+          if (event.target.id === "source-file") {
+              englishFile = uploadedFile;
+              if (fileExtension === 'docx') {
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+                let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+                $("#translation-A").html(mammothResult.value);
+              } else if (fileExtension == 'pptx'){
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+                let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+                let pptxHtml = textElements
+                  .map(item => `<p id="${item.id}">${item.text}</p>`)
+                  .join('');
+                // NEW: Set the formatted PPTX content into #translation-A.
+                $("#translation-A").html(pptxHtml);
+              }
           } else {
-            frenchFile = uploadedFile;
+              frenchFile = uploadedFile;
           }
       } catch (err) {
           console.error('Error processing source file:', err);
@@ -112,7 +236,69 @@ $(document).ready(function() {
           $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
       }
     }
-  });
+  }); 
+
+  
+$(document).on("click", "#extract-source-text-btn", async function () { 
+  if (!englishFile) {
+    alert("No source file uploaded. Please upload a file first!");
+    return;
+  }
+  
+  $("#source-doc-error").addClass("hidden");
+  $("#source-text-preview").val("");
+
+  try {
+    const fileExtension = englishFile.name.split('.').pop().toLowerCase();
+    let extractedText = "";
+
+    if (fileExtension === "docx") {
+      const arrayBuffer = await englishFile.arrayBuffer();
+      extractedText = await extractDocxParagraphs(arrayBuffer);
+    } else if (fileExtension === "pptx") {
+      let arrayBuffer = await englishFile.arrayBuffer();
+      extractedText = await extractPptxText(arrayBuffer);
+    } else if (fileExtension === "xlsx") {
+      let arrayBuffer = await englishFile.arrayBuffer();
+      let workbook = XLSX.read(arrayBuffer, { type: "array" });
+      let sheetName = workbook.SheetNames[0];
+      let worksheet = workbook.Sheets[sheetName];
+      let csvData = XLSX.utils.sheet_to_csv(worksheet);
+      extractedText = csvData;
+    } else {
+      throw new Error("Unsupported file type for extraction");
+    }
+
+    // Populate the preview textarea with the extracted text.
+    $("#source-text-preview").val(extractedText);
+    // Reveal the preview card.
+    $("#source-preview").removeClass("hidden");
+  } catch (err) {
+    console.error("Error extracting source text:", err);
+    $("#source-doc-error").removeClass("hidden");
+  }
+});
+$(document).on("click", "#copy-all-btn", function () {
+  const textToCopy = $("#source-text-preview").val();
+  if (!textToCopy) {
+    alert("There is no text to copy!");
+    return;
+  }
+  // Use the Clipboard API if available
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => {
+      })
+      .catch(err => {
+        console.error("Failed to copy: ", err);
+        alert("Failed to copy text.");
+      });
+  } else {
+    // Fallback for older browsers
+    $("#source-text-preview").select();
+    document.execCommand("copy");
+  }
+});
 
   /***********************************************************************
    * Translate Button Flow:
@@ -306,7 +492,8 @@ $(document).ready(function() {
       }
     }
   }); 
-  
+ 
+// 'Provide translation' button, show the second upload section
 $("#source-upload-provide-btn").click(function() {
     if (!englishFile) {
       alert("Please upload the English document first.");
@@ -315,7 +502,10 @@ $("#source-upload-provide-btn").click(function() {
     $("#second-upload").removeClass("hidden");
   }); 
   
-  // 'Provide translation' button, show the second upload section
+  /***********************************************************************
+   * Provide Translation Button Flow:
+   * show the second upload section
+  ***********************************************************************/
   $("#source-upload-provide-btn").click(function() {
     $("#second-upload").removeClass("hidden"); 
     console.log($("#translation-A").html());
@@ -343,141 +533,181 @@ $("#source-upload-provide-btn").click(function() {
     }
 });
 
-  // Second upload: manual translation.
-  $("#second-upload-btn").click(async function() {  
-     $('#processing-spinner').removeClass("hidden"); 
-    console.log("Spinner should now be visible.");
-    var selectedOption = $('input[name="second-upload-option"]:checked').val();  
-    let frenchText = "";  
+  /***********************************************************************
+   * Second File Upload Button
+   * For the second file uploads, extract and parse
+   ***********************************************************************/
+$("#second-upload-btn").click(async function () {
+  $('#processing-spinner').removeClass("hidden");
+  console.log("Spinner should now be visible.");
 
-    // Ensure the French file is uploaded if the user selected document upload.
-  if (selectedOption == "second-upload-doc" && !frenchFile) {
-    alert("Please upload your translated French document.");
+  const selectedOption = $('input[name="second-upload-option"]:checked').val();
+  let frenchText = "";
+
+  if (selectedOption === "second-upload-doc") {
+    const file = $('#second-file')[0].files[0];
+
+    if (!file) {
+      alert("Please select your translated file.");
+      $('#processing-spinner').addClass("hidden");
+      return;
+    }
+
+    try {
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+
+      if (fileExtension === "docx" || fileExtension === "xlsx") {
+        frenchText = await handleFileExtractionToHtml(file);
+      } else if (fileExtension === "pptx") {
+        const arrayBuffer = await file.arrayBuffer();
+        const textElements = await extractPptxTextXmlWithId(arrayBuffer);
+        frenchText = textElements.map(item => `<p>${item.text}</p>`).join('');
+      } else {
+        throw new Error("Unsupported file type");
+      }
+
+      console.log("French text after extraction:", frenchText);
+    } catch (err) {
+      console.error('Error processing the second (FR) file:', err);
+      alert("Error reading your translated file. Check console for details.");
+      $('#converting-spinner').addClass("hidden");
+      $('#processing-spinner').addClass("hidden");
+      return;
+    }
+  } else if (selectedOption === "second-upload-text") {
+    frenchText = $("#second-text").val();
+  }
+
+  if (!frenchText || frenchText.trim().length === 0) {
+    alert("No French document/text found. Please upload or enter your translation.");
+    $('#converting-spinner').addClass("hidden");
+    $('#processing-spinner').addClass("hidden");
     return;
   }
-    
-    // 1) Get the raw French text from doc or text:
-    if (selectedOption == "second-upload-doc") {
-      var file = $('#second-file')[0].files[0]; 
-     
-      if (!file) {
-        alert("Please select your translated file.");
-        return;
-      } 
-      file.arrayBuffer().then(buffer => {
-      mammoth.convertToHtml({ arrayBuffer: buffer })
-        .then(result => {
-          console.log("Direct extraction result:", result.value);
-        })
-        .catch(err => console.error("Error with direct extraction:", err));
-    });
-      
-      try {
-        // This should extract text from the user-provided FR doc (unformatted).
-        let extractedText = await handleFileExtractionToHtml(file);
-        frenchText = extractedText || "";
-      } catch (err) {
-        console.error('Error processing the second (FR) file:', err);
-        alert("Error reading your translated file. Check console for details."); 
-        $('#converting-spinner').addClass("hidden");
-        return;
-      }
-    } else if (selectedOption == "second-upload-text") {
-      frenchText = $("#second-text").val();
-    } 
-    console.log("French text:", frenchText);
-    // 2) Retrieve the formatted English HTML from #translation-A
-    //    (#translation-A is where we stored the first doc's structure).
-    let englishHtml = $("#translation-A").html();
-    if (!englishHtml || englishHtml.trim().length === 0) {
-      alert("No formatted English document found. Please complete the first step."); 
-      $('#converting-spinner').addClass("hidden");
-      return;
-    }
-    if (!frenchText || frenchText.trim().length === 0) {
-      alert("No French document/text found. Please upload or enter your translation."); 
-      $('#converting-spinner').addClass("hidden");
-      return;
-    }
-    // load the system prompt
-    let systemPrompt = "";
-    try {
-    systemPrompt = await $.get("custom-instructions/translation/english2french1.txt");
+
+  // 2) Get the English HTML from the first upload section
+  let englishHtml = $("#translation-A").html();
+  if (!englishHtml || englishHtml.trim().length === 0) {
+    alert("No formatted English document found. Please complete the first step.");
+    $('#converting-spinner').addClass("hidden");
+    $('#processing-spinner').addClass("hidden");
+    return;
+  }
+
+  // Determine prompt based on original English file extension
+  const fileExtensionEnglish = (englishFile?.name || "").split('.').pop().toLowerCase();
+  const promptPath = (fileExtensionEnglish === "pptx")
+    ? "custom-instructions/translation/english2french-pptx.txt"
+    : "custom-instructions/translation/english2french1.txt";
+
+  let systemPrompt = "";
+  try {
+    systemPrompt = await $.get(promptPath);
   } catch (error) {
     console.error("Error loading system prompt:", error);
-    alert("Could not load translation instructions. Please check your files."); 
+    alert("Could not load translation instructions. Please check your files.");
     $('#converting-spinner').addClass("hidden");
+    $('#processing-spinner').addClass("hidden");
     return;
   }
-    let combinedPrompt = systemPrompt + "\n\n" +
-    "English Document (HTML):\n" + englishHtml + "\n\n" +
-    "French Text:\n" + frenchText + "\n\n" +
-    "Please return the French document in HTML format that exactly follows the structure of the English document."; 
 
-    
-  let requestJson = [
+  const combinedPrompt = `${systemPrompt}\n\nEnglish Document (HTML):\n${englishHtml}\n\nFrench Text:\n${frenchText}\n\nPlease return the French document in HTML format that exactly follows the structure of the English document.`;
+
+  const requestJson = [
     { role: "system", content: systemPrompt },
     { role: "user", content: combinedPrompt }
-  ]; 
+  ];
 
-   let models = [
+  const models = [
     "google/gemini-2.0-flash-lite-preview-02-05:free",
-    "google/gemini-2.0-pro-exp-02-05:free",
+   "google/gemini-2.0-pro-exp-02-05:free",
     "google/gemini-2.0-flash-thinking-exp:free",
     "meta-llama/llama-3.3-70b-instruct:free",
     "nvidia/llama-3.1-nemotron-70b-instruct:free",
     "google/gemini-2.0-flash-exp:free",
-    "google/gemini-exp-1206:free",
+   "google/gemini-exp-1206:free",
     "google/gemini-flash-1.5-8b-exp",
     "deepseek/deepseek-r1:free"
   ];
+
   let finalFrenchHtml = "";
   for (let model of models) {
-    let ORjson = await getORData(model, requestJson);
-    if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
-      finalFrenchHtml = ORjson.choices[0].message.content;
+    const ORjson = await getORData(model, requestJson); 
+    console.log(`Model: ${model}`, ORjson);
+    if (ORjson?.choices?.[0]?.message) {
+      finalFrenchHtml = ORjson.choices[0].message.content; 
+        console.log("Raw AI output:", finalFrenchHtml);
       break;
     }
   }
-  try{ 
-    if (!finalFrenchHtml) {
+
+  try {
+  if (!finalFrenchHtml) {
     alert("Translation alignment failed. No valid response from any model.");
     return;
-  } 
-     finalFrenchHtml = removeCodeFences(finalFrenchHtml);
-     console.log("Final French HTML (cleaned):", finalFrenchHtml);
-
-    // 4) Display the final merged output in #review-translation
-     $("#translation-A").html(finalFrenchHtml); 
-     $('#converting-spinner').addClass("hidden");
-     $("#translation-preview").removeClass("hidden").show();  
-      } catch (err) {
-    console.error("Error during second-upload processing:", err);
-  } finally {
-    // Hide spinner once processing is complete (successfully or on error)
-    $('#processing-spinner').addClass("hidden");  
   }
-});
-    
-  // Accept and edit translation button handlers.
-  $("#accept-translation-A-btn").click(function() { acceptTranslation("a"); });
-  $("#accept-translation-B-btn").click(function() { acceptTranslation("b"); });
-  $("#edit-translation-A-btn").click(function() {
-    var $translation = $('#translation-A');
-    var isEditable = $translation.attr('contenteditable') === 'true';
-    if (isEditable) {
-      $translation.attr('contenteditable', 'false');
-      $(this).attr('title', 'Edit Code');
-      $(this).find('i').removeClass('fa-save').addClass('fa-edit');
+
+  finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+   
+  const fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
+  let formattedOutput; 
+
+  if (fileExtension === 'pptx') {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = finalFrenchHtml;
+  const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+  const rebuilt = [];
+
+  for (let i = 0; i < rawParagraphs.length; i++) {
+    const currText = rawParagraphs[i].textContent.trim();
+    const currId = rawParagraphs[i].id;
+
+    if (/^[dlLcsà'‘’`’“”]$/.test(currText) && rawParagraphs[i + 1]) {
+      const nextText = rawParagraphs[i + 1].textContent.trim();
+      rebuilt.push(`<p id="${currId}">${currText}${nextText}</p>`);
+      i++;
     } else {
-      $translation.attr('contenteditable', 'true');
-      $(this).attr('title', 'Save Code');
-      $(this).find('i').removeClass('fa-edit').addClass('fa-save');
+      rebuilt.push(`<p id="${currId}">${currText}</p>`);
     }
-  });
+  }
  
-// Existing download button click handler remains unchanged.
-// When the user clicks the Download button, the file will be downloaded.
+  finalFrenchHtml = rebuilt.join('');  
+  formattedOutput = finalFrenchHtml;
+  } else {
+    formattedOutput = formatTranslatedOutput(finalFrenchHtml);
+  } 
+
+  if (!formattedOutput || formattedOutput.trim() === "") {
+  alert("Formatted output is empty. Please check the AI response.");
+} else {
+  $("#translation-A").html(formattedOutput);
+  $("#translation-preview").removeClass("hidden").show();
+}
+  console.log("Final French HTML (cleaned):", finalFrenchHtml);
+
+} catch (err) {
+  console.error("Error during final output processing:", err);
+  alert("An error occurred while processing the AI output.");
+} finally {
+  $('#converting-spinner').addClass("hidden"); 
+  $('#processing-spinner').addClass("hidden");
+}
+ });
+// Accept and edit translation button handlers
+$("#accept-translation-A-btn").click(function () { acceptTranslation("a"); });
+$("#accept-translation-B-btn").click(function () { acceptTranslation("b"); });
+$("#edit-translation-A-btn").click(function () {
+  const $translation = $('#translation-A');
+  const isEditable = $translation.attr('contenteditable') === 'true';
+  $translation.attr('contenteditable', !isEditable);
+  $(this).attr('title', isEditable ? 'Edit Code' : 'Save Code');
+  $(this).find('i').toggleClass('fa-edit fa-save');
+});
+   /***********************************************************************
+   * Convert-translation-download-button work flow:
+   * When the user clicks the Download button, the download button will show
+   * the file will be downloaded
+   ***********************************************************************/
 $("#convert-translation-download-btn").click(async function() {
   try {
     $('#converting-spinner').removeClass("hidden");
@@ -520,20 +750,24 @@ $("#convert-translation-download-btn").click(async function() {
         </html>
       `;
       generatedBlob = htmlDocx.asBlob(fullHtml);
-    } 
-    else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
-      // Fallback for PPTX/XLSX if you were using conversionGemini
-      let englishXml = await handleFileExtraction(englishFile);
-      let updatedXml = await conversionGemini(englishXml, fileExtension);
-      let zip = new JSZip();
-      if (fileExtension === 'pptx') {
-        zip.file("ppt/slides/slide1.xml", updatedXml);
-      } else {
-        zip.file("xl/worksheets/sheet1.xml", updatedXml);
+    } else if (fileExtension === 'pptx') {
+      const arrayBuffer = await englishFile.arrayBuffer();
+      const zip = await JSZip.loadAsync(arrayBuffer);
+      const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+
+      for (const fileName of Object.keys(zip.files)) {
+        const match = slideRegex.exec(fileName);
+        if (match) {
+          const slideNumber = match[1];
+          const slideXml = await zip.file(fileName).async("string");
+          const updatedSlideXml = conversionPptxXml(slideXml, finalFrenchHtml, slideNumber);
+          zip.file(fileName, updatedSlideXml);
+        }
       }
       generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+    } else if (fileExtension === 'xlsx') {
+      // Add XLSX logic 
     }
-
     if (!generatedBlob) {
       alert("File generation failed.");
       $('#converting-spinner').addClass("hidden");
@@ -546,8 +780,6 @@ $("#convert-translation-download-btn").click(async function() {
       : "translated-file";
     let modifiedFileName = `${englishFileName}-FR.${fileExtension}`;
 
-    // Now that the file is generated, show the download button
-    // or directly trigger the download:
     let downloadLink = document.createElement('a');
     downloadLink.href = URL.createObjectURL(generatedBlob);
     downloadLink.download = modifiedFileName;
@@ -560,10 +792,83 @@ $("#convert-translation-download-btn").click(async function() {
     $('#converting-spinner').addClass("hidden");
   }
 });
+  }); 
+//************************************************************************************
+//* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
+//* Can be added more if needed                                                   ***** 
+//*************************************************************************************/
+function deduplicateFrenchParagraphs(finalFrenchHtml) {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = finalFrenchHtml;
 
+  const seenTexts = new Set();
+  const cleanedParagraphs = [];
 
-});
+  const paragraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+  for (const p of paragraphs) {
+    const cleanText = p.textContent.trim();
+    if (!seenTexts.has(cleanText)) {
+      seenTexts.add(cleanText);
+      cleanedParagraphs.push(p.outerHTML);
+    }
+  }
 
+  return cleanedParagraphs.join("");
+} 
+function buildFrenchTextMap(finalFrenchHtml) { 
+  finalFrenchHtml = deduplicateFrenchParagraphs(finalFrenchHtml);
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = finalFrenchHtml;
+
+  const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+
+  // Step 1: Rebuild any broken phrases like "d" + "'identifier"
+  const rebuilt = [];
+  for (let i = 0; i < rawParagraphs.length; i++) {
+    const curr = rawParagraphs[i].textContent.trim();
+     if (i > 0 && !rebuilt[rebuilt.length - 1].text.endsWith(" ") && !curr.startsWith(" ")) {
+  rebuilt[rebuilt.length - 1].text += " ";
+}
+rebuilt.push({ id: rawParagraphs[i].id, text: curr });
+ 
+  }
+
+  // Build a map from rebuilt result
+  const frenchMap = {};
+  for (const { id, text } of rebuilt) {
+    frenchMap[id] = text;
+  }
+
+  return frenchMap;
+}
+
+function escapeXml(str) {
+  return str.replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+}
+
+// Helper function to convert French HTML back to PPTX XML:
+function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
+  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
+  let runIndex = 1;
+
+ const updatedXml = originalXml.replace(/<a:r>[\s\S]*?<a:t>([\s\S]*?)<\/a:t>[\s\S]*?<\/a:r>/g, (match, capturedText) => {
+      const key = `S${slideNumber}_T${runIndex++}`;
+      let newText = frenchMap[key] || capturedText;
+
+      if (newText === undefined || !newText.trim()) {
+        newText = " "; // fallback to keep structure
+      }
+      
+      const escaped = escapeXml(newText);
+      return match.replace(capturedText, newText);
+    }
+  );
+
+  return updatedXml;
+}
+  
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
@@ -831,13 +1136,22 @@ function acceptTranslation(option) {
 function detectLanguageBasedOnWords(text) {
   const englishWords = ['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'on', 'with'];
   const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
-  text = text.toLowerCase();
-  function countMatches(wordList) {
-    return wordList.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0);
+  text = text.toLowerCase();  
+ function countMatches(wordList) {
+    return wordList.reduce((count, word) => {
+      const regex = new RegExp(`\\b${word}\\b`, 'g');
+      return count + ((text.match(regex) || []).length);
+    }, 0);
   }
-  const englishMatches = countMatches(englishWords);
-  const frenchMatches = countMatches(frenchWords);
-  if (englishMatches > frenchMatches) { return 'english'; }
-  else if (frenchMatches > englishMatches) { return 'french'; }
-  else { return 'unknown'; }
+  const englishMatches = countMatches(englishWords); 
+  const frenchMatches = countMatches(frenchWords);  
+
+  const hasAccents = /[àâçéèêëîïôûùüÿœæ]/.test(text); 
+  if (frenchMatches > englishMatches || (hasAccents && frenchMatches >= englishMatches - 1)) {
+    return 'french';
+  } else if (englishMatches > frenchMatches) {
+    return 'english';
+  } else {
+    return 'unknown';
+  }
 }
