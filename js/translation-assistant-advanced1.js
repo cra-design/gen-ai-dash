@@ -746,7 +746,7 @@ $("#convert-translation-download-btn").click(async function() {
       let frenchParagraphs = [];
       let tempDiv = document.createElement("div");
       tempDiv.innerHTML = finalFrenchHtml;
-      textNodes = Array.from(tempDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, td"))
+      let frenchTextArray = Array.from(tempDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, td"))
         .map(el => el.innerText.trim())
         .filter(txt => txt.length > 0);
 
@@ -759,10 +759,8 @@ $("#convert-translation-download-btn").click(async function() {
       // Map AI-generated French text to the <w:t> nodes sequentially.
       // Note: This is a simple mapping. Depending on the structure, you may need a more robust mapping logic.
       let frenchIndex = 0;
-      for (let i = 0; i < textNodes.length; i++) {
-          if (frenchIndex < frenchParagraphs.length) {
-              textNodes[i].textContent = frenchParagraphs[frenchIndex];
-              frenchIndex++;
+      for (let i = 0; i < textNodes.length && i < frenchTextArray.length; i++) {
+              textNodes[i].textContent = frenchTextArray[i];
           }
       }
 
