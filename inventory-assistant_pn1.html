@@ -366,14 +366,23 @@ th, td {
                     <!--h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Choose a genAI tool</h3--> 
                     <!-- Radio buttons for URL analysis, HTML snippet upload, image upload -->
                     <fieldset>
-                      <legend>What do you want to upload?</legend>
-                      <input type="radio" id="live" name="upload-option" value="live" checked>
+                      <legend>What do you would like to do?</legend>
+                      <input type="radio" id="cop-inventory" name="action-option" value="cop-inventory" checked>
+                      <label for="live">Create a COP inventory spreadsheet</label>
+                      <br>
+                      <input type="radio" id="genai-meta" name="action-option" value="genai-meta">
+                      <label for="genai-meta">Generate Metadata</label>
+                      <br>
+                      <input type="radio" id="trans-meta" name="action-option" value="trans-meta">
+                      <label for="trans-meta">Translate/localize metadata</label>
+                      <br>
+                      <input type="radio" id="live" name="action-option" value="live" checked>
                       <label for="live">Live Canada.ca URLs</label>
                       <br>
-                      <input type="radio" id="prototype" name="upload-option" value="prototype">
+                      <input type="radio" id="prototype" name="action-option" value="prototype">
                       <label for="prototype">Github prototype URLs</label>
                       <br>
-                      <input type="radio" id="word" name="upload-option" value="word">
+                      <input type="radio" id="word" name="action-option" value="word">
                       <label for="word">Word docs (such as for French content)</label>
                       <br>
                       <!-- <input type="radio" id="image" name="upload-option" value="image">
@@ -645,7 +654,7 @@ th, td {
 <script src="js/mammoth.js"></script> 
 <script src="https://www.canada.ca/etc/designs/canada/wet-boew/js/theme.min.js"></script> 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script> 
-<script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.min.js"></script> 
 <script src="js/prism.js"></script> 
 <!-- <script src="polyfills-VMRJL7IV.js" type="module"></script><script src="main-BEEWNT6W.js" type="module"></script> --> 
 <!--<script type="text/javascript">
