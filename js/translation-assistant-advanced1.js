@@ -219,6 +219,7 @@ $(document).ready(function() {
                 let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, {
                     convertImage: mammoth.images.none
                 });
+                let cleanedHtml = mammothResult.value.replace(/<img[^>]*>/g, '');
                 $("#translation-A").html(mammothResult.value);
               } else if (fileExtension == 'pptx'){
                 let arrayBuffer = await uploadedFile.arrayBuffer();
