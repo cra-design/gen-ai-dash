@@ -589,7 +589,8 @@ $("#second-upload-btn").click(async function () {
   }
 
   // 2) Get the English HTML from the first upload section
-  let englishHtml = $("#translation-A").html();
+  let englishHtml = $("#translation-A").html(); 
+  englishHtml = englishHtml.replace(/<img[^>]*>/g, '');
   if (!englishHtml || englishHtml.trim().length === 0) {
     alert("No formatted English document found. Please complete the first step.");
     $('#converting-spinner').addClass("hidden");
