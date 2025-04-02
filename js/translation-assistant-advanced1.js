@@ -777,7 +777,7 @@ $("#convert-translation-download-btn").click(async function() {
     alert("Failed to generate translated DOCX file.");
   }
 }
-    } else if (fileExtension === 'pptx') {
+    else if (fileExtension === 'pptx') {
       const arrayBuffer = await englishFile.arrayBuffer();
       const zip = await JSZip.loadAsync(arrayBuffer);
       const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
