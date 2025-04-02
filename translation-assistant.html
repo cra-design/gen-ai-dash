@@ -254,20 +254,33 @@
                                     <div id="source-file-container">
                                       <input type="file" id="source-file">
                                       <p id="source-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
-                                      <p id="source-doc-error" class="error-msg hidden">You must upload a .docx, .ppt or .xlsx file to proceed.</p>
+                                      <p id="source-doc-error" class="error-msg hidden">You must upload a .docx, .pptx or .xlsx file to proceed.</p>
                                     </div>
                                     <div class="sidebyside-wrapper">
                                       <p id="source-language-heading" style="margin-top: 15px;">Source language: <span id="source-doc-detecting" class="hidden">detecting...</span></p>
                                       <select id="source-language-doc" class="hidden"><option value="english">English</option><option value="french">French</option></select>
-                                    </div>
+                                    </div> 
                                   </div>
                                   <div class="sidebyside-wrapper">
-                                    <button id="source-upload-translate-btn">Translate</button>
-                                    <button id="source-upload-provide-btn">Provide translation</button>
-                                    <button id="source-upload-provide-update-btn">Compare with update</button>
+                                   <!-- <button id="source-upload-translate-btn">Translate</button> -->
+                                    <button id="source-upload-provide-btn">Upload formatted English file</button> 
+				  <button id="extract-source-text-btn">Extract source text</button>
+                                  <!--<button id="source-upload-provide-update-btn">Compare with update</button>-->
                                   </div>
-                                </fieldset>
-                              </div>
+                                </fieldset>  
+<upd-card id="source-preview" class="hidden">
+  <div class="card pt-2">
+    <div class="card-body card-pad pt-2 h-100"> 
+	    <div style="background-color: #f0f0f0; padding: 1em;">
+      <h4>Source text preview</h4> 
+		    <button id="copy-all-btn" class="toolbar-button" title="Copy All" style="position: absolute; top: 5px; right: 5px;">
+          <i class="fa fa-copy"></i>
+        </button>
+	    </div>
+      <textarea id="source-text-preview" class="inputbox-translation" style="height:400px; width: 100%;"></textarea>
+    </div>
+  </div>
+</upd-card>                  </div>
                             </div>
                           </div>
                         </upd-card>
@@ -298,7 +311,7 @@
                                       <div id="second-file-container">
                                         <input type="file" id="second-file">
                                         <p id="second-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
-                                        <p id="second-doc-error" class="error-msg hidden">You must upload a .docx, .ppt or .xlsx file to proceed.</p>
+                                        <p id="second-doc-error" class="error-msg hidden">You must upload a .docx, .pptx or .xlsx file to proceed.</p>
                                         <p id="second-doc-mismatch-msg" class="error-msg hidden">Both documents appear to be in the same language.</p>
                                       </div>
                                       <div class="sidebyside-wrapper">
@@ -399,8 +412,9 @@
 </script>
 <script src="
 https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.min.js
-"></script>
-
+"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PptxGenJS/3.9.0/pptxgen.bundle.js"></script> 
+			  
 <!-- My JS Files -->
 <script src="js/content-assistant.js"></script>
 <!--<script src="js/page-assistant.js"></script> -->
