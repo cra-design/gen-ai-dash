@@ -737,41 +737,46 @@ $("#convert-translation-download-btn").click(async function() {
 
     // 3) Generate the Blob (DOCX, PPTX, or XLSX)
     let generatedBlob;
-    if (fileExtension === 'docx') {
-      let arrayBuffer = await englishFile.arrayBuffer();
-      const zip = await JSZip.loadAsync(arrayBuffer);
-      let docXml = await zip.file("word/document.xml").async("string");
+   if (fileExtension === 'docx') {
+  try {
+    let arrayBuffer = await englishFile.arrayBuffer();
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    let docXml = await zip.file("word/document.xml").async("string");
 
-      // Parse the French formatted HTML to extract paragraphs.
-      let frenchParagraphs = [];
-      let tempDiv = document.createElement("div");
-      tempDiv.innerHTML = finalFrenchHtml;
-      let frenchTextArray = Array.from(tempDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, td"))
-        .map(el => el.innerText.trim())
-        .filter(txt => txt.length > 0);
+    // Parse the French formatted HTML to extract paragraphs.
+    let tempDiv = document.createElement("div");
+    tempDiv.innerHTML = finalFrenchHtml;
+    let frenchTextArray = Array.from(tempDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, td"))
+      .map(el => el.innerText.trim())
+      .filter(txt => txt.length > 0);
 
-      // Parse document.xml
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(docXml, "application/xml");
-      // Get all <w:t> nodes from document.xml
-      let textNodes = xmlDoc.getElementsByTagName("w:t");
+    // Parse document.xml
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(docXml, "application/xml");
 
-      // Map AI-generated French text to the <w:t> nodes sequentially.
-      // Note: This is a simple mapping. Depending on the structure, you may need a more robust mapping logic.
-      let frenchIndex = 0;
-      for (let i = 0; i < textNodes.length && i < frenchTextArray.length; i++) {
-              textNodes[i].textContent = frenchTextArray[i];
-          }
-      }
+    // Get all <w:t> nodes from document.xml
+    let textNodes = xmlDoc.getElementsByTagName("w:t");
 
-      // Serialize updated XML back to string.
-      const serializer = new XMLSerializer();
-      const updatedDocXml = serializer.serializeToString(xmlDoc);
-      // Update the document.xml in the zip archive.
-      zip.file("word/document.xml", updatedDocXml);
+    // Map French text to <w:t> nodes
+    for (let i = 0; i < textNodes.length && i < frenchTextArray.length; i++) {
+      textNodes[i].textContent = frenchTextArray[i];
+    }
 
-      // Generate new DOCX blob preserving styles.xml, media, and other components.
-      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+    // Serialize updated XML back to string
+    const serializer = new XMLSerializer();
+    const updatedDocXml = serializer.serializeToString(xmlDoc);
+
+    // Replace original document.xml in the zip
+    zip.file("word/document.xml", updatedDocXml);
+
+    // Generate new DOCX blob
+    generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+
+  } catch (err) {
+    console.error("Error while generating translated DOCX:", err);
+    alert("Failed to generate translated DOCX file.");
+  }
+}
     } else if (fileExtension === 'pptx') {
       const arrayBuffer = await englishFile.arrayBuffer();
       const zip = await JSZip.loadAsync(arrayBuffer);
