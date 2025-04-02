@@ -351,42 +351,120 @@ async function createWordDoc(url) {
     }
 
     // Fetch content
-    let response = await fetch(url);
-    if (!response.ok) throw new Error("Failed to fetch content");
-    let htmlText = await response.text();
+    let response = await new Promise((resolve, reject) => {
+      $.get(url)
+        .done(data => resolve(data))
+        .fail(err => reject(err));
+    });
 
     // Parse HTML
-    let tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlText;
-    let mainContent = tempDiv.querySelector('main')?.innerHTML || tempDiv.querySelector('body')?.innerHTML;
-    if (!mainContent) {
-      alert('No content found on: ${url}');
+    let tempDiv = $('<div>').html(response);
+
+    // Extract <main> or fallback to <body>
+    let mainContent = tempDiv.find('main').html();
+    if (!mainContent || mainContent.trim().length === 0) {
+      mainContent = tempDiv.find('body').html();
+    }
+    if (!mainContent || mainContent.trim().length === 0) {
+      console.error(`No content found for ${url}`);
+      alert(`No content found on: ${url}`);
       return;
     }
 
     // Extract filename
-    let h1Text = tempDiv.querySelector('h1')?.innerText.trim() || "Webpage_Content";
-    h1Text = h1Text.replace(/[<>:"/\\|?*]+/g, '');
-    let formattedDate = new Date().toISOString().split('T')[0];
-    let fileName = '${h1Text} - ${formattedDate}.docx';
+    let h1Tags = tempDiv.find('h1');
+    let fileName = h1Tags.length > 1
+      ? h1Tags.eq(1).text().trim()
+      : h1Tags.first().text().trim();
+    if (!fileName) {
+      fileName = "Webpage_Content";
+    }
+    fileName = fileName.replace(/[<>:"\/\\|?*]+/g, '');
 
-    // Inline styles
+    // Add date and suffix
+    let currentDate = new Date();
+    let formattedDate = currentDate.toISOString().split('T')[0];
+    let domainSuffix = url.includes('github') ? ' - github' : url.includes('canada.ca') ? ' - dotca' : '';
+    fileName = `${fileName} - ${formattedDate}${domainSuffix}`;
+
+    // Clone the main content to preserve styles
+    let contentClone = $('<div>').html(mainContent);
+
+    // Function to inline computed styles
     function applyInlineStyles(element) {
-      let elements = element.querySelectorAll('*');
-      elements.forEach(el => {
-        let computedStyle = window.getComputedStyle(el);
+      let elements = element.find('*');
+      elements.each(function () {
+        let computedStyle = window.getComputedStyle(this);
         let inlineStyle = '';
-        for (let prop of computedStyle) {
-          inlineStyle += '${prop}: ${computedStyle.getPropertyValue(prop)}; ';
+        for (let i = 0; i < computedStyle.length; i++) {
+          let property = computedStyle[i];
+          let value = computedStyle.getPropertyValue(property);
+          inlineStyle += `${property}: ${value}; `;
         }
-        el.setAttribute('style', inlineStyle);
+        $(this).attr('style', inlineStyle);
       });
     }
-    
-    applyInlineStyles(tempDiv);
 
-    // Convert HTML to Word content
-    let formattedContent = '
+    // Apply inline styles
+    applyInlineStyles(contentClone);
+
+    // 🔥 Handle WET-BOEW-specific styles manually
+    contentClone.find('h1').each(function () {
+      $(this).css('border-bottom', '5px solid red'); // Add red underline to H1
+    });
+
+    contentClone.find('ul.cnjnctn-type-or.cnjnctn-sm').each(function () {
+      $(this).css({
+        'background-color': '#f8f8f8',
+        'border-left': '4px solid #0056b3',
+        'padding': '10px'
+      });
+    });
+
+    // 🏷 Convert tabs into markers
+    contentClone.find('.wb-tabs > .tabpanels > .tabpanel').each(function () {
+      let tabTitle = $(this).attr('aria-labelledby');
+      let tabContent = $(this).html();
+      $(this).html(`<p><strong>[Tab: ${tabTitle}]</strong></p>` + tabContent);
+    });
+
+    // 🎨 Handle WET-BOEW Icons
+    async function replaceIcons() {
+      let iconElements = contentClone.find('i.wb-icon');
+      let iconPromises = iconElements.map(async function () {
+        let $icon = $(this);
+        let iconClass = $icon.attr("class").split(/\s+/).find(cls => cls.startsWith("wb-icon-"));
+        if (!iconClass) return;
+
+        let iconName = iconClass.replace("wb-icon-", ""); // e.g., wb-icon-info -> info
+        let iconUrl = `https://wet-boew.github.io/wet-boew/assets/icons/${iconName}.png`; // Adjust if necessary
+
+        try {
+          let imgResponse = await fetch(iconUrl);
+          let imgBlob = await imgResponse.blob();
+          let reader = new FileReader();
+
+          return new Promise(resolve => {
+            reader.onloadend = function () {
+              let base64Data = reader.result;
+              let imgElement = `<img src="${base64Data}" alt="${iconName}" style="height: 16px; vertical-align: middle;">`;
+              $icon.replaceWith(imgElement);
+              resolve();
+            };
+            reader.readAsDataURL(imgBlob);
+          });
+        } catch (error) {
+          console.error(`Failed to fetch icon: ${iconUrl}`, error);
+        }
+      }).get();
+
+      await Promise.all(iconPromises);
+    }
+
+    await replaceIcons(); // Ensure icons are replaced before conversion
+
+    // Full HTML content with inlined styles and icons
+    let formattedContent = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -399,39 +477,27 @@ async function createWordDoc(url) {
         </head>
         <body>
           <p><strong>Source:</strong> <a href="${url}">${url}</a></p>
-          ${tempDiv.innerHTML}
+          ${contentClone.html()}
         </body>
       </html>
-    ';
+    `;
 
-    let converted = await window.htmlDocx.asBlob(formattedContent);
-    
-    // Save file using File System Access API
-    async function saveFile(blob, fileName) {
-      try {
-        const handle = await window.showSaveFilePicker({
-          suggestedName: fileName,
-          types: [{
-            description: "Word Document",
-            accept: { "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"] }
-          }]
-        });
-        const writable = await handle.createWritable();
-        await writable.write(blob);
-        await writable.close();
-      } catch (error) {
-        console.error("File save canceled or failed:", error);
-      }
-    }
-    
-    await saveFile(converted, fileName);
+    // Convert HTML to .docx
+    let converted = window.htmlDocx.asBlob(formattedContent);
+
+    // Download link
+    let link = document.createElement('a');
+    link.href = URL.createObjectURL(converted);
+    link.download = `${fileName}.docx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
   } catch (error) {
-    console.error('Failed to process ${url}:', error);
-    alert('Failed to retrieve content from: ${url}');
+    console.error(`Failed to process ${url}:`, error);
+    alert(`Failed to retrieve content from: ${url}`);
   }
 }
-
 
 function populateUrlTable() {
   let lines = [];
@@ -464,24 +530,24 @@ function populateUrlTable() {
         // Remove " - Canada.ca" from the title if present
         metadata.title = metadata.title.replace(' - Canada.ca', '');
 
-        rows[index] = '<tr>
+        rows[index] = `<tr>
                          <td><a href="${line}" target="_blank">${metadata.title}</a></td>
                          <td><button onclick="createWordDoc('${line}')">Create&nbsp;docx</button></td>
                          <td>${metadata.description}</td>
                          <td>${metadata.keywords}</td>
-                       </tr>';
+                       </tr>`;
 
         if (!rows.includes(null)) {
           tbody.html(rows.join(''));
         }
       });
     } else {
-      rows[index] = '<tr>
+      rows[index] = `<tr>
                        <td>Invalid URL</td>
                        <td>N/A</td>
                        <td>N/A</td>
                        <td>N/A</td>
-                     </tr>';
+                     </tr>`;
 
       if (!rows.includes(null)) {
         tbody.html(rows.join(''));
@@ -545,7 +611,7 @@ async function getORData(model, requestJson) {
     });
 
     if (!response.ok) {
-      throw new Error('Response status: ${response.status}');
+      throw new Error(`Response status: ${response.status}`);
     }
     ORjson = await response.json();
 
