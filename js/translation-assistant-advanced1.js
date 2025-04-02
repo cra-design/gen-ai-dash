@@ -746,11 +746,9 @@ $("#convert-translation-download-btn").click(async function() {
       let frenchParagraphs = [];
       let tempDiv = document.createElement("div");
       tempDiv.innerHTML = finalFrenchHtml;
-      let pNodes = tempDiv.querySelectorAll("p");
-      pNodes.forEach(p => {
-        // Use innerHTML if you need to preserve inline formatting.
-        frenchParagraphs.push(p.innerHTML.trim());
-      });
+      let textNodes = Array.from(tempDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, td"))
+        .map(el => el.innerText.trim())
+        .filter(txt => txt.length > 0);
 
       // Parse document.xml
       const parser = new DOMParser();
