@@ -746,7 +746,7 @@ $("#convert-translation-download-btn").click(async function() {
       let frenchParagraphs = [];
       let tempDiv = document.createElement("div");
       tempDiv.innerHTML = finalFrenchHtml;
-      let textNodes = Array.from(tempDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, td"))
+      textNodes = Array.from(tempDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, td"))
         .map(el => el.innerText.trim())
         .filter(txt => txt.length > 0);
 
