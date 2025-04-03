@@ -739,42 +739,33 @@ $("#convert-translation-download-btn").click(async function() {
     let generatedBlob;
    if (fileExtension === 'docx') {
   try {
-    let arrayBuffer = await englishFile.arrayBuffer();
-    const zip = await JSZip.loadAsync(arrayBuffer);
-    let docXml = await zip.file("word/document.xml").async("string");
+    const fullHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Calibri, "Calibri (Body)", sans-serif; }
+            h1 { color: #B91C1C; text-decoration: underline; font-size: 24pt; font-weight: bold; }
+            h2 { font-size: 18pt; font-weight: bold; }
+            h3 { font-size: 15pt; font-style: italic; }
+            p { font-size: 12pt; }
+            ul, li { font-size: 12pt; margin-left: 20px; }
+            table, th, td { border: 1px solid #000; border-collapse: collapse; padding: 4px; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          ${finalFrenchHtml}
+        </body>
+      </html>
+    `;
 
-    // Parse the French formatted HTML to extract paragraphs.
-    let tempDiv = document.createElement("div");
-    tempDiv.innerHTML = finalFrenchHtml;
-    let frenchTextArray = Array.from(tempDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, td"))
-      .map(el => el.innerText.trim())
-      .filter(txt => txt.length > 0);
-
-    // Parse document.xml
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(docXml, "application/xml");
-
-    // Get all <w:t> nodes from document.xml
-    let textNodes = xmlDoc.getElementsByTagName("w:t");
-
-    // Map French text to <w:t> nodes
-    for (let i = 0; i < textNodes.length && i < frenchTextArray.length; i++) {
-      textNodes[i].textContent = frenchTextArray[i];
-    }
-
-    // Serialize updated XML back to string
-    const serializer = new XMLSerializer();
-    const updatedDocXml = serializer.serializeToString(xmlDoc);
-
-    // Replace original document.xml in the zip
-    zip.file("word/document.xml", updatedDocXml);
-
-    // Generate new DOCX blob
-    generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
-
+    generatedBlob = htmlDocx.asBlob(fullHtml);
+    
   } catch (err) {
-    console.error("Error while generating translated DOCX:", err);
-    alert("Failed to generate translated DOCX file.");
+    console.error("Error while generating styled French DOCX:", err);
+    alert("Failed to generate styled DOCX.");
   }
 }
     else if (fileExtension === 'pptx') {
