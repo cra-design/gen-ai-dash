@@ -77,6 +77,35 @@ async function extractPptxText(arrayBuffer) {
   // Join paragraphs with two newlines to denote paragraph breaks.
   return allParagraphs.join("\n\n");
 }
+async function extractDocxStylesTemplate(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const stylesXml = await zip.file("word/styles.xml").async("string");
+
+  const aiStylePrompt = `Given the following Word styles.xml content:
+---\n${stylesXml}\n---
+Generate a <style> block in HTML/CSS that best approximates:
+- Headings (H1 to H3)
+- Paragraph fonts and sizes
+- Table borders and padding
+- Bullet/Numbered lists
+- Bold, italic formatting
+`;
+
+  const styleJson = [
+    { role: "system", content: "You are a Word-to-HTML style interpreter." },
+    { role: "user", content: aiStylePrompt }
+  ];
+
+  // Use your getORData call (modify model if needed)
+  const styleResponse = await getORData("meta-llama/llama-3.3-70b-instruct:free", styleJson);
+  let styleCss = styleResponse?.choices?.[0]?.message?.content || "";
+
+  // Remove markdown-style code fences
+  styleCss = styleCss.replace(/^```(?:html|css)?/, '').replace(/```$/, '').trim();
+
+  return styleCss;
+}
 
 
 
@@ -739,20 +768,15 @@ $("#convert-translation-download-btn").click(async function() {
     let generatedBlob;
    if (fileExtension === 'docx') {
   try {
+     const cssStyles = await extractDocxStylesTemplate(englishFile);
+
     const fullHtml = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="UTF-8">
           <style>
-            body { font-family: Calibri, "Calibri (Body)", sans-serif; }
-            h1 { color: #B91C1C; text-decoration: underline; font-size: 24pt; font-weight: bold; }
-            h2 { font-size: 18pt; font-weight: bold; }
-            h3 { font-size: 15pt; font-style: italic; }
-            p { font-size: 12pt; }
-            ul, li { font-size: 12pt; margin-left: 20px; }
-            table, th, td { border: 1px solid #000; border-collapse: collapse; padding: 4px; }
-            th { background-color: #f2f2f2; }
+            ${cssStyles}
           </style>
         </head>
         <body>
