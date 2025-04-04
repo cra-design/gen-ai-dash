@@ -269,7 +269,47 @@ $(document).ready(function() {
     }
   }); 
 
+  
+$("#source-file").on("change", async function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  $("#source-doc-error").addClass("hidden");
+  $("#source-text-preview").val("");
+  $("#source-preview").addClass("hidden");
+  try {
+    const fileExtension = englishFile.name.split('.').pop().toLowerCase();
+    let extractedText = "";
 
+    if (fileExtension === "docx") {
+      const arrayBuffer = await englishFile.arrayBuffer();
+      extractedText = await extractDocxParagraphs(arrayBuffer);
+    } else if (fileExtension === "pptx") {
+      let arrayBuffer = await englishFile.arrayBuffer();
+      extractedText = await extractPptxText(arrayBuffer);
+    } else if (fileExtension === "xlsx") {
+      let arrayBuffer = await englishFile.arrayBuffer();
+      let workbook = XLSX.read(arrayBuffer, { type: "array" });
+      let sheetName = workbook.SheetNames[0];
+      let worksheet = workbook.Sheets[sheetName];
+      let csvData = XLSX.utils.sheet_to_csv(worksheet);
+      extractedText = csvData;
+    } else {
+      throw new Error("Unsupported file type for extraction");
+    }
+
+    // Populate the preview textarea with the extracted text.
+    $("#source-text-preview").val(extractedText);
+    // Reveal the preview card.
+    $("#source-preview").removeClass("hidden");
+  } catch (err) {
+    console.error("Error extracting source text:", err);
+    $("#source-doc-error").removeClass("hidden");
+  }
+}); 
+  $("#toggle-source-preview").on("click", function () {
+  $("#source-preview").slideToggle();
+});
 $(document).on("click", "#copy-all-btn", function () {
   const textToCopy = $("#source-text-preview").val();
   if (!textToCopy) {
@@ -491,44 +531,7 @@ $("#source-upload-provide-btn").click(function() {
       alert("Please upload the English document first.");
       return;
     }
-  const file = $("#source-file")[0].files[0];
-  if (!file) {
-    alert("Please select a file first.");
-    return;
-  }
-
-  $("#source-doc-error").addClass("hidden");
-  $("#source-text-preview").text("");
-  $("#source-preview-wrapper").hide(); // reset
-
-  try {
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-    let extractedText = "";
-
-    if (fileExtension === "docx") {
-      const arrayBuffer = await file.arrayBuffer();
-      extractedText = await extractDocxParagraphs(arrayBuffer);
-    } else if (fileExtension === "pptx") {
-      const arrayBuffer = await file.arrayBuffer();
-      extractedText = await extractPptxText(arrayBuffer);
-    } else if (fileExtension === "xlsx") {
-      const arrayBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      extractedText = XLSX.utils.sheet_to_csv(worksheet);
-    } else {
-      throw new Error("Unsupported file type");
-    }
-
-    // Inject and show
-    $("#source-text-preview").text(extractedText);
-    $("#source-preview-wrapper").slideDown().removeClass("hidden");
-  } catch (err) {
-    console.error("Extraction error:", err);
-    $("#source-doc-error").removeClass("hidden");
-  } 
-    $("#second-upload").removeClass("hidden"); 
+    $("#second-upload").removeClass("hidden");
   }); 
   
   /***********************************************************************
