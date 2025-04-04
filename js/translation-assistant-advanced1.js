@@ -542,7 +542,7 @@ $("#source-upload-provide-btn").click(async function () {
 
   $("#source-doc-error").addClass("hidden");
   $("#source-text-preview").text("");
-  $("#source-preview-wrapper").hide(); // reset
+  $("#source-preview-wrapper").hide();
 
   try {
     const fileExtension = file.name.split('.').pop().toLowerCase();
@@ -564,7 +564,6 @@ $("#source-upload-provide-btn").click(async function () {
       throw new Error("Unsupported file type");
     }
 
-    // Inject and show the preview
     $("#source-text-preview").text(extractedText);
     $("#source-preview-wrapper").slideDown().removeClass("hidden");
 
