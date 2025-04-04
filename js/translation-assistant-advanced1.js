@@ -159,7 +159,18 @@ $(document).ready(function() {
         $('#genai-model-options').addClass("hidden");
       }
     }
-  }); 
+  });  
+  $("input[name='source-upload-option']").on("change", function () {
+  const selected = $(this).val();
+
+  if (selected === "source-upload-text") {
+    $("#text-upload").show();
+    $("#source-doc-upload").hide();
+  } else if (selected === "source-upload-doc") {
+    $("#text-upload").hide();
+    $("#source-doc-upload").show();
+  }
+});
 
   // Detect language from entered text as the user types.
   $('#source-text').on('input', function() {
