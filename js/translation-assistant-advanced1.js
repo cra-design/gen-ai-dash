@@ -271,15 +271,13 @@ $(document).ready(function() {
   }); 
 
   
-$(document).on("click", "#extract-source-text-btn", async function () { 
-  if (!englishFile) {
-    alert("No source file uploaded. Please upload a file first!");
-    return;
-  }
+$("#source-file").on("change", async function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
   
   $("#source-doc-error").addClass("hidden");
   $("#source-text-preview").val("");
-
+  $("#source-preview").addClass("hidden");
   try {
     const fileExtension = englishFile.name.split('.').pop().toLowerCase();
     let extractedText = "";
@@ -309,6 +307,9 @@ $(document).on("click", "#extract-source-text-btn", async function () {
     console.error("Error extracting source text:", err);
     $("#source-doc-error").removeClass("hidden");
   }
+}); 
+  $("#toggle-source-preview").on("click", function () {
+  $("#source-preview").slideToggle();
 });
 $(document).on("click", "#copy-all-btn", function () {
   const textToCopy = $("#source-text-preview").val();
