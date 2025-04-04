@@ -263,24 +263,27 @@
                                   </div>
                                   <div class="sidebyside-wrapper">
                                    <!-- <button id="source-upload-translate-btn">Translate</button> -->
-                                    <button id="source-upload-provide-btn">Upload formatted English file</button> 
-				  <button id="extract-source-text-btn">Extract source text</button>
+                                    <button id="source-upload-provide-btn">Upload file</button> 
+				
                                   <!--<button id="source-upload-provide-update-btn">Compare with update</button>-->
                                   </div>
                                 </fieldset>  
-<upd-card id="source-preview" class="hidden">
+<button id="toggle-source-preview" style="margin-bottom: 10px;">Show/Hide Source Preview</button>
+
+<!-- Updated source preview with collapsible behavior -->
+<div id="source-preview" class="hidden" style="display: none;">
   <div class="card pt-2">
-    <div class="card-body card-pad pt-2 h-100"> 
-	    <div style="background-color: #f0f0f0; padding: 1em;">
-      <h4>Source text preview</h4> 
-		    <button id="copy-all-btn" class="toolbar-button" title="Copy All" style="position: absolute; top: 5px; right: 5px;">
+    <div class="card-body card-pad pt-2 h-100">
+      <div style="background-color: #f0f0f0; padding: 1em; position: relative;">
+        <h4>Source text preview</h4>
+        <button id="copy-all-btn" class="toolbar-button" title="Copy All" style="position: absolute; top: 5px; right: 5px;">
           <i class="fa fa-copy"></i>
         </button>
-	    </div>
+      </div>
       <textarea id="source-text-preview" class="inputbox-translation" style="height:400px; width: 100%;"></textarea>
     </div>
   </div>
-</upd-card>                  </div>
+</div>            </div>
                             </div>
                           </div>
                         </upd-card>
