@@ -526,12 +526,14 @@ $(document).on("click", "#copy-all-btn", function () {
   }); 
  
 // 'Provide translation' button, show the second upload section
-$("#source-upload-provide-btn").click(function() {
-    if (!englishFile) {
-      alert("Please upload the English document first.");
-      return;
-    }
-    $("#second-upload").removeClass("hidden"); 
+$("#source-upload-provide-btn").click(async function () {
+  if (!englishFile) {
+    alert("Please upload the English document first.");
+    return;
+  }
+
+  $("#second-upload").removeClass("hidden");
+
   const file = $("#source-file")[0].files[0];
   if (!file) {
     alert("Please select a file first.");
@@ -561,6 +563,17 @@ $("#source-upload-provide-btn").click(function() {
     } else {
       throw new Error("Unsupported file type");
     }
+
+    // Inject and show the preview
+    $("#source-text-preview").text(extractedText);
+    $("#source-preview-wrapper").slideDown().removeClass("hidden");
+
+  } catch (err) {
+    console.error("Extraction error:", err);
+    $("#source-doc-error").removeClass("hidden");
+  }
+});
+
 
     // Inject and show
     $("#source-text-preview").text(extractedText);
