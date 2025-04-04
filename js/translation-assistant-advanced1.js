@@ -531,7 +531,44 @@ $("#source-upload-provide-btn").click(function() {
       alert("Please upload the English document first.");
       return;
     }
-    $("#second-upload").removeClass("hidden");
+    $("#second-upload").removeClass("hidden"); 
+  const file = $("#source-file")[0].files[0];
+  if (!file) {
+    alert("Please select a file first.");
+    return;
+  }
+
+  $("#source-doc-error").addClass("hidden");
+  $("#source-text-preview").text("");
+  $("#source-preview-wrapper").hide(); // reset
+
+  try {
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    let extractedText = "";
+
+    if (fileExtension === "docx") {
+      const arrayBuffer = await file.arrayBuffer();
+      extractedText = await extractDocxParagraphs(arrayBuffer);
+    } else if (fileExtension === "pptx") {
+      const arrayBuffer = await file.arrayBuffer();
+      extractedText = await extractPptxText(arrayBuffer);
+    } else if (fileExtension === "xlsx") {
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      extractedText = XLSX.utils.sheet_to_csv(worksheet);
+    } else {
+      throw new Error("Unsupported file type");
+    }
+
+    // Inject and show
+    $("#source-text-preview").text(extractedText);
+    $("#source-preview-wrapper").slideDown().removeClass("hidden");
+  } catch (err) {
+    console.error("Extraction error:", err);
+    $("#source-doc-error").removeClass("hidden");
+  }
   }); 
   
   /***********************************************************************
