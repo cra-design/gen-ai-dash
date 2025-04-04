@@ -7,7 +7,6 @@ function extractXmlFromFile(file) {
     handleFileExtractionToXML(file, resolve, reject);
   });
 } 
-
 // Function to format raw translated output into structured HTML.
 function formatTranslatedOutput(rawText) {
   if (!rawText) return "";
