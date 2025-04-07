@@ -242,66 +242,66 @@ $(document).ready(function() {
   }); 
 
   
-$(document).on("click", "#extract-source-text-btn", async function () { 
-  if (!englishFile) {
-    alert("No source file uploaded. Please upload a file first!");
-    return;
-  }
+// $(document).on("click", "#extract-source-text-btn", async function () { 
+//   if (!englishFile) {
+//     alert("No source file uploaded. Please upload a file first!");
+//     return;
+//   }
   
-  $("#source-doc-error").addClass("hidden");
-  $("#source-text-preview").val("");
+//   $("#source-doc-error").addClass("hidden");
+//   $("#source-text-preview").val("");
 
-  try {
-    const fileExtension = englishFile.name.split('.').pop().toLowerCase();
-    let extractedText = "";
+//   try {
+//     const fileExtension = englishFile.name.split('.').pop().toLowerCase();
+//     let extractedText = "";
 
-    if (fileExtension === "docx") {
-      const arrayBuffer = await englishFile.arrayBuffer();
-      extractedText = await extractDocxParagraphs(arrayBuffer);
-    } else if (fileExtension === "pptx") {
-      let arrayBuffer = await englishFile.arrayBuffer();
-      extractedText = await extractPptxText(arrayBuffer);
-    } else if (fileExtension === "xlsx") {
-      let arrayBuffer = await englishFile.arrayBuffer();
-      let workbook = XLSX.read(arrayBuffer, { type: "array" });
-      let sheetName = workbook.SheetNames[0];
-      let worksheet = workbook.Sheets[sheetName];
-      let csvData = XLSX.utils.sheet_to_csv(worksheet);
-      extractedText = csvData;
-    } else {
-      throw new Error("Unsupported file type for extraction");
-    }
+//     if (fileExtension === "docx") {
+//       const arrayBuffer = await englishFile.arrayBuffer();
+//       extractedText = await extractDocxParagraphs(arrayBuffer);
+//     } else if (fileExtension === "pptx") {
+//       let arrayBuffer = await englishFile.arrayBuffer();
+//       extractedText = await extractPptxText(arrayBuffer);
+//     } else if (fileExtension === "xlsx") {
+//       let arrayBuffer = await englishFile.arrayBuffer();
+//       let workbook = XLSX.read(arrayBuffer, { type: "array" });
+//       let sheetName = workbook.SheetNames[0];
+//       let worksheet = workbook.Sheets[sheetName];
+//       let csvData = XLSX.utils.sheet_to_csv(worksheet);
+//       extractedText = csvData;
+//     } else {
+//       throw new Error("Unsupported file type for extraction");
+//     }
 
-    // Populate the preview textarea with the extracted text.
-    $("#source-text-preview").val(extractedText);
-    // Reveal the preview card.
-    $("#source-preview").removeClass("hidden");
-  } catch (err) {
-    console.error("Error extracting source text:", err);
-    $("#source-doc-error").removeClass("hidden");
-  }
-});
-$(document).on("click", "#copy-all-btn", function () {
-  const textToCopy = $("#source-text-preview").val();
-  if (!textToCopy) {
-    alert("There is no text to copy!");
-    return;
-  }
-  // Use the Clipboard API if available
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(textToCopy)
-      .then(() => {
-      })
-      .catch(err => {
-        console.error("Failed to copy: ", err);
-        alert("Failed to copy text.");
-      });
-  } else {
-    // Fallback for older browsers
-    $("#source-text-preview").select();
-    document.execCommand("copy");
-  }
-});
+//     // Populate the preview textarea with the extracted text.
+//     $("#source-text-preview").val(extractedText);
+//     // Reveal the preview card.
+//     $("#source-preview").removeClass("hidden");
+//   } catch (err) {
+//     console.error("Error extracting source text:", err);
+//     $("#source-doc-error").removeClass("hidden");
+//   }
+// });
+// $(document).on("click", "#copy-all-btn", function () {
+//   const textToCopy = $("#source-text-preview").val();
+//   if (!textToCopy) {
+//     alert("There is no text to copy!");
+//     return;
+//   }
+//   // Use the Clipboard API if available
+//   if (navigator.clipboard && navigator.clipboard.writeText) {
+//     navigator.clipboard.writeText(textToCopy)
+//       .then(() => {
+//       })
+//       .catch(err => {
+//         console.error("Failed to copy: ", err);
+//         alert("Failed to copy text.");
+//       });
+//   } else {
+//     // Fallback for older browsers
+//     $("#source-text-preview").select();
+//     document.execCommand("copy");
+//   }
+// });
 
   /***********************************************************************
    * Translate Button Flow:
@@ -497,22 +497,50 @@ $(document).on("click", "#copy-all-btn", function () {
   }); 
  
 // 'Provide translation' button, show the second upload section
-$("#source-upload-provide-btn").click(function() {
+ $("#source-upload-provide-btn").click(async function() {
     if (!englishFile) {
       alert("Please upload the English document first.");
       return;
     }
-    $("#second-upload").removeClass("hidden");
-  }); 
-  
+    $("#source-doc-error").addClass("hidden");
+    // Clear any previous preview content.
+    $("#source-text-preview").text("");
+
+    try {
+      const fileExtension = englishFile.name.split('.').pop().toLowerCase();
+      let extractedText = "";
+
+      if (fileExtension === "docx") {
+        const arrayBuffer = await englishFile.arrayBuffer();
+        extractedText = await extractDocxParagraphs(arrayBuffer);
+      } else if (fileExtension === "pptx") {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        extractedText = await extractPptxText(arrayBuffer);
+      } else if (fileExtension === "xlsx") {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        let workbook = XLSX.read(arrayBuffer, { type: "array" });
+        let sheetName = workbook.SheetNames[0];
+        let worksheet = workbook.Sheets[sheetName];
+        let csvData = XLSX.utils.sheet_to_csv(worksheet);
+        extractedText = csvData;
+      } else {
+        throw new Error("Unsupported file type for extraction");
+      }
+        $("#source-text-preview").text(extractedText);
+      // Unhide the preview section.
+      $("#source-preview-wrapper").removeClass("hidden");
+      // Unhide the second upload section.
+      $("#second-upload").removeClass("hidden");
+    } catch (err) {
+      console.error("Error extracting source text:", err);
+      $("#source-doc-error").removeClass("hidden");
+    }
+  });
   /***********************************************************************
    * Provide Translation Button Flow:
    * show the second upload section
   ***********************************************************************/
-  $("#source-upload-provide-btn").click(function() {
-    $("#second-upload").removeClass("hidden"); 
-    console.log($("#translation-A").html());
-  });
+   
 
   function removeCodeFences(str) {
   // Remove a leading line that starts with ``` (plus any following text)
