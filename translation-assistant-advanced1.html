@@ -123,34 +123,28 @@
   margin: 0;
 }
 
-/* Triangle indicator */
-#source-preview-wrapper summary::before {
-  content: "►";
-  display: inline-block;
-  margin-right: 8px;
-  transform: translateY(2px); /* fine-tune vertical alignment */
-  transition: transform 0.2s ease;
-}
-
-/* Rotate when expanded */
-#source-preview-wrapper details[open] summary::before {
-  transform: rotate(90deg);
-}
-
-/* Flex layout for label and button */
+/* Flex layout */
 .preview-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-/* Label aligned left */
-.preview-label {
+/* Triangle style */
+.triangle-icon {
+  margin-right: 10px;
+  color: #8c8b00;
   font-weight: bold;
-  color: #8c8b00; /* or your preferred color */
 }
 
-/* Copy button styling */
+/* Label styling */
+.preview-label {
+  flex-grow: 1;
+  font-weight: bold;
+  color: #8c8b00;
+}
+
+/* Copy button */
 #copy-all-btn {
   border: 1px solid #ccc;
   background-color: #fff;
@@ -158,7 +152,6 @@
   font-size: 1rem;
   padding: 2px 6px;
   border-radius: 4px;
-  text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -355,13 +348,15 @@
          <li id="source-preview-wrapper" class="hidden" style="display: none;">
   	 <details>
     	 <summary>
-      	<div class="preview-header">
-        <span class="preview-label">Source text preview</span>
-        <button id="copy-all-btn" class="toolbar-button" title="Copy All">
-          <i class="fa fa-copy"></i>
-        </button>
-      </div>
-    </summary>
+  <div class="preview-header">
+    <span class="triangle-icon">►</span>
+    <span class="preview-label">Source text preview</span>
+    <button id="copy-all-btn" class="toolbar-button" title="Copy All">
+      <i class="fa fa-copy"></i>
+    </button>
+  </div>
+</summary>
+
     <pre id="source-text-preview"></pre>
   </details>
 </li>
