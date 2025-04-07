@@ -281,27 +281,43 @@ $(document).ready(function() {
 //     $("#source-doc-error").removeClass("hidden");
 //   }
 // });
-// $(document).on("click", "#copy-all-btn", function () {
-//   const textToCopy = $("#source-text-preview").val();
-//   if (!textToCopy) {
-//     alert("There is no text to copy!");
-//     return;
-//   }
-//   // Use the Clipboard API if available
-//   if (navigator.clipboard && navigator.clipboard.writeText) {
-//     navigator.clipboard.writeText(textToCopy)
-//       .then(() => {
-//       })
-//       .catch(err => {
-//         console.error("Failed to copy: ", err);
-//         alert("Failed to copy text.");
-//       });
-//   } else {
-//     // Fallback for older browsers
-//     $("#source-text-preview").select();
-//     document.execCommand("copy");
-//   }
-// });
+$(document).on("click", "#copy-all-btn", function(e) {
+  // Prevent the click from triggering the details toggle.
+  e.stopPropagation();
+
+  // Use .text() to retrieve the text content from the <pre> element.
+  const textToCopy = $("#source-text-preview").text().trim();
+  if (!textToCopy) {
+    alert("There is no text to copy!");
+    return;
+  }
+
+  // Use the Clipboard API if available
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => {
+        alert("Text copied successfully!");
+      })
+      .catch(err => {
+        console.error("Failed to copy: ", err);
+        alert("Failed to copy text.");
+      });
+  } else {
+    // Fallback for older browsers: create a temporary textarea
+    const $tempTextarea = $("<textarea>");
+    $("body").append($tempTextarea);
+    $tempTextarea.val(textToCopy).select();
+    try {
+      document.execCommand("copy");
+      alert("Text copied successfully!");
+    } catch (err) {
+      console.error("Fallback: Unable to copy", err);
+      alert("Failed to copy text.");
+    }
+    $tempTextarea.remove();
+  }
+});
+
 
   /***********************************************************************
    * Translate Button Flow:
