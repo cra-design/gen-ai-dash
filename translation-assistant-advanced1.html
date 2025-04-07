@@ -107,6 +107,7 @@
 
 	     <style> 
 /* Wrapper for the details element */
+/* details wrapper */
 #source-preview-wrapper > details {
   border: 1px solid black;
   border-radius: 4px;
@@ -120,22 +121,27 @@
   border: none;
 }
 
-/* Let the default <summary> display persist so the triangle is visible */
+/* Keep default display for summary so the triangle is visible;
+   remove/reduce default margin/padding to help alignment */
 .preview-header {
-  cursor: pointer; /* optional: shows pointer cursor on hover */
+  margin: 0;               /* zero out default margin */
+  padding: 0.5em 0.75em;   /* optional: gives some spacing around text */
+  line-height: 1.4;        /* tweak this to balance text & triangle alignment */
+  cursor: pointer;         /* optional: pointer on hover */
 }
 
-/* Wrap the content inside the summary with a flex container */
+/* Put the summary text and button in a flex container
+   so they're on the same row and vertically centered */
 .summary-content {
-  display: flex;
-  align-items: center;         /* vertically centers content */
-  justify-content: space-between; /* positions label and button at opposite ends */
-  gap: 1em;                    /* optional spacing between items */
+  display: inline-flex;     /* inline-flex preserves the triangle on the left */
+  align-items: center;      /* vertical centering */
+  justify-content: space-between;
+  gap: 1em;                 /* optional spacing between label & button */
 }
 
-/* Optional: adjust the marker margin if needed */
+/* Optional: if there's unexpected spacing for the marker, adjust here */
 summary::-webkit-details-marker {
-  margin-right: 0.5em;
+  margin-right: 0.5em;      /* optional tweak */
 }
 
 /* Label styling */
@@ -152,13 +158,13 @@ summary::-webkit-details-marker {
   font-size: 1rem;
   padding: 4px 8px;
   border-radius: 4px;
-  display: flex;               /* enable flex for centering the icon */
-  align-items: center;         /* vertically centers the icon */
-  justify-content: center;     /* horizontally centers the icon */
-  line-height: 1;              /* ensures the icon stays centered */
+  display: flex;            /* for centering the icon inside the button */
+  align-items: center;
+  justify-content: center;
+  line-height: 1;           /* keeps icon nicely centered */
 }
 
-/* Remove extra padding from the icon */
+/* Remove extra padding from the icon if needed */
 #copy-all-btn i {
   padding: 0;
 }
@@ -171,7 +177,7 @@ summary::-webkit-details-marker {
   border-radius: 6px;
 }
 
-/* Hide the source preview wrapper by default */
+/* Hide the details wrapper by default (if you want it collapsed initially) */
 .hidden {
   display: none;
 }
