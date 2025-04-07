@@ -528,7 +528,7 @@ $(document).ready(function() {
       }
         $("#source-text-preview").text(extractedText);
       // Unhide the preview section.
-      $("#source-preview-wrapper").removeClass("hidden");
+      $("#source-preview-wrapper").removeClass("hidden").show();
       // Unhide the second upload section.
       $("#second-upload").removeClass("hidden");
     } catch (err) {
