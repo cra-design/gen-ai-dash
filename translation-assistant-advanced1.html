@@ -380,12 +380,12 @@
                               </div>
                             </div>
                           </upd-card>
-<!--                           <upd-card id="translation-preview" class="hidden">
+                          <upd-card id="translation-preview" class="hidden">
                             <div class="card pt-2">
                               <div class="card-body card-pad pt-2 h-100">
                                 <div class="justify-content-between">
                                   <!-- Add side-by-side results container here -->
-<!--                                   <h2>Review the translation</h2>
+                                  <h2>Review the translation</h2>
                                   <p class="convert-translation">If you want to put the translation back in a document, <a href="#convert-translation">convert back to document</a> below the translation preview.</p>
                                   <div class="sidebyside-wrapper">
                                     <div id="translation-A-container" class="sidebyside-container report-container-A">
@@ -396,7 +396,7 @@
                                         <button class="toolbar-button" id="edit-translation-A-btn" title="Edit A">
                                           <i class="fa fa-edit"></i>
                                         </button>
-                                      </div> -->
+                                      </div>
                                       <div class="sidebyside-report">
                                         <p id="translation-A"></p>
                                         <p id="translation-model-A" class="small"></p>
@@ -418,23 +418,26 @@
                               </div>
                             </div>
                           </upd-card> 
-<!-- 			 	<div id="processing-spinner" class="hidden">
+			 	<div id="processing-spinner" class="hidden">
       				<div class="spinner"></div>
       				<p>Generating reports...</p>
-    				</div>  -->
+    				</div> 
 			  
-                       <upd-card id="convert-translation" class="convert-translation hidden">
-  <div class="card pt-2">
-    <div class="card-body card-pad pt-2 h-100">
-      <h4 style="margin-top: 20px;">Put back in document format</h4>
-      <p>
-        Once you're satisfied with the translation, submit it to put it back in the document formatting.
-        The reformatted translation document is ready for download!
-      </p>
-      <button id="convert-translation-download-btn" style="margin-top: 20px">Download</button>
-    </div>
-  </div>
-</upd-card>
+                        <upd-card id="convert-translation" class="convert-translation hidden">
+      <div class="card pt-2">
+        <div class="card-body card-pad pt-2 h-100">
+          <div class="justify-content-between">
+            <h4 style="margin-top: 20px;">Put back in document format</h4>
+            <p>Once you're satisfied with the translation, submit it to put it back in the document formatting.</p>
+          </div>
+          <div id="translated-doc-download" class="justify-content-between hidden">
+            <h4>Translated document</h4>
+            <p>The reformatted translation document is ready for download!</p>
+            <button id="convert-translation-download-btn" style="margin-top: 20px">Download document</button>
+          </div>
+        </div>
+      </div>
+    </upd-card>
 
                                   <!--requred libraries-->
                                 </main>
