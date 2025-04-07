@@ -106,21 +106,18 @@
    </style--> 
 
 	     <style> 
-#source-preview-wrapper {
+#source-preview-wrapper > details {
   border: 1px solid black;
   border-radius: 4px;
   padding: 5px;
 }
 
-/* Let native marker (arrow) show, and align everything inline */
-#source-preview-wrapper > summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  list-style: none; /* keeps marker but removes dot for some browsers */
+/* Optional: give the <li> itself no padding/border */
+#source-preview-wrapper {
+  padding: 0;
+  margin: 0;
+  border: none;
 }
-
 /* Optional: if there's unexpected spacing, normalize marker */
 summary::-webkit-details-marker {
   margin-right: 0.5em;
@@ -343,8 +340,8 @@ summary::-webkit-details-marker {
 
         <!-- Source Text Preview -->
         <ul class="list-unstyled"> 
-	<li class="hidden">
-  	<details id="source-preview-wrapper">
+	<li id="source-preview-wrapper" class="hidden">
+  	<details>
   <summary>
     <span class="preview-label">Source text preview</span>
     <button id="copy-all-btn" class="toolbar-button" title="Copy All">
