@@ -105,21 +105,25 @@
 		}
    </style--> 
 
-	     <style>
-/* Frame the box */
+	     <style> 
+		     #source-preview-wrapper {
+  border: 1px solid black;
+  border-radius: 4px;
+  padding: 5px;
+}
+
+/* Let native marker (arrow) show, and align everything inline */
 #source-preview-wrapper > summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  list-style: none; /* optional: removes extra marker spacing */
   cursor: pointer;
+  list-style: none; /* keeps marker but removes dot for some browsers */
 }
 
-/* Layout and spacing */
-.preview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* Optional: if there's unexpected spacing, normalize marker */
+summary::-webkit-details-marker {
+  margin-right: 0.5em;
 }
 
 /* Label */
@@ -128,7 +132,7 @@
   color: #8c8b00;
 }
 
-/* Button */
+/* Copy button */
 #copy-all-btn {
   border: 1px solid #ccc;
   background-color: #fff;
@@ -153,7 +157,6 @@
   padding: 1em;
   border-radius: 6px;
 }
-
   </style>
    <body id="body-pd" class="body-pd">
       <upd-root _nghost-ng-c3392822675="" class="ng-tns-c3392822675-0" ng-version="18.2.2">
@@ -340,12 +343,12 @@
         <ul class="list-unstyled"> 
 	<li>
   	<details id="source-preview-wrapper">
-  	<summary>
-    		<span class="preview-label">Source text preview</span>
-    		<button id="copy-all-btn" class="toolbar-button" title="Copy All">
-      		<i class="fa fa-copy"></i>
-    		</button>
-  	</summary>
+  <summary>
+    <span class="preview-label">Source text preview</span>
+    <button id="copy-all-btn" class="toolbar-button" title="Copy All">
+      <i class="fa fa-copy"></i>
+    </button>
+  </summary>
   <pre id="source-text-preview"></pre>
 </details>
 	</li>
