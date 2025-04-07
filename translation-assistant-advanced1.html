@@ -140,12 +140,17 @@ summary::-webkit-details-marker {
   display: flex;
   align-items: center;
   justify-content: center;
+} 
+summary.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em; /* optional for spacing */
 }
 .hidden {
   display: none;
 }
 #copy-all-btn i {
-  margin: 0;
   padding: 0;
 }
 
@@ -342,7 +347,7 @@ summary::-webkit-details-marker {
         <ul class="list-unstyled"> 
 	<li id="source-preview-wrapper" class="hidden">
   	<details>
-  <summary>
+  <summary class="preview-header">
     <span class="preview-label">Source text preview</span>
     <button id="copy-all-btn" class="toolbar-button" title="Copy All">
       <i class="fa fa-copy"></i>
