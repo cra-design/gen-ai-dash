@@ -106,15 +106,11 @@
    </style--> 
 
 	     <style>
-   /* Frame the box */
+/* Frame the box */
 #source-preview-wrapper {
   border: 1px solid black;
   border-radius: 4px;
   padding: 5px;
-}
-
-#source-preview-wrapper > summary::-webkit-details-marker {
-  display: none;
 }
 
 /* Layout and spacing */
@@ -124,23 +120,8 @@
   justify-content: space-between;
 }
 
-.triangle-icon::before {
-  content: "►";
-  display: inline-block;
-  transition: transform 0.2s ease;
-  color: #8c8b00;
-  font-weight: bold;
-  margin-right: 8px;
-}
-
-/* When <details> is open, rotate triangle */
-#source-preview-wrapper[open] .triangle-icon::before {
-  transform: rotate(90deg);
-}
-
 /* Label */
 .preview-label {
-  flex-grow: 1;
   font-weight: bold;
   color: #8c8b00;
 }
@@ -163,7 +144,7 @@
   padding: 0;
 }
 
-/* Optional: preview text style */
+/* Preview text */
 #source-text-preview {
   white-space: pre-wrap;
   background-color: #f5f5f5;
@@ -359,7 +340,6 @@
   	<details id="source-preview-wrapper" class="hidden" style="display: none;">
   <summary>
     <div class="preview-header">
-       <span class="triangle-icon"></span>
       <span class="preview-label">Source text preview</span>
       <button id="copy-all-btn" class="toolbar-button" title="Copy All">
         <i class="fa fa-copy"></i>
