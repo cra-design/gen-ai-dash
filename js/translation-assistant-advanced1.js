@@ -217,7 +217,8 @@ $(document).ready(function() {
               if (fileExtension === 'docx') {
                 let arrayBuffer = await uploadedFile.arrayBuffer();
                 let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, {
-                    convertImage: mammoth.images.none
+                    convertImage: mammoth.images.none 
+                $("#translation-A").html(mammothResult.value);
                 });
                 let cleanedHtml = mammothResult.value.replace(/<img[^>]*>/g, '');
               } else if (fileExtension == 'pptx'){
@@ -525,7 +526,6 @@ $(document).on("click", "#copy-all-btn", function(e) {
       if (fileExtension === "docx") {
         const arrayBuffer = await englishFile.arrayBuffer();
         extractedText = await extractDocxParagraphs(arrayBuffer); 
-         $("#translation-A").html(mammothResult.value);
       } else if (fileExtension === "pptx") {
         let arrayBuffer = await englishFile.arrayBuffer();
         extractedText = await extractPptxText(arrayBuffer);
