@@ -107,10 +107,12 @@
 
 	     <style>
 /* Frame the box */
-#source-preview-wrapper {
-  border: 1px solid black;
-  border-radius: 4px;
-  padding: 5px;
+#source-preview-wrapper > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  list-style: none; /* optional: removes extra marker spacing */
+  cursor: pointer;
 }
 
 /* Layout and spacing */
@@ -337,17 +339,15 @@
         <!-- Source Text Preview -->
         <ul class="list-unstyled"> 
 	<li>
-  	<details id="source-preview-wrapper" class="hidden" style="display: none;">
-  <summary>
-    <div class="preview-header">
-      <span class="preview-label">Source text preview</span>
-      <button id="copy-all-btn" class="toolbar-button" title="Copy All">
-        <i class="fa fa-copy"></i>
-      </button>
-    </div>
-  </summary>
+  	<details id="source-preview-wrapper">
+  	<summary>
+    		<span class="preview-label">Source text preview</span>
+    		<button id="copy-all-btn" class="toolbar-button" title="Copy All">
+      		<i class="fa fa-copy"></i>
+    		</button>
+  	</summary>
   <pre id="source-text-preview"></pre>
-</details> 
+</details>
 	</li>
         </ul>
       </div>
