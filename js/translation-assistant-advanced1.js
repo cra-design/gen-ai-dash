@@ -282,34 +282,30 @@ $(document).ready(function() {
 //   }
 // });
 $(document).on("click", "#copy-all-btn", function(e) {
-  // Prevent the click from triggering the details toggle.
+  // Prevent the click from toggling the <details> element.
   e.stopPropagation();
 
-  // Use .text() to retrieve the text content from the <pre> element.
+  // Retrieve text from the <pre> element using .text()
   const textToCopy = $("#source-text-preview").text().trim();
   if (!textToCopy) {
     alert("There is no text to copy!");
     return;
   }
 
-  // Use the Clipboard API if available
+  // Use the Clipboard API if available.
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(textToCopy)
-      .then(() => {
-        alert("Text copied successfully!");
-      })
       .catch(err => {
         console.error("Failed to copy: ", err);
         alert("Failed to copy text.");
       });
   } else {
-    // Fallback for older browsers: create a temporary textarea
+    // Fallback for older browsers: create a temporary textarea.
     const $tempTextarea = $("<textarea>");
     $("body").append($tempTextarea);
     $tempTextarea.val(textToCopy).select();
     try {
       document.execCommand("copy");
-      alert("Text copied successfully!");
     } catch (err) {
       console.error("Fallback: Unable to copy", err);
       alert("Failed to copy text.");
@@ -317,6 +313,7 @@ $(document).on("click", "#copy-all-btn", function(e) {
     $tempTextarea.remove();
   }
 });
+
 
 
   /***********************************************************************
@@ -588,50 +585,15 @@ $("#second-upload-btn").click(async function () {
   $('#processing-spinner').removeClass("hidden");
   console.log("Spinner should now be visible.");
 
-  const selectedOption = $('input[name="second-upload-option"]:checked').val();
-  let frenchText = "";
-
-  if (selectedOption === "second-upload-doc") {
-    const file = $('#second-file')[0].files[0];
-
-    if (!file) {
-      alert("Please select your translated file.");
-      $('#processing-spinner').addClass("hidden");
-      return;
-    }
-
-    try {
-      const fileExtension = file.name.split('.').pop().toLowerCase();
-
-      if (fileExtension === "docx" || fileExtension === "xlsx") {
-        frenchText = await handleFileExtractionToHtml(file);
-      } else if (fileExtension === "pptx") {
-        const arrayBuffer = await file.arrayBuffer();
-        const textElements = await extractPptxTextXmlWithId(arrayBuffer);
-        frenchText = textElements.map(item => `<p>${item.text}</p>`).join('');
-      } else {
-        throw new Error("Unsupported file type");
-      }
-
-      console.log("French text after extraction:", frenchText);
-    } catch (err) {
-      console.error('Error processing the second (FR) file:', err);
-      alert("Error reading your translated file. Check console for details.");
-      $('#converting-spinner').addClass("hidden");
-      $('#processing-spinner').addClass("hidden");
-      return;
-    }
-  } else if (selectedOption === "second-upload-text") {
-    frenchText = $("#second-text").val();
-  }
+  // Only use the text area for French text
+  let frenchText = $("#second-text").val();
 
   if (!frenchText || frenchText.trim().length === 0) {
-    alert("No French document/text found. Please upload or enter your translation.");
+    alert("No French document/text found. Please copy and paste your translation.");
     $('#converting-spinner').addClass("hidden");
     $('#processing-spinner').addClass("hidden");
     return;
   }
-
   // 2) Get the English HTML from the first upload section
   let englishHtml = $("#translation-A").html(); 
   englishHtml = englishHtml.replace(/<img[^>]*>/g, '');
