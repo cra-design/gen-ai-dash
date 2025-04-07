@@ -270,16 +270,21 @@
                                 </fieldset>  
 
 <ul class="list-unstyled">
-  <li id="source-preview-wrapper" class="hidden" style="display: none;"> 
-    <button class="toolbar-button" title="Copy All" style="position: absolute; top: 5px; right: 5px;"> 
-    <i class="fa fa-copy"></i> 
-    </button>
+  <li id="source-preview-wrapper" class="hidden" style="display: none;">
     <details>
-      <summary><strong>Source text preview</strong></summary>
-      <pre id="source-text-preview" style="white-space: pre-wrap; background-color: #f5f5f5; padding: 1em; border-radius: 6px;"></pre>
+      <summary style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+        <strong>Source text preview</strong>
+        <button id="copy-all-btn" class="toolbar-button" title="Copy All">
+          <i class="fa fa-copy"></i>
+        </button>
+      </summary>
+
+      <pre id="source-text-preview" 
+           style="white-space: pre-wrap; background-color: #f5f5f5; padding: 1em; border-radius: 6px;">
+      </pre>
     </details>
   </li>
-</ul> 
+</ul>
 			      </div>
                         <upd-card id="second-upload" class="hidden">
                            <div class="card pt-2">
