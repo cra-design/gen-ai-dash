@@ -144,7 +144,9 @@ summary::-webkit-details-marker {
   align-items: center;
   justify-content: center;
 }
-
+.hidden {
+  display: none;
+}
 #copy-all-btn i {
   margin: 0;
   padding: 0;
@@ -341,7 +343,7 @@ summary::-webkit-details-marker {
 
         <!-- Source Text Preview -->
         <ul class="list-unstyled"> 
-	<li>
+	<li id="source-preview-wrapper" class="hidden">
   	<details id="source-preview-wrapper">
   <summary>
     <span class="preview-label">Source text preview</span>
