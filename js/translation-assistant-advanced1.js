@@ -7,6 +7,7 @@ function extractXmlFromFile(file) {
     handleFileExtractionToXML(file, resolve, reject);
   });
 } 
+
 // Function to format raw translated output into structured HTML.
 function formatTranslatedOutput(rawText) {
   if (!rawText) return "";
@@ -76,35 +77,6 @@ async function extractPptxText(arrayBuffer) {
   // Join paragraphs with two newlines to denote paragraph breaks.
   return allParagraphs.join("\n\n");
 }
-async function extractDocxStylesTemplate(file) {
-  const arrayBuffer = await file.arrayBuffer();
-  const zip = await JSZip.loadAsync(arrayBuffer);
-  const stylesXml = await zip.file("word/styles.xml").async("string");
-
-  const aiStylePrompt = `Given the following Word styles.xml content:
----\n${stylesXml}\n---
-Generate a <style> block in HTML/CSS that best approximates:
-- Headings (H1 to H3)
-- Paragraph fonts and sizes
-- Table borders and padding
-- Bullet/Numbered lists
-- Bold, italic formatting
-`;
-
-  const styleJson = [
-    { role: "system", content: "You are a Word-to-HTML style interpreter." },
-    { role: "user", content: aiStylePrompt }
-  ];
-
-  // Use your getORData call (modify model if needed)
-  const styleResponse = await getORData("meta-llama/llama-3.3-70b-instruct:free", styleJson);
-  let styleCss = styleResponse?.choices?.[0]?.message?.content || "";
-
-  // Remove markdown-style code fences
-  styleCss = styleCss.replace(/^```(?:html|css)?/, '').replace(/```$/, '').trim();
-
-  return styleCss;
-}
 
 
 
@@ -159,18 +131,7 @@ $(document).ready(function() {
         $('#genai-model-options').addClass("hidden");
       }
     }
-  });  
-  $("input[name='source-upload-option']").on("change", function () {
-  const selected = $(this).val();
-
-  if (selected === "source-upload-text") {
-    $("#text-upload").show();
-    $("#source-doc-upload").hide();
-  } else if (selected === "source-upload-doc") {
-    $("#text-upload").hide();
-    $("#source-doc-upload").show();
-  }
-});
+  }); 
 
   // Detect language from entered text as the user types.
   $('#source-text').on('input', function() {
@@ -281,13 +242,15 @@ $(document).ready(function() {
   }); 
 
   
-$("#source-file").on("change", async function (e) {
-  const file = e.target.files[0];
-  if (!file) return;
+$(document).on("click", "#extract-source-text-btn", async function () { 
+  if (!englishFile) {
+    alert("No source file uploaded. Please upload a file first!");
+    return;
+  }
   
   $("#source-doc-error").addClass("hidden");
   $("#source-text-preview").val("");
-  $("#source-preview").addClass("hidden");
+
   try {
     const fileExtension = englishFile.name.split('.').pop().toLowerCase();
     let extractedText = "";
@@ -317,9 +280,6 @@ $("#source-file").on("change", async function (e) {
     console.error("Error extracting source text:", err);
     $("#source-doc-error").removeClass("hidden");
   }
-}); 
-  $("#toggle-source-preview").on("click", function () {
-  $("#source-preview").slideToggle();
 });
 $(document).on("click", "#copy-all-btn", function () {
   const textToCopy = $("#source-text-preview").val();
@@ -537,61 +497,12 @@ $(document).on("click", "#copy-all-btn", function () {
   }); 
  
 // 'Provide translation' button, show the second upload section
-$("#source-upload-provide-btn").click(async function () {
-  if (!englishFile) {
-    alert("Please upload the English document first.");
-    return;
-  }
-
-  $("#second-upload").removeClass("hidden");
-
-  const file = $("#source-file")[0].files[0];
-  if (!file) {
-    alert("Please select a file first.");
-    return;
-  }
-
-  $("#source-doc-error").addClass("hidden");
-  $("#source-text-preview").text("");
-  $("#source-preview-wrapper").hide();
-
-  try {
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-    let extractedText = "";
-
-    if (fileExtension === "docx") {
-      const arrayBuffer = await file.arrayBuffer();
-      extractedText = await extractDocxParagraphs(arrayBuffer);
-    } else if (fileExtension === "pptx") {
-      const arrayBuffer = await file.arrayBuffer();
-      extractedText = await extractPptxText(arrayBuffer);
-    } else if (fileExtension === "xlsx") {
-      const arrayBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      extractedText = XLSX.utils.sheet_to_csv(worksheet);
-    } else {
-      throw new Error("Unsupported file type");
+$("#source-upload-provide-btn").click(function() {
+    if (!englishFile) {
+      alert("Please upload the English document first.");
+      return;
     }
-
-    $("#source-text-preview").text(extractedText);
-    $("#source-preview-wrapper").slideDown().removeClass("hidden");
-
-  } catch (err) {
-    console.error("Extraction error:", err);
-    $("#source-doc-error").removeClass("hidden");
-  }
-});
-
-
-    // Inject and show
-    $("#source-text-preview").text(extractedText);
-    $("#source-preview-wrapper").slideDown().removeClass("hidden");
-  } catch (err) {
-    console.error("Extraction error:", err);
-    $("#source-doc-error").removeClass("hidden");
-  }
+    $("#second-upload").removeClass("hidden");
   }); 
   
   /***********************************************************************
@@ -828,28 +739,42 @@ $("#convert-translation-download-btn").click(async function() {
     let generatedBlob;
    if (fileExtension === 'docx') {
   try {
-     const cssStyles = await extractDocxStylesTemplate(englishFile);
+    let arrayBuffer = await englishFile.arrayBuffer();
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    let docXml = await zip.file("word/document.xml").async("string");
 
-    const fullHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <style>
-            ${cssStyles}
-          </style>
-        </head>
-        <body>
-          ${finalFrenchHtml}
-        </body>
-      </html>
-    `;
+    // Parse the French formatted HTML to extract paragraphs.
+    let tempDiv = document.createElement("div");
+    tempDiv.innerHTML = finalFrenchHtml;
+    let frenchTextArray = Array.from(tempDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, td"))
+      .map(el => el.innerText.trim())
+      .filter(txt => txt.length > 0);
 
-    generatedBlob = htmlDocx.asBlob(fullHtml);
-    
+    // Parse document.xml
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(docXml, "application/xml");
+
+    // Get all <w:t> nodes from document.xml
+    let textNodes = xmlDoc.getElementsByTagName("w:t");
+
+    // Map French text to <w:t> nodes
+    for (let i = 0; i < textNodes.length && i < frenchTextArray.length; i++) {
+      textNodes[i].textContent = frenchTextArray[i];
+    }
+
+    // Serialize updated XML back to string
+    const serializer = new XMLSerializer();
+    const updatedDocXml = serializer.serializeToString(xmlDoc);
+
+    // Replace original document.xml in the zip
+    zip.file("word/document.xml", updatedDocXml);
+
+    // Generate new DOCX blob
+    generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+
   } catch (err) {
-    console.error("Error while generating styled French DOCX:", err);
-    alert("Failed to generate styled DOCX.");
+    console.error("Error while generating translated DOCX:", err);
+    alert("Failed to generate translated DOCX file.");
   }
 }
     else if (fileExtension === 'pptx') {
