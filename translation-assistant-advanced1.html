@@ -111,7 +111,8 @@
 #source-preview-wrapper > details {
   border: 1px solid black;
   border-radius: 4px;
-  padding: 5px;
+  padding: 5px; 
+  width: 100%;
 }
 
 /* Remove extra styling from the <li> */
@@ -124,19 +125,17 @@
 /* Keep default display for summary so the triangle is visible;
    remove/reduce default margin/padding to help alignment */
 .preview-header {
-  margin: 0;               /* zero out default margin */
-  padding: 0.5em 0.75em;   /* optional: gives some spacing around text */
-  line-height: 1.4;        /* tweak this to balance text & triangle alignment */
-  cursor: pointer;         /* optional: pointer on hover */
+  margin: 0;              
+  padding: 0.5em 0.75em;   
+  line-height: 1.4;        
+  cursor: pointer;         
 }
 
-/* Put the summary text and button in a flex container
-   so they're on the same row and vertically centered */
 .summary-content {
-  display: inline-flex;     /* inline-flex preserves the triangle on the left */
-  align-items: center;      /* vertical centering */
+  display: inline-flex;     
+  align-items: center;      
   justify-content: space-between;
-  gap: 1em;                 /* optional spacing between label & button */
+  width: 100%;                 
 }
 
 /* Optional: if there's unexpected spacing for the marker, adjust here */
@@ -365,22 +364,22 @@ summary::-webkit-details-marker {
         </fieldset>
 
         <!-- Source Text Preview -->
-        <ul class="list-unstyled"> 
-	<li id="source-preview-wrapper" class="hidden">
-  	<details>
-  <summary class="preview-header">
-    <!-- no flex on summary itself -->
-    <div class="summary-content">
-      <span class="preview-label">Source text preview</span>
-      <button id="copy-all-btn" class="toolbar-button" title="Copy All">
-        <i class="fa fa-copy"></i>
-      </button>
-    </div>
-  </summary>
-  <pre id="source-text-preview"></pre>
-</details>
-	</li>
-        </ul>
+       <ul class="list-unstyled">
+  <li id="source-preview-wrapper" class="hidden">
+    <details>
+      <summary class="preview-header">
+        <!-- Keep default summary display so the triangle remains -->
+        <div class="summary-content">
+          <span class="preview-label">Source text preview</span>
+          <button id="copy-all-btn" class="toolbar-button" title="Copy All">
+            <i class="fa fa-copy"></i>
+          </button>
+        </div>
+      </summary>
+      <pre id="source-text-preview"></pre>
+    </details>
+  </li>
+</ul>
       </div>
     </div>
   </div>
