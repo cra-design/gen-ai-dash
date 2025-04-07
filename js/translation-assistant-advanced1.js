@@ -810,7 +810,7 @@ $("#convert-translation-download-btn").click(async function() {
   }
   // The spinner remains visible after document creation.
 });
-
+});
 //************************************************************************************
 //* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
 //* Can be added more if needed                                                   ***** 
