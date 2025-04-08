@@ -647,7 +647,8 @@ $("#second-upload-btn").click(async function () {
     return;
   }
 
-  finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+  finalFrenchHtml = removeCodeFences(finalFrenchHtml); 
+  finalFrenchHtml = finalFrenchHtml.replace(/<br\s*\/?>/gi, '');
    
   const fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
   let formattedOutput; 
