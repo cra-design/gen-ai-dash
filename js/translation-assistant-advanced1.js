@@ -712,7 +712,6 @@ $("#second-upload-btn").click(async function () {
     $('#translated-doc-download').removeClass("hidden");
   }
 });
-}); 
   /*************************************************************
    * Download Document Workflow
    *************************************************************/
