@@ -105,48 +105,51 @@
 		}
    </style--> 
 
-	     <style> 
-/* Wrapper for the details element */
+	     <style>  
 /* details wrapper */
 #source-preview-wrapper > details {
   border: 1px solid black;
   border-radius: 4px;
-  padding: 5px; 
+  padding: 5px;
   width: 100%;
 }
 
-/* Remove extra styling from the <li> */
+/* Remove extra styling from the list item */
 #source-preview-wrapper {
   padding: 0;
   margin: 0;
   border: none;
 }
 
-/* Keep default display for summary so the triangle is visible;
-   remove/reduce default margin/padding to help alignment */
+/* Keep summary as default so the disclosure triangle is visible
+   and force no wrapping for the entire line */
 .preview-header {
-  margin: 0;              
-  padding: 0.5em 0.75em;   
-  line-height: 1.4;        
-  cursor: pointer;         
+  margin: 0;
+  padding: 0.5em 0.75em;
+  line-height: 1.4;
+  cursor: pointer;
+  white-space: nowrap; /* prevent wrapping */
 }
 
+/* Use inline-flex for the child container, so the marker remains intact */
 .summary-content {
-  display: inline-flex;     
-  align-items: center;      
+  display: inline-flex;
+  align-items: center;
   justify-content: space-between;
-  width: 100%;                 
+  width: 100%;
+  white-space: nowrap; /* keep everything on one line */
 }
 
-/* Optional: if there's unexpected spacing for the marker, adjust here */
-summary::-webkit-details-marker {
-  margin-right: 0.5em;      /* optional tweak */
-}
-
-/* Label styling */
+/* Allow the label to take up available space */
 .preview-label {
   font-weight: bold;
   color: #8c8b00;
+  flex-grow: 1;
+}
+
+/* Optional: adjust the default marker spacing */
+summary::-webkit-details-marker {
+  margin-right: 0.5em;
 }
 
 /* Copy button styling */
@@ -157,13 +160,13 @@ summary::-webkit-details-marker {
   font-size: 1rem;
   padding: 4px 8px;
   border-radius: 4px;
-  display: flex;            /* for centering the icon inside the button */
+  display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;           /* keeps icon nicely centered */
+  line-height: 1;
 }
 
-/* Remove extra padding from the icon if needed */
+/* Remove extra padding from the icon inside the button */
 #copy-all-btn i {
   padding: 0;
 }
@@ -176,11 +179,10 @@ summary::-webkit-details-marker {
   border-radius: 6px;
 }
 
-/* Hide the details wrapper by default (if you want it collapsed initially) */
+/* Hide the preview section by default */
 .hidden {
   display: none;
 }
-
   </style>
    <body id="body-pd" class="body-pd">
       <upd-root _nghost-ng-c3392822675="" class="ng-tns-c3392822675-0" ng-version="18.2.2">
@@ -364,11 +366,10 @@ summary::-webkit-details-marker {
         </fieldset>
 
         <!-- Source Text Preview -->
-       <ul class="list-unstyled">
+      <ul class="list-unstyled">
   <li id="source-preview-wrapper" class="hidden">
     <details>
       <summary class="preview-header">
-        <!-- Keep default summary display so the triangle remains -->
         <div class="summary-content">
           <span class="preview-label">Source text preview</span>
           <button id="copy-all-btn" class="toolbar-button" title="Copy All">
