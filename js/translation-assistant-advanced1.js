@@ -736,35 +736,21 @@ $("#second-upload-btn").click(async function () {
     let generatedBlob;
     try {
       if (fileExtension === 'docx') {
-        let arrayBuffer = await englishFile.arrayBuffer();
-        const zip = await JSZip.loadAsync(arrayBuffer);
-        let docXml = await zip.file("word/document.xml").async("string");
-
-        // Parse the French HTML to extract text.
-        let tempDiv = document.createElement("div");
-        tempDiv.innerHTML = finalFrenchHtml;
-        let frenchTextArray = Array.from(tempDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, td"))
-          .map(el => el.innerText.trim())
-          .filter(txt => txt.length > 0);
-
-        // Parse document.xml.
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(docXml, "application/xml");
-        let textNodes = xmlDoc.getElementsByTagName("w:t");
-
-        // Replace text content with the French text.
-        for (let i = 0; i < textNodes.length && i < frenchTextArray.length; i++) {
-          textNodes[i].textContent = frenchTextArray[i];
-        }
-
-        // Serialize updated XML.
-        const serializer = new XMLSerializer();
-        const updatedDocXml = serializer.serializeToString(xmlDoc);
-        zip.file("word/document.xml", updatedDocXml);
-
-        // Generate the new DOCX blob.
-        generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
-
+        let fullHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              body { font-family: Calibri, "Calibri (Body)", sans-serif; }
+            </style>
+          </head>
+          <body>
+            ${finalFrenchHtml}
+          </body>
+        </html>
+      `; 
+      generatedBlob = htmlDocx.asBlob(fullHtml);
       } else if (fileExtension === 'pptx') {
         let arrayBuffer = await englishFile.arrayBuffer();
         const zip = await JSZip.loadAsync(arrayBuffer);
