@@ -712,6 +712,101 @@ $("#second-upload-btn").click(async function () {
     $('#translated-doc-download').removeClass("hidden");
   }
 });
+}); 
+  /*************************************************************
+   * Download Document Workflow
+   *************************************************************/
+ $("#convert-translation-download-btn").click(async function () {
+    // 1) Validate that there is a translation.
+    if (!finalFrenchHtml || !finalFrenchHtml.trim()) {
+      alert("No formatted French document available.");
+      return;
+    }
+
+    // 2) Determine file type and set the mimeType.
+    let fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
+    let mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    if (fileExtension === 'pptx') {
+      mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+    } else if (fileExtension === 'xlsx') {
+      mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    }
+
+    // 3) Use JSZip to modify the original file.
+    let generatedBlob;
+    try {
+      if (fileExtension === 'docx') {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        let docXml = await zip.file("word/document.xml").async("string");
+
+        // Parse the French HTML to extract text.
+        let tempDiv = document.createElement("div");
+        tempDiv.innerHTML = finalFrenchHtml;
+        let frenchTextArray = Array.from(tempDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, td"))
+          .map(el => el.innerText.trim())
+          .filter(txt => txt.length > 0);
+
+        // Parse document.xml.
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(docXml, "application/xml");
+        let textNodes = xmlDoc.getElementsByTagName("w:t");
+
+        // Replace text content with the French text.
+        for (let i = 0; i < textNodes.length && i < frenchTextArray.length; i++) {
+          textNodes[i].textContent = frenchTextArray[i];
+        }
+
+        // Serialize updated XML.
+        const serializer = new XMLSerializer();
+        const updatedDocXml = serializer.serializeToString(xmlDoc);
+        zip.file("word/document.xml", updatedDocXml);
+
+        // Generate the new DOCX blob.
+        generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+
+      } else if (fileExtension === 'pptx') {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+
+        for (const fileName of Object.keys(zip.files)) {
+          const match = slideRegex.exec(fileName);
+          if (match) {
+            const slideNumber = match[1];
+            const slideXml = await zip.file(fileName).async("string");
+            const updatedSlideXml = conversionPptxXml(slideXml, finalFrenchHtml, slideNumber);
+            zip.file(fileName, updatedSlideXml);
+          }
+        }
+        generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+
+      } else if (fileExtension === 'xlsx') {
+        // Insert your XLSX conversion logic here.
+      }
+    } catch (err) {
+      console.error("Error while generating translated file:", err);
+      alert("Failed to generate translated file.");
+      return;
+    }
+
+    if (!generatedBlob) {
+      alert("File generation failed.");
+      return;
+    }
+
+    // 4) Set the file name and initiate the download.
+    let baseFileName = englishFile
+      ? englishFile.name.split('.').slice(0, -1).join('.')
+      : "translated-file";
+    let modifiedFileName = `${baseFileName}-FR.${fileExtension}`;
+
+    let downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(generatedBlob);
+    downloadLink.download = modifiedFileName;
+    downloadLink.click();
+    URL.revokeObjectURL(downloadLink.href);
+  });
 });
 //************************************************************************************
 //* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
