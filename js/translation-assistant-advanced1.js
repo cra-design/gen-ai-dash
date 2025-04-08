@@ -712,6 +712,7 @@ $("#second-upload-btn").click(async function () {
     $('#translated-doc-download').removeClass("hidden");
   }
 });
+});
 //************************************************************************************
 //* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
 //* Can be added more if needed                                                   ***** 
