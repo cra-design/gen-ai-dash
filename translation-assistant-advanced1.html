@@ -160,10 +160,11 @@ summary::-webkit-details-marker {
   font-size: 1rem;
   padding: 4px 8px;
   border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1; 
+  padding: 0;  /* This will override the earlier padding */
+  margin: 0;
 }
 
 /* Remove extra padding from the icon inside the button */
