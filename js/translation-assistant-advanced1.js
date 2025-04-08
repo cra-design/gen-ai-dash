@@ -1,6 +1,7 @@
 let generatedDownloadFile = null;
 let englishHtmlStored = "";
-let frenchFile = null;
+let frenchFile = null; 
+let finalFrenchHtml = "";
 
 function extractXmlFromFile(file) {
   return new Promise((resolve, reject) => {
@@ -643,7 +644,7 @@ $("#second-upload-btn").click(async function () {
     "deepseek/deepseek-r1:free"
   ];
 
-  let finalFrenchHtml = "";
+  finalFrenchHtml = "";
   for (let model of models) {
     const ORjson = await getORData(model, requestJson);
     console.log(`Model: ${model}`, ORjson);
