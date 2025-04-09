@@ -736,21 +736,36 @@ $("#second-upload-btn").click(async function () {
     let generatedBlob;
     try {
       if (fileExtension === 'docx') {
-        let fullHtml = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="UTF-8">
-            <style>
-              body { font-family: Calibri, "Calibri (Body)", sans-serif; }
-            </style>
-          </head>
-          <body>
-            ${finalFrenchHtml}
-          </body>
-        </html>
-      `; 
-      generatedBlob = htmlDocx.asBlob(fullHtml);
+         try {
+    const fullHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Calibri, "Calibri (Body)", sans-serif; }
+            h1 { color: #B91C1C; text-decoration: underline; font-size: 24pt; font-weight: bold; }
+            h2 { font-size: 18pt; font-weight: bold; }
+            h3 { font-size: 15pt; font-style: italic; }
+            p { font-size: 12pt; }
+            ul, li { font-size: 12pt; margin-left: 20px; }
+            table, th, td { border: 1px solid #000; border-collapse: collapse; padding: 4px; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          ${finalFrenchHtml}
+        </body>
+      </html>
+    `;
+
+    generatedBlob = htmlDocx.asBlob(fullHtml);
+    
+  } catch (err) {
+    console.error("Error while generating styled French DOCX:", err);
+    alert("Failed to generate styled DOCX.");
+  }
+
       } else if (fileExtension === 'pptx') {
         let arrayBuffer = await englishFile.arrayBuffer();
         const zip = await JSZip.loadAsync(arrayBuffer);
