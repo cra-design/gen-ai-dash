@@ -76,6 +76,35 @@ async function extractPptxText(arrayBuffer) {
   }
   // Join paragraphs with two newlines to denote paragraph breaks.
   return allParagraphs.join("\n\n");
+} 
+
+function enforceFirstElementH1(htmlString) {
+  // Create a container and set its innerHTML to the generated output.
+  const container = document.createElement('div');
+  container.innerHTML = htmlString.trim();
+
+  // If there is no element or the first element is not an H1, modify it.
+  if (!container.firstElementChild || container.firstElementChild.tagName.toLowerCase() !== 'h1') {
+    // Get the first element
+    const firstElement = container.firstElementChild;
+    if (firstElement) {
+      // Create a new H1 element.
+      const newH1 = document.createElement('h1');
+      // Optionally copy inline styles or classes from the first element if needed:
+      newH1.className = firstElement.className;
+      newH1.style.cssText = firstElement.style.cssText;
+      // Transfer the inner HTML content
+      newH1.innerHTML = firstElement.innerHTML;
+      // Replace the first element with the new H1.
+      container.replaceChild(newH1, firstElement);
+    } else {
+      // If there is no element, create an H1 with the entire text.
+      const newH1 = document.createElement('h1');
+      newH1.textContent = htmlString;
+      container.appendChild(newH1);
+    }
+  }
+  return container.innerHTML;
 }
 
 
@@ -662,7 +691,7 @@ $("#second-upload-btn").click(async function () {
     }
 
     finalFrenchHtml = removeCodeFences(finalFrenchHtml);
-    
+     finalFrenchHtml = enforceFirstElementH1(finalFrenchHtml);
     const fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
     let formattedOutput; 
 
