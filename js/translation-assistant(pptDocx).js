@@ -1,536 +1,991 @@
-// --------------------
-// DOMContentLoaded: API Key Screen & Initial Setup
-// --------------------
-document.addEventListener("DOMContentLoaded", function () {
-  const apiKeyEntry = document.getElementById("api-key-entry"); // API key section
-  const apiKeyInput = document.getElementById("api-key");         // API key input field
-  const apiKeySubmitBtn = document.getElementById("api-key-submit-btn"); // API key submit button
-  const documentUploadContainer = document.getElementById("document-upload-container"); // Upload section
+let generatedDownloadFile = null;
+let englishHtmlStored = "";
+let frenchFile = null; 
+let finalFrenchHtml = "";
 
-  // Check if the URL has a 'key' parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has("key")) {
-    apiKeyEntry.style.display = "none";
-    documentUploadContainer.style.display = "block";
-  } else {
-    apiKeyEntry.style.display = "block";
-    documentUploadContainer.style.display = "none";
-  }
-
-  sessionStorage.removeItem("openRouterApiKey");
-
-  apiKeySubmitBtn.addEventListener("click", function () {
-    const apiKey = apiKeyInput.value.trim();
-    if (apiKey) {
-      sessionStorage.setItem("openRouterApiKey", apiKey);
-      apiKeyEntry.style.display = "none";
-      documentUploadContainer.style.display = "block";
-    } else {
-      alert("Please enter a valid API key.");
-    }
+function extractXmlFromFile(file) {
+  return new Promise((resolve, reject) => {
+    handleFileExtractionToXML(file, resolve, reject);
   });
-});
-
-// --------------------
-// Global Variables & File Type Detection
-// --------------------
-let englishFileData = null;
-let englishFileType = null;
-let frenchFileData = null;
-let frenchFileType = null;
-
-function getFileType(file) {
-  const name = file.name.toLowerCase();
-  if (name.endsWith(".docx")) return "docx";
-  if (name.endsWith(".pptx")) return "pptx";
-  if (name.endsWith(".xlsx")) return "xlsx";
-  return null;
-}
-
-// --------------------
-// Grab DOM Elements for File Inputs, Textarea, Buttons, and Download Link
-// --------------------
-const englishFileInput = document.getElementById("english-file");
-const frenchFileInput = document.getElementById("french-file");
-const frenchTextarea = document.getElementById("french-text");
-const frenchFileContainer = document.getElementById("french-file-container");
-const frenchTextareaContainer = document.getElementById("french-textarea-container");
-const submitBtn = document.getElementById("submit-btn");
-const downloadLink = document.getElementById("downloadLink");
-
-// --------------------
-// Radio Button Logic: Toggle Between Plain Text & File for French Content
-// --------------------
-const radioOptions = document.getElementsByName("french-input-option");
-radioOptions.forEach(radio => {
-  radio.addEventListener("change", () => {
-    if (radio.value === "textarea" && radio.checked) {
-      frenchTextareaContainer.style.display = "block";
-      frenchFileContainer.style.display = "none";
-    } else if (radio.value === "file" && radio.checked) {
-      frenchTextareaContainer.style.display = "none";
-      frenchFileContainer.style.display = "block";
-    }
-  });
-});
-
-// --------------------
-// File Input Handler: Accepts DOCX, PPTX, XLSX for English; DOCX for French
-// --------------------
-function handleFileInput(fileInput, errorElementId, fileRole) {
-  fileInput.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const type = getFileType(file);
-      if (!type) {
-        showError(errorElementId, "Only DOCX, PPTX, or XLSX files are allowed for English, and DOCX for French.");
-        if (fileRole === "english") {
-          englishFileData = null;
-          englishFileType = null;
-        } else {
-          frenchFileData = null;
-          frenchFileType = null;
-        }
-        return;
-      }
-      hideError(errorElementId);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (fileRole === "english") {
-          englishFileData = e.target.result;
-          englishFileType = type;
-          console.log("English file loaded. Type:", type);
-        } else {
-          frenchFileData = e.target.result;
-          frenchFileType = type;
-          console.log("French file loaded. Type:", type);
-        }
-      };
-      reader.readAsBinaryString(file);
-    }
-  });
-}
-
-handleFileInput(englishFileInput, "english-error", "english");
-handleFileInput(frenchFileInput, "french-error", "french");
-
-// --------------------
-// Utility Functions: getApiKey, escapeXML, generateSimpleDocXml
-// --------------------
-function getApiKey() {
-  return document.getElementById("api-key").value.trim();
-}
-
-function escapeXML(xml) {
-  return xml
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
-
-function generateSimpleDocXml(text) {
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:body>
-    <w:p>
-      <w:r>
-        <w:t>${escapeXML(text)}</w:t>
-      </w:r>
-    </w:p>
-  </w:body>
-</w:document>`;
-}
-
-// --------------------
-// Utility Functions for AI Response Processing
-// --------------------
-
-// Unescape HTML entities (converts &lt; to <, etc.)
-function unescapeHTMLEntities(str) {
-  const txt = document.createElement("textarea");
-  txt.innerHTML = str;
-  return txt.value;
-}
-
-// Remove triple-backtick code fences
-function removeCodeFences(str) {
-  return str.replace(/```[^\n]*\n?/g, "").replace(/```/g, "").trim();
-}
-
-/* 
-  Validates the AI response and unescapes HTML entities.
-  Additionally, it performs a file-type–specific check:
-  - For PPTX: ensures the output starts with <p:sld and contains the PPTX namespace.
-  - For DOCX/XLSX: ensures it starts with <?xml or a tag.
-*/
-function formatAIResponse(aiResponse, fileType) {
-  if (!aiResponse) return "";
-  let raw = removeCodeFences(aiResponse).trim();
-  raw = unescapeHTMLEntities(raw);
-  console.log("Unescaped AI response:", raw);
-
-  if (fileType === "pptx") {
-    // Ensure it contains <p:sld> which represents a valid PowerPoint slide structure
-    if (!raw.includes("<p:sld")) {
-      console.error("Invalid AI response for PPTX: Expected PPTX slide structure. Raw output:", raw);
-      alert("The AI response for PPTX is not in the correct XML format.");
-      return "";
-    }
-    // Ensure it has at least one <a:t> tag, which is where text is stored
-    if (!raw.includes("<a:t>")) {
-      console.error("Invalid AI response for PPTX: Missing text placeholders (<a:t>). Raw output:", raw);
-      alert("The AI response for PPTX is missing text placeholders.");
-      return "";
-    }
-  } else {
-    if (!raw.startsWith("<?xml") && raw.indexOf("<") !== 0) {
-      console.error("Invalid AI response: XML does not start with an XML tag. Raw output:", raw);
-      alert("The AI response is not in the correct XML format.");
-      return "";
-    }
-  }
-
-  if (raw.indexOf("</") === -1) {
-    console.error("Invalid AI response: Missing closing XML tags. Raw output:", raw);
-    alert("The AI response is missing closing XML structure.");
-    return "";
-  }
-
-  return raw;
-}
-
-// --------------------
-// Optional Utility: extractFrenchText (for DOCX XML)
-// --------------------
-function extractFrenchText(docXml) {
+} 
+// Function to format raw translated output into structured HTML.
+function formatTranslatedOutput(rawText) {
+  if (!rawText) return "";
+  rawText = rawText.trim();
+  let paragraphs = rawText.split(/\n\s*\n/);
+  let formatted = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+  return formatted;
+}  
+async function extractDocxParagraphs(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const docXml = await zip.file("word/document.xml").async("string");
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(docXml, "application/xml");
-  const textNodes = xmlDoc.getElementsByTagName("w:t");
-  let extractedText = "";
-  for (let i = 0; i < textNodes.length; i++) {
-    extractedText += textNodes[i].textContent + " ";
+
+  const paragraphs = xmlDoc.getElementsByTagName("w:p");
+  let fullText = [];
+
+  for (let i = 0; i < paragraphs.length; i++) {
+    let paragraph = paragraphs[i];
+    let paragraphText = "";
+
+    // Extract all <w:t> (text) elements within the paragraph
+    let textNodes = paragraph.getElementsByTagName("w:t");
+    for (let j = 0; j < textNodes.length; j++) {
+      paragraphText += textNodes[j].textContent;
+    }
+
+    if (paragraphText.trim()) {
+      fullText.push(paragraphText.trim());
+    }
   }
-  return extractedText.trim();
+
+  // Join paragraphs with double newline to separate them
+  return fullText.join("\n\n");
 }
 
-// --------------------
-// Submit Button Handler: Processes English File Based on Its Type
-// --------------------
-submitBtn.addEventListener("click", async () => {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    alert("Please enter a valid OpenRouter API key before proceeding.");
-    return;
-  }
-  if (!englishFileData) {
-    alert("Please upload the English document first.");
-    return;
-  }
+async function extractPptxText(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  let allParagraphs = [];
 
-  let frenchContentMode = "textarea"; // default mode
-  radioOptions.forEach(radio => {
-    if (radio.checked) frenchContentMode = radio.value;
+  // Loop over each file in the ZIP that matches a slide XML.
+  for (const fileName of Object.keys(zip.files)) {
+    if (slideRegex.test(fileName)) {
+      const slideXml = await zip.file(fileName).async("string");
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
+
+      // Get all <a:p> elements for this slide.
+      const paraNodes = xmlDoc.getElementsByTagName("a:p");
+      for (let i = 0; i < paraNodes.length; i++) {
+        const paraNode = paraNodes[i];
+        let paragraphText = "";
+
+        // Within each paragraph, concatenate the text from all <a:t> elements.
+        const textNodes = paraNode.getElementsByTagName("a:t");
+        for (let j = 0; j < textNodes.length; j++) {
+          paragraphText += textNodes[j].textContent;
+        }
+        // If the paragraph has any non-empty text, add it to the array.
+        if (paragraphText.trim().length > 0) {
+          allParagraphs.push(paragraphText.trim());
+        }
+      }
+    }
+  }
+  // Join paragraphs with two newlines to denote paragraph breaks.
+  return allParagraphs.join("\n\n");
+}
+
+
+
+// Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
+async function extractPptxTextXmlWithId(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer); 
+  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  let textElements = [];
+
+  for (const fileName of Object.keys(zip.files)) {
+    const match = slideRegex.exec(fileName);
+    if (match) {
+      const slideNumber = match[1];
+      const slideXml = await zip.file(fileName).async("string"); 
+
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
+      const textNodes = xmlDoc.getElementsByTagName("a:t");
+
+      for (let i = 0; i < textNodes.length; i++) {
+        let uniqueId = `S${slideNumber}_T${i + 1}`;
+        let text = textNodes[i].textContent;
+        textElements.push({ slide: slideNumber, id: uniqueId, text });
+      }
+    }
+  }
+  return textElements;
+} 
+
+$(document).ready(function() {
+  // Handle radio button changes for various upload and compare options.
+  $(document).on("click", "input[type=radio]", function (event) {
+    var target = event.target;
+    if (target.name === "source-upload-option") {
+      $('#source-doc-upload, #text-upload, #second-upload, #translation-preview, #convert-translation').addClass("hidden");
+      if (target.id === "source-upload-doc") {
+        $('#source-doc-upload').removeClass("hidden");
+      } else if (target.id === "source-upload-text") {
+        $('#text-upload').removeClass("hidden");
+      }
+    } else if (target.name === "second-upload-option") {
+      $('#second-doc-upload, #second-text-upload').addClass("hidden");
+      if (target.id === "second-upload-doc") {
+        $('#second-doc-upload').removeClass("hidden");
+      } else if (target.id === "second-upload-text") {
+        $('#second-text-upload').removeClass("hidden");
+      }
+    } else if (target.name === "translations-compare") {
+      if (target.id === "translations-llm-compare") {
+        $('#genai-model-options').removeClass("hidden");
+      } else if (target.id === "translations-instructions-compare" || target.id === "translations-no-compare") {
+        $('#genai-model-options').addClass("hidden");
+      }
+    }
+  }); 
+
+  // Detect language from entered text as the user types.
+  $('#source-text').on('input', function() {
+    $('#source-heading-detecting').removeClass("hidden");
+    var text = $(this).val().trim();
+    if (text.length === 0) {
+      $('#source-language').addClass("hidden");
+      return;
+    }
+    var detectedLanguage = detectLanguageBasedOnWords(text);
+    if (detectedLanguage === 'unknown') { detectedLanguage = 'english'; }
+    $('#source-heading-detecting').addClass("hidden");
+    $('#source-language').removeClass("hidden").val(detectedLanguage); 
   });
 
-  let frenchTextData = "";
-  if (frenchContentMode === "textarea") {
-    frenchTextData = frenchTextarea.value.trim();
-    if (!frenchTextData) {
-      showError("french-text-error", "French content cannot be empty.");
-      return;
-    } else {
-      hideError("french-text-error");
+
+  // Handle file input change for both source and second file uploads.
+  $(document).on("change", "input", async function (event) {
+    if (event.target.id == "source-file" || event.target.id == "second-file") {
+      let language = event.target.id === "source-file" ? "source" : "second";
+      $(`#${language}-doc-detecting`).removeClass("hidden");
+      $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
+      $(`#${language}-language-heading`).removeClass("hidden");
+      $(`#${language}-language-doc`).addClass("hidden");
+      var fileList = event.target.files; 
+      if (!fileList || fileList.length === 0) return;
+      if (fileList.length > 1) {
+          $(`#${language}-multiple-msg`).removeClass("hidden");
+          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+          return;
+      }
+      var uploadedFile = fileList[0];
+      var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
+      var validExtensions = ["docx", "xlsx", "pptx"];
+      var validMimeTypes = [
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      ];
+      if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
+          $(`#${language}-doc-error`).removeClass("hidden");
+          $(`#${language}-doc-detecting`).addClass("hidden");
+          $(`#${language}-language-heading`).removeClass("hidden");
+          return;
+      }
+      try {
+          let textContent;
+          if (fileExtension === "docx" || fileExtension === "xlsx") {
+              let arrayBuffer = await uploadedFile.arrayBuffer();
+              const zip = await JSZip.loadAsync(arrayBuffer);
+              const docXmlStr = await zip.file("word/document.xml").async("string");
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(docXmlStr, "application/xml"); 
+            console.log(xmlDoc);
+            const textNodes = xmlDoc.getElementsByTagName("w:t");
+
+  // Rebuild the HTML by wrapping each extracted text in a paragraph.
+ textContent = Array.from(textNodes)
+  .map(node => `<p>${node.textContent}</p>`)
+  .join('');
+          } else if (fileExtension === "pptx") { 
+              let arrayBuffer = await uploadedFile.arrayBuffer(); 
+              let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+              let pptxHtml = textElements
+                .map(item => `<p id="${item.id}">${item.text}</p>`)
+                .join('');
+              //Assign pptxHtml to textContent.
+              textContent = pptxHtml;
+          } else {
+              throw new Error("Unsupported file type");
+          }
+          if (!textContent) { 
+              throw new Error("No text extracted."); 
+          }
+          
+          let detectedLanguage = detectLanguageBasedOnWords(textContent); 
+          if (detectedLanguage !== "french") { detectedLanguage = "english"; }
+          $(`#${language}-doc-detecting`).addClass("hidden");
+          $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
+       
+          if (event.target.id === "source-file") {
+              englishFile = uploadedFile;
+              if (fileExtension === 'docx') {
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+                let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, {
+                    convertImage: mammoth.images.none
+                });
+                let cleanedHtml = mammothResult.value.replace(/<img[^>]*>/g, '');
+                englishHtmlStored = cleanedHtml; 
+                 $("#translation-A").html(mammothResult.value);
+              } else if (fileExtension == 'pptx'){
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+                let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+                let pptxHtml = textElements
+                  .map(item => `<p id="${item.id}">${item.text}</p>`)
+                  .join('');
+                englishHtmlStored = pptxHtml; 
+                $("#translation-A").html(pptxHtml);
+              }
+          } else {
+              frenchFile = uploadedFile;
+          }
+      } catch (err) {
+          console.error('Error processing source file:', err);
+          $(`#${language}-doc-error`).removeClass("hidden");
+          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+      }
     }
-  } else {
-    if (!frenchFileData) {
-      alert("Please upload the French document or select 'Paste French text'.");
-      return;
-    }
+  }); 
+
+  
+// $(document).on("click", "#extract-source-text-btn", async function () { 
+//   if (!englishFile) {
+//     alert("No source file uploaded. Please upload a file first!");
+//     return;
+//   }
+  
+//   $("#source-doc-error").addClass("hidden");
+//   $("#source-text-preview").val("");
+
+//   try {
+//     const fileExtension = englishFile.name.split('.').pop().toLowerCase();
+//     let extractedText = "";
+
+//     if (fileExtension === "docx") {
+//       const arrayBuffer = await englishFile.arrayBuffer();
+//       extractedText = await extractDocxParagraphs(arrayBuffer);
+//     } else if (fileExtension === "pptx") {
+//       let arrayBuffer = await englishFile.arrayBuffer();
+//       extractedText = await extractPptxText(arrayBuffer);
+//     } else if (fileExtension === "xlsx") {
+//       let arrayBuffer = await englishFile.arrayBuffer();
+//       let workbook = XLSX.read(arrayBuffer, { type: "array" });
+//       let sheetName = workbook.SheetNames[0];
+//       let worksheet = workbook.Sheets[sheetName];
+//       let csvData = XLSX.utils.sheet_to_csv(worksheet);
+//       extractedText = csvData;
+//     } else {
+//       throw new Error("Unsupported file type for extraction");
+//     }
+
+//     // Populate the preview textarea with the extracted text.
+//     $("#source-text-preview").val(extractedText);
+//     // Reveal the preview card.
+//     $("#source-preview").removeClass("hidden");
+//   } catch (err) {
+//     console.error("Error extracting source text:", err);
+//     $("#source-doc-error").removeClass("hidden");
+//   }
+// });
+$(document).on("click", "#copy-all-btn", function(e) {
+  // Prevent the click from toggling the <details> element.
+  e.stopPropagation();
+
+  // Retrieve text from the <pre> element using .text()
+  const textToCopy = $("#source-text-preview").text().trim();
+  if (!textToCopy) {
+    alert("There is no text to copy!");
+    return;
   }
 
-  try {
-    const zipEN = new PizZip(englishFileData);
+  // Use the Clipboard API if available.
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(textToCopy)
+      .catch(err => {
+        console.error("Failed to copy: ", err);
+        alert("Failed to copy text.");
+      });
+  } else {
+    // Fallback for older browsers: create a temporary textarea.
+    const $tempTextarea = $("<textarea>");
+    $("body").append($tempTextarea);
+    $tempTextarea.val(textToCopy).select();
+    try {
+      document.execCommand("copy");
+    } catch (err) {
+      console.error("Fallback: Unable to copy", err);
+      alert("Failed to copy text.");
+    }
+    $tempTextarea.remove();
+  }
+});
 
-    // Branch based on English file type
-    if (englishFileType === "docx") {
-      // DOCX Processing: Let AI rewrite the document.xml
-      let enDocumentXml = zipEN.file("word/document.xml").asText();
-      console.log("Original DOCX XML:", enDocumentXml);
-      let enDocumentRels = zipEN.file("word/_rels/document.xml.rels")?.asText();
-      if (!enDocumentRels) {
-        console.error("Missing relationships file (_rels/document.xml.rels)");
-        alert("Invalid DOCX: Missing relationships file.");
+
+
+  /***********************************************************************
+   * Translate Button Flow:
+   * For file uploads, if DOCX, convert the file to HTML via Mammoth, then traverse the
+   * DOM to extract all text nodes (including titles, bullet points, table cells, etc.),
+   * join them with a unique delimiter, send the entire text for translation,
+   * then split the translated text and reassign each text node.
+   * For plain text, use the existing translation.
+   ***********************************************************************/
+  $("#source-upload-translate-btn").click(async function() {
+    var selectedOption = $('input[name="source-upload-option"]:checked').val();
+    if (selectedOption == "source-upload-doc") {
+      var file = $('#source-file')[0].files[0];
+      if (!file) {
+        $(`#source-doc-error`).removeClass("hidden");
         return;
       }
-      zipEN.file("word/_rels/document.xml.rels", enDocumentRels);
-
-      let frDocumentXml = "";
-      if (frenchContentMode === "file" && frenchFileType === "docx") {
-        frDocumentXml = new PizZip(frenchFileData).file("word/document.xml").asText();
-      } else {
-        frDocumentXml = generateSimpleDocXml(frenchTextData);
-      }
-
-      let requestJson = {
-        messages: [
-          {
-            role: "system",
-            content: "You are a DOCX formatting assistant. Replace only the text inside <w:t> tags with the provided French text. Preserve all other XML tags, namespaces, and attributes. Return only valid XML with no extra commentary or code fences."
-          },
-          {
-            role: "user",
-            content: "English DOCX XML: " + escapeXML(enDocumentXml)
-          },
-          {
-            role: "user",
-            content: "French content: " + escapeXML(frDocumentXml)
-          }
-        ]
-      };
-
-      let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
-      if (!ORjson) return;
-      let aiResponse = ORjson.choices[0]?.message?.content || "";
-      let formattedText = formatAIResponse(aiResponse, "docx");
-      if (!formattedText) return;
-      zipEN.file("word/document.xml", formattedText);
-
-      let contentTypes = zipEN.file("[Content_Types].xml")?.asText();
-      if (contentTypes && !contentTypes.includes("word/document.xml")) {
-        contentTypes = contentTypes.replace(
-          "</Types>",
-          `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`
-        );
-        zipEN.file("[Content_Types].xml", contentTypes);
-      }
-
-    } else if (englishFileType === "pptx") {
-      // PPTX Processing: Let AI rewrite each slide's XML for PPTX
-      let frenchContent = "";
-      if (frenchContentMode === "file" && frenchFileType === "docx") {
-        let frenchDocXml = new PizZip(frenchFileData).file("word/document.xml").asText();
-        frenchContent = extractFrenchText(frenchDocXml);
-      } else {
-        frenchContent = frenchTextData;
-      }
-
-      const slideFiles = zipEN.file(/ppt\/slides\/slide\d+\.xml/);
-      if (!slideFiles || slideFiles.length === 0) {
-        throw new Error("No slide files found in PPTX.");
-      }
-
-      for (let i = 0; i < slideFiles.length; i++) {
-        let slideXml = slideFiles[i].asText();
-       let requestJson = {
-  messages: [
-    {
-      role: "system",
-      content: 'You are a PowerPoint XML processing assistant. 1️. Replace ONLY the text inside <a:t> tags with the provided French text. 2️. DO NOT modify any other XML structure, attributes, or formatting. 3️. ALWAYS return a complete and valid XML file.4️. Do NOT include markdown, comments, or extra formatting.5️. Ensure the complete XML is returned with all opening and closing tags, including </p:sld>, and no truncation occurs.(most important thing!)'
-    },
-    {
-      role: "user",
-      content: `English slide XML:\n${escapeXML(slideXml)}`
-    },
-    {
-      role: "user",
-      content: `French content (plain text):\n${escapeXML(frenchContent)}`
-    }
-  ]
-};
-
-
-        console.log("Sending PPTX prompt for slide", slideFiles[i].name);
-        let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
-        if (!ORjson) return;
-        let aiResponse = ORjson.choices[0]?.message?.content || "";
-        console.log("Raw AI Response for slide", slideFiles[i].name, ":", aiResponse);
-        let formattedSlideXml = formatAIResponse(aiResponse, "pptx");
-        if (!formattedSlideXml) return;
-        zipEN.file(slideFiles[i].name, formattedSlideXml);
-      }
-
-    } else if (englishFileType === "xlsx") {
-      // XLSX Processing: Let AI rewrite the sharedStrings.xml
-      let sharedStringsXml = zipEN.file("xl/sharedStrings.xml")?.asText();
-      if (!sharedStringsXml) {
-        throw new Error("No sharedStrings.xml found in XLSX.");
-      }
-      let frenchContent = "";
-      if (frenchContentMode === "file" && frenchFileType === "docx") {
-        let frenchDocXml = new PizZip(frenchFileData).file("word/document.xml").asText();
-        frenchContent = extractFrenchText(frenchDocXml);
-      } else {
-        frenchContent = frenchTextData;
-      }
-      let requestJson = {
-        messages: [
-          {
-            role: "system",
-            content: "You are an Excel formatting assistant. Replace only the text inside <t> tags in the sharedStrings XML with the provided French text, preserving all other XML structure. Return only valid XML with no extra commentary or code fences."
-          },
-          {
-            role: "user",
-            content: "English sharedStrings XML: " + escapeXML(sharedStringsXml)
-          },
-          {
-            role: "user",
-            content: "French content: " + escapeXML(frenchContent)
-          }
-        ]
-      };
-
-      let ORjson = await getORData("google/gemini-2.0-flash-exp:free", requestJson);
-      if (!ORjson) return;
-      let aiResponse = ORjson.choices[0]?.message?.content || "";
-      let formattedSharedStringsXml = formatAIResponse(aiResponse, "xlsx");
-      if (!formattedSharedStringsXml) return;
-      zipEN.file("xl/sharedStrings.xml", formattedSharedStringsXml);
-
-    } else {
-      alert("Unsupported English file type.");
-      return;
-    }
-
-    // Generate the new file and set up the download link
-    const newFileBlob = zipEN.generate({ type: "blob", compression: "DEFLATE" });
-    const newFileUrl = URL.createObjectURL(newFileBlob);
-    downloadLink.href = newFileUrl;
-    let ext = (englishFileType === "docx") ? "docx" : (englishFileType === "pptx") ? "pptx" : (englishFileType === "xlsx") ? "xlsx" : "out";
-    downloadLink.download = `french-translated.${ext}`;
-    downloadLink.style.display = "inline";
-    downloadLink.textContent = "Download Formatted Document";
-    alert("Success! Your formatted document is ready to download.");
+      var fileExtension = file.name.split('.').pop().toLowerCase();
+      
+      // For DOCX files, translate all visible text (titles, bullet points, tables, etc.)
+      if (fileExtension === 'docx') {
+  try {
+    // Convert DOCX to HTML using Mammoth.
+    let arrayBuffer = await file.arrayBuffer();
+    let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+    let originalHtml = mammothResult.value;
     
+    // Create a temporary DOM element to hold the HTML.
+    let tempDiv = document.createElement("div");
+    tempDiv.innerHTML = originalHtml;
+    
+    // Recursively collect all text nodes.
+    function getTextNodes(root) {
+      let walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+      let nodes = [];
+      let currentNode;
+      while (currentNode = walker.nextNode()) {
+        nodes.push(currentNode);
+      }
+      return nodes;
+    }
+    let textNodes = getTextNodes(tempDiv);
+    
+    // Use a delimiter that is unlikely to occur in text.
+    const delimiter = "<<<DELIM>>>";
+    let joinedText = textNodes.map(node => node.nodeValue).join(delimiter);
+    
+    // Set translation instructions and model list.
+    let selectedLanguage = $('#source-language').val();
+    let translationInstructions = "custom-instructions/translation/english2french1.txt";
+    if (selectedLanguage == "French") { 
+      translationInstructions = "custom-instructions/translation/french2english.txt"; 
+    }
+    let models = [
+      "mistralai/mistral-nemo:free",
+      "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+      "cognitivecomputations/dolphin3.0-mistral-24b:free",
+      "mistralai/mistral-small-24b-instruct-2501:free",
+      "mistralai/mistral-7b-instruct:free"
+    ];
+    
+    // Load the system prompt from your file.
+    let systemPrompt = await $.get(translationInstructions);
+    
+    // Build the request JSON.
+    let requestJson = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: joinedText }
+    ];
+    
+    // Iterate over your model list until one returns a valid response.
+    let translatedJoinedText = null;
+    for (let model of models) {
+      let ORjson = await getORData(model, requestJson);
+      if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
+        translatedJoinedText = ORjson.choices[0].message.content;
+        break;
+      }
+    }
+    if (!translatedJoinedText) {
+      alert("Translation failed. No valid response from any model.");
+      return;
+    }
+    
+    // Remove extraneous content before the first occurrence and after the last occurrence of the delimiter.
+    function cleanTranslatedText(text, delimiter) {
+      let first = text.indexOf(delimiter);
+      if (first !== -1) {
+        text = text.substring(first);
+      }
+      let last = text.lastIndexOf(delimiter);
+      if (last !== -1 && last + delimiter.length < text.length) {
+        text = text.substring(0, last + delimiter.length);
+      }
+      return text;
+    }
+    translatedJoinedText = cleanTranslatedText(translatedJoinedText, delimiter);
+    
+    // Split the translated text back using the delimiter.
+    let translatedSegments = translatedJoinedText.split(delimiter);
+    if (translatedSegments.length !== textNodes.length) {
+      console.warn("Mismatch in number of segments. Possibly some delimiters were removed.");
+      // Fallback: Normalize the entire raw translated output as HTML.
+      function normalizeHtmlContent(htmlContent) {
+        let $container = $("<div>").html(htmlContent);
+        $container.contents().filter(function() {
+          return this.nodeType === 3 && !/\S/.test(this.nodeValue);
+        }).remove();
+        return $container.html().trim();
+      }
+      let finalHtml = normalizeHtmlContent(translatedJoinedText);
+      $('#translation-A').html(finalHtml);
+    } else {
+      // Reassign each text node's value with its corresponding translated segment.
+      textNodes.forEach((node, index) => {
+        node.nodeValue = translatedSegments[index] || "";
+      });
+      // Optional: further normalize the resulting HTML.
+      function normalizeHtmlContent(htmlContent) {
+        let $container = $("<div>").html(htmlContent);
+        $container.contents().filter(function() {
+          return this.nodeType === 3 && !/\S/.test(this.nodeValue);
+        }).remove();
+        return $container.html().trim();
+      }
+      let normalizedHtml = normalizeHtmlContent(tempDiv.innerHTML);
+      $('#translation-A').html(normalizedHtml);
+    }
+    
+    $("#translation-preview").removeClass("hidden");
   } catch (error) {
-    console.error("Error during processing:", error);
-    alert("An error occurred while processing the document: " + error.message);
+    console.error("Error during DOCX translation:", error);
+    alert("Error during file translation. Please check the console for details.");
   }
+}else if (fileExtension === 'pptx' || fileExtension === 'xlsx') {
+        try {
+          const englishXml = await extractXmlFromFile(file);
+          if (!englishXml) { throw new Error("No XML extracted from file."); }
+          let updatedXml = await conversionGemini(englishXml, fileExtension);
+          let formattedOutput = formatTranslatedOutput(updatedXml);
+          $('#translation-A').html(formattedOutput);
+          $("#translation-preview").removeClass("hidden");
+        } catch (error) {
+          console.error("Error during file translation:", error);
+          alert("Error during file translation. Please check the console for details.");
+        }
+      } else {
+        alert("Unsupported file type for translation.");
+      }
+    } else if (selectedOption == "source-upload-text") {
+      var sourceText = $("#source-text").text();
+      var selectedLanguage = $('#source-language').val();
+      let translationInstructions = "custom-instructions/translation/english2french.txt";
+      if (selectedLanguage == "French") { 
+        translationInstructions = "custom-instructions/translation/french2english.txt"; 
+      }
+      $("#translation-preview").removeClass("hidden");
+      let models = [
+          "mistralai/mistral-nemo:free",
+          "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+          "cognitivecomputations/dolphin3.0-mistral-24b:free",
+          "mistralai/mistral-small-24b-instruct-2501:free",
+          "mistralai/mistral-7b-instruct:free"
+      ];
+      let translationResult = await translateText(sourceText, models, translationInstructions, selectedLanguage);
+      let formattedOutput = formatTranslatedOutput(translationResult);
+      $('#translation-A').html(formattedOutput);
+      // Handle compare options if selected.
+      let selectedCompare = $('input[name="translations-instructions-compare"]:checked').val();
+      let selectedModel = $('input[name="translate-model-b-option"]:checked').val();
+      if (selectedCompare == "translations-llm-compare" && selectedModel != "") {
+        let compareResult = await translateText(sourceText, selectedModel, translationInstructions, selectedLanguage);
+        if (compareResult != "") {
+          $('#translation-B').html(formatTranslatedOutput(compareResult));
+          $('#translation-model-B').html(selectedModel);
+          $('#accept-translation-A-btn, #accept-translation-B-btn').removeClass("hidden");
+          if ($('#translation-B').hasClass("hidden")) {
+            toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
+          }
+        }
+      } else if (selectedCompare == "translations-instructions-compare") {
+        let compareResult = await translateText(sourceText, models, translationInstructions.replace(".txt", "-B.txt"), selectedLanguage);
+        if (compareResult != "") {
+          $('#translation-B').html(formatTranslatedOutput(compareResult));
+          $('#translation-model-B').html("Instructions Compare");
+          $('#accept-translation-A-btn, #accept-translation-B-btn').removeClass("hidden");
+          if ($('#translation-B').hasClass("hidden")) {
+            toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
+          }
+        }
+      }
+    }
+  }); 
+ 
+// 'Provide translation' button, show the second upload section
+ $("#source-upload-provide-btn").click(async function() {
+    if (!englishFile) {
+      alert("Please upload the English document first.");
+      return;
+    }
+    $("#source-doc-error").addClass("hidden");
+    // Clear any previous preview content.
+    $("#source-text-preview").text("");
+
+    try {
+      const fileExtension = englishFile.name.split('.').pop().toLowerCase();
+      let extractedText = "";
+
+      if (fileExtension === "docx") {
+        const arrayBuffer = await englishFile.arrayBuffer();
+        extractedText = await extractDocxParagraphs(arrayBuffer);
+      } else if (fileExtension === "pptx") {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        extractedText = await extractPptxText(arrayBuffer);
+      } else if (fileExtension === "xlsx") {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        let workbook = XLSX.read(arrayBuffer, { type: "array" });
+        let sheetName = workbook.SheetNames[0];
+        let worksheet = workbook.Sheets[sheetName];
+        let csvData = XLSX.utils.sheet_to_csv(worksheet);
+        extractedText = csvData;
+      } else {
+        throw new Error("Unsupported file type for extraction");
+      }
+        $("#source-text-preview").text(extractedText);
+      // Unhide the preview section.
+      $("#source-preview-wrapper").removeClass("hidden").show();
+      // Unhide the second upload section.
+      $("#second-upload").removeClass("hidden");
+    } catch (err) {
+      console.error("Error extracting source text:", err);
+      $("#source-doc-error").removeClass("hidden");
+    }
+  });
+  /***********************************************************************
+   * Provide Translation Button Flow:
+   * show the second upload section
+  ***********************************************************************/
+   
+
+  function removeCodeFences(str) {
+  // Remove a leading line that starts with ``` (plus any following text)
+  str = str.replace(/^```.*\n/, '');
+  // Remove any trailing lines that contain only backticks and optional whitespace
+  str = str.replace(/\n\s*```+\s*$/, '');
+  return str.trim();
+}
+  // Add event listener for "convert back to document" link
+  $("a[href='#convert-translation']").click(function(e) {
+    e.preventDefault();
+    if ($("#translation-preview").is(":visible")) { 
+       $("#convert-translation").removeClass("hidden");  
+       $("#translated-doc-download").removeClass("hidden");
+        // Optionally, scroll to the conversion card
+        $('html, body').animate({
+            scrollTop: $("#convert-translation").offset().top
+        }, 500);
+    } else {
+        alert("Please complete the translation before converting back to document.");
+    }
 });
 
-// --------------------
-// getORData: Send Request to OpenRouter API
-// --------------------
-async function getORData(model, requestJson) {
-  const apiKey = getApiKey();
-  console.log("Sending API request:", requestJson);
+  /***********************************************************************
+   * Second File Upload Button
+   * For the second file uploads, extract and parse
+   ***********************************************************************/
+$("#second-upload-btn").click(async function () {
+  // Show processing spinner immediately
+  $('#processing-spinner').removeClass("hidden");
+  console.log("Spinner should now be visible.");
+
+  // Only use the text area for French text
+  let frenchText = $("#second-text").val();
+  if (!frenchText || frenchText.trim().length === 0) {
+    alert("No French document/text found. Please copy and paste your translation.");
+    $('#converting-spinner').addClass("hidden");
+    $('#processing-spinner').addClass("hidden");
+    return;
+  }
+
+  // Retrieve the stored English HTML content
+  let englishHtml = englishHtmlStored; // now using the global variable
+  if (!englishHtml || englishHtml.trim().length === 0) {
+    alert("No formatted English document found. Please complete the first step.");
+    $('#converting-spinner').addClass("hidden");
+    $('#processing-spinner').addClass("hidden");
+    return;
+  }
+  
+  // Remove any images from the English HTML
+  englishHtml = englishHtml.replace(/<img[^>]*>/g, '');
+
+  // Determine prompt based on the original English file extension
+  const fileExtensionEnglish = (englishFile?.name || "").split('.').pop().toLowerCase();
+  const promptPath = (fileExtensionEnglish === "pptx")
+    ? "custom-instructions/translation/english2french-pptx.txt"
+    : "custom-instructions/translation/english2french1.txt";
+
+  let systemPrompt = "";
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + apiKey,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: requestJson.messages
-      })
-    });
-    console.log("API Response Status:", response.status);
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status} - ${response.statusText}`);
-    }
-    const ORjson = await response.json();
-    if (!ORjson || !ORjson.choices || ORjson.choices.length === 0) {
-      throw new Error("Invalid API response format.");
-    }
-    return ORjson;
+    systemPrompt = await $.get(promptPath);
   } catch (error) {
-    console.error("Error fetching from OpenRouter API:", error.message);
-    alert("Failed to fetch from OpenRouter API: " + error.message);
-    return undefined;
+    console.error("Error loading system prompt:", error);
+    alert("Could not load translation instructions. Please check your files.");
+    $('#converting-spinner').addClass("hidden");
+    $('#processing-spinner').addClass("hidden");
+    return;
   }
-}
 
-// --------------------
-// showError & hideError
-// --------------------
-function showError(elementId, message) {
-  const el = document.getElementById(elementId);
-  if (el) {
-    el.textContent = message;
-    el.style.display = "block";
+  const combinedPrompt = `${systemPrompt}\n\nEnglish Document (HTML):\n${englishHtml}\n\nFrench Text:\n${frenchText}\n\nPlease return the French document in HTML format that exactly follows the structure of the English document.`;
+
+  const requestJson = [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: combinedPrompt }
+  ];
+
+  const models = [
+    "google/gemini-2.0-flash-lite-preview-02-05:free",
+    "google/gemini-2.0-pro-exp-02-05:free",
+    "google/gemini-2.0-flash-thinking-exp:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "nvidia/llama-3.1-nemotron-70b-instruct:free",
+    "google/gemini-2.0-flash-exp:free",
+    "google/gemini-exp-1206:free",
+    "google/gemini-flash-1.5-8b-exp",
+    "deepseek/deepseek-r1:free"
+  ];
+
+  finalFrenchHtml = "";
+  for (let model of models) {
+    const ORjson = await getORData(model, requestJson);
+    console.log(`Model: ${model}`, ORjson);
+    if (ORjson?.choices?.[0]?.message) {
+      finalFrenchHtml = ORjson.choices[0].message.content;
+      console.log("Raw AI output:", finalFrenchHtml);
+      break;
+    }
   }
-}
 
-function hideError(elementId) {
-  const el = document.getElementById(elementId);
-  if (el) {
-    el.style.display = "none";
-  }
-}
-
-// --------------------
-// Utility Functions: unescapeHTMLEntities, removeCodeFences, formatAIResponse
-// --------------------
-function unescapeHTMLEntities(str) {
-  const txt = document.createElement("textarea");
-  txt.innerHTML = str;
-  return txt.value;
-}
-
-function removeCodeFences(str) {
-  return str.replace(/```[^\n]*\n?/g, "").replace(/```/g, "").trim();
-}
-
-/* 
-  Validates and unescapes the AI response.
-  Uses fileType (docx, pptx, xlsx) to apply file-specific checks.
-*/
-function formatAIResponse(aiResponse, fileType) {
-  if (!aiResponse) return "";
-  let raw = removeCodeFences(aiResponse).trim();
-  raw = unescapeHTMLEntities(raw);
-  console.log("Full AI Response:\n", raw); // Debugging step
-
-  if (fileType === "pptx") {
-   // Allow variations in whitespace and XML headers
-    const normalizedRaw = raw.replace(/\s+/g, " ");  // Normalize spaces
-
-    // Check if it contains the necessary structure
-    if (!normalizedRaw.includes("<p:sld")) {
-      console.error("DEBUG: AI response does not contain <p:sld>. Raw output:", raw);
-      alert("The AI response for PPTX is missing the <p:sld> structure.");
-      return "";
+  try {
+    if (!finalFrenchHtml) {
+      alert("Translation alignment failed. No valid response from any model.");
+      return;
     }
 
-    // Ensure it has text placeholders (<a:t>)
-    if (!normalizedRaw.includes("<a:t>")) {
-      console.error("DEBUG: AI response does not contain <a:t>. Raw output:", raw);
-      alert("The AI response for PPTX is missing text placeholders.");
-      return "";
+    finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+    
+    const fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
+    let formattedOutput; 
+
+    if (fileExtension === 'pptx') {
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = finalFrenchHtml;
+      const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+      const rebuilt = [];
+  
+      for (let i = 0; i < rawParagraphs.length; i++) {
+        const currText = rawParagraphs[i].textContent.trim();
+        const currId = rawParagraphs[i].id;
+  
+        if (/^[dlLcsà'‘’`’“”]$/.test(currText) && rawParagraphs[i + 1]) {
+          const nextText = rawParagraphs[i + 1].textContent.trim();
+          rebuilt.push(`<p id="${currId}">${currText}${nextText}</p>`);
+          i++;
+        } else {
+          rebuilt.push(`<p id="${currId}">${currText}</p>`);
+        }
+      }
+     
+      finalFrenchHtml = rebuilt.join('');  
+      formattedOutput = finalFrenchHtml;
+    } else {
+      formattedOutput = formatTranslatedOutput(finalFrenchHtml);
+    } 
+
+    if (!formattedOutput || formattedOutput.trim() === "") {
+      alert("Formatted output is empty. Please check the AI response.");
+    } else {
+      // Do not display output, store it internally
+      console.log("AI translation ready and stored (not displayed).");
+    }
+    
+    console.log("Final French HTML (cleaned):", finalFrenchHtml);
+
+  } catch (err) {
+    console.error("Error during final output processing:", err);
+    alert("An error occurred while processing the AI output.");
+  } finally {
+    // Hide spinners
+    $('#converting-spinner').addClass("hidden"); 
+    $('#processing-spinner').addClass("hidden");
+
+    // Show the download card so the user can later download the file
+    $('#convert-translation').removeClass("hidden");
+    $('#translated-doc-download').removeClass("hidden");
+  }
+});
+  /*************************************************************
+   * Download Document Workflow
+   *************************************************************/
+ $("#convert-translation-download-btn").click(async function () {
+    // 1) Validate that there is a translation.
+    if (!finalFrenchHtml || !finalFrenchHtml.trim()) {
+      alert("No formatted French document available.");
+      return;
     }
 
-    // Ensure a proper closing tag
-    if (!normalizedRaw.includes("</p:sld>")) {
-      console.error("DEBUG: AI response may be truncated. Missing </p:sld>. Raw output:", raw);
-      alert("The AI response appears to be truncated or incomplete.");
-      return "";
+    // 2) Determine file type and set the mimeType.
+    let fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
+    let mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    if (fileExtension === 'pptx') {
+      mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+    } else if (fileExtension === 'xlsx') {
+      mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     }
+
+    // 3) Use JSZip to modify the original file.
+    let generatedBlob;
+    try {
+      if (fileExtension === 'docx') {
+        let fullHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              body { font-family: Calibri, "Calibri (Body)", sans-serif; }
+            </style>
+          </head>
+          <body>
+            ${finalFrenchHtml}
+          </body>
+        </html>
+      `; 
+      generatedBlob = htmlDocx.asBlob(fullHtml);
+      } else if (fileExtension === 'pptx') {
+        let arrayBuffer = await englishFile.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+
+        for (const fileName of Object.keys(zip.files)) {
+          const match = slideRegex.exec(fileName);
+          if (match) {
+            const slideNumber = match[1];
+            const slideXml = await zip.file(fileName).async("string");
+            const updatedSlideXml = conversionPptxXml(slideXml, finalFrenchHtml, slideNumber);
+            zip.file(fileName, updatedSlideXml);
+          }
+        }
+        generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+
+      } else if (fileExtension === 'xlsx') {
+        // Insert your XLSX conversion logic here.
+      }
+    } catch (err) {
+      console.error("Error while generating translated file:", err);
+      alert("Failed to generate translated file.");
+      return;
+    }
+
+    if (!generatedBlob) {
+      alert("File generation failed.");
+      return;
+    }
+
+    // 4) Set the file name and initiate the download.
+    let baseFileName = englishFile
+      ? englishFile.name.split('.').slice(0, -1).join('.')
+      : "translated-file";
+    let modifiedFileName = `${baseFileName}-FR.${fileExtension}`;
+
+    let downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(generatedBlob);
+    downloadLink.download = modifiedFileName;
+    downloadLink.click();
+    URL.revokeObjectURL(downloadLink.href);
+  });
+});
+//************************************************************************************
+//* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
+//* Can be added more if needed                                                   ***** 
+//*************************************************************************************/
+function deduplicateFrenchParagraphs(finalFrenchHtml) {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = finalFrenchHtml;
+
+  const seenTexts = new Set();
+  const cleanedParagraphs = [];
+
+  const paragraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+  for (const p of paragraphs) {
+    const cleanText = p.textContent.trim();
+    if (!seenTexts.has(cleanText)) {
+      seenTexts.add(cleanText);
+      cleanedParagraphs.push(p.outerHTML);
+    }
+  }
+
+  return cleanedParagraphs.join("");
+} 
+function buildFrenchTextMap(finalFrenchHtml) { 
+  finalFrenchHtml = deduplicateFrenchParagraphs(finalFrenchHtml);
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = finalFrenchHtml;
+
+  const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+
+  // Step 1: Rebuild any broken phrases like "d" + "'identifier"
+  const rebuilt = [];
+  for (let i = 0; i < rawParagraphs.length; i++) {
+    const curr = rawParagraphs[i].textContent.trim();
+     if (i > 0 && !rebuilt[rebuilt.length - 1].text.endsWith(" ") && !curr.startsWith(" ")) {
+  rebuilt[rebuilt.length - 1].text += " ";
+}
+rebuilt.push({ id: rawParagraphs[i].id, text: curr });
+ 
+  }
+
+  // Build a map from rebuilt result
+  const frenchMap = {};
+  for (const { id, text } of rebuilt) {
+    frenchMap[id] = text;
+  }
+
+  return frenchMap;
+}
+
+function escapeXml(str) {
+  return str.replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+}
+
+// Helper function to convert French HTML back to PPTX XML:
+function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
+  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
+  let runIndex = 1;
+
+ const updatedXml = originalXml.replace(/<a:r>[\s\S]*?<a:t>([\s\S]*?)<\/a:t>[\s\S]*?<\/a:r>/g, (match, capturedText) => {
+      const key = `S${slideNumber}_T${runIndex++}`;
+      let newText = frenchMap[key] || capturedText;
+
+      if (newText === undefined || !newText.trim()) {
+        newText = " "; // fallback to keep structure
+      }
+      
+      const escaped = escapeXml(newText);
+      return match.replace(capturedText, newText);
+    }
+  );
+
+  return updatedXml;
+}
+  
+// Function to generate a file blob from the zip and XML content.
+function generateFile(zip, xmlContent, mimeType, renderFunction) {
+  try {
+    zip.file("file.xml", xmlContent);
+    if (typeof renderFunction === 'function') { renderFunction(); }
+  } catch (error) {
+    console.error("Error during file generation:", error);
+  }
+  return zip.generateAsync({ type: "blob", mimeType: mimeType });
+}
+
+// Create XML content for the final file based on file extension.
+function createXmlContent(fileExtension, updatedXml) {
+  let xmlContent = '';
+  if (fileExtension === 'docx') {
+    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+      <w:body>
+        ${updatedXml}
+      </w:body>
+      </w:document>`;
+  } else if (fileExtension === 'pptx') {
+    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+        <p:sldMasterIdLst>${updatedXml}</p:sldMasterIdLst>
+      </p:presentation>`;
+  } else if (fileExtension === 'xlsx') {
+    xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+        <sheetData>${updatedXml}</sheetData>
+      </workbook>`;
+  }
+  return xmlContent;
+}
+
+// (The functions fallbackAlignLines, conversionDocxTemplater, conversionGemini, translateText, acceptTranslation, and detectLanguageBasedOnWords remain unchanged.)
+
+function fallbackAlignLines(originalLines, adjustedText) {
+  let words = adjustedText.split(/\s+/).filter(w => w.trim() !== "");
+  let targetLineCount = originalLines.length;
+  let wordsPerLine = Math.ceil(words.length / targetLineCount);
+  let newLines = [];
+  for (let i = 0; i < targetLineCount; i++) {
+    let lineWords = words.slice(i * wordsPerLine, (i + 1) * wordsPerLine);
+    newLines.push(lineWords.join(" "));
+  }
+  return newLines;
+}
+
+async function translateText(source, models, instructions, sourceLanguage) {
+  const systemGeneral = { role: "system", content: await $.get(instructions) };
+  var glossary;
+  var systemGlossary;
+  if ($('#translations-glossary').prop('checked')) {
+    try {
+      glossary = await $.get("custom-instructions/translation/en-fr-glossary.json");
+    } catch (error) {
+      console.error("Unexpected error in glossary get:", error);
+      return error;
+    }
+    glossary = glossary.filter(entry => {
+      return sourceLanguage === "French"
+                ? source.toLowerCase().includes(entry.FR.toLowerCase())
+                : source.toLowerCase().includes(entry.EN.toLowerCase());
+    });
+    systemGlossary = glossary.length > 0 ? { role: "system", content: glossary } : null;
   } else {
-    // Ensure it's a valid XML structure for DOCX/XLSX
-    if (!raw.startsWith("<?xml") && raw.indexOf("<") !== 0) {
-      console.error("Invalid AI response: XML does not start with an XML tag. Raw output:", raw);
-      alert("The AI response is not in the correct XML format.");
-      return "";
+    systemGlossary = null;
+  }
+  let requestJson = [systemGeneral];
+  if (systemGlossary) { requestJson.push(systemGlossary); }
+  requestJson.push({ role: "user", content: source });
+  for (let model of models) {
+    try {
+      console.log(`Attempting translation with model: ${model}`);
+      let ORjson = await getORData(model, requestJson);
+      if (ORjson && ORjson.choices && ORjson.choices.length > 0) {
+        return ORjson.choices[0].message.content;
+      } else {
+        console.error(`Model ${model} returned an unexpected response:`, ORjson);
+      }
+    } catch (error) {
+      console.error(`Error calling getORData with model ${model}:`, error);
     }
   }
-
-  return raw;
+  console.error("All models failed to translate.");
+  return "error";
 }
 
+function acceptTranslation(option) {
+  if (option == "b") { $("#translation-A").text($("#translation-B").text()); }
+  $("#edit-translation-A-btn").removeClass("hidden");
+  $("#accept-translation-A-btn, #accept-translation-B-btn").addClass("hidden");
+  $(".convert-translation").removeClass("hidden");
+  toggleComparisonElement($('#translation-A-container'), $('#translation-B-container'));
+}
 
-// --------------------
-// Optional Utility: extractFrenchText (for DOCX XML)
-// --------------------
-function extractFrenchText(docXml) {
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(docXml, "application/xml");
-  const textNodes = xmlDoc.getElementsByTagName("w:t");
-  let extractedText = "";
-  for (let i = 0; i < textNodes.length; i++) {
-    extractedText += textNodes[i].textContent + " ";
+function detectLanguageBasedOnWords(text) {
+  const englishWords = ['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'on', 'with'];
+  const frenchWords = ['le', 'la', 'et', 'est', 'dans', 'il', 'à', 'de', 'pour', 'sur'];
+  text = text.toLowerCase();  
+ function countMatches(wordList) {
+    return wordList.reduce((count, word) => {
+      const regex = new RegExp(`\\b${word}\\b`, 'g');
+      return count + ((text.match(regex) || []).length);
+    }, 0);
   }
-  return extractedText.trim();
-}
+  const englishMatches = countMatches(englishWords); 
+  const frenchMatches = countMatches(frenchWords);  
+
+  const hasAccents = /[àâçéèêëîïôûùüÿœæ]/.test(text); 
+  if (frenchMatches > englishMatches || (hasAccents && frenchMatches >= englishMatches - 1)) {
+    return 'french';
+  } else if (englishMatches > frenchMatches) {
+    return 'english';
+  } else {
+    return 'unknown';
+  }
+} 
