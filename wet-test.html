@@ -9,7 +9,7 @@
    <body>
       <main>
         <h1>Test for loading WET</h1>
-        <iframe id="url-frame" src="" name="targetframe" allowTransparency="true" style="border: solid, black, 5px;" height="1400px" width="1000px"></iframe>
+        <iframe id="url-frame" src="" name="targetframe" allowTransparency="true" style="border: solid, black, 5px;" height="80%" width="80%"></iframe>
       </main>
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
       <script>
@@ -52,17 +52,17 @@
                     iframeDoc.open();
                     iframeDoc.write(html);
                     iframeDoc.close();
-                    //iframeDoc
-                    //setTimeout(() => {
-                    //let $iframeBody = $(iframe.contentWindow.document.body);
-                    //console.log($iframeBody);
-                    //let wbelements = $iframeBody.find(wb.allSelectors);
-                    //console.log(wbelements);
-                    //wbelements
-                    //    .addClass("wb-init")
-                    //    .filter(":not(.wb-init .wb-init)")
-                    //    .trigger("timerpoke.wb");
-                    //}, 50);
+                    iframeDoc
+                    setTimeout(() => {
+                    let $iframeBody = $(iframe.contentWindow.document.body);
+                    console.log($iframeBody);
+                    let wbelements = $iframeBody.find(wb.allSelectors);
+                    console.log(wbelements);
+                    wbelements
+                        .addClass("wb-init")
+                        .filter(":not(.wb-init .wb-init)")
+                        .trigger("timerpoke.wb");
+                    }, 50);
                 } else {
                     console.error("Iframe with id " + id + " not found.");
                 }
