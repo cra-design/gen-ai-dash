@@ -1,7 +1,7 @@
 let generatedDownloadFile = null;
 let englishHtmlStored = "";
 let frenchFile = null; 
-let finalFrenchHtml = "";
+let finalFrenchHtml = ""; 
 
 function extractXmlFromFile(file) {
   return new Promise((resolve, reject) => {
