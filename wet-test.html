@@ -14,7 +14,7 @@
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
       <script>
         $(document).ready(function() {
-            const urlInput = new URL(https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html);
+            const urlInput = new URL("https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html");
             parsePageHTML(urlInput.href, async function (err, html) {
                 if (err) {
                     console.error('Failed to fetch the webpage:', err);
@@ -22,7 +22,6 @@
                     return;
                 }
                 refreshIframe("url-frame", html);
-                
             });
 
             function parsePageHTML(url, callback) {
@@ -36,6 +35,30 @@
                         callback(err);
                     }
                 });
+            }
+
+            function refreshIframe(id, html) {
+                // Insert the processed HTML into the iframe
+                let iframe = document.getElementById(id);
+                if (iframe) {
+                    let iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    iframeDoc.open();
+                    iframeDoc.write(html);
+                    iframeDoc.close();
+                    //iframeDoc
+                    //setTimeout(() => {
+                    //let $iframeBody = $(iframe.contentWindow.document.body);
+                    //console.log($iframeBody);
+                    //let wbelements = $iframeBody.find(wb.allSelectors);
+                    //console.log(wbelements);
+                    //wbelements
+                    //    .addClass("wb-init")
+                    //    .filter(":not(.wb-init .wb-init)")
+                    //    .trigger("timerpoke.wb");
+                    //}, 50);
+                } else {
+                    console.error("Iframe with id " + id + " not found.");
+                }
             }
         });
       </script>
