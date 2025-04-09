@@ -21,6 +21,7 @@
                     alert('Failed to fetch the webpage. Check the console for details.');
                     return;
                 }
+                html = convertRelativeToAbsolute(html, urlInput.host);
                 refreshIframe("url-frame", html);
             });
 
@@ -35,6 +36,10 @@
                         callback(err);
                     }
                 });
+            }
+
+            function convertRelativeToAbsolute(extractedHtml, baseUrl) {
+                return extractedHtml.replace(/(href|src)="(?!https?:\/\/)([^"]+)"/g, `$1="${baseUrl}$2"`);
             }
 
             function refreshIframe(id, html) {
