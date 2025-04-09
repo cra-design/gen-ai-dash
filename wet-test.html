@@ -1,0 +1,43 @@
+<html lang="en-CA" data-critters-container="">
+   <head>
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <title>Test for loading WET</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="icon" type="image/x-icon" href="img/favicon-ca.ico">
+   </head>
+   <body>
+      <main>
+        <h1>Test for loading WET</h1>
+        <iframe id="url-frame" src="" name="targetframe" allowTransparency="true" style="border: solid, black, 5px;"></iframe>
+      </main>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+      <script>
+        $(document).ready(function() {
+            const urlInput = new URL(https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html);
+            parsePageHTML(urlInput.href, async function (err, html) {
+                if (err) {
+                    console.error('Failed to fetch the webpage:', err);
+                    alert('Failed to fetch the webpage. Check the console for details.');
+                    return;
+                }
+                refreshIframe("url-frame", html);
+                
+            });
+
+            function parsePageHTML(url, callback) {
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function (response) {
+                        callback(null, response);
+                    },
+                    error: function (err) {
+                        callback(err);
+                    }
+                });
+            }
+        });
+      </script>
+   </body>
+</html>
