@@ -24,7 +24,7 @@
                 let { extractedHtml, metadata, mainClassMatch } = await applySimpleHtmlTemplate(html);
                 extractedHtml = await applyCanadaHtmlTemplate(extractedHtml, metadata, mainClassMatch);
                 extractedHtml = convertRelativeToAbsolute(extractedHtml, "https://www.canada.ca");
-                refreshIframe("url-frame", html);
+                refreshIframe("url-frame", extractedHtml);
             });
 
             function parsePageHTML(url, callback) {
