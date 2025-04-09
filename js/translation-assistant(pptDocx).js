@@ -43,6 +43,45 @@ async function extractDocxParagraphs(arrayBuffer) {
   // Join paragraphs with double newline to separate them
   return fullText.join("\n\n");
 }
+function fixAndEnforceHeadings(htmlString) {
+  const container = document.createElement('div');
+  container.innerHTML = htmlString.trim();
+
+  // Ensure the first element is an H1
+  if (!container.firstElementChild || container.firstElementChild.tagName.toLowerCase() !== 'h1') {
+    const firstElement = container.firstElementChild;
+    if (firstElement) {
+      const newH1 = document.createElement('h1');
+      newH1.className = firstElement.className;
+      newH1.style.cssText = firstElement.style.cssText;
+      newH1.innerHTML = firstElement.innerHTML;
+      container.replaceChild(newH1, firstElement);
+    } else {
+      const newH1 = document.createElement('h1');
+      newH1.innerHTML = htmlString;
+      container.appendChild(newH1);
+    }
+  }
+
+  // Demote all H1 elements after the first to H2
+  let firstH1Found = false;
+  const h1Elements = container.querySelectorAll('h1');
+  h1Elements.forEach(heading => {
+    if (!firstH1Found) {
+      firstH1Found = true;
+      // Keep the first H1 as is.
+    } else {
+      // Convert subsequent H1 to H2
+      const newHeading = document.createElement('h2');
+      newHeading.className = heading.className;
+      newHeading.style.cssText = heading.style.cssText;
+      newHeading.innerHTML = heading.innerHTML;
+      heading.parentNode.replaceChild(newHeading, heading);
+    }
+  });
+
+  return container.innerHTML;
+}
 
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
@@ -78,34 +117,6 @@ async function extractPptxText(arrayBuffer) {
   return allParagraphs.join("\n\n");
 } 
 
-function enforceFirstElementH1(htmlString) {
-  // Create a container and set its innerHTML to the generated output.
-  const container = document.createElement('div');
-  container.innerHTML = htmlString.trim();
-
-  // If there is no element or the first element is not an H1, modify it.
-  if (!container.firstElementChild || container.firstElementChild.tagName.toLowerCase() !== 'h1') {
-    // Get the first element
-    const firstElement = container.firstElementChild;
-    if (firstElement) {
-      // Create a new H1 element.
-      const newH1 = document.createElement('h1');
-      // Optionally copy inline styles or classes from the first element if needed:
-      newH1.className = firstElement.className;
-      newH1.style.cssText = firstElement.style.cssText;
-      // Transfer the inner HTML content
-      newH1.innerHTML = firstElement.innerHTML;
-      // Replace the first element with the new H1.
-      container.replaceChild(newH1, firstElement);
-    } else {
-      // If there is no element, create an H1 with the entire text.
-      const newH1 = document.createElement('h1');
-      newH1.textContent = htmlString;
-      container.appendChild(newH1);
-    }
-  }
-  return container.innerHTML;
-}
 
 
 
@@ -691,7 +702,7 @@ $("#second-upload-btn").click(async function () {
     }
 
     finalFrenchHtml = removeCodeFences(finalFrenchHtml);
-     finalFrenchHtml = enforceFirstElementH1(finalFrenchHtml);
+    finalFrenchHtml = fixAndEnforceHeadings(finalFrenchHtml);
     const fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
     let formattedOutput; 
 
