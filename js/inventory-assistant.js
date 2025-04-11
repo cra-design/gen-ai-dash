@@ -571,7 +571,7 @@ function extractMetadata(html, url) {
   };
 }
 
-function resetHiddenUploadOptions() {
+/*function resetHiddenUploadOptions() {
   $('#url-upload').addClass("hidden");
   $('#url-upload-input').addClass("hidden");
   $('#url-upload-preview').addClass("hidden");
@@ -589,9 +589,9 @@ function resetHiddenUploadOptions() {
   $("#genai-task-options").addClass("hidden");
   $('input[name="html-upload-genai-analysis"]').prop('checked', false);
   $('input[name="html-upload-genai-model"]').prop('checked', false);
-}
+}*/
 
-async function getORData(model, requestJson) {
+/*async function getORData(model, requestJson) {
   let ORjson;
   console.log(JSON.stringify({
     "model": model,
@@ -620,7 +620,7 @@ async function getORData(model, requestJson) {
     return undefined;
   }
   return ORjson;
-}
+}*/
 
 /*
 // Function to extract fields from the HTML
