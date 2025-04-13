@@ -42,8 +42,40 @@ async function extractDocxParagraphs(arrayBuffer) {
 
   // Join paragraphs with double newline to separate them
   return fullText.join("\n\n");
-}
+} 
 
+async function extractDocxTextXmlWithId(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  let docXmlStr = await zip.file("word/document.xml").async("string");
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
+
+  const paragraphs = xmlDoc.getElementsByTagName("w:p");
+  let textElements = [];
+  let paragraphCounter = 1;
+
+  // Process each paragraph.
+  for (let i = 0; i < paragraphs.length; i++) {
+    const paragraph = paragraphs[i];
+    const runElements = paragraph.getElementsByTagName("w:r");
+    if (runElements.length === 0) continue; // Skip empty paragraphs
+
+    let runCounter = 1;
+    // Process each run in the paragraph.
+    for (let j = 0; j < runElements.length; j++) {
+      const run = runElements[j];
+      // For each run, get <w:t> elements.
+      const textNodes = run.getElementsByTagName("w:t");
+      for (let k = 0; k < textNodes.length; k++) {
+        const text = textNodes[k].textContent;
+        const id = `P${paragraphCounter}_R${runCounter++}`;
+        textElements.push({ id, text });
+      }
+    }
+    paragraphCounter++;
+  }
+  return textElements;
+}
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
@@ -181,17 +213,15 @@ $(document).ready(function() {
           let textContent;
           if (fileExtension === "docx" || fileExtension === "xlsx") {
               let arrayBuffer = await uploadedFile.arrayBuffer();
-              const zip = await JSZip.loadAsync(arrayBuffer);
-              const docXmlStr = await zip.file("word/document.xml").async("string");
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(docXmlStr, "application/xml"); 
-            console.log(xmlDoc);
-            const textNodes = xmlDoc.getElementsByTagName("w:t");
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        const docXmlStr = await zip.file("word/document.xml").async("string");
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
+        const textNodes = xmlDoc.getElementsByTagName("w:t");
 
-  // Rebuild the HTML by wrapping each extracted text in a paragraph.
- textContent = Array.from(textNodes)
-  .map(node => `<p>${node.textContent}</p>`)
-  .join('');
+        textContent = Array.from(textNodes)
+          .map(node => `<p>${node.textContent}</p>`)
+          .join('');
           } else if (fileExtension === "pptx") { 
               let arrayBuffer = await uploadedFile.arrayBuffer(); 
               let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
@@ -215,13 +245,15 @@ $(document).ready(function() {
           if (event.target.id === "source-file") {
               englishFile = uploadedFile;
               if (fileExtension === 'docx') {
-                let arrayBuffer = await uploadedFile.arrayBuffer();
-                let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, {
-                    convertImage: mammoth.images.none
-                });
-                let cleanedHtml = mammothResult.value.replace(/<img[^>]*>/g, '');
-                englishHtmlStored = cleanedHtml; 
-                 $("#translation-A").html(mammothResult.value);
+                 let arrayBuffer = await uploadedFile.arrayBuffer();
+        let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, {
+            convertImage: mammoth.images.none
+        });
+        let cleanedHtml = mammothResult.value.replace(/<img[^>]*>/g, '');
+        englishHtmlStored = cleanedHtml;
+        $("#translation-A").html(mammothResult.value);
+        let docxMapping = await extractDocxTextXmlWithId(arrayBuffer);
+        console.log("DOCX Text Mapping with IDs:", docxMapping);
               } else if (fileExtension == 'pptx'){
                 let arrayBuffer = await uploadedFile.arrayBuffer();
                 let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
@@ -242,46 +274,6 @@ $(document).ready(function() {
     }
   }); 
 
-  
-// $(document).on("click", "#extract-source-text-btn", async function () { 
-//   if (!englishFile) {
-//     alert("No source file uploaded. Please upload a file first!");
-//     return;
-//   }
-  
-//   $("#source-doc-error").addClass("hidden");
-//   $("#source-text-preview").val("");
-
-//   try {
-//     const fileExtension = englishFile.name.split('.').pop().toLowerCase();
-//     let extractedText = "";
-
-//     if (fileExtension === "docx") {
-//       const arrayBuffer = await englishFile.arrayBuffer();
-//       extractedText = await extractDocxParagraphs(arrayBuffer);
-//     } else if (fileExtension === "pptx") {
-//       let arrayBuffer = await englishFile.arrayBuffer();
-//       extractedText = await extractPptxText(arrayBuffer);
-//     } else if (fileExtension === "xlsx") {
-//       let arrayBuffer = await englishFile.arrayBuffer();
-//       let workbook = XLSX.read(arrayBuffer, { type: "array" });
-//       let sheetName = workbook.SheetNames[0];
-//       let worksheet = workbook.Sheets[sheetName];
-//       let csvData = XLSX.utils.sheet_to_csv(worksheet);
-//       extractedText = csvData;
-//     } else {
-//       throw new Error("Unsupported file type for extraction");
-//     }
-
-//     // Populate the preview textarea with the extracted text.
-//     $("#source-text-preview").val(extractedText);
-//     // Reveal the preview card.
-//     $("#source-preview").removeClass("hidden");
-//   } catch (err) {
-//     console.error("Error extracting source text:", err);
-//     $("#source-doc-error").removeClass("hidden");
-//   }
-// });
 $(document).on("click", "#copy-all-btn", function(e) {
   // Prevent the click from toggling the <details> element.
   e.stopPropagation();
@@ -736,21 +728,13 @@ $("#second-upload-btn").click(async function () {
     let generatedBlob;
     try {
       if (fileExtension === 'docx') {
-        let fullHtml = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="UTF-8">
-            <style>
-              body { font-family: Calibri, "Calibri (Body)", sans-serif; }
-            </style>
-          </head>
-          <body>
-            ${finalFrenchHtml}
-          </body>
-        </html>
-      `; 
-      generatedBlob = htmlDocx.asBlob(fullHtml);
+      let arrayBuffer = await englishFile.arrayBuffer();
+      const zip = await JSZip.loadAsync(arrayBuffer);
+      let docXmlStr = await zip.file("word/document.xml").async("string");
+      let updatedDocXml = conversionDocxXml(docXmlStr, finalFrenchHtml);
+      zip.file("word/document.xml", updatedDocXml); 
+      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType }); 
+        
       } else if (fileExtension === 'pptx') {
         let arrayBuffer = await englishFile.arrayBuffer();
         const zip = await JSZip.loadAsync(arrayBuffer);
@@ -847,8 +831,27 @@ function escapeXml(str) {
   return str.replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
-}
+} 
 
+
+function conversionDocxXml(originalXml, finalFrenchHtml) {
+  // Build a mapping from the translated French HTML.
+  // (Reuse the same helper function used for PPTX processing.)
+  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
+  let runIndex = 1;
+  // Use a regular expression to find and replace each <w:t> element's text.
+  const updatedXml = originalXml.replace(/<w:t>([\s\S]*?)<\/w:t>/g, (match, capturedText) => {
+    const key = `T${runIndex++}`;
+    let newText = frenchMap[key] || capturedText;
+    if (newText === undefined || !newText.trim()) {
+      newText = " "; // Fallback to preserve structure if the French text is missing.
+    }
+    // Escape any XML special characters.
+    const escapedText = escapeXml(newText);
+    return `<w:t>${escapedText}</w:t>`;
+  });
+  return updatedXml;
+}
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
