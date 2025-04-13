@@ -103,7 +103,88 @@
 			background-color: #4499DD;
 
 		}
-   </style-->
+   </style--> 
+
+	     <style>  
+/* details wrapper */
+#source-preview-wrapper > details {
+  border: 1px solid black;
+  border-radius: 4px;
+  padding: 5px;
+  width: 100%;
+}
+
+/* Remove extra styling from the list item */
+#source-preview-wrapper {
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+/* Keep summary as default so the disclosure triangle is visible
+   and force no wrapping for the entire line */
+.preview-header {
+  margin: 0;
+  padding: 0.5em 0.75em;
+  line-height: 1.4;
+  cursor: pointer;
+  white-space: nowrap; /* prevent wrapping */
+}
+
+/* Use inline-flex for the child container, so the marker remains intact */
+.summary-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  white-space: nowrap; /* keep everything on one line */
+}
+
+/* Allow the label to take up available space */
+.preview-label {
+  font-weight: bold;
+  color: #8c8b00;
+  flex-grow: 1;
+}
+
+/* Optional: adjust the default marker spacing */
+summary::-webkit-details-marker {
+  margin-right: 0.5em;
+}
+
+/* Copy button styling */
+#copy-all-btn {
+  border: 1px solid #ccc;
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1; 
+  padding: 0;  /* This will override the earlier padding */
+  margin: 0;
+}
+
+/* Remove extra padding from the icon inside the button */
+#copy-all-btn i {
+  padding: 0;
+}
+
+/* Styling for the preview text area */
+#source-text-preview {
+  white-space: pre-wrap;
+  background-color: #f5f5f5;
+  padding: 1em;
+  border-radius: 6px;
+}
+
+/* Hide the preview section by default */
+.hidden {
+  display: none;
+}
+  </style>
    <body id="body-pd" class="body-pd">
       <upd-root _nghost-ng-c3392822675="" class="ng-tns-c3392822675-0" ng-version="18.2.2">
          <div _ngcontent-ng-c3392822675="" class="container vh-100 ng-tns-c3392822675-0">
@@ -230,59 +311,93 @@
                                   <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
                                 </ol>
                               </div>
-                              <div id="source-upload" class="after-key-unhide hidden justify-content-between">
-                                <fieldset>
-                                  <legend>Provide the source content</legend>
-                                  <div class="inline-checkbox-container" style="margin-bottom: 15px;">
-                                    <input type="radio" id="source-upload-text" name="source-upload-option" value="source-upload-text" checked>
-                                    <label for="source-upload-text">Translate text</label><br>
-                                    <input type="radio" id="source-upload-doc" name="source-upload-option" value="source-upload-doc">
-                                    <label for="source-upload-doc">Translate/format files</label><br>
-                                  </div>
-                                  <div id="text-upload" class="translation-container">
-                                    <div class="text-box-container">
-                                      <div class="text-box-header">
-                                        <label for="source-language">Source Language: </label><span id="source-heading-detecting" class="hidden">detecting...</span><select id="source-language" class="hidden"><option value="english">English</option><option value="french">French</option></select>
-                                      </div>
-                                      <div class="translation-textarea-container">
-                                        <textarea id="source-text" name="source-text" placeholder="Enter text to translate" class="inputbox-translation"></textarea>
-                                        <p id="source-text-error" class="error-msg hidden">Text cannot be empty.</p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div id="source-doc-upload" class="hidden">
-                                    <div id="source-file-container">
-                                      <input type="file" id="source-file">
-                                      <p id="source-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
-                                      <p id="source-doc-error" class="error-msg hidden">You must upload a .docx, .pptx or .xlsx file to proceed.</p>
-                                    </div>
-                                    <div class="sidebyside-wrapper">
-                                      <p id="source-language-heading" style="margin-top: 15px;">Source language: <span id="source-doc-detecting" class="hidden">detecting...</span></p>
-                                      <select id="source-language-doc" class="hidden"><option value="english">English</option><option value="french">French</option></select>
-                                    </div>
-                                  </div>
-                                  <div class="sidebyside-wrapper">
-                                    <button id="source-upload-translate-btn">Translate</button>
-                                    <button id="source-upload-provide-btn">Provide translation</button>
-                                    <button id="source-upload-provide-update-btn">Compare with update</button>
-                                  </div>
-                                </fieldset>
-                              </div>
-                            </div>
-                          </div>
-                        </upd-card>
+                           
+  <div class="card pt-2">
+    <div class="card-body card-pad pt-2 h-100">
+      <div id="source-upload" class="after-key-unhide hidden justify-content-between">
+        <fieldset>
+          <legend>Provide the source content</legend>
+          <div class="inline-checkbox-container" style="margin-bottom: 15px;">
+<!--             <input type="radio" id="source-upload-text" name="source-upload-option" value="source-upload-text" checked>
+            <label for="source-upload-text">Provide text</label><br> -->
+            <input type="radio" id="source-upload-doc" name="source-upload-option" value="source-upload-doc" checked>
+            <label for="source-upload-doc">Provide file</label><br>
+          </div>
+
+          <!-- Text Upload -->
+          <div id="text-upload" class="translation-container">
+            <div class="text-box-container">
+              <div class="text-box-header">
+                <label for="source-language">Source Language: </label>
+                <span id="source-heading-detecting" class="hidden">detecting...</span>
+                <select id="source-language" class="hidden">
+                  <option value="english">English</option>
+                  <option value="french">French</option>
+                </select>
+              </div>
+              <div class="translation-textarea-container">
+                <textarea id="source-text" name="source-text" placeholder="Enter text to translate" class="inputbox-translation"></textarea>
+                <p id="source-text-error" class="error-msg hidden">Text cannot be empty.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Upload -->
+          <div id="source-doc-upload" class="hidden">
+            <div id="source-file-container">
+              <input type="file" id="source-file">
+              <p id="source-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
+              <p id="source-doc-error" class="error-msg hidden">You must upload a .docx, .pptx or .xlsx file to proceed.</p>
+            </div>
+            <div class="sidebyside-wrapper">
+              <p id="source-language-heading" style="margin-top: 15px;">
+                Source language: <span id="source-doc-detecting" class="hidden">detecting...</span>
+              </p>
+              <select id="source-language-doc" class="hidden">
+                <option value="english">English</option>
+                <option value="french">French</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Upload Button -->
+          <div class="sidebyside-wrapper">
+            <button id="source-upload-provide-btn">Upload file</button>
+          </div>
+        </fieldset>
+
+        <!-- Source Text Preview -->
+      <ul class="list-unstyled">
+  <li id="source-preview-wrapper" class="hidden">
+    <details>
+      <summary class="preview-header">
+        <div class="summary-content">
+          <span class="preview-label">Source text preview</span>
+          <button id="copy-all-btn" class="toolbar-button" title="Copy All">
+            <i class="fa fa-copy"></i>
+          </button>
+        </div>
+      </summary>
+      <pre id="source-text-preview"></pre>
+    </details>
+  </li>
+</ul>
+      </div>
+    </div>
+  </div>
+
                         <upd-card id="second-upload" class="hidden">
                            <div class="card pt-2">
                               <div class="card-body card-pad pt-2 h-100">
                                 <div class="justify-content-between">
                                   <fieldset>
                                     <legend id="second-upload-legend">Provide your translation</legend>
-                                    <div id="second-upload-radio" class="inline-checkbox-container" style="margin-bottom: 15px;">
+<!--                                     <div id="second-upload-radio" class="inline-checkbox-container" style="margin-bottom: 15px;">
                                       <input type="radio" id="second-upload-text" name="second-upload-option" value="second-upload-text">
                                       <label for="second-upload-text">Provide text</label><br>
                                       <input type="radio" id="second-upload-doc" name="second-upload-option" value="second-upload-doc">
                                       <label for="second-upload-doc">Translated document</label><br>
-                                    </div>
+                                    </div> -->
                                     <div id="second-text-upload" class="translation-container">
                                       <div class="text-box-container">
                                         <div class="text-box-header">
@@ -306,17 +421,16 @@
                                         <select id="second-language-doc" class="hidden"><option value="english">English</option><option value="french">French</option></select>
                                       </div>
                                     </div>
-                                    <button id="second-upload-btn">Continue</button>
+                                    <button id="second-upload-btn">Generate formatted translation document</button>
                                   </fieldset>
                                 </div>
                               </div>
                             </div>
                           </upd-card>
-                          <upd-card id="translation-preview" class="hidden">
+<!--                           <upd-card id="translation-preview" class="hidden">
                             <div class="card pt-2">
                               <div class="card-body card-pad pt-2 h-100">
                                 <div class="justify-content-between">
-                                  <!-- Add side-by-side results container here -->
                                   <h2>Review the translation</h2>
                                   <p class="convert-translation">If you want to put the translation back in a document, <a href="#convert-translation">convert back to document</a> below the translation preview.</p>
                                   <div class="sidebyside-wrapper">
@@ -349,27 +463,25 @@
                                 </div>
                               </div>
                             </div>
-                          </upd-card> 
+                          </upd-card>  -->
 			 	<div id="processing-spinner" class="hidden">
       				<div class="spinner"></div>
       				<p>Generating reports...</p>
     				</div> 
-			  
-                        <upd-card id="convert-translation" class="convert-translation hidden">
-      <div class="card pt-2">
-        <div class="card-body card-pad pt-2 h-100">
-          <div class="justify-content-between">
-            <h4 style="margin-top: 20px;">Put back in document format</h4>
-            <p>Once you're satisfied with the translation, submit it to put it back in the document formatting.</p>
-          </div>
-          <div id="translated-doc-download" class="justify-content-between hidden">
-            <h4>Translated document</h4>
-            <p>The reformatted translation document is ready for download!</p>
-            <button id="convert-translation-download-btn" style="margin-top: 20px">Download document</button>
-          </div>
-        </div>
+			    
+                       <upd-card id="convert-translation" class="convert-translation hidden">
+  <div class="card pt-2">
+    <div class="card-body card-pad pt-2 h-100">
+      <div class="justify-content-between">
       </div>
-    </upd-card>
+      <div id="translated-doc-download" class="justify-content-between hidden">
+        <h4>Translated document</h4>
+        <p>The reformatted translation document is ready for download!</p>
+        <button id="convert-translation-download-btn" style="margin-top: 20px">Download document</button>
+      </div>
+    </div>
+  </div>
+</upd-card>
 
                                   <!--requred libraries-->
                                 </main>
