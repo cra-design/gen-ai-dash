@@ -140,17 +140,23 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
 function aggregateDocxMapping(mapping) {
   const aggregated = {};
   mapping.forEach(item => {
-    // Get the paragraph prefix (e.g., "P1" from "P1_R1")
+    // Extract the paragraph part, e.g., "P1" from "P1_R1"
     const paraId = item.id.split('_')[0];
     if (!aggregated[paraId]) {
       aggregated[paraId] = { id: paraId, texts: [] };
     }
     aggregated[paraId].texts.push(item.text);
   });
-  // Convert aggregated object into an array and join texts for each paragraph
-  return Object.values(aggregated).map(entry => {
-    return { id: entry.id, text: entry.texts.join(' ') };
-  });
+  return Object.values(aggregated)
+    .map(entry => {
+      // Join without any delimiter so that we don't add extra spaces.
+      let combined = entry.texts.join('');
+      // Replace multiple spaces with a single space and trim.
+      combined = combined.replace(/\s+/g, ' ').trim();
+      return { id: entry.id, text: combined };
+    })
+    // Filter out paragraphs that ended up empty.
+    .filter(item => item.text.length > 0);
 }
 
 $(document).ready(function() {
@@ -260,16 +266,19 @@ $(document).ready(function() {
           if (event.target.id === "source-file") {
               englishFile = uploadedFile;
               if (fileExtension === 'docx') {
-                let arrayBuffer = await uploadedFile.arrayBuffer();
-  // Extract text with IDs from the DOCX file
-  let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
+                let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
+  console.log("Raw English Mapping:", rawMapping);
+  
+  // Aggregate the mapping to combine text runs by paragraph
   let aggregatedMapping = aggregateDocxMapping(rawMapping);
-  // Rebuild the English HTML with the IDs embedded.
+  console.log("Aggregated English Mapping:", aggregatedMapping);
+  
+  // Rebuild the HTML using the aggregated mapping
   let aggregatedHtml = aggregatedMapping
     .map(item => `<p id="${item.id}">${item.text}</p>`)
     .join('');
   
-  // Store the aggregated HTML for display and AI prompt
+  // Store the aggregated HTML for display and use in the AI prompt
   englishHtmlStored = aggregatedHtml;
   $("#translation-A").html(aggregatedHtml);
               }
