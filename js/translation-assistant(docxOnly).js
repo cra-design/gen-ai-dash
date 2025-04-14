@@ -136,7 +136,22 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
     }
   }
   return textElements;
-} 
+}  
+function aggregateDocxMapping(mapping) {
+  const aggregated = {};
+  mapping.forEach(item => {
+    // Get the paragraph prefix (e.g., "P1" from "P1_R1")
+    const paraId = item.id.split('_')[0];
+    if (!aggregated[paraId]) {
+      aggregated[paraId] = { id: paraId, texts: [] };
+    }
+    aggregated[paraId].texts.push(item.text);
+  });
+  // Convert aggregated object into an array and join texts for each paragraph
+  return Object.values(aggregated).map(entry => {
+    return { id: entry.id, text: entry.texts.join(' ') };
+  });
+}
 
 $(document).ready(function() {
   // Handle radio button changes for various upload and compare options.
