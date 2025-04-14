@@ -247,24 +247,16 @@ $(document).ready(function() {
               if (fileExtension === 'docx') {
                 let arrayBuffer = await uploadedFile.arrayBuffer();
   // Extract text with IDs from the DOCX file
-  let englishMapping = await extractDocxTextXmlWithId(arrayBuffer);
-  
+  let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
+  let aggregatedMapping = aggregateDocxMapping(rawMapping);
   // Rebuild the English HTML with the IDs embedded.
-  let htmlWithIDs = englishMapping.map(item => `<p id="${item.id}">${item.text}</p>`).join('');
-  englishHtmlStored = htmlWithIDs;
+  let aggregatedHtml = aggregatedMapping
+    .map(item => `<p id="${item.id}">${item.text}</p>`)
+    .join('');
   
-  // Display the HTML with IDs.
-  $("#translation-A").html(htmlWithIDs);
-  
-  console.log("Extracted English text with IDs:", englishMapping);
-              } else if (fileExtension == 'pptx'){
-                let arrayBuffer = await uploadedFile.arrayBuffer();
-                let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
-                let pptxHtml = textElements
-                  .map(item => `<p id="${item.id}">${item.text}</p>`)
-                  .join('');
-                englishHtmlStored = pptxHtml; 
-                $("#translation-A").html(pptxHtml);
+  // Store the aggregated HTML for display and AI prompt
+  englishHtmlStored = aggregatedHtml;
+  $("#translation-A").html(aggregatedHtml);
               }
           } else {
               frenchFile = uploadedFile;
