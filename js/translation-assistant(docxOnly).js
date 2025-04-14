@@ -264,29 +264,33 @@ $(document).ready(function() {
           $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
        
           if (event.target.id === "source-file") {
-              englishFile = uploadedFile;
-              if (fileExtension === 'docx') {
-              let arrayBuffer = await uploadedFile.arrayBuffer();
-  
-  // Now use arrayBuffer to extract the raw mapping with IDs
-  let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
-  let aggregatedMapping = aggregateDocxMapping(rawMapping);
-  
-  // Rebuild the English HTML with the IDs embedded.
-  let aggregatedHtml = aggregatedMapping
-    .map(item => `<p id="${item.id}">${item.text}</p>`)
-    .join('');
-  
-  // Store the aggregated HTML for display and AI prompt
-  englishHtmlStored = aggregatedHtml;
-  $("#translation-A").html(aggregatedHtml);
-} else {
-  frenchFile = uploadedFile;
-}catch (err) {
-          console.error('Error processing source file:', err);
-          $(`#${language}-doc-error`).removeClass("hidden");
-          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");}
-      }
+  try {
+    englishFile = uploadedFile;
+    if (fileExtension === 'docx') {
+      let arrayBuffer = await uploadedFile.arrayBuffer();
+
+      // Now use arrayBuffer to extract the raw mapping with IDs
+      let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
+      let aggregatedMapping = aggregateDocxMapping(rawMapping);
+
+      // Rebuild the English HTML with the IDs embedded.
+      let aggregatedHtml = aggregatedMapping
+        .map(item => `<p id="${item.id}">${item.text}</p>`)
+        .join('');
+
+      // Store the aggregated HTML for display and AI prompt
+      englishHtmlStored = aggregatedHtml;
+      $("#translation-A").html(aggregatedHtml);
+    } else {
+      frenchFile = uploadedFile;
+    }
+  } catch (err) {
+    console.error('Error processing source file:', err);
+    $(`#${language}-doc-error`).removeClass("hidden");
+    $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+  }
+}
+
     }
   }); 
 
