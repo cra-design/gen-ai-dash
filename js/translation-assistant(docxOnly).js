@@ -245,15 +245,18 @@ $(document).ready(function() {
           if (event.target.id === "source-file") {
               englishFile = uploadedFile;
               if (fileExtension === 'docx') {
-                 let arrayBuffer = await uploadedFile.arrayBuffer();
-        let mammothResult = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, {
-            convertImage: mammoth.images.none
-        });
-        let cleanedHtml = mammothResult.value.replace(/<img[^>]*>/g, '');
-        englishHtmlStored = cleanedHtml;
-        $("#translation-A").html(mammothResult.value);
-        let docxMapping = await extractDocxTextXmlWithId(arrayBuffer);
-        console.log("DOCX Text Mapping with IDs:", docxMapping);
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+  // Extract text with IDs from the DOCX file
+  let englishMapping = await extractDocxTextXmlWithId(arrayBuffer);
+  
+  // Rebuild the English HTML with the IDs embedded.
+  let htmlWithIDs = englishMapping.map(item => `<p id="${item.id}">${item.text}</p>`).join('');
+  englishHtmlStored = htmlWithIDs;
+  
+  // Display the HTML with IDs.
+  $("#translation-A").html(htmlWithIDs);
+  
+  console.log("Extracted English text with IDs:", englishMapping);
               } else if (fileExtension == 'pptx'){
                 let arrayBuffer = await uploadedFile.arrayBuffer();
                 let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
