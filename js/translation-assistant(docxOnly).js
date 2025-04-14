@@ -731,9 +731,14 @@ $("#second-upload-btn").click(async function () {
       let arrayBuffer = await englishFile.arrayBuffer();
       const zip = await JSZip.loadAsync(arrayBuffer);
       let docXmlStr = await zip.file("word/document.xml").async("string");
-      let updatedDocXml = conversionDocxXml(docXmlStr, finalFrenchHtml);
-      zip.file("word/document.xml", updatedDocXml); 
-      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType }); 
+      
+      // Extract the English mapping (unique IDs) from the original DOCX.
+      let englishMapping = await extractDocxTextXmlWithId(arrayBuffer);
+      
+      // Produce the updated document XML by replacing text using the mapping.
+      let updatedDocXml = conversionDocxXml(docXmlStr, finalFrenchHtml, englishMapping);
+      zip.file("word/document.xml", updatedDocXml);
+      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
         
       } else if (fileExtension === 'pptx') {
         let arrayBuffer = await englishFile.arrayBuffer();
@@ -834,24 +839,26 @@ function escapeXml(str) {
 } 
 
 
-function conversionDocxXml(originalXml, finalFrenchHtml) {
-  // Build a mapping from the translated French HTML.
-  // (Reuse the same helper function used for PPTX processing.)
+function conversionDocxXml(originalXml, finalFrenchHtml, englishMapping) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
-  let runIndex = 1;
-  // Use a regular expression to find and replace each <w:t> element's text.
+  let index = 0;
+  // Replace each <w:t> block in order using the corresponding key from englishMapping.
   const updatedXml = originalXml.replace(/<w:t>([\s\S]*?)<\/w:t>/g, (match, capturedText) => {
-    const key = `T${runIndex++}`;
+    if (index >= englishMapping.length) {
+      index++;
+      return match; // fallback, if out-of-range, keep the original text.
+    }
+    const key = englishMapping[index].id;
+    index++;
     let newText = frenchMap[key] || capturedText;
     if (newText === undefined || !newText.trim()) {
-      newText = " "; // Fallback to preserve structure if the French text is missing.
+      newText = " "; // preserve structure with a space if missing.
     }
-    // Escape any XML special characters.
-    const escapedText = escapeXml(newText);
-    return `<w:t>${escapedText}</w:t>`;
+    return `<w:t>${escapeXml(newText)}</w:t>`;
   });
   return updatedXml;
 }
+
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
