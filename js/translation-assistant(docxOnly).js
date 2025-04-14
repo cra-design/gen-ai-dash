@@ -202,38 +202,41 @@ $(document).ready(function() {
 
 
   // Handle file input change for both source and second file uploads.
-  $(document).on("change", "input", async function (event) {
-    if (event.target.id == "source-file" || event.target.id == "second-file") {
-      let language = event.target.id === "source-file" ? "source" : "second";
-      $(`#${language}-doc-detecting`).removeClass("hidden");
-      $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
+ $(document).on("change", "input", async function (event) {
+  if (event.target.id === "source-file" || event.target.id === "second-file") {
+    let language = event.target.id === "source-file" ? "source" : "second";
+    $(`#${language}-doc-detecting`).removeClass("hidden");
+    $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
+    $(`#${language}-language-heading`).removeClass("hidden");
+    $(`#${language}-language-doc`).addClass("hidden");
+
+    var fileList = event.target.files;
+    if (!fileList || fileList.length === 0) return;
+    if (fileList.length > 1) {
+      $(`#${language}-multiple-msg`).removeClass("hidden");
+      $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+      return;
+    }
+    var uploadedFile = fileList[0];
+    var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
+    var validExtensions = ["docx", "xlsx", "pptx"];
+    var validMimeTypes = [
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    ];
+    
+    if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
+      $(`#${language}-doc-error`).removeClass("hidden");
+      $(`#${language}-doc-detecting`).addClass("hidden");
       $(`#${language}-language-heading`).removeClass("hidden");
-      $(`#${language}-language-doc`).addClass("hidden");
-      var fileList = event.target.files; 
-      if (!fileList || fileList.length === 0) return;
-      if (fileList.length > 1) {
-          $(`#${language}-multiple-msg`).removeClass("hidden");
-          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
-          return;
-      }
-      var uploadedFile = fileList[0];
-      var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
-      var validExtensions = ["docx", "xlsx", "pptx"];
-      var validMimeTypes = [
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-      ];
-      if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
-          $(`#${language}-doc-error`).removeClass("hidden");
-          $(`#${language}-doc-detecting`).addClass("hidden");
-          $(`#${language}-language-heading`).removeClass("hidden");
-          return;
-      }
-      try {
-          let textContent;
-          if (fileExtension === "docx" || fileExtension === "xlsx") {
-              let arrayBuffer = await uploadedFile.arrayBuffer();
+      return;
+    }
+    
+    try {
+      let textContent;
+      if (fileExtension === "docx" || fileExtension === "xlsx") {
+        let arrayBuffer = await uploadedFile.arrayBuffer();
         const zip = await JSZip.loadAsync(arrayBuffer);
         const docXmlStr = await zip.file("word/document.xml").async("string");
         const parser = new DOMParser();
@@ -243,56 +246,65 @@ $(document).ready(function() {
         textContent = Array.from(textNodes)
           .map(node => `<p>${node.textContent}</p>`)
           .join('');
-          } else if (fileExtension === "pptx") { 
-              let arrayBuffer = await uploadedFile.arrayBuffer(); 
-              let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
-              let pptxHtml = textElements
-                .map(item => `<p id="${item.id}">${item.text}</p>`)
-                .join('');
-              //Assign pptxHtml to textContent.
-              textContent = pptxHtml;
+      } else if (fileExtension === "pptx") {
+        let arrayBuffer = await uploadedFile.arrayBuffer();
+        let textElements = await extractPptxTextXmlWithId(arrayBuffer);
+        let pptxHtml = textElements
+          .map(item => `<p id="${item.id}">${item.text}</p>`)
+          .join('');
+        textContent = pptxHtml;
+      } else {
+        throw new Error("Unsupported file type");
+      }
+
+      if (!textContent) {
+        throw new Error("No text extracted.");
+      }
+
+      let detectedLanguage = detectLanguageBasedOnWords(textContent);
+      if (detectedLanguage !== "french") {
+        detectedLanguage = "english";
+      }
+      $(`#${language}-doc-detecting`).addClass("hidden");
+      $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden");
+
+      // Process the source file for English content if it's "source-file"
+      if (event.target.id === "source-file") {
+        try {
+          englishFile = uploadedFile;
+          if (fileExtension === 'docx') {
+            let arrayBuffer = await uploadedFile.arrayBuffer();
+
+            // Now extract raw mapping with IDs and aggregate
+            let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
+            let aggregatedMapping = aggregateDocxMapping(rawMapping);
+
+            // Rebuild the English HTML with the aggregated mapping
+            let aggregatedHtml = aggregatedMapping
+              .map(item => `<p id="${item.id}">${item.text}</p>`)
+              .join('');
+            // Store for AI prompt and display
+            englishHtmlStored = aggregatedHtml;
+            $("#translation-A").html(aggregatedHtml);
           } else {
-              throw new Error("Unsupported file type");
+            // If not a DOCX, then continue handling accordingly (e.g., PPTX)
+            // For instance, in PPTX branch you might already be processing and displaying html.
           }
-          if (!textContent) { 
-              throw new Error("No text extracted."); 
-          }
-          
-          let detectedLanguage = detectLanguageBasedOnWords(textContent); 
-          if (detectedLanguage !== "french") { detectedLanguage = "english"; }
-          $(`#${language}-doc-detecting`).addClass("hidden");
-          $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden"); 
-       
-          if (event.target.id === "source-file") {
-  try {
-    englishFile = uploadedFile;
-    if (fileExtension === 'docx') {
-      let arrayBuffer = await uploadedFile.arrayBuffer();
-
-      // Now use arrayBuffer to extract the raw mapping with IDs
-      let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
-      let aggregatedMapping = aggregateDocxMapping(rawMapping);
-
-      // Rebuild the English HTML with the IDs embedded.
-      let aggregatedHtml = aggregatedMapping
-        .map(item => `<p id="${item.id}">${item.text}</p>`)
-        .join('');
-
-      // Store the aggregated HTML for display and AI prompt
-      englishHtmlStored = aggregatedHtml;
-      $("#translation-A").html(aggregatedHtml);
-    } else {
-      frenchFile = uploadedFile;
+        } catch (err) {
+          console.error('Error processing source file:', err);
+          $(`#${language}-doc-error`).removeClass("hidden");
+          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+        }
+      } else {
+        // Handling for "second-file" (French file)
+        frenchFile = uploadedFile;
+      }
+    } catch (err) {
+      console.error('Error processing file change:', err);
     }
-  } catch (err) {
-    console.error('Error processing source file:', err);
-    $(`#${language}-doc-error`).removeClass("hidden");
-    $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
   }
-}
+});
 
-    }
-  }); 
 
 $(document).on("click", "#copy-all-btn", function(e) {
   // Prevent the click from toggling the <details> element.
