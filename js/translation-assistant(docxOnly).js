@@ -282,11 +282,10 @@ $(document).ready(function() {
   $("#translation-A").html(aggregatedHtml);
 } else {
   frenchFile = uploadedFile;
-}
-       catch (err) {
+}catch (err) {
           console.error('Error processing source file:', err);
           $(`#${language}-doc-error`).removeClass("hidden");
-          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");}
       }
     }
   }); 
