@@ -266,25 +266,23 @@ $(document).ready(function() {
           if (event.target.id === "source-file") {
               englishFile = uploadedFile;
               if (fileExtension === 'docx') {
-                let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
-  console.log("Raw English Mapping:", rawMapping);
+              let arrayBuffer = await uploadedFile.arrayBuffer();
   
-  // Aggregate the mapping to combine text runs by paragraph
+  // Now use arrayBuffer to extract the raw mapping with IDs
+  let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
   let aggregatedMapping = aggregateDocxMapping(rawMapping);
-  console.log("Aggregated English Mapping:", aggregatedMapping);
   
-  // Rebuild the HTML using the aggregated mapping
+  // Rebuild the English HTML with the IDs embedded.
   let aggregatedHtml = aggregatedMapping
     .map(item => `<p id="${item.id}">${item.text}</p>`)
     .join('');
   
-  // Store the aggregated HTML for display and use in the AI prompt
+  // Store the aggregated HTML for display and AI prompt
   englishHtmlStored = aggregatedHtml;
   $("#translation-A").html(aggregatedHtml);
-              }
-          } else {
-              frenchFile = uploadedFile;
-          }
+} else {
+  frenchFile = uploadedFile;
+}
       } catch (err) {
           console.error('Error processing source file:', err);
           $(`#${language}-doc-error`).removeClass("hidden");
