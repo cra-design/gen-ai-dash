@@ -160,7 +160,9 @@ function aggregateDocxMapping(mapping) {
 }
 
 $(document).ready(function() {
-  // Handle radio button changes for various upload and compare options.
+  $('#source-upload-doc').prop('checked', true);
+  $('#source-doc-upload').removeClass('hidden');
+  $('#text-upload').addClass('hidden');
   $(document).on("click", "input[type=radio]", function (event) {
     var target = event.target;
     if (target.name === "source-upload-option") {
