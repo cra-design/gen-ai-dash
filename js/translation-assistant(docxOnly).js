@@ -542,7 +542,7 @@ $(document).on("click", "#copy-all-btn", function(e) {
     }
     $("#source-doc-error").addClass("hidden");
     // Clear any previous preview content.
-    $("#source-text-preview").text("");
+    // $("#source-text-preview").text("");
 
     try {
       const fileExtension = englishFile.name.split('.').pop().toLowerCase();
