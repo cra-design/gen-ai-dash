@@ -883,10 +883,6 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml) {
   return serializer.serializeToString(xmlDoc);
 }
 
-  
-  // Serialize the updated XML back to string.
-  return serializer.serializeToString(xmlDoc);
-}
 
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
