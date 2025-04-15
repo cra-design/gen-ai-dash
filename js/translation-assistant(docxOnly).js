@@ -805,7 +805,7 @@ $("#second-upload-btn").click(async function () {
   downloadLink.click();
   URL.revokeObjectURL(downloadLink.href);
 });
-
+});
 //************************************************************************************
 //* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
 //* Can be added more if needed                                                   ***** 
