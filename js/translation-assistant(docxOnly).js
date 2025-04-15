@@ -140,7 +140,7 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
 function aggregateDocxMapping(mapping) {
   const aggregated = {};
   mapping.forEach(item => {
-    // Extract the paragraph part, e.g., "P1" from "P1_R1"
+    // Extract paragraph part (e.g., "P1" from "P1_R1")
     const paraId = item.id.split('_')[0];
     if (!aggregated[paraId]) {
       aggregated[paraId] = { id: paraId, texts: [] };
@@ -149,13 +149,12 @@ function aggregateDocxMapping(mapping) {
   });
   return Object.values(aggregated)
     .map(entry => {
-      // Join without any delimiter so that we don't add extra spaces.
+      // Join text runs without adding extra spaces, then normalize spaces
       let combined = entry.texts.join('');
-      // Replace multiple spaces with a single space and trim.
       combined = combined.replace(/\s+/g, ' ').trim();
       return { id: entry.id, text: combined };
     })
-    // Filter out paragraphs that ended up empty.
+    // Filter out any paragraphs that end up empty
     .filter(item => item.text.length > 0);
 }
 
@@ -839,30 +838,21 @@ function deduplicateFrenchParagraphs(finalFrenchHtml) {
 
   return cleanedParagraphs.join("");
 } 
-function buildFrenchTextMap(finalFrenchHtml) { 
-  finalFrenchHtml = deduplicateFrenchParagraphs(finalFrenchHtml);
+function buildFrenchTextMap(finalFrenchHtml) {
+  // Optionally deduplicate first or perform other cleaning.
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
-
+  // Select all paragraphs that have an id
   const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
-
-  // Step 1: Rebuild any broken phrases like "d" + "'identifier"
-  const rebuilt = [];
-  for (let i = 0; i < rawParagraphs.length; i++) {
-    const curr = rawParagraphs[i].textContent.trim();
-     if (i > 0 && !rebuilt[rebuilt.length - 1].text.endsWith(" ") && !curr.startsWith(" ")) {
-  rebuilt[rebuilt.length - 1].text += " ";
-}
-rebuilt.push({ id: rawParagraphs[i].id, text: curr });
- 
-  }
-
-  // Build a map from rebuilt result
+  // Build mapping while filtering out empty texts.
   const frenchMap = {};
-  for (const { id, text } of rebuilt) {
-    frenchMap[id] = text;
-  }
-
+  rawParagraphs.forEach(p => {
+    const id = p.getAttribute("id");
+    let text = p.textContent.replace(/\s+/g, ' ').trim();
+    if (text.length > 0) {
+      frenchMap[id] = text;
+    }
+  });
   return frenchMap;
 }
 
@@ -874,19 +864,23 @@ function escapeXml(str) {
 
 
 function conversionDocxXml(originalXml, finalFrenchHtml, englishMapping) {
+  // Build the French mapping.
+  // The mapping should contain entries with keys matching the aggregated IDs, like "P1", "P2", etc.
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
   let index = 0;
-  // Replace each <w:t> block in order using the corresponding key from englishMapping.
+  
+  // Replace each text run in the DOCX XML sequentially.
   const updatedXml = originalXml.replace(/<w:t>([\s\S]*?)<\/w:t>/g, (match, capturedText) => {
+    // Check if we have an entry in the aggregated mapping.
     if (index >= englishMapping.length) {
       index++;
-      return match; // fallback, if out-of-range, keep the original text.
+      return match; // Fall back to original if no mapping exists.
     }
-    const key = englishMapping[index].id;
+    const key = englishMapping[index].id;  // e.g., "P1", "P2", etc.
     index++;
     let newText = frenchMap[key] || capturedText;
-    if (newText === undefined || !newText.trim()) {
-      newText = " "; // preserve structure with a space if missing.
+    if (!newText || !newText.trim()) {
+      newText = " "; // Ensure structure is not broken.
     }
     return `<w:t>${escapeXml(newText)}</w:t>`;
   });
