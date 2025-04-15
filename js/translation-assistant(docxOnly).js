@@ -759,18 +759,24 @@ $("#convert-translation-download-btn").click(async function () {
   try {
     if (fileExtension === 'docx') {
       let arrayBuffer = await englishFile.arrayBuffer();
-  const zip = await JSZip.loadAsync(arrayBuffer);
-  let docXmlStr = await zip.file("word/document.xml").async("string");
-  
-  // Use the new DOM-based conversion function.
-  let updatedDocXml = conversionDocxXmlModified(docXmlStr, finalFrenchHtml);
-  zip.file("word/document.xml", updatedDocXml);
-  
-  generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+      const zip = await JSZip.loadAsync(arrayBuffer);
+      let docXmlStr = await zip.file("word/document.xml").async("string");
+      
+      // Reconstruct aggregatedMapping (this should be the same mapping you built on file upload)
+      let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
+      let aggregatedMapping = aggregateDocxMapping(rawMapping);
+      
+      // Use the new conversion function.
+      let updatedDocXml = conversionDocxXmlModified(docXmlStr, finalFrenchHtml, aggregatedMapping);
+      
+      // Write updated document.xml back into the zip.
+      zip.file("word/document.xml", updatedDocXml);
+      
+      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
     } else if (fileExtension === 'pptx') {
       // PPTX branch (already working)
     } else if (fileExtension === 'xlsx') {
-      // XLSX conversion logic
+      // XLSX branch
     }
   } catch (err) {
     console.error("Error while generating translated file:", err);
@@ -840,42 +846,51 @@ function escapeXml(str) {
 } 
 
 
-function conversionDocxXmlModified(originalXml, finalFrenchHtml) {
-  // Build a mapping from the French HTML.
-  // Expected mapping keys: "P1", "P2", etc.
+function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMapping) {
+  // Build the French mapping from the AI output.
+  // Expected keys: "P1", "P2", etc.
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
   
   // Parse the original DOCX XML.
   const parser = new DOMParser();
   const serializer = new XMLSerializer();
   const xmlDoc = parser.parseFromString(originalXml, "application/xml");
-
+  
   // Get all paragraphs (<w:p> elements).
   const paragraphs = xmlDoc.getElementsByTagName("w:p");
-  let paraIndex = 1; // This counter correlates with aggregated IDs: "P1", "P2", etc.
-
-  for (let i = 0; i < paragraphs.length; i++) {
+  let mappingIndex = 0; // Index for aggregatedMapping
+  
+  for (let i = 0; i < paragraphs.length && mappingIndex < aggregatedMapping.length; i++) {
     const p = paragraphs[i];
     // Get all text runs in this paragraph.
     const tElements = p.getElementsByTagName("w:t");
-    if (tElements.length > 0) {
-      const key = "P" + paraIndex;
+    // Check if at least one text element in this paragraph has non-empty text.
+    let paragraphHasText = false;
+    for (let j = 0; j < tElements.length; j++) {
+      if (tElements[j].textContent.trim()) {
+        paragraphHasText = true;
+        break;
+      }
+    }
+    if (paragraphHasText) {
+      // Use the corresponding aggregated mapping entry.
+      const key = aggregatedMapping[mappingIndex].id; // e.g., "P35"
+      // Only update if we have a French translation for this key.
       if (frenchMap[key]) {
-        // Update the first <w:t> element with the French translation.
+        // Replace the text in the first <w:t> element.
         tElements[0].textContent = frenchMap[key];
-        // Clear any additional <w:t> elements.
+        // Clear the text for any additional <w:t> elements.
         for (let j = 1; j < tElements.length; j++) {
           tElements[j].textContent = "";
         }
       }
-      paraIndex++;
+      mappingIndex++; // Move to the next aggregated paragraph.
     }
   }
   
-  // Serialize the updated XML back to a string and return.
+  // Serialize the updated XML back to a string.
   return serializer.serializeToString(xmlDoc);
 }
-
 
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
