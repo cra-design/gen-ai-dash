@@ -759,20 +759,14 @@ $("#convert-translation-download-btn").click(async function () {
   try {
     if (fileExtension === 'docx') {
       let arrayBuffer = await englishFile.arrayBuffer();
-      const zip = await JSZip.loadAsync(arrayBuffer);
-      
-      // Extract the original document.xml content.
-      let docXmlStr = await zip.file("word/document.xml").async("string");
-      
-      // (You already extract and aggregate the English mapping earlier during the file upload.)
-      // Now, instead of using sequential regex replacement, we use the new DOM‑based conversion.
-      let updatedDocXml = conversionDocxXmlModified(docXmlStr, finalFrenchHtml);
-      
-      // Write the updated document.xml back into the zip.
-      zip.file("word/document.xml", updatedDocXml);
-      
-      // Generate a new blob for download.
-      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  let docXmlStr = await zip.file("word/document.xml").async("string");
+  
+  // Use the new DOM-based conversion function.
+  let updatedDocXml = conversionDocxXmlModified(docXmlStr, finalFrenchHtml);
+  zip.file("word/document.xml", updatedDocXml);
+  
+  generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
     } else if (fileExtension === 'pptx') {
       // PPTX branch (already working)
     } else if (fileExtension === 'xlsx') {
@@ -858,7 +852,7 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml) {
 
   // Get all paragraphs (<w:p> elements).
   const paragraphs = xmlDoc.getElementsByTagName("w:p");
-  let paraIndex = 1; // This counter will correlate with our aggregated IDs.
+  let paraIndex = 1; // This counter correlates with aggregated IDs: "P1", "P2", etc.
 
   for (let i = 0; i < paragraphs.length; i++) {
     const p = paragraphs[i];
@@ -866,11 +860,10 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml) {
     const tElements = p.getElementsByTagName("w:t");
     if (tElements.length > 0) {
       const key = "P" + paraIndex;
-      // If a French translation exists for this paragraph, update.
       if (frenchMap[key]) {
-        // Replace the content of the first <w:t> with the French text.
+        // Update the first <w:t> element with the French translation.
         tElements[0].textContent = frenchMap[key];
-        // Clear any additional <w:t> elements in this paragraph.
+        // Clear any additional <w:t> elements.
         for (let j = 1; j < tElements.length; j++) {
           tElements[j].textContent = "";
         }
@@ -879,7 +872,7 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml) {
     }
   }
   
-  // Serialize the updated XML back to string.
+  // Serialize the updated XML back to a string and return.
   return serializer.serializeToString(xmlDoc);
 }
 
