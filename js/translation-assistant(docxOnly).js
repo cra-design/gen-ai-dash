@@ -76,31 +76,37 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
   }
   return textElements;
 } 
-function convertParagraphRuns(pElement, frenchText) {
+function convertParagraphRunsWordBased(pElement, frenchText) {
   const tElements = pElement.getElementsByTagName("w:t");
-  // Concatenate the original text and store each run's length.
-  let originalText = "";
-  let runLengths = [];
+
+  // 1. Gather original English text across runs and count words in each run.
+  let runsData = [];
+  let totalWords = 0;
   for (let i = 0; i < tElements.length; i++) {
-    const txt = tElements[i].textContent;
-    originalText += txt;
-    runLengths.push(txt.length);
+    let enText = tElements[i].textContent;
+    let enWords = enText.split(/\s+/).filter(w => w.trim() !== "");
+    runsData.push({ text: enText, wordsCount: enWords.length });
+    totalWords += enWords.length;
   }
-  const totalLength = originalText.length;
-  if (totalLength === 0) return;
-  
-  // Distribute the French text proportionally.
-  let cumulative = 0;
+  if (totalWords === 0) return;
+
+  // 2. Split the French text by words (or tokens).
+  let frWords = frenchText.split(/\s+/);
+  let frIndex = 0;
+
+  // 3. Assign words to each run proportionally by word count.
   for (let i = 0; i < tElements.length; i++) {
-    let proportion = runLengths[i] / totalLength;
-    let numChars = Math.round(frenchText.length * proportion);
-    let runText = frenchText.substring(cumulative, cumulative + numChars);
-    tElements[i].textContent = runText;
-    cumulative += numChars;
+    let share = runsData[i].wordsCount / totalWords;
+    let chunkSize = Math.round(frWords.length * share);
+    let chunk = frWords.slice(frIndex, frIndex + chunkSize).join(" ");
+    frIndex += chunkSize;
+    tElements[i].textContent = chunk;
   }
-  // Append any remaining characters to the last run.
-  if (cumulative < frenchText.length && tElements.length > 0) {
-    tElements[tElements.length - 1].textContent += frenchText.substring(cumulative);
+
+  // 4. If there's still leftover French words, append them to the last run.
+  if (frIndex < frWords.length && tElements.length > 0) {
+    let leftover = frWords.slice(frIndex).join(" ");
+    tElements[tElements.length - 1].textContent += (tElements[tElements.length - 1].textContent ? " " : "") + leftover;
   }
 }
 async function extractPptxText(arrayBuffer) {
@@ -888,23 +894,22 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
   
   // Iterate over all paragraphs.
   for (let i = 0; i < paragraphs.length && mappingIndex < aggregatedMapping.length; i++) {
-    const p = paragraphs[i];
-    const tElements = p.getElementsByTagName("w:t");
-    // Skip paragraphs with no text.
-    let paraText = "";
-    for (let j = 0; j < tElements.length; j++) {
-      paraText += tElements[j].textContent;
-    }
-    if (paraText.trim() !== "") {
-      // Get the corresponding aggregated mapping key (e.g., "P1", "P2", etc.)
-      const key = aggregatedMapping[mappingIndex].id;
-      mappingIndex++;
-      if (frenchMap[key]) {
-        // Instead of replacing just the first run, distribute French text among runs.
-        convertParagraphRuns(p, frenchMap[key]);
-      }
+  const p = paragraphs[i];
+  const tElements = p.getElementsByTagName("w:t");
+  
+  // Check if paragraph is non-empty
+  let paraText = "";
+  for (let j = 0; j < tElements.length; j++) {
+    paraText += tElements[j].textContent;
+  }
+  if (paraText.trim() !== "") {
+    const key = aggregatedMapping[mappingIndex].id; // e.g. "P25"
+    mappingIndex++;
+    if (frenchMap[key]) {
+      convertParagraphRunsWordBased(p, frenchMap[key]);
     }
   }
+}
   return serializer.serializeToString(xmlDoc);
 }
 
