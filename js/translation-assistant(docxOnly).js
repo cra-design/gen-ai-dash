@@ -75,6 +75,33 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
     paragraphCounter++;
   }
   return textElements;
+} 
+function convertParagraphRuns(pElement, frenchText) {
+  const tElements = pElement.getElementsByTagName("w:t");
+  // Concatenate the original text and store each run's length.
+  let originalText = "";
+  let runLengths = [];
+  for (let i = 0; i < tElements.length; i++) {
+    const txt = tElements[i].textContent;
+    originalText += txt;
+    runLengths.push(txt.length);
+  }
+  const totalLength = originalText.length;
+  if (totalLength === 0) return;
+  
+  // Distribute the French text proportionally.
+  let cumulative = 0;
+  for (let i = 0; i < tElements.length; i++) {
+    let proportion = runLengths[i] / totalLength;
+    let numChars = Math.round(frenchText.length * proportion);
+    let runText = frenchText.substring(cumulative, cumulative + numChars);
+    tElements[i].textContent = runText;
+    cumulative += numChars;
+  }
+  // Append any remaining characters to the last run.
+  if (cumulative < frenchText.length && tElements.length > 0) {
+    tElements[tElements.length - 1].textContent += frenchText.substring(cumulative);
+  }
 }
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
@@ -762,21 +789,20 @@ $("#convert-translation-download-btn").click(async function () {
       const zip = await JSZip.loadAsync(arrayBuffer);
       let docXmlStr = await zip.file("word/document.xml").async("string");
       
-      // Reconstruct aggregatedMapping (this should be the same mapping you built on file upload)
+      // Recreate aggregatedMapping (from your earlier extraction)
       let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
       let aggregatedMapping = aggregateDocxMapping(rawMapping);
       
-      // Use the new conversion function.
+      // Convert the DOCX XML using the new conversion function.
       let updatedDocXml = conversionDocxXmlModified(docXmlStr, finalFrenchHtml, aggregatedMapping);
       
-      // Write updated document.xml back into the zip.
+      // Write the updated XML back into the zip.
       zip.file("word/document.xml", updatedDocXml);
-      
       generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
     } else if (fileExtension === 'pptx') {
-      // PPTX branch (already working)
+      // Your PPTX branch...
     } else if (fileExtension === 'xlsx') {
-      // XLSX branch
+      // XLSX conversion logic...
     }
   } catch (err) {
     console.error("Error while generating translated file:", err);
@@ -847,8 +873,8 @@ function escapeXml(str) {
 
 
 function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMapping) {
-  // Build the French mapping from the AI output.
-  // Expected keys: "P1", "P2", etc.
+  // Build a mapping from the French HTML.
+  // Expected mapping keys: "P1", "P2", etc.
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
   
   // Parse the original DOCX XML.
@@ -858,37 +884,27 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
   
   // Get all paragraphs (<w:p> elements).
   const paragraphs = xmlDoc.getElementsByTagName("w:p");
-  let mappingIndex = 0; // Index for aggregatedMapping
+  let mappingIndex = 0; // We'll use this to index aggregatedMapping in order.
   
+  // Iterate over all paragraphs.
   for (let i = 0; i < paragraphs.length && mappingIndex < aggregatedMapping.length; i++) {
     const p = paragraphs[i];
-    // Get all text runs in this paragraph.
     const tElements = p.getElementsByTagName("w:t");
-    // Check if at least one text element in this paragraph has non-empty text.
-    let paragraphHasText = false;
+    // Skip paragraphs with no text.
+    let paraText = "";
     for (let j = 0; j < tElements.length; j++) {
-      if (tElements[j].textContent.trim()) {
-        paragraphHasText = true;
-        break;
-      }
+      paraText += tElements[j].textContent;
     }
-    if (paragraphHasText) {
-      // Use the corresponding aggregated mapping entry.
-      const key = aggregatedMapping[mappingIndex].id; // e.g., "P35"
-      // Only update if we have a French translation for this key.
+    if (paraText.trim() !== "") {
+      // Get the corresponding aggregated mapping key (e.g., "P1", "P2", etc.)
+      const key = aggregatedMapping[mappingIndex].id;
+      mappingIndex++;
       if (frenchMap[key]) {
-        // Replace the text in the first <w:t> element.
-        tElements[0].textContent = frenchMap[key];
-        // Clear the text for any additional <w:t> elements.
-        for (let j = 1; j < tElements.length; j++) {
-          tElements[j].textContent = "";
-        }
+        // Instead of replacing just the first run, distribute French text among runs.
+        convertParagraphRuns(p, frenchMap[key]);
       }
-      mappingIndex++; // Move to the next aggregated paragraph.
     }
   }
-  
-  // Serialize the updated XML back to a string.
   return serializer.serializeToString(xmlDoc);
 }
 
