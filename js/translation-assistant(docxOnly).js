@@ -46,47 +46,36 @@ async function extractDocxParagraphs(arrayBuffer) {
 
 async function extractDocxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
-  const docXmlStr = await zip.file("word/document.xml").async("string");
+  let docXmlStr = await zip.file("word/document.xml").async("string");
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
 
   const paragraphs = xmlDoc.getElementsByTagName("w:p");
-  const textElements = [];
+  let textElements = [];
   let paragraphCounter = 1;
 
+  // Process each paragraph.
   for (let i = 0; i < paragraphs.length; i++) {
     const paragraph = paragraphs[i];
     const runElements = paragraph.getElementsByTagName("w:r");
-    if (runElements.length === 0) continue;
+    if (runElements.length === 0) continue; // Skip empty paragraphs
 
     let runCounter = 1;
+    // Process each run in the paragraph.
     for (let j = 0; j < runElements.length; j++) {
       const run = runElements[j];
-
-      // ←— DETECT BOLD HERE
-      const hasBold = !!run.getElementsByTagName("w:b").length
-                   || !!run.getElementsByTagName("w:bCs").length;
-
+      // For each run, get <w:t> elements.
       const textNodes = run.getElementsByTagName("w:t");
       for (let k = 0; k < textNodes.length; k++) {
-        let text = textNodes[k].textContent;
-
-        // wrap in markers if this run was bold
-        if (hasBold) {
-          text = `{{B}}${text}{{/B}}`;
-        }
-
+        const text = textNodes[k].textContent;
         const id = `P${paragraphCounter}_R${runCounter++}`;
         textElements.push({ id, text });
       }
     }
-
     paragraphCounter++;
   }
-
   return textElements;
-}
-
+} 
 function convertParagraphRuns(pElement, frenchText) {
   const tElements = pElement.getElementsByTagName("w:t");
   // Concatenate the original text and store each run's length.
@@ -884,70 +873,39 @@ function escapeXml(str) {
 
 
 function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMapping) {
-  // 1) Build a lookup of paragraph IDs to French text
+  // Build a mapping from the French HTML.
+  // Expected mapping keys: "P1", "P2", etc.
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
-
-  // 2) Parse the XML into a DOM
+  
+  // Parse the original DOCX XML.
   const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(originalXml, "application/xml");
   const serializer = new XMLSerializer();
-
-  // 3) Walk each <w:p> in document order, pairing it with aggregatedMapping
-  let mapIdx = 0;
-  const paras = xmlDoc.getElementsByTagName("w:p");
-  for (let i = 0; i < paras.length && mapIdx < aggregatedMapping.length; i++) {
-    const p = paras[i];
-    const key = aggregatedMapping[mapIdx].id;
-    const frenchPara = frenchMap[key];
-    if (frenchPara !== undefined) {
-      replaceParagraphRuns(p, frenchPara);
-      mapIdx++;
+  const xmlDoc = parser.parseFromString(originalXml, "application/xml");
+  
+  // Get all paragraphs (<w:p> elements).
+  const paragraphs = xmlDoc.getElementsByTagName("w:p");
+  let mappingIndex = 0; // We'll use this to index aggregatedMapping in order.
+  
+  // Iterate over all paragraphs.
+  for (let i = 0; i < paragraphs.length && mappingIndex < aggregatedMapping.length; i++) {
+    const p = paragraphs[i];
+    const tElements = p.getElementsByTagName("w:t");
+    // Skip paragraphs with no text.
+    let paraText = "";
+    for (let j = 0; j < tElements.length; j++) {
+      paraText += tElements[j].textContent;
     }
-  }
-
-  // 4) Serialize back to string
-  return serializer.serializeToString(xmlDoc);
-}
-function replaceParagraphRuns(paragraph, frenchText) {
-  const doc = paragraph.ownerDocument;
-
-  // 1) Turn markers into an array of { text, bold }
-  const segments = frenchText
-    .split(/(\{\{B\}\}[\s\S]+?\{\{\/B\}\})/)
-    .filter(Boolean)
-    .map(seg => {
-      if (seg.startsWith("{{B}}") && seg.endsWith("{{/B}}")) {
-        return { text: seg.slice(5, -6), bold: true };
-      } else {
-        return { text: seg, bold: false };
+    if (paraText.trim() !== "") {
+      // Get the corresponding aggregated mapping key (e.g., "P1", "P2", etc.)
+      const key = aggregatedMapping[mappingIndex].id;
+      mappingIndex++;
+      if (frenchMap[key]) {
+        // Instead of replacing just the first run, distribute French text among runs.
+        convertParagraphRuns(p, frenchMap[key]);
       }
-    });
-
-  // 2) Remove all existing runs
-  while (paragraph.firstChild) {
-    paragraph.removeChild(paragraph.firstChild);
-  }
-
-  // 3) Rebuild runs from our segments, preserving bold where flagged
-  for (const { text, bold } of segments) {
-    const run = doc.createElement("w:r");
-    const rPr = doc.createElement("w:rPr");
-    if (bold) {
-      const b = doc.createElement("w:b");
-      rPr.appendChild(b);
     }
-    run.appendChild(rPr);
-
-    const t = doc.createElement("w:t");
-    // preserve spaces exactly
-    if (/^\s|\s$/.test(text)) {
-      t.setAttribute("xml:space", "preserve");
-    }
-    t.textContent = text;
-    run.appendChild(t);
-
-    paragraph.appendChild(run);
   }
+  return serializer.serializeToString(xmlDoc);
 }
 
 // Helper function to convert French HTML back to PPTX XML:
