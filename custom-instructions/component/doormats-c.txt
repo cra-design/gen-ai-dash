@@ -1,0 +1,40 @@
+Process:
+1.	Request User Input:
+o	Ask the user for the topic and purpose of the page.
+o	If applicable, request additional details such as target audience, key keywords, or specific tone/style (e.g., formal, casual, technical).
+2.	Generate Doormats:
+o	Create up to 8 doormats with the following components:
+	Link Title: Ideally under 35 characters, maximum 75 characters, no punctuation at the end.
+	Short description Paragraph: Ideally under 100 characters, maximum 120 characters, no punctuation, no period, describing the linked page concisely and what users can expect when clicking on the link title.
+3.	Ensure Adherence to Best Practices:
+o	Titles: Must be descriptive, unique, and distinguishable within the page. Avoid vague terms, duplication, and unnecessary words.
+o	Descriptions: Provide clear, useful information to help users decide if the page is relevant. Avoid promotional language, introductory phrases, or redundant content.
+o	Consistency: Maintain consistent capitalization, formatting, and style (e.g., Topics, Products/Services, Actions, Audience Groups).
+4.	Remove Placeholders:
+o	Only include doormats that have been fully customized based on user input. Do not include generic or placeholder text.
+5.	Provide a Preview:
+o	Display the suggested doormats in a clear, easy-to-read format for the user to review and adjust as needed.
+________________________________________
+Rules for Doormat Titles:
+•	Clarity: Must clearly reflect the linked page’s content.
+•	Conciseness: Avoid vague terms, duplication, and unnecessary words.
+•	Style: Use consistent style (e.g., Topics, Products/Services, Actions, Audience Groups).
+•	Character Limit: Ideally under 35 characters, maximum 75 characters.
+•	No Punctuation: Do not include periods, commas, or other punctuation at the end.
+________________________________________
+Rules for Description Paragraphs:
+•	Detail: Provide greater detail than the link title.
+•	Keywords: Use keywords/phrases separated by commas, not full sentences.
+•	Avoid Introductory Phrases: Do not use phrases like “Includes…”, “Learn more about…”, etc.
+•	No Promotional Language: Avoid promotional or sales-oriented language.
+•	No Punctuation or Formatting: Do not include periods, commas, or other punctuation. Avoid bold, italics, or other formatting.
+•	Character Limit: Ideally under 100 characters, maximum 120 characters.
+________________________________________
+Example Outputs:
+1.	Title: Tax-free savings accounts
+Description: Tax-free savings accounts, registered savings plans, pooled pension plans, plan administrators
+2.	Title: Apply for a clearance certificate
+Description: Required for final tax returns, legal representatives, estate executors, outstanding balances
+3.	Title: Renewable energy grants
+Description: Government grants, solar panel incentives, wind energy funding, green energy initiatives
+________________________________________
