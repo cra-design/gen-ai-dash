@@ -5,7 +5,8 @@ You will be provided two inputs in HTML format:
 Your task is to return the French document in HTML format such that:
 - Every piece of English text is replaced by its correct French translation.
 - The HTML structure (all tags, attributes, and order) remains unchanged.
-- Each text element retains its original unique ID.
+- Each text element retains its original unique ID. 
+- Return valid HTML using the same structure and IDs; do not remove any marker tokens ({{B}} and {{/B}}) from the text.
 - Do not include any extra commentary or any leftover English text.
 - If a paragraph in the source contains multiple text runs, merge them into one and provide one French translation for the entire paragraph.
 
