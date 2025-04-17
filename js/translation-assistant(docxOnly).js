@@ -761,35 +761,63 @@ $("#second-upload-btn").click(async function () {
    *************************************************************/
 $("#convert-translation-download-btn").click(async function () {
   if (!finalFrenchHtml?.trim()) {
-    return alert("No formatted French document available.");
+    return alert("No formatted translation available.");
   }
 
-  // 1) Read & unzip original .docx
-  const arrayBuffer = await englishFile.arrayBuffer();
-  const zip         = await JSZip.loadAsync(arrayBuffer);
-  const origXml     = await zip.file("word/document.xml").async("string");
+  const ext = (englishFile?.name || "").split('.').pop().toLowerCase();
+  let mimeType, blob;
 
-  // 2) Extract run‑level runs & French map
-  const rawRuns      = await extractDocxTextXmlWithId(arrayBuffer);
-  const frenchRunMap = buildFrenchRunMap(finalFrenchHtml);
+  try {
+    const arrayBuffer = await englishFile.arrayBuffer();
+    const zip         = await JSZip.loadAsync(arrayBuffer);
 
-  // 3) Patch the XML
-  const updatedXml = conversionDocxXmlRunLevel(origXml, rawRuns, frenchRunMap);
-  zip.file("word/document.xml", updatedXml);
+    if (ext === "docx") {
+      mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      // 1) Extract original document.xml
+      const origXml = await zip.file("word/document.xml").async("string");
+      // 2) Build run‑level map & French run map
+      const rawRuns      = await extractDocxTextXmlWithId(arrayBuffer);
+      const frenchRunMap = buildFrenchRunMap(finalFrenchHtml);
+      // 3) Patch the XML
+      const updatedXml = conversionDocxXmlRunLevel(origXml, rawRuns, frenchRunMap);
+      zip.file("word/document.xml", updatedXml);
 
-  // 4) Generate a single blob _after_ patching
-  const blob = await zip.generateAsync({ type: "blob" });
+    } else if (ext === "pptx") {
+      mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+      // 1) For each slide
+      const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+      for (let filename of Object.keys(zip.files)) {
+        const match = slideRegex.exec(filename);
+        if (!match) continue;
+        const slideNum   = match[1];
+        const slideXml   = await zip.file(filename).async("string");
+        // 2) Patch slide XML with your conversionPptxXml()
+        const updatedXml = conversionPptxXml(slideXml, finalFrenchHtml, slideNum);
+        zip.file(filename, updatedXml);
+      }
 
-  // 5) Download that blob
-  const link = document.createElement("a");
-  link.href    = URL.createObjectURL(blob);
-  link.download = englishFile.name.replace(/\.docx$/, "-FR.docx");
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(link.href);
+    } else {
+      return alert("Only .docx and .pptx formats are supported for download.");
+    }
+
+    // 4) Generate the single blob
+    blob = await zip.generateAsync({ type: "blob", mimeType });
+
+    // 5) Download
+    const link = document.createElement("a");
+    link.href     = URL.createObjectURL(blob);
+    link.download = englishFile.name.replace(/\.(docx|pptx)$/, `-FR.$1`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(link.href);
+
+  } catch (err) {
+    console.error("Error while generating translated file:", err);
+    alert("Failed to generate translated file.");
+  }
 });
-});
+
 //************************************************************************************
 //* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
 //* Can be added more if needed                                                   ***** 
