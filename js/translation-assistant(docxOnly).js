@@ -760,65 +760,34 @@ $("#second-upload-btn").click(async function () {
    * Download Document Workflow
    *************************************************************/
 $("#convert-translation-download-btn").click(async function () {
-  if (!finalFrenchHtml || !finalFrenchHtml.trim()) {
-    alert("No formatted French document available.");
-    return;
+  if (!finalFrenchHtml?.trim()) {
+    return alert("No formatted French document available.");
   }
-  
-  let fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
-  let mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-  if (fileExtension === 'pptx') {
-    mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-  } else if (fileExtension === 'xlsx') {
-    mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-  }
-  
-  let generatedBlob;
-  try {
-    if (fileExtension === 'docx') {
-      const arrayBuffer = await englishFile.arrayBuffer();
-      const zip = await JSZip.loadAsync(arrayBuffer);
-      const origXml = await zip.file("word/document.xml").async("string");
-      
-      // Recreate aggregatedMapping (from your earlier extraction)
-      const rawRuns = await extractDocxTextXmlWithId(arrayBuffer);
-      let frenchRunMap = buildFrenchRunMap(finalFrenchHtml);
-      
-      // Convert the DOCX XML using the new conversion function.
-      const updatedXml    = conversionDocxXmlRunLevel(origXml, rawRuns, frenchRunMap);
-      zip.file("word/document.xml", updatedXml);
-      
-      // Write the updated XML back into the zip.
-      const blob = await zip.generateAsync({ type: "blob" });
-      const link = document.createElement("a");
-      link.href  = URL.createObjectURL(blob);
-      link.download = englishFile.name.replace(/\.docx$/, "-FR.docx");
-      link.click();
-      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
-    } else if (fileExtension === 'pptx') {
-      // Your PPTX branch...
-    } else if (fileExtension === 'xlsx') {
-      // XLSX conversion logic...
-    }
-  } catch (err) {
-    console.error("Error while generating translated file:", err);
-    alert("Failed to generate translated file.");
-    return;
-  }
-  
-  if (!generatedBlob) {
-    alert("File generation failed.");
-    return;
-  }
-  
-  let baseFileName = englishFile ? englishFile.name.split('.').slice(0, -1).join('.') : "translated-file";
-  let modifiedFileName = `${baseFileName}-FR.${fileExtension}`;
-  
-  let downloadLink = document.createElement('a');
-  downloadLink.href = URL.createObjectURL(generatedBlob);
-  downloadLink.download = modifiedFileName;
-  downloadLink.click();
-  URL.revokeObjectURL(downloadLink.href);
+
+  // 1) Read & unzip original .docx
+  const arrayBuffer = await englishFile.arrayBuffer();
+  const zip         = await JSZip.loadAsync(arrayBuffer);
+  const origXml     = await zip.file("word/document.xml").async("string");
+
+  // 2) Extract run‑level runs & French map
+  const rawRuns      = await extractDocxTextXmlWithId(arrayBuffer);
+  const frenchRunMap = buildFrenchRunMap(finalFrenchHtml);
+
+  // 3) Patch the XML
+  const updatedXml = conversionDocxXmlRunLevel(origXml, rawRuns, frenchRunMap);
+  zip.file("word/document.xml", updatedXml);
+
+  // 4) Generate a single blob _after_ patching
+  const blob = await zip.generateAsync({ type: "blob" });
+
+  // 5) Download that blob
+  const link = document.createElement("a");
+  link.href    = URL.createObjectURL(blob);
+  link.download = englishFile.name.replace(/\.docx$/, "-FR.docx");
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(link.href);
 });
 });
 //************************************************************************************
