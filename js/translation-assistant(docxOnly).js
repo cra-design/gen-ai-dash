@@ -817,7 +817,7 @@ $("#convert-translation-download-btn").click(async function () {
     alert("Failed to generate translated file.");
   }
 });
-
+});
 //************************************************************************************
 //* Add a pre-cleaning step to rebuild any broken French lines from the AI output ***** 
 //* Can be added more if needed                                                   ***** 
