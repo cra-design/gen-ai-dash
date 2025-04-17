@@ -45,29 +45,27 @@ async function extractDocxParagraphs(arrayBuffer) {
 } 
 
 async function extractDocxTextXmlWithId(arrayBuffer) {
-  const zip = await JSZip.loadAsync(arrayBuffer);
-  const docXmlStr = await zip.file("word/document.xml").async("string");
-  const xmlDoc   = new DOMParser().parseFromString(docXmlStr, "application/xml");
+  const zip    = await JSZip.loadAsync(arrayBuffer);
+  const xmlStr = await zip.file("word/document.xml").async("string");
+  const doc    = new DOMParser().parseFromString(xmlStr, "application/xml");
 
-  let textElements   = [];
-  let paraCounter    = 1;
-
-  for (let p of xmlDoc.getElementsByTagName("w:p")) {
-    let runCounter = 1;
+  let runs = [], para = 1;
+  for (let p of doc.getElementsByTagName("w:p")) {
+    let runId = 1;
     for (let r of p.getElementsByTagName("w:r")) {
-      // look for bold markers:
       const hasBold = !!r.querySelector("w\\:b, w\\:bCs");
       for (let t of r.getElementsByTagName("w:t")) {
-        const id   = `P${paraCounter}_R${runCounter++}`;
-        const text = t.textContent || "";
-        textElements.push({ id, text, bold: hasBold });
+        runs.push({
+          id:   `P${para}_R${runId++}`,
+          text: t.textContent,
+          bold: hasBold
+        });
       }
     }
-    paraCounter++;
+    para++;
   }
-
-  return textElements;
-} 
+  return runs;
+}
 
 function convertParagraphRuns(pElement, frenchText) {
   const tElements = pElement.getElementsByTagName("w:t");
@@ -778,20 +776,24 @@ $("#convert-translation-download-btn").click(async function () {
   let generatedBlob;
   try {
     if (fileExtension === 'docx') {
-      let arrayBuffer = await englishFile.arrayBuffer();
+      const arrayBuffer = await englishFile.arrayBuffer();
       const zip = await JSZip.loadAsync(arrayBuffer);
-      let docXmlStr = await zip.file("word/document.xml").async("string");
+      const origXml = await zip.file("word/document.xml").async("string");
       
       // Recreate aggregatedMapping (from your earlier extraction)
-      let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
+      const rawRuns = await extractDocxTextXmlWithId(arrayBuffer);
       let frenchRunMap = buildFrenchRunMap(finalFrenchHtml);
       
       // Convert the DOCX XML using the new conversion function.
-      let originalXml = await zip.file("word/document.xml").async("string");
-      let updatedXml = conversionDocxXmlRunLevel(originalXml, rawMapping, frenchRunMap);
+      const updatedXml    = conversionDocxXmlRunLevel(origXml, rawRuns, frenchRunMap);
+      zip.file("word/document.xml", updatedXml);
       
       // Write the updated XML back into the zip.
-      zip.file("word/document.xml", updatedXml);
+      const blob = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement("a");
+      link.href  = URL.createObjectURL(blob);
+      link.download = englishFile.name.replace(/\.docx$/, "-FR.docx");
+      link.click();
       generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
     } else if (fileExtension === 'pptx') {
       // Your PPTX branch...
@@ -846,53 +848,52 @@ function buildFrenchRunMap(aiHtml) {
   tmp.innerHTML = aiHtml;
   let map = {};
   for (let p of tmp.querySelectorAll("p[id]")) {
-    let id = p.id;
-    // if it came back wrapped in <strong>, detect that:
-    let bold = !!p.querySelector("strong");
-    let text = bold
+    const id   = p.id;
+    const bold = !!p.querySelector("strong");
+    const text = bold
       ? p.querySelector("strong").textContent
       : p.textContent;
     map[id] = { text, bold };
   }
   return map;
 }
-const frenchRunMap = buildFrenchRunMap(finalFrenchHtml);
-
 function escapeXml(str) {
   return str.replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
 } 
+function conversionDocxXmlRunLevel(originalXml, rawRuns, frenchRunMap) {
+  const parser     = new DOMParser();
+  const serializer = new XMLSerializer();
+  const xmlDoc     = parser.parseFromString(originalXml, "application/xml");
 
+  // flatten all <w:r> in document in document order
+  const allRuns = Array.from(xmlDoc.getElementsByTagName("w:r"));
+  let idx = 0;
 
-function conversionDocxXmlRunLevel(originalXml, rawMapping, frenchRunMap) {
-  const parser    = new DOMParser();
-  const serializer= new XMLSerializer();
-  const xmlDoc    = parser.parseFromString(originalXml, "application/xml");
-
-  // flatten all <w:r> in document
-  let runs = Array.from(xmlDoc.getElementsByTagName("w:r"));
-  let mapIdx = 0;
-
-  for (let r of runs) {
-    // skip runs with no text
-    let t = r.querySelector("w\\:t");
+  for (let r of allRuns) {
+    const t = r.querySelector("w\\:t");
     if (!t) continue;
-    let mapEntry = rawMapping[mapIdx++];
-    let replace   = frenchRunMap[mapEntry.id];
-    if (replace) {
-      // swap text
-      t.textContent = replace.text;
+    const runInfo = rawRuns[idx++];
+    const fr      = frenchRunMap[runInfo.id];
+    if (!fr) continue;
 
-      // ensure we have a <w:rPr>
-      let rPr = r.querySelector("w\\:rPr")
-             || r.insertBefore(xmlDoc.createElement("w:rPr"), t);
-      // remove any existing bold
-      rPr.querySelectorAll("w\\:b, w\\:bCs").forEach(n=>n.remove());
-      if (replace.bold) {
-        rPr.appendChild(xmlDoc.createElement("w:b"));
-        rPr.appendChild(xmlDoc.createElement("w:bCs"));
-      }
+    // swap the text
+    t.textContent = fr.text;
+
+    // ensure <w:rPr> exists
+    let rPr = r.querySelector("w\\:rPr");
+    if (!rPr) {
+      rPr = xmlDoc.createElement("w:rPr");
+      r.insertBefore(rPr, t);
+    }
+    // remove any existing bold markers
+    rPr.querySelectorAll("w\\:b, w\\:bCs").forEach(n => n.remove());
+
+    // re‑apply bold if needed
+    if (fr.bold) {
+      rPr.appendChild(xmlDoc.createElement("w:b"));
+      rPr.appendChild(xmlDoc.createElement("w:bCs"));
     }
   }
 
