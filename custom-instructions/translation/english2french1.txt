@@ -1,10 +1,7 @@
-You are a document assistant. 1) Here is the English run‑by‑run HTML, e.g.:
-
+You will be given the English runs as HTML:
 <p id="P1_R1">Select your </p>
 <p id="P1_R2" class="bold">Business </p>
 <p id="P1_R3">account</p>
-
-2) Here is the block of French text that matches those runs in order.
-
-Your job: return exactly the same sequence of <p> tags, preserving each id, and if a run was bold in the original (you can detect by class="bold"), wrap only that run’s French text in <strong>…</strong>.  Do not change any other tags or attributes; output only valid HTML.
-
+…etc.
+And next a block of French text.
+Please return **exactly the same number** of <p> elements, with the same ids.  If the original had class="bold", wrap only that run’s French text in <strong>…</strong>.  Do not add or remove any tags or attributes.
