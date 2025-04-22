@@ -39,6 +39,8 @@ async function extractDocxParagraphs(arrayBuffer) {
       fullText.push(paragraphText.trim());
     }
   }
+
+  // Join paragraphs with double newline to separate them
   return fullText.join("\n\n");
 } 
 
@@ -74,61 +76,68 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
   }
   return textElements;
 } 
-function convertParagraphRuns(pElement, frenchHtml) {
-  const runElements = Array.from(pElement.getElementsByTagName("w:r"));
-  if (!runElements.length) return;
-
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = frenchHtml;
-  const styledSegments = [];
-
-  function extractSegments(node, style = {}) {
-    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-      styledSegments.push({ text: node.textContent, style });
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      const newStyle = { ...style };
-      const tag = node.nodeName.toLowerCase();
-      if (tag === "bold") newStyle.bold = true;
-      if (tag === "underline") newStyle.underline = true;
-      if (tag === "color") newStyle.color = node.getAttribute("val");
-      Array.from(node.childNodes).forEach(child => extractSegments(child, newStyle));
-    }
+function convertParagraphRuns(pElement, frenchText) {
+  const tElements = pElement.getElementsByTagName("w:t");
+  // Concatenate the original text and store each run's length.
+  let originalText = "";
+  let runLengths = [];
+  for (let i = 0; i < tElements.length; i++) {
+    const txt = tElements[i].textContent;
+    originalText += txt;
+    runLengths.push(txt.length);
   }
-
-  Array.from(tempDiv.childNodes).forEach(node => extractSegments(node));
-
-  let segIndex = 0;
-  for (let i = 0; i < runElements.length && segIndex < styledSegments.length; i++) {
-    const run = runElements[i];
-    const tNode = run.getElementsByTagName("w:t")[0];
-    if (!tNode) continue;
-    const segment = styledSegments[segIndex++];
-    tNode.textContent = segment.text;
-
-    // Clean old conflicting styles
-    const rPrNode = run.getElementsByTagName("w:rPr")[0] || run.ownerDocument.createElement("w:rPr");
-    ["w:b", "w:u", "w:color"].forEach(tag => {
-      const nodes = rPrNode.getElementsByTagName(tag);
-      for (let n = nodes.length - 1; n >= 0; n--) rPrNode.removeChild(nodes[n]);
-    });
-
-    if (segment.style.bold) rPrNode.appendChild(run.ownerDocument.createElement("w:b"));
-    if (segment.style.underline) {
-      const u = run.ownerDocument.createElement("w:u");
-      u.setAttribute("w:val", "single");
-      rPrNode.appendChild(u);
-    }
-    if (segment.style.color) {
-      const c = run.ownerDocument.createElement("w:color");
-      c.setAttribute("w:val", segment.style.color);
-      rPrNode.appendChild(c);
-    }
-
-    if (!run.getElementsByTagName("w:rPr").length && rPrNode.childNodes.length) {
-      run.insertBefore(rPrNode, tNode);
-    }
+  const totalLength = originalText.length;
+  if (totalLength === 0) return;
+  
+  // Distribute the French text proportionally.
+  let cumulative = 0;
+  for (let i = 0; i < tElements.length; i++) {
+    let proportion = runLengths[i] / totalLength;
+    let numChars = Math.round(frenchText.length * proportion);
+    let runText = frenchText.substring(cumulative, cumulative + numChars);
+    tElements[i].textContent = runText;
+    cumulative += numChars;
+  }
+  // Append any remaining characters to the last run.
+  if (cumulative < frenchText.length && tElements.length > 0) {
+    tElements[tElements.length - 1].textContent += frenchText.substring(cumulative);
   }
 }
+async function extractPptxText(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  let allParagraphs = [];
+
+  // Loop over each file in the ZIP that matches a slide XML.
+  for (const fileName of Object.keys(zip.files)) {
+    if (slideRegex.test(fileName)) {
+      const slideXml = await zip.file(fileName).async("string");
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
+
+      // Get all <a:p> elements for this slide.
+      const paraNodes = xmlDoc.getElementsByTagName("a:p");
+      for (let i = 0; i < paraNodes.length; i++) {
+        const paraNode = paraNodes[i];
+        let paragraphText = "";
+
+        // Within each paragraph, concatenate the text from all <a:t> elements.
+        const textNodes = paraNode.getElementsByTagName("a:t");
+        for (let j = 0; j < textNodes.length; j++) {
+          paragraphText += textNodes[j].textContent;
+        }
+        // If the paragraph has any non-empty text, add it to the array.
+        if (paragraphText.trim().length > 0) {
+          allParagraphs.push(paragraphText.trim());
+        }
+      }
+    }
+  }
+  // Join paragraphs with two newlines to denote paragraph breaks.
+  return allParagraphs.join("\n\n");
+}
+
+
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
@@ -839,16 +848,22 @@ function deduplicateFrenchParagraphs(finalFrenchHtml) {
   return cleanedParagraphs.join("");
 } 
 function buildFrenchTextMap(finalFrenchHtml) {
+  // Optionally deduplicate first or perform other cleaning.
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
+  // Select all paragraphs that have an id
   const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+  // Build mapping while filtering out empty texts.
   const frenchMap = {};
   rawParagraphs.forEach(p => {
     const id = p.getAttribute("id");
-    frenchMap[id] = p.innerHTML.trim(); // Keep inner HTML for <bold> etc.
+    let text = p.textContent.replace(/\s+/g, ' ').trim();
+    if (text.length > 0) {
+      frenchMap[id] = text;
+    }
   });
   return frenchMap;
-} 
+}
 
 function escapeXml(str) {
   return str.replace(/&/g, "&amp;")
@@ -858,29 +873,38 @@ function escapeXml(str) {
 
 
 function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMapping) {
+  // Build a mapping from the French HTML.
+  // Expected mapping keys: "P1", "P2", etc.
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
+  
+  // Parse the original DOCX XML.
   const parser = new DOMParser();
   const serializer = new XMLSerializer();
   const xmlDoc = parser.parseFromString(originalXml, "application/xml");
+  
+  // Get all paragraphs (<w:p> elements).
   const paragraphs = xmlDoc.getElementsByTagName("w:p");
-  let mappingIndex = 0;
-
+  let mappingIndex = 0; // We'll use this to index aggregatedMapping in order.
+  
+  // Iterate over all paragraphs.
   for (let i = 0; i < paragraphs.length && mappingIndex < aggregatedMapping.length; i++) {
     const p = paragraphs[i];
     const tElements = p.getElementsByTagName("w:t");
+    // Skip paragraphs with no text.
     let paraText = "";
     for (let j = 0; j < tElements.length; j++) {
       paraText += tElements[j].textContent;
     }
     if (paraText.trim() !== "") {
+      // Get the corresponding aggregated mapping key (e.g., "P1", "P2", etc.)
       const key = aggregatedMapping[mappingIndex].id;
       mappingIndex++;
       if (frenchMap[key]) {
+        // Instead of replacing just the first run, distribute French text among runs.
         convertParagraphRuns(p, frenchMap[key]);
       }
     }
   }
-
   return serializer.serializeToString(xmlDoc);
 }
 
