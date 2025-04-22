@@ -39,8 +39,6 @@ async function extractDocxParagraphs(arrayBuffer) {
       fullText.push(paragraphText.trim());
     }
   }
-
-  // Join paragraphs with double newline to separate them
   return fullText.join("\n\n");
 } 
 
