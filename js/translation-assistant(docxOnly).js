@@ -46,63 +46,136 @@ async function extractDocxParagraphs(arrayBuffer) {
 
 async function extractDocxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
-  let docXmlStr = await zip.file("word/document.xml").async("string");
+  const docXmlStr = await zip.file("word/document.xml").async("string");
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
 
   const paragraphs = xmlDoc.getElementsByTagName("w:p");
-  let textElements = [];
+  const textElements = [];
   let paragraphCounter = 1;
 
-  // Process each paragraph.
   for (let i = 0; i < paragraphs.length; i++) {
     const paragraph = paragraphs[i];
     const runElements = paragraph.getElementsByTagName("w:r");
-    if (runElements.length === 0) continue; // Skip empty paragraphs
+    if (runElements.length === 0) continue;
 
     let runCounter = 1;
-    // Process each run in the paragraph.
+
     for (let j = 0; j < runElements.length; j++) {
       const run = runElements[j];
-      // For each run, get <w:t> elements.
       const textNodes = run.getElementsByTagName("w:t");
+      const rPr = run.getElementsByTagName("w:rPr")[0];
+      let isBold = false;
+
+      if (rPr) {
+        const boldElement = rPr.getElementsByTagName("w:b")[0];
+        if (boldElement) {
+          isBold = true;
+        }
+      }
+
       for (let k = 0; k < textNodes.length; k++) {
-        const text = textNodes[k].textContent;
+        let text = textNodes[k].textContent;
+        if (text.trim().length === 0) continue;
+
+        if (isBold) {
+          text = `<bold>${text}</bold>`;
+        }
+
         const id = `P${paragraphCounter}_R${runCounter++}`;
         textElements.push({ id, text });
       }
     }
     paragraphCounter++;
   }
+
   return textElements;
-} 
-function convertParagraphRuns(pElement, frenchText) {
-  const tElements = Array.from(pElement.getElementsByTagName("w:t"));
-  if (tElements.length === 0) return;
-
-  // Step 1: Gather original text and each run length
-  const originalRuns = tElements.map(t => t.textContent);
-  const runLengths = originalRuns.map(text => text.length);
-  const totalLength = runLengths.reduce((a, b) => a + b, 0);
-  if (totalLength === 0) return;
-
-  // Step 2: Split French string into same number of segments
-  let slices = [];
-  let start = 0;
-  for (let i = 0; i < runLengths.length; i++) {
-    let end = (i === runLengths.length - 1)
-      ? frenchText.length  // last slice gets the rest
-      : start + Math.round(runLengths[i] / totalLength * frenchText.length);
-    slices.push(frenchText.substring(start, end));
-    start = end;
-  }
-
-  // Step 3: Apply the slices back to <w:t>
-  for (let i = 0; i < tElements.length; i++) {
-    tElements[i].textContent = slices[i] || "";
-  }
 }
 
+function convertParagraphRuns(pElement, frenchText) {
+  const rElements = Array.from(pElement.getElementsByTagName("w:r"));
+  if (rElements.length === 0) return;
+
+  // Extract plain text segments and formatting from marked-up French
+  const boldRegex = /<bold>(.*?)<\/bold>/g;
+  const segments = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = boldRegex.exec(frenchText)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ text: frenchText.substring(lastIndex, match.index), bold: false });
+    }
+    segments.push({ text: match[1], bold: true });
+    lastIndex = boldRegex.lastIndex;
+  }
+  if (lastIndex < frenchText.length) {
+    segments.push({ text: frenchText.substring(lastIndex), bold: false });
+  }
+
+  // Flatten and clean up segments
+  const fullText = segments.map(s => s.text).join('');
+  if (fullText.trim().length === 0) return;
+
+  // Compute original run lengths to map segments proportionally
+  const tElements = rElements.map(r => r.getElementsByTagName("w:t")[0]).filter(Boolean);
+  const originalLengths = tElements.map(t => t.textContent.length);
+  const totalLength = originalLengths.reduce((a, b) => a + b, 0);
+  if (totalLength === 0) return;
+
+  // Step 1: Clear old runs
+  while (pElement.firstChild) {
+    pElement.removeChild(pElement.firstChild);
+  }
+
+  // Step 2: Distribute text proportionally to original run count
+  let segmentIndex = 0;
+  let charIndex = 0;
+  for (let i = 0; i < originalLengths.length; i++) {
+    const proportion = originalLengths[i] / totalLength;
+    let numChars = Math.round(fullText.length * proportion);
+    if (i === originalLengths.length - 1) {
+      numChars = fullText.length - charIndex; // assign remaining to last
+    }
+
+    let runText = "";
+    let runBold = false;
+    let charsCollected = 0;
+
+    while (segmentIndex < segments.length && charsCollected < numChars) {
+      const segment = segments[segmentIndex];
+      const remainingSegmentText = segment.text.substring(0, numChars - charsCollected);
+      runText += remainingSegmentText;
+      runBold ||= segment.bold;
+
+      // Adjust segment text and move to next if fully consumed
+      if (remainingSegmentText.length < segment.text.length) {
+        segments[segmentIndex].text = segment.text.substring(remainingSegmentText.length);
+      } else {
+        segmentIndex++;
+      }
+
+      charsCollected += remainingSegmentText.length;
+    }
+
+    // Build new <w:r> with optional bold formatting
+    const rNode = pElement.ownerDocument.createElement("w:r");
+    const rPrNode = pElement.ownerDocument.createElement("w:rPr");
+
+    if (runBold) {
+      const boldTag = pElement.ownerDocument.createElement("w:b");
+      rPrNode.appendChild(boldTag);
+    }
+
+    rNode.appendChild(rPrNode);
+    const tNode = pElement.ownerDocument.createElement("w:t");
+    tNode.textContent = runText;
+    rNode.appendChild(tNode);
+    pElement.appendChild(rNode);
+
+    charIndex += runText.length;
+  }
+}
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
