@@ -80,70 +80,57 @@ function convertParagraphRuns(pElement, frenchHtml) {
 
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = frenchHtml;
+  const styledSegments = [];
 
-  const segments = [];
-
-  // Recursively parse and extract tagged segments
-  function parseSegment(node, style = {}) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      if (node.textContent.trim()) {
-        segments.push({ text: node.textContent, style });
-      }
-    } else {
+  function extractSegments(node, style = {}) {
+    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+      styledSegments.push({ text: node.textContent, style });
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
       const newStyle = { ...style };
       const tag = node.nodeName.toLowerCase();
       if (tag === "bold") newStyle.bold = true;
       if (tag === "underline") newStyle.underline = true;
       if (tag === "color") newStyle.color = node.getAttribute("val");
-      node.childNodes.forEach(child => parseSegment(child, newStyle));
+      Array.from(node.childNodes).forEach(child => extractSegments(child, newStyle));
     }
   }
 
-  tempDiv.childNodes.forEach(node => parseSegment(node));
+  Array.from(tempDiv.childNodes).forEach(node => extractSegments(node));
 
-  // Clear paragraph
-  while (pElement.firstChild) pElement.removeChild(pElement.firstChild);
+  let segIndex = 0;
 
-  const doc = pElement.ownerDocument;
+  for (let i = 0; i < runElements.length && segIndex < styledSegments.length; i++) {
+    const run = runElements[i];
+    const tNode = run.getElementsByTagName("w:t")[0];
+    const rPrNode = run.getElementsByTagName("w:rPr")[0];
 
-  for (let i = 0; i < Math.min(runElements.length, segments.length); i++) {
-    const origRun = runElements[i];
-    const segment = segments[i];
+    const seg = styledSegments[segIndex++];
 
-    const newRun = doc.createElement("w:r");
-    const rPr = doc.createElement("w:rPr");
+    if (tNode) tNode.textContent = seg.text;
 
-    if (segment.style.bold) rPr.appendChild(doc.createElement("w:b"));
-    if (segment.style.underline) {
-      const u = doc.createElement("w:u");
+    if (rPrNode) {
+      // Clean conflicting styles only (e.g., old bold if this isn't bold anymore)
+      const cleanTags = ["w:b", "w:u", "w:color"];
+      cleanTags.forEach(tag => {
+        const old = rPrNode.getElementsByTagName(tag);
+        for (let k = old.length - 1; k >= 0; k--) rPrNode.removeChild(old[k]);
+      });
+    }
+
+    const rPr = rPrNode || run.ownerDocument.createElement("w:rPr");
+    if (seg.style.bold) rPr.appendChild(run.ownerDocument.createElement("w:b"));
+    if (seg.style.underline) {
+      const u = run.ownerDocument.createElement("w:u");
       u.setAttribute("w:val", "single");
       rPr.appendChild(u);
     }
-    if (segment.style.color) {
-      const color = doc.createElement("w:color");
-      color.setAttribute("w:val", segment.style.color);
-      rPr.appendChild(color);
+    if (seg.style.color) {
+      const c = run.ownerDocument.createElement("w:color");
+      c.setAttribute("w:val", seg.style.color);
+      rPr.appendChild(c);
     }
 
-    // Preserve any other original run properties (e.g., fonts)
-    const origRPr = origRun.getElementsByTagName("w:rPr")[0];
-    if (origRPr) {
-      for (const child of origRPr.childNodes) {
-        const tagName = child.nodeName;
-        if (
-          (segment.style.bold && tagName === "w:b") ||
-          (segment.style.underline && tagName === "w:u") ||
-          (segment.style.color && tagName === "w:color")
-        ) continue;
-        rPr.appendChild(child.cloneNode(true));
-      }
-    }
-
-    if (rPr.childNodes.length) newRun.appendChild(rPr);
-    const t = doc.createElement("w:t");
-    t.textContent = segment.text;
-    newRun.appendChild(t);
-    pElement.appendChild(newRun);
+    if (!rPrNode && rPr.childNodes.length) run.insertBefore(rPr, tNode);
   }
 }
 
