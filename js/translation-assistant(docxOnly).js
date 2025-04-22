@@ -77,49 +77,32 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
   return textElements;
 } 
 function convertParagraphRuns(pElement, frenchText) {
-  const rElements = Array.from(pElement.getElementsByTagName("w:r"));
-  let runData = [];
-  let totalLength = 0;
+  const tElements = Array.from(pElement.getElementsByTagName("w:t"));
+  if (tElements.length === 0) return;
 
-  // Step 1: Extract original text and formatting
-  for (let r of rElements) {
-    const t = r.getElementsByTagName("w:t")[0];
-    if (!t) continue;
-    const text = t.textContent;
-    totalLength += text.length;
-    runData.push({ length: text.length, rPr: r.getElementsByTagName("w:rPr")[0]?.cloneNode(true) });
+  // Step 1: Gather original text and each run length
+  const originalRuns = tElements.map(t => t.textContent);
+  const runLengths = originalRuns.map(text => text.length);
+  const totalLength = runLengths.reduce((a, b) => a + b, 0);
+  if (totalLength === 0) return;
+
+  // Step 2: Split French string into same number of segments
+  let slices = [];
+  let start = 0;
+  for (let i = 0; i < runLengths.length; i++) {
+    let end = (i === runLengths.length - 1)
+      ? frenchText.length  // last slice gets the rest
+      : start + Math.round(runLengths[i] / totalLength * frenchText.length);
+    slices.push(frenchText.substring(start, end));
+    start = end;
   }
 
-  // Step 2: Clear old runs
-  while (pElement.firstChild) {
-    pElement.removeChild(pElement.firstChild);
-  }
-
-  // Step 3: Recreate <w:r> elements with correct text & preserved formatting
-  let cumulative = 0;
-  for (let i = 0; i < runData.length; i++) {
-    let { length, rPr } = runData[i];
-    let proportion = length / totalLength;
-    let sliceLen = Math.round(frenchText.length * proportion);
-    let slice = frenchText.substring(cumulative, cumulative + sliceLen);
-    cumulative += sliceLen;
-
-    if (!slice) continue;
-
-    let rNode = pElement.ownerDocument.createElement("w:r");
-    if (rPr) rNode.appendChild(rPr.cloneNode(true));
-    let tNode = pElement.ownerDocument.createElement("w:t");
-    tNode.textContent = slice;
-    rNode.appendChild(tNode);
-    pElement.appendChild(rNode);
-  }
-
-  // Append any remaining text to last run
-  if (cumulative < frenchText.length && pElement.lastChild) {
-    const lastT = pElement.lastChild.getElementsByTagName("w:t")[0];
-    if (lastT) lastT.textContent += frenchText.substring(cumulative);
+  // Step 3: Apply the slices back to <w:t>
+  for (let i = 0; i < tElements.length; i++) {
+    tElements[i].textContent = slices[i] || "";
   }
 }
+
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
