@@ -93,89 +93,64 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
 }
 
 function convertParagraphRuns(pElement, frenchText) {
-  const rElements = Array.from(pElement.getElementsByTagName("w:r"));
-  if (rElements.length === 0) return;
+  const runElements = Array.from(pElement.getElementsByTagName("w:r"));
+  if (runElements.length === 0) return;
 
-  // Extract plain text segments and formatting from marked-up French
-  const boldRegex = /<bold>(.*?)<\/bold>/g;
+  // Step 1: Extract translated fragments from the <bold> tagged French
   const segments = [];
-  let lastIndex = 0;
-  let match;
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = frenchText;
 
-  while ((match = boldRegex.exec(frenchText)) !== null) {
-    if (match.index > lastIndex) {
-      segments.push({ text: frenchText.substring(lastIndex, match.index), bold: false });
+  Array.from(tempDiv.childNodes).forEach(node => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      if (node.textContent.trim()) {
+        segments.push({ text: node.textContent, bold: false });
+      }
+    } else if (node.nodeName.toLowerCase() === "bold") {
+      segments.push({ text: node.textContent, bold: true });
     }
-    segments.push({ text: match[1], bold: true });
-    lastIndex = boldRegex.lastIndex;
+  });
+
+  // Step 2: Map segments to runs 1:1
+  const doc = pElement.ownerDocument;
+  const newRuns = [];
+
+  for (let i = 0; i < runElements.length && i < segments.length; i++) {
+    const origRun = runElements[i];
+    const origRPr = origRun.getElementsByTagName("w:rPr")[0];
+    const segment = segments[i];
+
+    const newRun = doc.createElement("w:r");
+    if (segment.bold) {
+      const rPr = doc.createElement("w:rPr");
+      const b = doc.createElement("w:b");
+      rPr.appendChild(b);
+      if (origRPr) {
+        // Preserve other styles (like font, color)
+        for (let child of origRPr.childNodes) {
+          if (child.nodeName !== "w:b") {
+            rPr.appendChild(child.cloneNode(true));
+          }
+        }
+      }
+      newRun.appendChild(rPr);
+    } else if (origRPr) {
+      newRun.appendChild(origRPr.cloneNode(true));
+    }
+
+    const t = doc.createElement("w:t");
+    t.textContent = segment.text;
+    newRun.appendChild(t);
+    newRuns.push(newRun);
   }
-  if (lastIndex < frenchText.length) {
-    segments.push({ text: frenchText.substring(lastIndex), bold: false });
-  }
 
-  // Flatten and clean up segments
-  const fullText = segments.map(s => s.text).join('');
-  if (fullText.trim().length === 0) return;
-
-  // Compute original run lengths to map segments proportionally
-  const tElements = rElements.map(r => r.getElementsByTagName("w:t")[0]).filter(Boolean);
-  const originalLengths = tElements.map(t => t.textContent.length);
-  const totalLength = originalLengths.reduce((a, b) => a + b, 0);
-  if (totalLength === 0) return;
-
-  // Step 1: Clear old runs
+  // Step 3: Replace old runs
   while (pElement.firstChild) {
     pElement.removeChild(pElement.firstChild);
   }
-
-  // Step 2: Distribute text proportionally to original run count
-  let segmentIndex = 0;
-  let charIndex = 0;
-  for (let i = 0; i < originalLengths.length; i++) {
-    const proportion = originalLengths[i] / totalLength;
-    let numChars = Math.round(fullText.length * proportion);
-    if (i === originalLengths.length - 1) {
-      numChars = fullText.length - charIndex; // assign remaining to last
-    }
-
-    let runText = "";
-    let runBold = false;
-    let charsCollected = 0;
-
-    while (segmentIndex < segments.length && charsCollected < numChars) {
-      const segment = segments[segmentIndex];
-      const remainingSegmentText = segment.text.substring(0, numChars - charsCollected);
-      runText += remainingSegmentText;
-      runBold ||= segment.bold;
-
-      // Adjust segment text and move to next if fully consumed
-      if (remainingSegmentText.length < segment.text.length) {
-        segments[segmentIndex].text = segment.text.substring(remainingSegmentText.length);
-      } else {
-        segmentIndex++;
-      }
-
-      charsCollected += remainingSegmentText.length;
-    }
-
-    // Build new <w:r> with optional bold formatting
-    const rNode = pElement.ownerDocument.createElement("w:r");
-    const rPrNode = pElement.ownerDocument.createElement("w:rPr");
-
-    if (runBold) {
-      const boldTag = pElement.ownerDocument.createElement("w:b");
-      rPrNode.appendChild(boldTag);
-    }
-
-    rNode.appendChild(rPrNode);
-    const tNode = pElement.ownerDocument.createElement("w:t");
-    tNode.textContent = runText;
-    rNode.appendChild(tNode);
-    pElement.appendChild(rNode);
-
-    charIndex += runText.length;
-  }
+  newRuns.forEach(run => pElement.appendChild(run));
 }
+
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
