@@ -60,96 +60,123 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
     if (runElements.length === 0) continue;
 
     let runCounter = 1;
-
     for (let j = 0; j < runElements.length; j++) {
       const run = runElements[j];
       const textNodes = run.getElementsByTagName("w:t");
-      const rPr = run.getElementsByTagName("w:rPr")[0];
-      let isBold = false;
+      if (textNodes.length === 0) continue;
 
-      if (rPr) {
-        const boldElement = rPr.getElementsByTagName("w:b")[0];
-        if (boldElement) {
-          isBold = true;
-        }
-      }
+      const rPr = run.getElementsByTagName("w:rPr")[0];
+      const isBold = rPr?.getElementsByTagName("w:b")[0];
+      const isUnderline = rPr?.getElementsByTagName("w:u")[0];
+      const colorNode = rPr?.getElementsByTagName("w:color")[0];
+      const colorVal = colorNode?.getAttribute("w:val");
 
       for (let k = 0; k < textNodes.length; k++) {
         let text = textNodes[k].textContent;
-        if (text.trim().length === 0) continue;
-
-        if (isBold) {
-          text = `<bold>${text}</bold>`;
-        }
+        if (!text.trim()) continue;
 
         const id = `P${paragraphCounter}_R${runCounter++}`;
-        textElements.push({ id, text });
+        let wrappedText = text;
+
+        if (colorVal) wrappedText = `<color val="${colorVal}">${wrappedText}</color>`;
+        if (isUnderline) wrappedText = `<underline>${wrappedText}</underline>`;
+        if (isBold) wrappedText = `<bold>${wrappedText}</bold>`;
+
+        textElements.push({ id, text: wrappedText });
       }
     }
+
     paragraphCounter++;
   }
 
   return textElements;
 }
-
 function convertParagraphRuns(pElement, frenchText) {
   const runElements = Array.from(pElement.getElementsByTagName("w:r"));
   if (runElements.length === 0) return;
 
-  // Step 1: Extract translated fragments from the <bold> tagged French
-  const segments = [];
+  // Parse markup from French (assumes tags like <bold>, <underline>, <color val="...">)
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = frenchText;
+  const segments = [];
 
-  Array.from(tempDiv.childNodes).forEach(node => {
+  function extractSegment(node, styles = {}) {
     if (node.nodeType === Node.TEXT_NODE) {
       if (node.textContent.trim()) {
-        segments.push({ text: node.textContent, bold: false });
+        segments.push({ text: node.textContent, ...styles });
       }
-    } else if (node.nodeName.toLowerCase() === "bold") {
-      segments.push({ text: node.textContent, bold: true });
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const tag = node.nodeName.toLowerCase();
+      let newStyles = { ...styles };
+
+      if (tag === "bold") newStyles.bold = true;
+      if (tag === "underline") newStyles.underline = true;
+      if (tag === "color") newStyles.color = node.getAttribute("val");
+
+      for (let child of node.childNodes) {
+        extractSegment(child, newStyles);
+      }
     }
-  });
+  }
 
-  // Step 2: Map segments to runs 1:1
+  tempDiv.childNodes.forEach(child => extractSegment(child));
+
   const doc = pElement.ownerDocument;
-  const newRuns = [];
 
-  for (let i = 0; i < runElements.length && i < segments.length; i++) {
+  // Clean old content
+  while (pElement.firstChild) {
+    pElement.removeChild(pElement.firstChild);
+  }
+
+  // Map segments 1-to-1 with original runs
+  for (let i = 0; i < Math.min(runElements.length, segments.length); i++) {
     const origRun = runElements[i];
     const origRPr = origRun.getElementsByTagName("w:rPr")[0];
     const segment = segments[i];
 
-    const newRun = doc.createElement("w:r");
+    const rNode = doc.createElement("w:r");
+    const rPrNode = doc.createElement("w:rPr");
+
     if (segment.bold) {
-      const rPr = doc.createElement("w:rPr");
-      const b = doc.createElement("w:b");
-      rPr.appendChild(b);
-      if (origRPr) {
-        // Preserve other styles (like font, color)
-        for (let child of origRPr.childNodes) {
-          if (child.nodeName !== "w:b") {
-            rPr.appendChild(child.cloneNode(true));
-          }
-        }
-      }
-      newRun.appendChild(rPr);
-    } else if (origRPr) {
-      newRun.appendChild(origRPr.cloneNode(true));
+      rPrNode.appendChild(doc.createElement("w:b"));
+    }
+    if (segment.underline) {
+      const uNode = doc.createElement("w:u");
+      uNode.setAttribute("w:val", "single");
+      rPrNode.appendChild(uNode);
+    }
+    if (segment.color) {
+      const colorNode = doc.createElement("w:color");
+      colorNode.setAttribute("w:val", segment.color);
+      rPrNode.appendChild(colorNode);
     }
 
-    const t = doc.createElement("w:t");
-    t.textContent = segment.text;
-    newRun.appendChild(t);
-    newRuns.push(newRun);
-  }
+    // Reapply other original styles (except those we're overriding)
+    if (origRPr) {
+      for (let child of origRPr.childNodes) {
+        const tag = child.nodeName;
+        if (
+          (segment.bold && tag === "w:b") ||
+          (segment.underline && tag === "w:u") ||
+          (segment.color && tag === "w:color")
+        ) {
+          continue; // already handled
+        }
+        rPrNode.appendChild(child.cloneNode(true));
+      }
+    }
 
-  // Step 3: Replace old runs
-  while (pElement.firstChild) {
-    pElement.removeChild(pElement.firstChild);
+    if (rPrNode.childNodes.length > 0) {
+      rNode.appendChild(rPrNode);
+    }
+
+    const tNode = doc.createElement("w:t");
+    tNode.textContent = segment.text;
+    rNode.appendChild(tNode);
+    pElement.appendChild(rNode);
   }
-  newRuns.forEach(run => pElement.appendChild(run));
 }
+
 
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
