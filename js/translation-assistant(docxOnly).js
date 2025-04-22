@@ -46,138 +46,63 @@ async function extractDocxParagraphs(arrayBuffer) {
 
 async function extractDocxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
-  const docXmlStr = await zip.file("word/document.xml").async("string");
+  let docXmlStr = await zip.file("word/document.xml").async("string");
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
 
   const paragraphs = xmlDoc.getElementsByTagName("w:p");
-  const textElements = [];
+  let textElements = [];
   let paragraphCounter = 1;
 
+  // Process each paragraph.
   for (let i = 0; i < paragraphs.length; i++) {
     const paragraph = paragraphs[i];
     const runElements = paragraph.getElementsByTagName("w:r");
-    if (runElements.length === 0) continue;
+    if (runElements.length === 0) continue; // Skip empty paragraphs
 
     let runCounter = 1;
+    // Process each run in the paragraph.
     for (let j = 0; j < runElements.length; j++) {
       const run = runElements[j];
+      // For each run, get <w:t> elements.
       const textNodes = run.getElementsByTagName("w:t");
-      if (textNodes.length === 0) continue;
-
-      const rPr = run.getElementsByTagName("w:rPr")[0];
-      const isBold = rPr?.getElementsByTagName("w:b")[0];
-      const isUnderline = rPr?.getElementsByTagName("w:u")[0];
-      const colorNode = rPr?.getElementsByTagName("w:color")[0];
-      const colorVal = colorNode?.getAttribute("w:val");
-
       for (let k = 0; k < textNodes.length; k++) {
-        let text = textNodes[k].textContent;
-        if (!text.trim()) continue;
-
+        const text = textNodes[k].textContent;
         const id = `P${paragraphCounter}_R${runCounter++}`;
-        let wrappedText = text;
-
-        if (colorVal) wrappedText = `<color val="${colorVal}">${wrappedText}</color>`;
-        if (isUnderline) wrappedText = `<underline>${wrappedText}</underline>`;
-        if (isBold) wrappedText = `<bold>${wrappedText}</bold>`;
-
-        textElements.push({ id, text: wrappedText });
+        textElements.push({ id, text });
       }
     }
-
     paragraphCounter++;
   }
-
   return textElements;
-}
+} 
 function convertParagraphRuns(pElement, frenchText) {
-  const runElements = Array.from(pElement.getElementsByTagName("w:r"));
-  if (runElements.length === 0) return;
-
-  // Parse markup from French (assumes tags like <bold>, <underline>, <color val="...">)
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = frenchText;
-  const segments = [];
-
-  function extractSegment(node, styles = {}) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      if (node.textContent.trim()) {
-        segments.push({ text: node.textContent, ...styles });
-      }
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      const tag = node.nodeName.toLowerCase();
-      let newStyles = { ...styles };
-
-      if (tag === "bold") newStyles.bold = true;
-      if (tag === "underline") newStyles.underline = true;
-      if (tag === "color") newStyles.color = node.getAttribute("val");
-
-      for (let child of node.childNodes) {
-        extractSegment(child, newStyles);
-      }
-    }
+  const tElements = pElement.getElementsByTagName("w:t");
+  // Concatenate the original text and store each run's length.
+  let originalText = "";
+  let runLengths = [];
+  for (let i = 0; i < tElements.length; i++) {
+    const txt = tElements[i].textContent;
+    originalText += txt;
+    runLengths.push(txt.length);
   }
-
-  tempDiv.childNodes.forEach(child => extractSegment(child));
-
-  const doc = pElement.ownerDocument;
-
-  // Clean old content
-  while (pElement.firstChild) {
-    pElement.removeChild(pElement.firstChild);
+  const totalLength = originalText.length;
+  if (totalLength === 0) return;
+  
+  // Distribute the French text proportionally.
+  let cumulative = 0;
+  for (let i = 0; i < tElements.length; i++) {
+    let proportion = runLengths[i] / totalLength;
+    let numChars = Math.round(frenchText.length * proportion);
+    let runText = frenchText.substring(cumulative, cumulative + numChars);
+    tElements[i].textContent = runText;
+    cumulative += numChars;
   }
-
-  // Map segments 1-to-1 with original runs
-  for (let i = 0; i < Math.min(runElements.length, segments.length); i++) {
-    const origRun = runElements[i];
-    const origRPr = origRun.getElementsByTagName("w:rPr")[0];
-    const segment = segments[i];
-
-    const rNode = doc.createElement("w:r");
-    const rPrNode = doc.createElement("w:rPr");
-
-    if (segment.bold) {
-      rPrNode.appendChild(doc.createElement("w:b"));
-    }
-    if (segment.underline) {
-      const uNode = doc.createElement("w:u");
-      uNode.setAttribute("w:val", "single");
-      rPrNode.appendChild(uNode);
-    }
-    if (segment.color) {
-      const colorNode = doc.createElement("w:color");
-      colorNode.setAttribute("w:val", segment.color);
-      rPrNode.appendChild(colorNode);
-    }
-
-    // Reapply other original styles (except those we're overriding)
-    if (origRPr) {
-      for (let child of origRPr.childNodes) {
-        const tag = child.nodeName;
-        if (
-          (segment.bold && tag === "w:b") ||
-          (segment.underline && tag === "w:u") ||
-          (segment.color && tag === "w:color")
-        ) {
-          continue; // already handled
-        }
-        rPrNode.appendChild(child.cloneNode(true));
-      }
-    }
-
-    if (rPrNode.childNodes.length > 0) {
-      rNode.appendChild(rPrNode);
-    }
-
-    const tNode = doc.createElement("w:t");
-    tNode.textContent = segment.text;
-    rNode.appendChild(tNode);
-    pElement.appendChild(rNode);
+  // Append any remaining characters to the last run.
+  if (cumulative < frenchText.length && tElements.length > 0) {
+    tElements[tElements.length - 1].textContent += frenchText.substring(cumulative);
   }
 }
-
-
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
