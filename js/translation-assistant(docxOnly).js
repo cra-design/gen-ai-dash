@@ -78,7 +78,9 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
 } 
 function convertParagraphRuns(pElement, frenchText) {
   const tElements = pElement.getElementsByTagName("w:t");
-  // Concatenate the original text and store each run's length.
+  if (tElements.length === 0) return;
+
+  // Recalculate based on original run lengths
   let originalText = "";
   let runLengths = [];
   for (let i = 0; i < tElements.length; i++) {
@@ -86,23 +88,29 @@ function convertParagraphRuns(pElement, frenchText) {
     originalText += txt;
     runLengths.push(txt.length);
   }
+
   const totalLength = originalText.length;
   if (totalLength === 0) return;
-  
-  // Distribute the French text proportionally.
+
+  // Split French text proportionally and apply per run.
   let cumulative = 0;
   for (let i = 0; i < tElements.length; i++) {
-    let proportion = runLengths[i] / totalLength;
+    const proportion = runLengths[i] / totalLength;
     let numChars = Math.round(frenchText.length * proportion);
     let runText = frenchText.substring(cumulative, cumulative + numChars);
-    tElements[i].textContent = runText;
     cumulative += numChars;
+
+    // Ensure we don't clear formatting: only replace textContent
+    tElements[i].textContent = runText;
   }
-  // Append any remaining characters to the last run.
+
+  // Append remaining characters to last run if needed
   if (cumulative < frenchText.length && tElements.length > 0) {
-    tElements[tElements.length - 1].textContent += frenchText.substring(cumulative);
+    const lastT = tElements[tElements.length - 1];
+    lastT.textContent += frenchText.substring(cumulative);
   }
 }
+
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
