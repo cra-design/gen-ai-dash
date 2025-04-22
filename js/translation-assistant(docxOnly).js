@@ -98,39 +98,35 @@ function convertParagraphRuns(pElement, frenchHtml) {
   Array.from(tempDiv.childNodes).forEach(node => extractSegments(node));
 
   let segIndex = 0;
-
   for (let i = 0; i < runElements.length && segIndex < styledSegments.length; i++) {
     const run = runElements[i];
     const tNode = run.getElementsByTagName("w:t")[0];
-    const rPrNode = run.getElementsByTagName("w:rPr")[0];
+    if (!tNode) continue;
+    const segment = styledSegments[segIndex++];
+    tNode.textContent = segment.text;
 
-    const seg = styledSegments[segIndex++];
+    // Clean old conflicting styles
+    const rPrNode = run.getElementsByTagName("w:rPr")[0] || run.ownerDocument.createElement("w:rPr");
+    ["w:b", "w:u", "w:color"].forEach(tag => {
+      const nodes = rPrNode.getElementsByTagName(tag);
+      for (let n = nodes.length - 1; n >= 0; n--) rPrNode.removeChild(nodes[n]);
+    });
 
-    if (tNode) tNode.textContent = seg.text;
-
-    if (rPrNode) {
-      // Clean conflicting styles only (e.g., old bold if this isn't bold anymore)
-      const cleanTags = ["w:b", "w:u", "w:color"];
-      cleanTags.forEach(tag => {
-        const old = rPrNode.getElementsByTagName(tag);
-        for (let k = old.length - 1; k >= 0; k--) rPrNode.removeChild(old[k]);
-      });
-    }
-
-    const rPr = rPrNode || run.ownerDocument.createElement("w:rPr");
-    if (seg.style.bold) rPr.appendChild(run.ownerDocument.createElement("w:b"));
-    if (seg.style.underline) {
+    if (segment.style.bold) rPrNode.appendChild(run.ownerDocument.createElement("w:b"));
+    if (segment.style.underline) {
       const u = run.ownerDocument.createElement("w:u");
       u.setAttribute("w:val", "single");
-      rPr.appendChild(u);
+      rPrNode.appendChild(u);
     }
-    if (seg.style.color) {
+    if (segment.style.color) {
       const c = run.ownerDocument.createElement("w:color");
-      c.setAttribute("w:val", seg.style.color);
-      rPr.appendChild(c);
+      c.setAttribute("w:val", segment.style.color);
+      rPrNode.appendChild(c);
     }
 
-    if (!rPrNode && rPr.childNodes.length) run.insertBefore(rPr, tNode);
+    if (!run.getElementsByTagName("w:rPr").length && rPrNode.childNodes.length) {
+      run.insertBefore(rPrNode, tNode);
+    }
   }
 }
 
@@ -843,22 +839,16 @@ function deduplicateFrenchParagraphs(finalFrenchHtml) {
   return cleanedParagraphs.join("");
 } 
 function buildFrenchTextMap(finalFrenchHtml) {
-  // Optionally deduplicate first or perform other cleaning.
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
-  // Select all paragraphs that have an id
   const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
-  // Build mapping while filtering out empty texts.
   const frenchMap = {};
   rawParagraphs.forEach(p => {
     const id = p.getAttribute("id");
-    let text = p.textContent.replace(/\s+/g, ' ').trim();
-    if (text.length > 0) {
-      frenchMap[id] = text;
-    }
+    frenchMap[id] = p.innerHTML.trim(); // Keep inner HTML for <bold> etc.
   });
   return frenchMap;
-}
+} 
 
 function escapeXml(str) {
   return str.replace(/&/g, "&amp;")
@@ -868,38 +858,29 @@ function escapeXml(str) {
 
 
 function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMapping) {
-  // Build a mapping from the French HTML.
-  // Expected mapping keys: "P1", "P2", etc.
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
-  
-  // Parse the original DOCX XML.
   const parser = new DOMParser();
   const serializer = new XMLSerializer();
   const xmlDoc = parser.parseFromString(originalXml, "application/xml");
-  
-  // Get all paragraphs (<w:p> elements).
   const paragraphs = xmlDoc.getElementsByTagName("w:p");
-  let mappingIndex = 0; // We'll use this to index aggregatedMapping in order.
-  
-  // Iterate over all paragraphs.
+  let mappingIndex = 0;
+
   for (let i = 0; i < paragraphs.length && mappingIndex < aggregatedMapping.length; i++) {
     const p = paragraphs[i];
     const tElements = p.getElementsByTagName("w:t");
-    // Skip paragraphs with no text.
     let paraText = "";
     for (let j = 0; j < tElements.length; j++) {
       paraText += tElements[j].textContent;
     }
     if (paraText.trim() !== "") {
-      // Get the corresponding aggregated mapping key (e.g., "P1", "P2", etc.)
       const key = aggregatedMapping[mappingIndex].id;
       mappingIndex++;
       if (frenchMap[key]) {
-        // Instead of replacing just the first run, distribute French text among runs.
         convertParagraphRuns(p, frenchMap[key]);
       }
     }
   }
+
   return serializer.serializeToString(xmlDoc);
 }
 
