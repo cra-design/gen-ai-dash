@@ -74,68 +74,78 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
   }
   return textElements;
 } 
-function convertParagraphRuns(pElement, frenchText) {
-  const tElements = pElement.getElementsByTagName("w:t");
-  // Concatenate the original text and store each run's length.
-  let originalText = "";
-  let runLengths = [];
-  for (let i = 0; i < tElements.length; i++) {
-    const txt = tElements[i].textContent;
-    originalText += txt;
-    runLengths.push(txt.length);
-  }
-  const totalLength = originalText.length;
-  if (totalLength === 0) return;
-  
-  // Distribute the French text proportionally.
-  let cumulative = 0;
-  for (let i = 0; i < tElements.length; i++) {
-    let proportion = runLengths[i] / totalLength;
-    let numChars = Math.round(frenchText.length * proportion);
-    let runText = frenchText.substring(cumulative, cumulative + numChars);
-    tElements[i].textContent = runText;
-    cumulative += numChars;
-  }
-  // Append any remaining characters to the last run.
-  if (cumulative < frenchText.length && tElements.length > 0) {
-    tElements[tElements.length - 1].textContent += frenchText.substring(cumulative);
-  }
-}
-async function extractPptxText(arrayBuffer) {
-  const zip = await JSZip.loadAsync(arrayBuffer);
-  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
-  let allParagraphs = [];
+function convertParagraphRuns(pElement, frenchHtml) {
+  const runElements = Array.from(pElement.getElementsByTagName("w:r"));
+  if (!runElements.length) return;
 
-  // Loop over each file in the ZIP that matches a slide XML.
-  for (const fileName of Object.keys(zip.files)) {
-    if (slideRegex.test(fileName)) {
-      const slideXml = await zip.file(fileName).async("string");
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = frenchHtml;
 
-      // Get all <a:p> elements for this slide.
-      const paraNodes = xmlDoc.getElementsByTagName("a:p");
-      for (let i = 0; i < paraNodes.length; i++) {
-        const paraNode = paraNodes[i];
-        let paragraphText = "";
+  const segments = [];
 
-        // Within each paragraph, concatenate the text from all <a:t> elements.
-        const textNodes = paraNode.getElementsByTagName("a:t");
-        for (let j = 0; j < textNodes.length; j++) {
-          paragraphText += textNodes[j].textContent;
-        }
-        // If the paragraph has any non-empty text, add it to the array.
-        if (paragraphText.trim().length > 0) {
-          allParagraphs.push(paragraphText.trim());
-        }
+  // Recursively parse and extract tagged segments
+  function parseSegment(node, style = {}) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      if (node.textContent.trim()) {
+        segments.push({ text: node.textContent, style });
       }
+    } else {
+      const newStyle = { ...style };
+      const tag = node.nodeName.toLowerCase();
+      if (tag === "bold") newStyle.bold = true;
+      if (tag === "underline") newStyle.underline = true;
+      if (tag === "color") newStyle.color = node.getAttribute("val");
+      node.childNodes.forEach(child => parseSegment(child, newStyle));
     }
   }
-  // Join paragraphs with two newlines to denote paragraph breaks.
-  return allParagraphs.join("\n\n");
+
+  tempDiv.childNodes.forEach(node => parseSegment(node));
+
+  // Clear paragraph
+  while (pElement.firstChild) pElement.removeChild(pElement.firstChild);
+
+  const doc = pElement.ownerDocument;
+
+  for (let i = 0; i < Math.min(runElements.length, segments.length); i++) {
+    const origRun = runElements[i];
+    const segment = segments[i];
+
+    const newRun = doc.createElement("w:r");
+    const rPr = doc.createElement("w:rPr");
+
+    if (segment.style.bold) rPr.appendChild(doc.createElement("w:b"));
+    if (segment.style.underline) {
+      const u = doc.createElement("w:u");
+      u.setAttribute("w:val", "single");
+      rPr.appendChild(u);
+    }
+    if (segment.style.color) {
+      const color = doc.createElement("w:color");
+      color.setAttribute("w:val", segment.style.color);
+      rPr.appendChild(color);
+    }
+
+    // Preserve any other original run properties (e.g., fonts)
+    const origRPr = origRun.getElementsByTagName("w:rPr")[0];
+    if (origRPr) {
+      for (const child of origRPr.childNodes) {
+        const tagName = child.nodeName;
+        if (
+          (segment.style.bold && tagName === "w:b") ||
+          (segment.style.underline && tagName === "w:u") ||
+          (segment.style.color && tagName === "w:color")
+        ) continue;
+        rPr.appendChild(child.cloneNode(true));
+      }
+    }
+
+    if (rPr.childNodes.length) newRun.appendChild(rPr);
+    const t = doc.createElement("w:t");
+    t.textContent = segment.text;
+    newRun.appendChild(t);
+    pElement.appendChild(newRun);
+  }
 }
-
-
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
