@@ -77,40 +77,49 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
   return textElements;
 } 
 function convertParagraphRuns(pElement, frenchText) {
-  const tElements = pElement.getElementsByTagName("w:t");
-  if (tElements.length === 0) return;
+  const rElements = Array.from(pElement.getElementsByTagName("w:r"));
+  let runData = [];
+  let totalLength = 0;
 
-  // Recalculate based on original run lengths
-  let originalText = "";
-  let runLengths = [];
-  for (let i = 0; i < tElements.length; i++) {
-    const txt = tElements[i].textContent;
-    originalText += txt;
-    runLengths.push(txt.length);
+  // Step 1: Extract original text and formatting
+  for (let r of rElements) {
+    const t = r.getElementsByTagName("w:t")[0];
+    if (!t) continue;
+    const text = t.textContent;
+    totalLength += text.length;
+    runData.push({ length: text.length, rPr: r.getElementsByTagName("w:rPr")[0]?.cloneNode(true) });
   }
 
-  const totalLength = originalText.length;
-  if (totalLength === 0) return;
+  // Step 2: Clear old runs
+  while (pElement.firstChild) {
+    pElement.removeChild(pElement.firstChild);
+  }
 
-  // Split French text proportionally and apply per run.
+  // Step 3: Recreate <w:r> elements with correct text & preserved formatting
   let cumulative = 0;
-  for (let i = 0; i < tElements.length; i++) {
-    const proportion = runLengths[i] / totalLength;
-    let numChars = Math.round(frenchText.length * proportion);
-    let runText = frenchText.substring(cumulative, cumulative + numChars);
-    cumulative += numChars;
+  for (let i = 0; i < runData.length; i++) {
+    let { length, rPr } = runData[i];
+    let proportion = length / totalLength;
+    let sliceLen = Math.round(frenchText.length * proportion);
+    let slice = frenchText.substring(cumulative, cumulative + sliceLen);
+    cumulative += sliceLen;
 
-    // Ensure we don't clear formatting: only replace textContent
-    tElements[i].textContent = runText;
+    if (!slice) continue;
+
+    let rNode = pElement.ownerDocument.createElement("w:r");
+    if (rPr) rNode.appendChild(rPr.cloneNode(true));
+    let tNode = pElement.ownerDocument.createElement("w:t");
+    tNode.textContent = slice;
+    rNode.appendChild(tNode);
+    pElement.appendChild(rNode);
   }
 
-  // Append remaining characters to last run if needed
-  if (cumulative < frenchText.length && tElements.length > 0) {
-    const lastT = tElements[tElements.length - 1];
-    lastT.textContent += frenchText.substring(cumulative);
+  // Append any remaining text to last run
+  if (cumulative < frenchText.length && pElement.lastChild) {
+    const lastT = pElement.lastChild.getElementsByTagName("w:t")[0];
+    if (lastT) lastT.textContent += frenchText.substring(cumulative);
   }
 }
-
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
