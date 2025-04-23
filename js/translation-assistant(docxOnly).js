@@ -293,16 +293,13 @@ $(document).ready(function() {
 
       // Process the source file for English content if it's "source-file"
       if (event.target.id === "source-file") {
-        try {
           englishFile = uploadedFile;
-          if (fileExtension === 'docx') {
-            let arrayBuffer = await uploadedFile.arrayBuffer();
+          if (fileExtension === 'docx') { 
+            try{
+            const arrayBuffer = await uploadedFile.arrayBuffer(); 
+            const html = await extractDocxParagraphsAsHtml(arrayBuffer);
             $("#translation-A").html(aggregatedHtml); 
             englishHtmlStored = html;
-          } else {
-            // If not a DOCX, then continue handling accordingly (e.g., PPTX)
-            // For instance, in PPTX branch you might already be processing and displaying html.
-          }
         } catch (err) {
           console.error('Error processing source file:', err);
           $(`#${language}-doc-error`).removeClass("hidden");
