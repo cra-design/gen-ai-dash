@@ -44,7 +44,7 @@ async function extractDocxParagraphs(arrayBuffer) {
   return fullText.join("\n\n");
 } 
 
-async function extractDocxParagraphsAsHtml(arrayBuffer) {
+async function extractDocxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const xmlStr = await zip.file("word/document.xml").async("string");
   const parser = new DOMParser();
@@ -573,7 +573,7 @@ $(document).on("click", "#copy-all-btn", function(e) {
 
       if (fileExtension === "docx") {
         const arrayBuffer = await englishFile.arrayBuffer();
-        extractedHtml = await extractDocxParagraphsAsHtml(arrayBuffer); 
+        extractedHtml = await extractDocxTextXmlWithId(arrayBuffer); 
         $("#source-text-preview").html(extractedHtml); 
         englishHtmlStored = extractedHtml;
       } else if (fileExtension === "pptx") {
