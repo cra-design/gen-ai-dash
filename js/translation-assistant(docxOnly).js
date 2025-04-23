@@ -297,18 +297,8 @@ $(document).ready(function() {
           englishFile = uploadedFile;
           if (fileExtension === 'docx') {
             let arrayBuffer = await uploadedFile.arrayBuffer();
-
-            // Now extract raw mapping with IDs and aggregate
-            let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
-            let aggregatedMapping = aggregateDocxMapping(rawMapping);
-
-            // Rebuild the English HTML with the aggregated mapping
-            let aggregatedHtml = aggregatedMapping
-              .map(item => `<p id="${item.id}">${item.text}</p>`)
-              .join('');
-            // Store for AI prompt and display
-            englishHtmlStored = aggregatedHtml;
-            $("#translation-A").html(aggregatedHtml);
+            $("#translation-A").html(aggregatedHtml); 
+            englishHtmlStored = html;
           } else {
             // If not a DOCX, then continue handling accordingly (e.g., PPTX)
             // For instance, in PPTX branch you might already be processing and displaying html.
