@@ -591,7 +591,7 @@ $(document).on("click", "#copy-all-btn", function(e) {
       } else {
         throw new Error("Unsupported file type for extraction");
       }
-        $("#source-text-preview").text(extractedText);
+        $("#source-text-preview").text(extractedhtml);
       // Unhide the preview section.
       $("#source-preview-wrapper").removeClass("hidden").show();
       // Unhide the second upload section.
