@@ -225,93 +225,108 @@ $(document).ready(function() {
 
 
   // Handle file input change for both source and second file uploads.
- $(document).on("change", "input", async function (event) {
-  if (event.target.id === "source-file" || event.target.id === "second-file") {
-    let language = event.target.id === "source-file" ? "source" : "second";
-    $(`#${language}-doc-detecting`).removeClass("hidden");
-    $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
+$(document).on("change", "input", async function (event) {
+  // Only handle the two file inputs
+  if (event.target.id !== "source-file" && event.target.id !== "second-file") {
+    return;
+  }
+
+  let language = event.target.id === "source-file" ? "source" : "second";
+  $(`#${language}-doc-detecting`).removeClass("hidden");
+  $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
+  $(`#${language}-language-heading`).removeClass("hidden");
+  $(`#${language}-language-doc`).addClass("hidden");
+
+  const fileList = event.target.files;
+  if (!fileList || fileList.length === 0) return;
+
+  if (fileList.length > 1) {
+    $(`#${language}-multiple-msg`).removeClass("hidden");
+    $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+    return;
+  }
+
+  const uploadedFile   = fileList[0];
+  const fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
+
+  const validExtensions = ["docx", "xlsx", "pptx"];
+  const validMimeTypes = [
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+  ];
+
+  if (
+    !validExtensions.includes(fileExtension) ||
+    !validMimeTypes.includes(uploadedFile.type)
+  ) {
+    $(`#${language}-doc-error`).removeClass("hidden");
+    $(`#${language}-doc-detecting`).addClass("hidden");
     $(`#${language}-language-heading`).removeClass("hidden");
-    $(`#${language}-language-doc`).addClass("hidden");
+    return;
+  }
 
-    var fileList = event.target.files;
-    if (!fileList || fileList.length === 0) return;
-    if (fileList.length > 1) {
-      $(`#${language}-multiple-msg`).removeClass("hidden");
-      $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
-      return;
+  try {
+    // (Your existing extraction for language detection, unchanged)
+    let textContent;
+    if (fileExtension === "docx" || fileExtension === "xlsx") {
+      const arrayBuffer = await uploadedFile.arrayBuffer();
+      const zip         = await JSZip.loadAsync(arrayBuffer);
+      const docXmlStr   = await zip.file("word/document.xml").async("string");
+      const parser      = new DOMParser();
+      const xmlDoc      = parser.parseFromString(docXmlStr, "application/xml");
+      const textNodes   = xmlDoc.getElementsByTagName("w:t");
+
+      textContent = Array.from(textNodes)
+        .map(node => `<p>${node.textContent}</p>`)
+        .join('');
+    } else {
+      // pptx branch
+      const arrayBuffer  = await uploadedFile.arrayBuffer();
+      const textElements = await extractPptxTextXmlWithId(arrayBuffer);
+      textContent = textElements
+        .map(item => `<p id="${item.id}">${item.text}</p>`)
+        .join('');
     }
-    var uploadedFile = fileList[0];
-    var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
-    var validExtensions = ["docx", "xlsx", "pptx"];
-    var validMimeTypes = [
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-    ];
-    
-    if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
-      $(`#${language}-doc-error`).removeClass("hidden");
-      $(`#${language}-doc-detecting`).addClass("hidden");
-      $(`#${language}-language-heading`).removeClass("hidden");
-      return;
-    }
-    
-    try {
-      let textContent;
-      if (fileExtension === "docx" || fileExtension === "xlsx") {
-        let arrayBuffer = await uploadedFile.arrayBuffer();
-        const zip = await JSZip.loadAsync(arrayBuffer);
-        const docXmlStr = await zip.file("word/document.xml").async("string");
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
-        const textNodes = xmlDoc.getElementsByTagName("w:t");
 
-        textContent = Array.from(textNodes)
-          .map(node => `<p>${node.textContent}</p>`)
-          .join('');
-      } else if (fileExtension === "pptx") {
-        let arrayBuffer = await uploadedFile.arrayBuffer();
-        let textElements = await extractPptxTextXmlWithId(arrayBuffer);
-        let pptxHtml = textElements
-          .map(item => `<p id="${item.id}">${item.text}</p>`)
-          .join('');
-        textContent = pptxHtml;
-      } else {
-        throw new Error("Unsupported file type");
-      }
+    if (!textContent) throw new Error("No text extracted.");
 
-      if (!textContent) {
-        throw new Error("No text extracted.");
-      }
+    let detectedLanguage = detectLanguageBasedOnWords(textContent) || "english";
+    if (detectedLanguage !== "french") detectedLanguage = "english";
 
-      let detectedLanguage = detectLanguageBasedOnWords(textContent);
-      if (detectedLanguage !== "french") {
-        detectedLanguage = "english";
-      }
-      $(`#${language}-doc-detecting`).addClass("hidden");
-      $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden");
+    $(`#${language}-doc-detecting`).addClass("hidden");
+    $(`#${language}-language-doc`)
+      .val(detectedLanguage)
+      .removeClass("hidden");
 
-      // Process the source file for English content if it's "source-file"
-      if (event.target.id === "source-file") {
-          englishFile = uploadedFile;
-          if (fileExtension === 'docx') { 
-            try{
-            const arrayBuffer = await uploadedFile.arrayBuffer(); 
-            const html = await extractDocxParagraphsAsHtml(arrayBuffer);
-            $("#translation-A").html(html); 
-            englishHtmlStored = html;
+    // —— Now handle source vs second file ——
+    if (event.target.id === "source-file") {
+      englishFile = uploadedFile;
+
+      if (fileExtension === "docx") {
+        try {
+          const arrayBuffer = await uploadedFile.arrayBuffer();
+          // **Use HTML extractor** so bold runs become <b>…</b>
+          const html = await extractDocxParagraphsAsHtml(arrayBuffer);
+          // Preview it
+          $("#translation-A").html(html);
+          // Store for the AI prompt
+          englishHtmlStored = html;
         } catch (err) {
-          console.error('Error processing source file:', err);
+          console.error("Error processing source file:", err);
           $(`#${language}-doc-error`).removeClass("hidden");
           $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
         }
-      } else {
-        // Handling for "second-file" (French file)
-        frenchFile = uploadedFile;
       }
-    } catch (err) {
-      console.error('Error processing file change:', err);
+      // else, you can handle XLSX/PPTX source here if needed
+
+    } else {
+      // second-file (French) just store it
+      frenchFile = uploadedFile;
     }
+
+  } catch (err) {
+    console.error("Error processing file change:", err);
   }
 });
 
