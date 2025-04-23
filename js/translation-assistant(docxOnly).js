@@ -307,7 +307,7 @@ $(document).on("change", "input", async function (event) {
         try {
           const arrayBuffer = await uploadedFile.arrayBuffer();
           // **Use HTML extractor** so bold runs become <b>…</b>
-          const html = await extractDocxParagraphsAsHtml(arrayBuffer);
+          const html = await extractDocxTextXmlWithId(arrayBuffer);
           // Preview it
           $("#translation-A").html(html);
           // Store for the AI prompt
