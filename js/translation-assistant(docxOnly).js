@@ -44,65 +44,60 @@ async function extractDocxParagraphs(arrayBuffer) {
   return fullText.join("\n\n");
 } 
 
-async function extractDocxTextXmlWithId(arrayBuffer) {
+async function extractDocxParagraphsAsHtml(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
-  let docXmlStr = await zip.file("word/document.xml").async("string");
+  const xmlStr = await zip.file("word/document.xml").async("string");
   const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
+  const xmlDoc = parser.parseFromString(xmlStr, "application/xml");
 
-  const paragraphs = xmlDoc.getElementsByTagName("w:p");
-  let textElements = [];
-  let paragraphCounter = 1;
+  return Array.from(xmlDoc.getElementsByTagName("w:p")).map((p, pi) => {
+    const runs = Array.from(p.getElementsByTagName("w:r"));
+    let html = runs.map((r, ri) => {
+      const t = r.getElementsByTagName("w:t")[0]?.textContent || "";
+      const hasBold = !!r.getElementsByTagName("w:b").length;
+      return hasBold ? `<b>${t}</b>` : t;
+    }).join("");
+    return `<p id="P${pi+1}">${html}</p>`;
+  }).join("");
+}
 
-  // Process each paragraph.
-  for (let i = 0; i < paragraphs.length; i++) {
-    const paragraph = paragraphs[i];
-    const runElements = paragraph.getElementsByTagName("w:r");
-    if (runElements.length === 0) continue; // Skip empty paragraphs
-
-    let runCounter = 1;
-    // Process each run in the paragraph.
-    for (let j = 0; j < runElements.length; j++) {
-      const run = runElements[j];
-      // For each run, get <w:t> elements.
-      const textNodes = run.getElementsByTagName("w:t");
-      for (let k = 0; k < textNodes.length; k++) {
-        const text = textNodes[k].textContent;
-        const id = `P${paragraphCounter}_R${runCounter++}`;
-        textElements.push({ id, text });
-      }
+function convertParagraphRuns(pElement, htmlString, xmlDoc) {
+  // 1) parse the HTML into segments
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = htmlString;
+  const segments = [];
+  wrapper.childNodes.forEach(node => {
+    if (node.nodeName === "B") {
+      segments.push({ text: node.textContent, bold: true });
+    } else {
+      segments.push({ text: node.textContent, bold: false });
     }
-    paragraphCounter++;
-  }
-  return textElements;
-} 
-function convertParagraphRuns(pElement, frenchText) {
-  const tElements = pElement.getElementsByTagName("w:t");
-  // Concatenate the original text and store each run's length.
-  let originalText = "";
-  let runLengths = [];
-  for (let i = 0; i < tElements.length; i++) {
-    const txt = tElements[i].textContent;
-    originalText += txt;
-    runLengths.push(txt.length);
-  }
-  const totalLength = originalText.length;
-  if (totalLength === 0) return;
-  
-  // Distribute the French text proportionally.
-  let cumulative = 0;
-  for (let i = 0; i < tElements.length; i++) {
-    let proportion = runLengths[i] / totalLength;
-    let numChars = Math.round(frenchText.length * proportion);
-    let runText = frenchText.substring(cumulative, cumulative + numChars);
-    tElements[i].textContent = runText;
-    cumulative += numChars;
-  }
-  // Append any remaining characters to the last run.
-  if (cumulative < frenchText.length && tElements.length > 0) {
-    tElements[tElements.length - 1].textContent += frenchText.substring(cumulative);
+  });
+
+  // 2) walk the w:r runs
+  const runEls = Array.from(pElement.getElementsByTagName("w:r"));
+  let segIndex = 0;
+  for (let runEl of runEls) {
+    if (segIndex >= segments.length) break;
+    const { text, bold } = segments[segIndex++];
+    const tEl = runEl.getElementsByTagName("w:t")[0];
+    if (!tEl) continue;
+    tEl.textContent = text;
+
+    // ensure there’s a <w:rPr>
+    let rPr = runEl.getElementsByTagName("w:rPr")[0];
+    if (!rPr) {
+      rPr = xmlDoc.createElement("w:rPr");
+      runEl.insertBefore(rPr, runEl.firstChild);
+    }
+    // toggle bold
+    Array.from(rPr.getElementsByTagName("w:b")).forEach(n => n.remove());
+    if (bold) {
+      rPr.appendChild(xmlDoc.createElement("w:b"));
+    }
   }
 }
+
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
@@ -574,11 +569,13 @@ $(document).on("click", "#copy-all-btn", function(e) {
 
     try {
       const fileExtension = englishFile.name.split('.').pop().toLowerCase();
-      let extractedText = "";
+      let extractedHtml = "";
 
       if (fileExtension === "docx") {
         const arrayBuffer = await englishFile.arrayBuffer();
-        extractedText = await extractDocxParagraphs(arrayBuffer);
+        extractedHtml = await extractDocxParagraphsAsHtml(arrayBuffer); 
+        $("#source-text-preview").html(extractedHtml); 
+        englishHtmlStored = extractedHtml;
       } else if (fileExtension === "pptx") {
         let arrayBuffer = await englishFile.arrayBuffer();
         extractedText = await extractPptxText(arrayBuffer);
@@ -848,19 +845,11 @@ function deduplicateFrenchParagraphs(finalFrenchHtml) {
   return cleanedParagraphs.join("");
 } 
 function buildFrenchTextMap(finalFrenchHtml) {
-  // Optionally deduplicate first or perform other cleaning.
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
-  // Select all paragraphs that have an id
-  const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
-  // Build mapping while filtering out empty texts.
   const frenchMap = {};
-  rawParagraphs.forEach(p => {
-    const id = p.getAttribute("id");
-    let text = p.textContent.replace(/\s+/g, ' ').trim();
-    if (text.length > 0) {
-      frenchMap[id] = text;
-    }
+  Array.from(tempDiv.querySelectorAll("p[id]")).forEach(p => {
+    frenchMap[p.id] = p.innerHTML.trim();    // preserve <b>…</b>
   });
   return frenchMap;
 }
@@ -901,7 +890,7 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
       mappingIndex++;
       if (frenchMap[key]) {
         // Instead of replacing just the first run, distribute French text among runs.
-        convertParagraphRuns(p, frenchMap[key]);
+        convertParagraphRuns(p, frenchMap[key], xmlDoc);
       }
     }
   }
