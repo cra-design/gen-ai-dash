@@ -591,15 +591,17 @@ $(document).on("click", "#copy-all-btn", function(e) {
       } else {
         throw new Error("Unsupported file type for extraction");
       }
-        $("#source-text-preview").text(extractedhtml);
-      // Unhide the preview section.
-      $("#source-preview-wrapper").removeClass("hidden").show();
-      // Unhide the second upload section.
-      $("#second-upload").removeClass("hidden");
-    } catch (err) {
-      console.error("Error extracting source text:", err);
-      $("#source-doc-error").removeClass("hidden");
-    }
+         $("#source-text-preview").html(extractedHtml);
+
+  // Unhide the preview section
+  $("#source-preview-wrapper").removeClass("hidden").show();
+  // Unhide the second upload section
+  $("#second-upload").removeClass("hidden");
+
+} catch (err) {
+  console.error("Error extracting source text:", err);
+  $("#source-doc-error").removeClass("hidden");
+}
   });
   /***********************************************************************
    * Provide Translation Button Flow:
