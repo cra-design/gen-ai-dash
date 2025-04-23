@@ -298,7 +298,7 @@ $(document).ready(function() {
             try{
             const arrayBuffer = await uploadedFile.arrayBuffer(); 
             const html = await extractDocxParagraphsAsHtml(arrayBuffer);
-            $("#translation-A").html(aggregatedHtml); 
+            $("#translation-A").html(html); 
             englishHtmlStored = html;
         } catch (err) {
           console.error('Error processing source file:', err);
