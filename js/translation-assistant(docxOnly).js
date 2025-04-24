@@ -916,26 +916,26 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   let runIndex = 1;
 
   return originalXml.replace(
-    // capture the three parts: prefix (<a:r>…<a:t>), the inner text, and the suffix (</a:t>…</a:r>)
     /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
-    (match, prefix, innerText, suffix) => {
-      const key = `S${slideNumber}_T${runIndex++}`;
+    (match, prefix, origText, suffix) => {
+      const key       = `S${slideNumber}_T${runIndex++}`;
+      const origTrim  = origText.trim();
+      const candidate = frenchMap[key]?.trim() || "";
 
-      // only use the French if it exists in frenchMap
-      const hasTranslation = Object.prototype.hasOwnProperty.call(frenchMap, key);
-      let newText = hasTranslation ? frenchMap[key] : "";
+      // only keep it if there's a French value AND it's different from the original
+      const newText = (candidate && candidate !== origTrim)
+        ? candidate
+        : "";
 
-      // if you really need to preserve a run, you can uncomment this:
-      // if (newText === "") newText = " ";
+      // If you need to force at least one char so PPT doesn't collapse the run,
+      // you can do: const out = newText || " ";
+      const out = newText;
 
-      // escape XML chars
-      const escaped = escapeXml(newText);
-
-      // rebuild the run with either the French or an empty string
-      return prefix + escaped + suffix;
+      return prefix + escapeXml(out) + suffix;
     }
   );
 }
+
 
   
 // Function to generate a file blob from the zip and XML content.
