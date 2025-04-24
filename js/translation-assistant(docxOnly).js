@@ -160,25 +160,35 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
   return textElements;
 }  
 function aggregateDocxMapping(mapping) {
+  if (!Array.isArray(mapping)) {
+    console.error(
+      "aggregateDocxMapping expected an array but got:", 
+      mapping
+    );
+    // either bail out or throw:
+    return [];
+    // — or, if you’d rather crash loudly:
+    // throw new TypeError(`aggregateDocxMapping expected an array but got ${typeof mapping}`);
+  }
+
   const aggregated = {};
   mapping.forEach(item => {
-    // Extract paragraph part (e.g., "P1" from "P1_R1")
     const paraId = item.id.split('_')[0];
     if (!aggregated[paraId]) {
       aggregated[paraId] = { id: paraId, texts: [] };
     }
     aggregated[paraId].texts.push(item.text);
   });
+
   return Object.values(aggregated)
     .map(entry => {
-      // Join text runs without adding extra spaces, then normalize spaces
       let combined = entry.texts.join('');
       combined = combined.replace(/\s+/g, ' ').trim();
       return { id: entry.id, text: combined };
     })
-    // Filter out any paragraphs that end up empty
     .filter(item => item.text.length > 0);
 }
+
 
 $(document).ready(function() {
   $('#source-upload-doc').prop('checked', true);
