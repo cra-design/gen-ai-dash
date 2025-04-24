@@ -253,7 +253,7 @@ $(document).ready(function() {
         let pptxHtml = textElements
           .map(item => `<p id="${item.id}">${item.text}</p>`)
           .join('');
-        textContent = pptxHtml;
+        englishHtmlStored = pptxHtml;
       } else {
         throw new Error("Unsupported file type");
       }
@@ -294,7 +294,7 @@ $(document).ready(function() {
                 let pptxHtml = textElements
                   .map(item => `<p id="${item.id}">${item.text}</p>`)
                   .join('');
-                // NEW: Set the formatted PPTX content into #translation-A.
+                englishHtmlStored = pptxHtml;
                 $("#translation-A").html(pptxHtml);
          }
         } catch (err) {
