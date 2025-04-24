@@ -780,7 +780,20 @@ $("#convert-translation-download-btn").click(async function () {
       
       generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
     } else if (fileExtension === 'pptx') {
-      // PPTX branch (already working)
+       const arrayBuffer = await englishFile.arrayBuffer();
+      const zip = await JSZip.loadAsync(arrayBuffer);
+      const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+
+      for (const fileName of Object.keys(zip.files)) {
+        const match = slideRegex.exec(fileName);
+        if (match) {
+          const slideNumber = match[1];
+          const slideXml = await zip.file(fileName).async("string");
+          const updatedSlideXml = conversionPptxXml(slideXml, finalFrenchHtml, slideNumber);
+          zip.file(fileName, updatedSlideXml);
+        }
+      }
+      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
     } else if (fileExtension === 'xlsx') {
       // XLSX branch
     }
