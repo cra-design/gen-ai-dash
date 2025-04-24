@@ -287,10 +287,16 @@ $(document).ready(function() {
             // Store for AI prompt and display
             englishHtmlStored = aggregatedHtml;
             $("#translation-A").html(aggregatedHtml);
-          } else {
-            // If not a DOCX, then continue handling accordingly (e.g., PPTX)
-            // For instance, in PPTX branch you might already be processing and displaying html.
-          }
+          }  else if (fileExtension === 'pptx'){
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+                let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+                console.log("Extracted PPTX Text Elements:", textElements);
+                let pptxHtml = textElements
+                  .map(item => `<p id="${item.id}">${item.text}</p>`)
+                  .join('');
+                // NEW: Set the formatted PPTX content into #translation-A.
+                $("#translation-A").html(pptxHtml);
+         }
         } catch (err) {
           console.error('Error processing source file:', err);
           $(`#${language}-doc-error`).removeClass("hidden");
