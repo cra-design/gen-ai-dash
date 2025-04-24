@@ -253,7 +253,7 @@ $(document).ready(function() {
         let pptxHtml = textElements
           .map(item => `<p id="${item.id}">${item.text}</p>`)
           .join('');
-        englishHtmlStored = pptxHtml;
+        textContent = pptxHtml;
       } else {
         throw new Error("Unsupported file type");
       }
