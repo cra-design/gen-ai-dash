@@ -83,8 +83,6 @@ summary::-webkit-details-marker {
 <div id="source-preview-wrapper" style="position: relative;">
   <details>
     <summary>
-      ▶ Source text preview
-      <!-- move the button inside the summary, absolutely positioned -->
       <button
         id="copy-all-btn"
         class="toolbar-button"
@@ -94,21 +92,25 @@ summary::-webkit-details-marker {
           top: 50%;
           right: 24px;
           transform: translateY(-50%);
-          color: #8c8b00;
+          color: inherit;
           padding: 6px 10px;
           border: 1px solid #ccc;
           border-radius: 6px;
           background: transparent;
         "
       >
-        <i class="copy-icon"></i>
+        <i
+          class="copy-icon"
+          style="color: #8c8b00;"
+        ></i>
       </button>
     </summary>
     <div id="source-text-preview">
-      <!-- your preview content here -->
+      <!-- your preview content -->
     </div>
   </details>
 </div>
+
 
 
 /* Hide the preview section by default */
