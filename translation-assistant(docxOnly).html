@@ -80,39 +80,37 @@ summary::-webkit-details-marker {
   margin-right: 0.5em;
 }
 
-/* Copy button styling */
-button#copy-all-btn.toolbar-button {
-  color: #8c8b00 !important;
-  padding: 6px 10px !important;   
-  border-radius: 6px !important;
-  border: 1px solid #ccc !important; 
-  top: 50%     !important; 
-  right: 12px  !important;
-  margin-right: 24px !important;
-  display: inline-block;
-  line-height: 1;
-  background-color: transparent !important; /* or match preview bg */
-}
+<div id="source-preview-wrapper" style="position: relative;">
+  <details>
+    <summary>
+      ▶ Source text preview
+      <!-- move the button inside the summary, absolutely positioned -->
+      <button
+        id="copy-all-btn"
+        class="toolbar-button"
+        title="Copy All"
+        style="
+          position: absolute;
+          top: 50%;
+          right: 24px;
+          transform: translateY(-50%);
+          color: #8c8b00;
+          padding: 6px 10px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          background: transparent;
+        "
+      >
+        <i class="copy-icon"></i>
+      </button>
+    </summary>
+    <div id="source-text-preview">
+      <!-- your preview content here -->
+    </div>
+  </details>
+</div>
 
-button#copy-all-btn.toolbar-button i {
-  color: inherit !important;
-  font-size: 1.2em;   /* optional: bump up icon size */
-  padding: 0;
-}
 
-
-/* Styling for the preview text area */
-#source-text-preview {
-  white-space: pre-wrap;
-  background-color: #f5f5f5;
-  padding: 0.5em; 
-  max-height: none;
-  border-radius: 6px;
-}
-
-#source-preview-wrapper {
-  padding: 0.2em !important;
-}
 /* Hide the preview section by default */
 .hidden {
   display: none;
