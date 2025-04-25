@@ -916,25 +916,24 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   let runIndex = 1;
 
   return originalXml.replace(
-    /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
+    /(<a:r>[\s\S]*?<a:rPr[\s\S]*?>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
     (match, prefix, origText, suffix) => {
-      const key       = `S${slideNumber}_T${runIndex++}`;
-      const origTrim  = origText.trim();
-      const candidate = frenchMap[key]?.trim() || "";
+      const key    = `S${slideNumber}_T${runIndex++}`;
+      let newText  = (frenchMap[key] || "").trim();
 
-      // only keep it if there's a French value AND it's different from the original
-      const newText = (candidate && candidate !== origTrim)
-        ? candidate
-        : "";
+      // if this run is bold (<a:rPr ... b="1">) then pad with spaces
+      if (/\sb="1"/.test(prefix)) {
+        if (newText && !newText.startsWith(" ")) newText = " " + newText;
+        if (newText && !newText.endsWith(" "))   newText = newText + " ";
+      }
 
-      // If you need to force at least one char so PPT doesn't collapse the run,
-      // you can do: const out = newText || " ";
-      const out = newText;
-
-      return prefix + escapeXml(out) + suffix;
+      // escape &<> etc.
+      const escaped = escapeXml(newText);
+      return prefix + escaped + suffix;
     }
   );
 }
+
 
 
   
