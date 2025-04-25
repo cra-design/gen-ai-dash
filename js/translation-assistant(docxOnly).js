@@ -916,23 +916,28 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   let runIndex = 1;
 
   return originalXml.replace(
-    /(<a:r>[\s\S]*?<a:rPr[\s\S]*?>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
+    /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
     (match, prefix, origText, suffix) => {
-      const key    = `S${slideNumber}_T${runIndex++}`;
-      let newText  = (frenchMap[key] || "").trim();
+      const key       = `S${slideNumber}_T${runIndex++}`;
+      const origTrim  = origText.trim();
+      const candidate = frenchMap[key]?.trim() || "";
 
-      // if this run is bold (<a:rPr ... b="1">) then pad with spaces
-      if (/\sb="1"/.test(prefix)) {
-        if (newText && !newText.startsWith(" ")) newText = " " + newText;
-        if (newText && !newText.endsWith(" "))   newText = newText + " ";
+      // keep only if there is a translation and it's different from the original
+      let newText = (candidate && candidate !== origTrim)
+        ? candidate
+        : "";
+
+      // if this run is bold (b="1"), pad with spaces
+      if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
+        if (!newText.startsWith(" ")) newText = " " + newText;
+        if (!newText.endsWith(" "))   newText = newText + " ";
       }
 
-      // escape &<> etc.
-      const escaped = escapeXml(newText);
-      return prefix + escaped + suffix;
+      return prefix + escapeXml(newText) + suffix;
     }
   );
 }
+
 
 
 
