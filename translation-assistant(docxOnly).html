@@ -31,79 +31,7 @@
       <style>@layer primeng{.p-dropdown{display:inline-flex;cursor:pointer;position:relative;-webkit-user-select:none;user-select:none}.p-dropdown-clear-icon{position:absolute;top:50%;margin-top:-.5rem}.p-dropdown-trigger{display:flex;align-items:center;justify-content:center;flex-shrink:0}.p-dropdown-label{display:block;white-space:nowrap;overflow:hidden;flex:1 1 auto;width:1%;text-overflow:ellipsis;cursor:pointer}.p-dropdown-label-empty{overflow:hidden;opacity:0}input.p-dropdown-label{cursor:default}.p-dropdown .p-dropdown-panel{min-width:100%}.p-dropdown-items-wrapper{overflow:auto}.p-dropdown-item{cursor:pointer;font-weight:400;white-space:nowrap;position:relative;overflow:hidden}.p-dropdown-item-group{cursor:auto}.p-dropdown-items{margin:0;padding:0;list-style-type:none}.p-dropdown-filter{width:100%}.p-dropdown-filter-container{position:relative}.p-dropdown-filter-icon{position:absolute;top:50%;margin-top:-.5rem}.p-fluid .p-dropdown{display:flex}.p-fluid .p-dropdown .p-dropdown-label{width:1%}.p-float-label .p-dropdown .p-placeholder{opacity:0}}</style>
       <style>@layer primeng{.p-overlay{position:absolute;top:0;left:0}.p-overlay-modal{display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%}.p-overlay-content{transform-origin:inherit}.p-overlay-modal>.p-overlay-content{z-index:1;width:90%}.p-overlay-top{align-items:flex-start}.p-overlay-top-start{align-items:flex-start;justify-content:flex-start}.p-overlay-top-end{align-items:flex-start;justify-content:flex-end}.p-overlay-bottom{align-items:flex-end}.p-overlay-bottom-start{align-items:flex-end;justify-content:flex-start}.p-overlay-bottom-end{align-items:flex-end;justify-content:flex-end}.p-overlay-left{justify-content:flex-start}.p-overlay-left-start{justify-content:flex-start;align-items:flex-start}.p-overlay-left-end{justify-content:flex-start;align-items:flex-end}.p-overlay-right{justify-content:flex-end}.p-overlay-right-start{justify-content:flex-end;align-items:flex-start}.p-overlay-right-end{justify-content:flex-end;align-items:flex-end}}</style>
       <style>.material-icon-wysiwyg[_ngcontent-ng-c948301949]{font-size:18px;vertical-align:middle}.bg-planned[_ngcontent-ng-c948301949]{background-color:#cee5ff;color:#262928}.bg-inProgress[_ngcontent-ng-c948301949]{background-color:#f7c2f4;color:#262928}.bg-completed[_ngcontent-ng-c948301949]{background-color:#b3e7bd;color:#262928}.bg-delayed[_ngcontent-ng-c948301949]{background-color:#eda7a7;color:#262928}.bg-unknown[_ngcontent-ng-c948301949]{background-color:gray;color:#fff}.text-success[_ngcontent-ng-c948301949]{color:#1d8177!important}</style>
-      <!-- for left nav styles -->
 
-	  <!--style>
-		#image-drop-upload-area {
-			/*Sort of important*/
-			width: 100%;
-			/*Sort of important*/
-			height: 75px;
-			position:absolute;
-			//border: 2px dashed rgba(0,0,0,.3);
-			border-radius: 5px;
-			font-family: Arial;
-			text-align: left;
-			position: relative;
-			line-height: 55px;
-			font-size: 17px;
-			color: rgba(255,255,255);
-			background-color: #515151;
-			padding-left: 10%;
-		}
-
-		/*#image-drop-upload-area i {
-			position: absolute;
-			left: 23px
-			line-height: 7px;
-			font-size: 28px;
-		}*/
-
-		#image-drop-upload-area i {
-
-			#image-drop-upload-area input {
-				/*Important*/
-				position: absolute;
-				/*Important*/
-				cursor: pointer;
-				left: 0px;
-				top: 0px;
-				/*Important This is only comment out for demonstration purposes.*/
-				opacity:0;
-			}
-
-			/*Important*/
-			#image-drop-upload-area.mouse-over {
-				border: 2px dashed rgba(0,0,0,.5);
-				color: rgba(0,0,0,.5);
-			}
-
-
-		/*If you dont want the button*/
-		#file-upload-btn {
-			position: absolute;
-			cursor: pointer;
-			right: 2%;
-			top: 27%;
-			//margin-left: -50px;
-			//margin-top: 20px;
-			line-height: 26px;
-			color: white;
-			font-size: 15px;
-			width: 140px;
-			height: 37px;
-			border-radius: 4px;
-			background-color: #000000;
-			border: 1px solid #adadad;
-			text-align: center;
-			line-height: 215%
-		}
-
-		#file-upload-btn:hover {
-			background-color: #4499DD;
-
-		}
-   </style--> 
 
 	     <style>  
 /* details wrapper */
@@ -153,27 +81,24 @@ summary::-webkit-details-marker {
 }
 
 /* Copy button styling */
-#copy-all-btn {
-  border: 1px solid #ccc;
-  background-color: #f5f5f5; 
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 6px;
-  border-radius: 6px; 
-  margin-left: -8px;
+button#copy-all-btn.toolbar-button {
+  color: #8c8b00 !important;
+  padding: 6px 10px !important;   
+  border-radius: 6px !important;
+  border: 1px solid #ccc !important;
+  margin-right: 8px !important;
   display: inline-block;
   vertical-align: middle;
-  line-height: 1; 
-  padding: 0;  /* This will override the earlier padding */
-  margin: 0;
+  line-height: 1;
+  background-color: transparent !important; /* or match preview bg */
 }
 
-/* Remove extra padding from the icon inside the button */
-#copy-all-btn i { 
-  color: inherit;
-  font-size: 1.2em;
+button#copy-all-btn.toolbar-button i {
+  color: inherit !important;
+  font-size: 1.2em;   /* optional: bump up icon size */
   padding: 0;
 }
+
 
 /* Styling for the preview text area */
 #source-text-preview {
