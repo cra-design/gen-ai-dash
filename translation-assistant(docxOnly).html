@@ -86,7 +86,7 @@ button#copy-all-btn.toolbar-button {
   padding: 6px 10px !important;   
   border-radius: 6px !important;
   border: 1px solid #ccc !important;
-  margin-right: 8px !important;
+  margin-right: 24px !important;
   display: inline-block;
   vertical-align: middle;
   line-height: 1;
@@ -104,10 +104,14 @@ button#copy-all-btn.toolbar-button i {
 #source-text-preview {
   white-space: pre-wrap;
   background-color: #f5f5f5;
-  padding: 1em;
+  padding: 0.5em; 
+  max-height: none;
   border-radius: 6px;
 }
 
+#source-preview-wrapper {
+  padding: 0.2em !important;
+}
 /* Hide the preview section by default */
 .hidden {
   display: none;
