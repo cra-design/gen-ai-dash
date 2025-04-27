@@ -151,33 +151,40 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
   for (const fileName of Object.keys(zip.files)) {
     const m = slideRe.exec(fileName);
     if (!m) continue;
-    const slideNum = m[1];
-    const xml      = await zip.file(fileName).async("string");
-    const doc      = new DOMParser().parseFromString(xml, "application/xml");
+    const slideNumber = m[1];
+    const slideXml    = await zip.file(fileName).async("string");
+    const xmlDoc      = new DOMParser().parseFromString(slideXml, "application/xml");
 
-    //Grab exactly the <a:r> elements that have text:
-    const runNodes = Array.from(
-      doc.querySelectorAll("a\\:r > a\\:t")
-    ).map(t => t.parentNode);
+    // Find every <a:r> that actually has a <a:t> child
+    const runNodes = Array.from(xmlDoc.getElementsByTagName("a:r"))
+      .filter(r => r.getElementsByTagName("a:t").length > 0);
 
-    runNodes.forEach((rNode, idx) => {
-      // pull out the text
-      const tNode = rNode.getElementsByTagName("a:t")[0];
-      const raw   = (tNode.textContent || "").trim();
+    //  Enumerate exactly as your converter will:
+    runNodes.forEach((runNode, idx) => {
+      const tNode   = runNode.getElementsByTagName("a:t")[0];
+      const rawText = tNode.textContent || "";
+      const trimmed = rawText.trim();
 
-      // skip slide-number fields
-      const fldAncestor = rNode.closest("a\\:fld[type='slidenum']");
-      if (fldAncestor) return;
-      if (raw === slideNum) return;
+      // Skip anything inside <a:fld type="slidenum">
+      let anc = runNode.parentNode, skip = false;
+      while (anc) {
+        if (anc.localName === "fld" && anc.getAttribute("type") === "slidenum") {
+          skip = true;
+          break;
+        }
+        anc = anc.parentNode;
+      }
+      if (skip) return;
 
-      // now your IDs line up with converter’s runIndex:
-      const uniqueId = `S${slideNum}_T${idx + 1}`;
-      textElements.push({ slide: slideNum, id: uniqueId, text: raw });
+      // Build IDs using idx+1 so they match your converter’s runIndex
+      const uniqueId = `S${slideNumber}_T${idx + 1}`;
+      textElements.push({ slide: slideNumber, id: uniqueId, text: rawText });
     });
   }
 
   return textElements;
 }
+
 
 function aggregateDocxMapping(mapping) {
   const aggregated = {};
