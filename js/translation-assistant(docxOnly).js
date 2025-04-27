@@ -114,29 +114,36 @@ async function extractPptxText(arrayBuffer) {
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
-  const zip = await JSZip.loadAsync(arrayBuffer); 
+  const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
-  let textElements = [];
+  const textRuns = [];
 
-  for (const fileName of Object.keys(zip.files)) {
-    const match = slideRegex.exec(fileName);
-    if (match) {
-      const slideNumber = match[1];
-      const slideXml = await zip.file(fileName).async("string"); 
+  for (const filePath of Object.keys(zip.files)) {
+    const slideMatch = slideRegex.exec(filePath);
+    if (!slideMatch) continue;
 
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(slideXml, "application/xml");
-      const textNodes = xmlDoc.getElementsByTagName("a:t");
+    const slideNumber  = slideMatch[1];
+    const slideXml     = await zip.file(filePath).async("string");
+    const slideDoc     = new DOMParser().parseFromString(slideXml, "application/xml");
+    const textNodes    = slideDoc.getElementsByTagName("a:t");
 
-      for (let i = 0; i < textNodes.length; i++) {
-        let uniqueId = `S${slideNumber}_T${i + 1}`;
-        let text = textNodes[i].textContent;
-        textElements.push({ slide: slideNumber, id: uniqueId, text });
+    for (let runIndex = 0; runIndex < textNodes.length; runIndex++) {
+      const rawText = textNodes[runIndex].textContent || "";
+      const trimmed = rawText.trim();
+
+      // Skip any run whose trimmed text exactly equals the slide number
+      if (trimmed === slideNumber) {
+        continue;
       }
+
+      const runId   = `S${slideNumber}_T${runIndex + 1}`;
+      textRuns.push({ slide: slideNumber, id: runId, content: rawText });
     }
   }
-  return textElements;
-}  
+
+  return textRuns;
+}
+
 function aggregateDocxMapping(mapping) {
   const aggregated = {};
   mapping.forEach(item => {
