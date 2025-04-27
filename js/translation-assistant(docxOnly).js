@@ -162,7 +162,8 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
       const trimmed = rawText.trim();
 
       // skip any run inside a <a:fld type="slidenum">
-     let anc = node.parentNode;
+     let anc = node.parentNode; 
+     let skip = false; 
      while (anc) {
      if (anc.localName === "fld" && anc.getAttribute("type")==="slidenum") {
      skip = true;
