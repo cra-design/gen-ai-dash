@@ -144,41 +144,65 @@ async function extractPptxText(arrayBuffer) {
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
-  const zip = await JSZip.loadAsync(arrayBuffer); 
-  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
-  const textElements = [];
+ const zip = await JSZip.loadAsync(arrayBuffer);
+  const slideRe = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  let allParagraphs = [];
 
   for (const fileName of Object.keys(zip.files)) {
-    const match = slideRegex.exec(fileName);
-    if (!match) continue;
+    const m = slideRe.exec(fileName);
+    if (!m) continue;
+    const slideNum = m[1];
+    const xml      = await zip.file(fileName).async("string");
+    const doc      = new DOMParser().parseFromString(xml, "application/xml");
 
-    const slideNumber = match[1];
-    const slideXml    = await zip.file(fileName).async("string");
-    const parser      = new DOMParser();
-    const xmlDoc      = parser.parseFromString(slideXml, "application/xml");
-    const textNodes   = xmlDoc.getElementsByTagName("a:t");
+    // 1) Grab every <a:p> on the slide
+    const paras = doc.getElementsByTagName("a:p");
+    let tempParas = [];
 
-    for (let i = 0; i < textNodes.length; i++) {
-      const node       = textNodes[i];
-      const rawText    = node.textContent || "";
-      const trimmed    = rawText.trim();
+    for (let pi = 0; pi < paras.length; pi++) {
+      const p = paras[pi];
 
-      // skip any run inside a <a:fld type="slidenum">
-      const parent = node.parentNode;
-      if (
-        parent &&
-        parent.localName === "fld" &&
-        parent.getAttribute("type") === "slidenum"
-      ) {
+      // 2) Skip any <a:p> that contains a <a:fld type="slidenum">
+      if (p.querySelector('a\\:fld[type="slidenum"]')) {
         continue;
       }
 
-      const uniqueId = `S${slideNumber}_T${i + 1}`;
-      textElements.push({ slide: slideNumber, id: uniqueId, text: rawText });
+      // 3) Pull out all the <a:t> runs *in order*, skipping any run
+      //    whose text is exactly the slide-number
+      const texts = [];
+      for (let ti = 0; ti < p.getElementsByTagName("a:t").length; ti++) {
+        const tnode = p.getElementsByTagName("a:t")[ti];
+        const txt   = (tnode.textContent || "").trim();
+        if (txt === slideNum) continue;
+        texts.push(txt);
+      }
+
+      const joined = texts.join("");
+      if (joined) {
+        tempParas.push(joined);
+      }
     }
+
+    // 4)*glue* little ordinals back onto the previous
+    //    paragraph so "22" + "nd" doesn't become two bullets
+    const output = [];
+    const ORD = /^([nN]d|[rR]d|[sS]t|[tT]h)$/;
+    for (let i = 0; i < tempParas.length; i++) {
+      if (ORD.test(tempParas[i]) && output.length) {
+        // tack it onto the last para
+        output[output.length - 1] += tempParas[i];
+      } else {
+        output.push(tempParas[i]);
+      }
+    }
+
+    // 5) Push those into your final list (with a blank line between paras)
+    allParagraphs.push(...output);
   }
 
-  return textElements;
+  // Render them as HTML with double-newline between paras
+  // (or wrap them in <p> tags however you like)
+  return allParagraphs.map(p => `<p>${p}</p>`).join("\n\n");
 }
 
 function aggregateDocxMapping(mapping) {
