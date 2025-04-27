@@ -161,19 +161,16 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
       const rawText = node.textContent || "";
       const trimmed = rawText.trim();
 
-      // 1) skip literal slide numbers ("3" on slide 3)
-      if (trimmed === slideNumber) continue;
-
-      // 2) skip any run inside a <a:fld type="slidenum">
-      let ancestor = node.parentNode, skip = false;
-      while (ancestor) {
-        if (
-          ancestor.localName === "fld" &&
-          ancestor.getAttribute("type") === "slidenum"
-        ) { skip = true; break; }
-        ancestor = ancestor.parentNode;
-      }
-      if (skip) continue;
+      // skip any run inside a <a:fld type="slidenum">
+     let anc = node.parentNode;
+     while (anc) {
+     if (anc.localName === "fld" && anc.getAttribute("type")==="slidenum") {
+     skip = true;
+     break;
+   }
+     anc = anc.parentNode;
+   }
+if (skip) continue;
 
       // 3) keep the rest with your original ID scheme
       const uniqueId = `S${slideNumber}_T${i + 1}`;
