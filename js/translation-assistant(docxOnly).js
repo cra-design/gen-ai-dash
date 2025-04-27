@@ -144,48 +144,40 @@ async function extractPptxText(arrayBuffer) {
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
-  const zip = await JSZip.loadAsync(arrayBuffer);
-  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  const zip          = await JSZip.loadAsync(arrayBuffer);
+  const slideRe      = /^ppt\/slides\/slide(\d+)\.xml$/i;
   const textElements = [];
 
   for (const fileName of Object.keys(zip.files)) {
-    const match = slideRegex.exec(fileName);
-    if (!match) continue;
+    const m = slideRe.exec(fileName);
+    if (!m) continue;
+    const slideNum = m[1];
+    const xml      = await zip.file(fileName).async("string");
+    const doc      = new DOMParser().parseFromString(xml, "application/xml");
 
-    const slideNumber = match[1];
-    const slideXml    = await zip.file(fileName).async("string");
-    const xmlDoc      = new DOMParser().parseFromString(slideXml, "application/xml");
-    const textNodes   = xmlDoc.getElementsByTagName("a:t");
+    //Grab exactly the <a:r> elements that have text:
+    const runNodes = Array.from(
+      doc.querySelectorAll("a\\:r > a\\:t")
+    ).map(t => t.parentNode);
 
-    for (let i = 0; i < textNodes.length; i++) {
-      const node    = textNodes[i];
-      const rawText = node.textContent || "";
-      const trimmed = rawText.trim();
+    runNodes.forEach((rNode, idx) => {
+      // pull out the text
+      const tNode = rNode.getElementsByTagName("a:t")[0];
+      const raw   = (tNode.textContent || "").trim();
 
-      // 1) skip runs whose text is exactly the slide number
-      if (trimmed === slideNumber) continue;
+      // skip slide-number fields
+      const fldAncestor = rNode.closest("a\\:fld[type='slidenum']");
+      if (fldAncestor) return;
+      if (raw === slideNum) return;
 
-      // 2) skip runs that are inside a <a:fld type="slidenum">
-      let skip = false;
-      let anc  = node.parentNode;
-      while (anc) {
-        if (anc.localName === "fld" && anc.getAttribute("type") === "slidenum") {
-          skip = true;
-          break;
-        }
-        anc = anc.parentNode;
-      }
-      if (skip) continue;
-
-      // keep valid runs
-      const uniqueId = `S${slideNumber}_T${i + 1}`;
-      textElements.push({ slide: slideNumber, id: uniqueId, text: rawText });
-    }
+      // now your IDs line up with converter’s runIndex:
+      const uniqueId = `S${slideNum}_T${idx + 1}`;
+      textElements.push({ slide: slideNum, id: uniqueId, text: raw });
+    });
   }
 
   return textElements;
 }
-
 
 function aggregateDocxMapping(mapping) {
   const aggregated = {};
