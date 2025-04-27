@@ -750,13 +750,14 @@ $("#second-upload-btn").click(async function () {
         const currText = rawParagraphs[i].textContent.trim();
         const currId = rawParagraphs[i].id;
   
-        if (/^[dlLcsà'‘’`’“”]$/.test(currText) && rawParagraphs[i + 1]) {
+        if (/^([nN]d|[rR]d|[sS]t|[tT]h|[dlLcsà'‘’`’“”])$/.test(currText) 
+        && rawParagraphs[i + 1]) {
           const nextText = rawParagraphs[i + 1].textContent.trim();
           rebuilt.push(`<p id="${currId}">${currText}${nextText}</p>`);
           i++;
-        } else {
+      } else {
           rebuilt.push(`<p id="${currId}">${currText}</p>`);
-        }
+      }
       }
      
       finalFrenchHtml = rebuilt.join('');  
