@@ -144,51 +144,41 @@ async function extractPptxText(arrayBuffer) {
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
-  const zip = await JSZip.loadAsync(arrayBuffer);
+  const zip = await JSZip.loadAsync(arrayBuffer); 
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
-  const textRuns = [];
+  const textElements = [];
 
-  for (const filePath of Object.keys(zip.files)) {
-    const slideMatch = slideRegex.exec(filePath);
-    if (!slideMatch) continue;
+  for (const fileName of Object.keys(zip.files)) {
+    const match = slideRegex.exec(fileName);
+    if (!match) continue;
 
-    const slideNumber  = slideMatch[1];
-    const slideXml     = await zip.file(filePath).async("string");
-    const slideDoc     = new DOMParser().parseFromString(slideXml, "application/xml");
-    const textNodes    = slideDoc.getElementsByTagName("a:t");
+    const slideNumber = match[1];
+    const slideXml    = await zip.file(fileName).async("string");
+    const parser      = new DOMParser();
+    const xmlDoc      = parser.parseFromString(slideXml, "application/xml");
+    const textNodes   = xmlDoc.getElementsByTagName("a:t");
 
-    for (let runIndex = 0; runIndex < textNodes.length; runIndex++) {
-      const node    = textNodes[runIndex];
-      const rawText = node.textContent || "";
-      const trimmed = rawText.trim();
+    for (let i = 0; i < textNodes.length; i++) {
+      const node       = textNodes[i];
+      const rawText    = node.textContent || "";
+      const trimmed    = rawText.trim();
 
-      // Skip any <a:t> that's inside an <a:fld type="slidenum">
-      let ancestor = node.parentNode;
-      let isSlideNum = false;
-      while (ancestor) {
-        // use localName so we ignore the "a:" prefix
-        if (ancestor.localName === "fld" &&
-            ancestor.getAttribute("type") === "slidenum") {
-          isSlideNum = true;
-          break;
-        }
-        ancestor = ancestor.parentNode;
-      }
-      if (isSlideNum) {
+      // skip any run inside a <a:fld type="slidenum">
+      const parent = node.parentNode;
+      if (
+        parent &&
+        parent.localName === "fld" &&
+        parent.getAttribute("type") === "slidenum"
+      ) {
         continue;
       }
 
-      // also skip runs that match the bare slide number
-      if (trimmed === slideNumber) {
-        continue;
-      }
-
-      const runId = `S${slideNumber}_T${runIndex + 1}`;
-      textRuns.push({ slide: slideNumber, id: runId, content: rawText });
+      const uniqueId = `S${slideNumber}_T${i + 1}`;
+      textElements.push({ slide: slideNumber, id: uniqueId, text: rawText });
     }
   }
 
-  return textRuns;
+  return textElements;
 }
 
 function aggregateDocxMapping(mapping) {
