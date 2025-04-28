@@ -76,6 +76,73 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
   }
   return textElements;
 }
+async function extractPptxText(arrayBuffer) {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  let allParagraphs = [];
+
+  for (const fileName of Object.keys(zip.files)) {
+    const match = slideRegex.exec(fileName);
+    if (!match) continue;
+
+    const slideNumber = match[1];
+    const slideXml    = await zip.file(fileName).async("string");
+    const parser      = new DOMParser();
+    const xmlDoc      = parser.parseFromString(slideXml, "application/xml");
+
+    // grab each paragraph on this slide
+    const paraNodes = xmlDoc.getElementsByTagName("a:p");
+    for (let i = 0; i < paraNodes.length; i++) {
+      const paraNode     = paraNodes[i];
+      let paragraphText  = "";
+
+      // for each run (<a:t>) in the paragraph…
+      const textNodes = paraNode.getElementsByTagName("a:t");
+      for (let j = 0; j < textNodes.length; j++) {
+        const node     = textNodes[j];
+        const rawText  = node.textContent || "";
+        const trimmed  = rawText.trim();
+
+        // 1) skip literal slide-number runs ("3" on slide 3)
+        if (trimmed === slideNumber) {
+          continue;
+        }
+
+        // 2) skip runs inside <a:fld type="slidenum">
+        let ancestor = node.parentNode;
+        let inSlideNumField = false;
+        while (ancestor) {
+          if (
+            ancestor.localName === "fld" &&
+            ancestor.getAttribute("type") === "slidenum"
+          ) {
+            inSlideNumField = true;
+            break;
+          }
+          ancestor = ancestor.parentNode;
+        }
+        if (inSlideNumField) {
+          continue;
+        }
+
+        // otherwise include this run in the paragraph
+        paragraphText += rawText;
+      }
+
+      // only keep non-empty paragraphs
+      if (paragraphText.trim().length > 0) {
+        allParagraphs.push(paragraphText.trim());
+      }
+    }
+  }
+
+  // join slides with blank lines
+  return allParagraphs.join("\n\n");
+}
+
+
+
+// Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
   const zip     = await JSZip.loadAsync(arrayBuffer);
   const slideRe = /^ppt\/slides\/slide(\d+)\.xml$/i;
@@ -110,50 +177,6 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
 
   return out;
 }
-
-// Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
-async function extractPptxTextXmlWithId(arrayBuffer) {
-  const zip          = await JSZip.loadAsync(arrayBuffer);
-  const slideRe      = /^ppt\/slides\/slide(\d+)\.xml$/i;
-  const textElements = [];
-
-  for (const fileName of Object.keys(zip.files)) {
-    const m = slideRe.exec(fileName);
-    if (!m) continue;
-    const slideNumber = m[1];
-    const slideXml    = await zip.file(fileName).async("string");
-    const xmlDoc      = new DOMParser().parseFromString(slideXml, "application/xml");
-
-    // Find every <a:r> that actually has a <a:t> child
-    const runNodes = Array.from(xmlDoc.getElementsByTagName("a:r"))
-      .filter(r => r.getElementsByTagName("a:t").length > 0);
-
-    //  Enumerate exactly as your converter will:
-    runNodes.forEach((runNode, idx) => {
-      const tNode   = runNode.getElementsByTagName("a:t")[0];
-      const rawText = tNode.textContent || "";
-      const trimmed = rawText.trim();
-
-      // Skip anything inside <a:fld type="slidenum">
-      let anc = runNode.parentNode, skip = false;
-      while (anc) {
-        if (anc.localName === "fld" && anc.getAttribute("type") === "slidenum") {
-          skip = true;
-          break;
-        }
-        anc = anc.parentNode;
-      }
-      if (skip) return;
-
-      // Build IDs using idx+1 so they match your converter’s runIndex
-      const uniqueId = `S${slideNumber}_T${idx + 1}`;
-      textElements.push({ slide: slideNumber, id: uniqueId, text: rawText });
-    });
-  }
-
-  return textElements;
-}
-
 
 function aggregateDocxMapping(mapping) {
   const aggregated = {};
@@ -957,8 +980,6 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   );
 }
 
-
-  
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
