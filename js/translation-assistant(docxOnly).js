@@ -142,47 +142,55 @@ async function extractPptxText(arrayBuffer) {
 
 
 
-// Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
-async function extractPptxTextXmlWithId(arrayBuffer) {
-  // …everything exactly as before…
-}
-
-// alias for backward compatibility (so any old calls to extractPptxText still work)
+// if you already have `async function extractPptxText(file) { … }` 
+// you can just alias it once at top of your file:
 const extractPptxText = extractPptxTextXmlWithId;
 
 
-function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
-  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
-  let runIndex = 1;
+// now change the signature here to “file” (or whatever you call it):
+async function extractPptxTextXmlWithId(fileOrArrayBuffer) {
+  // normalize to ArrayBuffer
+  const arrayBuffer = fileOrArrayBuffer instanceof ArrayBuffer
+    ? fileOrArrayBuffer
+    : // assume File/Blob
+      await fileOrArrayBuffer.arrayBuffer();
 
-  return originalXml.replace(
-    /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
-    (match, prefix, origText, suffix) => {
-      const key      = `S${slideNumber}_T${runIndex++}`;
-      const origTrim = origText.trim();
-      const candRaw  = frenchMap[key] ?? "";
-      const candidate= candRaw.trim();
+  const zip       = await JSZip.loadAsync(arrayBuffer);
+  const slideRe   = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  const textElems = [];
 
-      let newText = "";
-      // 1) if we have a real translation & it’s different, use it
-      if (candidate && candidate !== origTrim) {
-        newText = candidate;
+  for (const fileName of Object.keys(zip.files)) {
+    const m = slideRe.exec(fileName);
+    if (!m) continue;
+    const slideNumber = m[1];
+    const slideXml    = await zip.file(fileName).async("string");
+    const xmlDoc      = new DOMParser()
+      .parseFromString(slideXml, "application/xml");
+
+    const runNodes = Array.from(xmlDoc.getElementsByTagName("a:r"))
+      .filter(r => r.getElementsByTagName("a:t").length > 0);
+
+    runNodes.forEach((runNode, idx) => {
+      const tNode   = runNode.getElementsByTagName("a:t")[0];
+      const rawText = tNode.textContent || "";
+      const trimmed = rawText.trim();
+
+      // skip slide-number fields
+      let anc = runNode.parentNode, skip = false;
+      while (anc) {
+        if (anc.localName === "fld" && anc.getAttribute("type") === "slidenum") {
+          skip = true; break;
+        }
+        anc = anc.parentNode;
       }
-      // 2) otherwise—**if** this run is purely numeric (digits, dots or commas)—keep the original number
-      else if (/^[0-9.,\s]+$/.test(origTrim)) {
-        newText = origTrim;
-      }
-      // 3) else leave it blank (your previous behavior of not re-injecting unchanged text)
+      if (skip) return;
 
-      // if it was bold, pad with spaces again
-      if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
-        if (!newText.startsWith(" ")) newText = " " + newText;
-        if (!newText.endsWith(" "))   newText = newText + " ";
-      }
+      const uniqueId = `S${slideNumber}_T${idx+1}`;
+      textElems.push({ slide:slideNumber, id:uniqueId, text:rawText });
+    });
+  }
 
-      return prefix + escapeXml(newText) + suffix;
-    }
-  );
+  return textElems;
 }
 
 function aggregateDocxMapping(mapping) {
