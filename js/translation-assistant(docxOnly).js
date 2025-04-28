@@ -983,70 +983,93 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
+  const parser   = new DOMParser();
+  const xmlDoc   = parser.parseFromString(originalXml, "application/xml");
 
-  // Parse the slide XML
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(originalXml, "application/xml");
-
-  // 1) TABLE-LEVEL REPLACEMENT
+  // 1) TABLE‐LEVEL REPLACEMENT
   const tbl = xmlDoc.getElementsByTagName("a:tbl")[0];
   if (tbl) {
     const rows = Array.from(tbl.getElementsByTagName("a:tr"));
     rows.forEach((rowNode, rowIdx) => {
       const cells = Array.from(rowNode.getElementsByTagName("a:tc"));
       cells.forEach((cellNode, colIdx) => {
-        const cellId = `S${slideNumber}_TC${rowIdx+1}_${colIdx+1}`;
+        // Skip any cell that is purely a slide‐number field
+        if (cellNode.querySelector('a\\:fld[type="slidenum"]')) return;
+
+        // Build the ID for this cell
+        const cellId = `S${slideNumber}_TC${rowIdx + 1}_${colIdx + 1}`;
         const newText = (frenchMap[cellId] || "").trim();
 
-        // Replace every <a:t> in this cell with newText (or empty if missing)
+        // Replace all <a:t> in this cell with newText
         const textNodes = Array.from(cellNode.getElementsByTagName("a:t"));
         if (textNodes.length) {
-          // put newText into the first <a:t>
+          // put new text in the first run
           textNodes[0].textContent = newText;
-          // remove any extra runs so we don't keep stale fragments
+          // drop any extra runs (to avoid leftover fragments)
           for (let i = 1; i < textNodes.length; i++) {
-            const r = textNodes[i].parentNode;        // <a:r>
-            r.parentNode.removeChild(r);
+            const run = textNodes[i].parentNode; // the <a:r>
+            run.parentNode.removeChild(run);
           }
         }
       });
     });
-
-    // serialize back to string
-    const serializer = new XMLSerializer();
-    return serializer.serializeToString(xmlDoc);
   }
 
-  // 2) RUN-BY-RUN FALLBACK (your existing logic)
+  // 2) RUN‐BY‐RUN REPLACEMENT (titles, bullets, captions, etc.)
   let runIndex = 1;
-  return originalXml.replace(
-    /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
-    (match, prefix, origText, suffix) => {
-      const key       = `S${slideNumber}_T${runIndex++}`;
-      const origTrim  = origText.trim();
-      const candidate = frenchMap[key]?.trim() || "";
+  const runNodes = Array.from(xmlDoc.getElementsByTagName("a:r"))
+    .filter(r => r.getElementsByTagName("a:t").length > 0);
 
-      // only inject if there's a real French translation
-      let newText = (candidate && candidate !== origTrim)
-        ? candidate
-        : "";
+  runNodes.forEach(runNode => {
+    const tNode      = runNode.getElementsByTagName("a:t")[0];
+    const origText   = tNode.textContent || "";
+    const trimmed    = origText.trim();
 
-      // preserve a single space if you need structural fallback
-      if (newText === "") {
-        newText = "";
-      }
-
-      // pad bold runs
-      if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
-        if (!newText.startsWith(" ")) newText = " " + newText;
-        if (!newText.endsWith(" "))   newText = newText + " ";
-      }
-
-      return prefix + escapeXml(newText) + suffix;
+    // Skip literal slide-number runs ("8" on slide 8, etc.)
+    if (trimmed === slideNumber) {
+      tNode.textContent = "";
+      runIndex++;
+      return;
     }
-  );
-}
 
+    // Skip any run inside a <a:fld type="slidenum">
+    let anc = runNode.parentNode,
+        skip = false;
+    while (anc) {
+      if (anc.localName === "fld" && anc.getAttribute("type") === "slidenum") {
+        skip = true;
+        break;
+      }
+      anc = anc.parentNode;
+    }
+    if (skip) {
+      runIndex++;
+      return;
+    }
+
+    // Lookup the French translation for this run
+    const key       = `S${slideNumber}_T${runIndex++}`;
+    const candidate = (frenchMap[key] || "").trim();
+    let newText     = "";
+
+    if (candidate && candidate !== trimmed) {
+      newText = candidate;
+    }
+
+    // If this run is bold, pad with spaces
+    const rPr    = runNode.getElementsByTagName("a:rPr")[0];
+    const isBold = rPr && rPr.getAttribute("b") === "1";
+    if (newText && isBold) {
+      if (!newText.startsWith(" ")) newText = " " + newText;
+      if (!newText.endsWith(" "))   newText = newText + " ";
+    }
+
+    tNode.textContent = newText;
+  });
+
+  // 3) Serialize the modified XML back to string
+  return new XMLSerializer().serializeToString(xmlDoc);
+}
 
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
