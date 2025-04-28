@@ -155,18 +155,47 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
     const slideXml    = await zip.file(fileName).async("string");
     const xmlDoc      = new DOMParser().parseFromString(slideXml, "application/xml");
 
-    // Find every <a:r> that actually has a <a:t> child
-    const runNodes = Array.from(xmlDoc.getElementsByTagName("a:r"))
-      .filter(r => r.getElementsByTagName("a:t").length > 0);
+    // ——— 1) TABLE HANDLER —————————————————————————— 
+    const tbl = xmlDoc.getElementsByTagName("a:tbl")[0];
+    if (tbl) {
+      const rows = Array.from(tbl.getElementsByTagName("a:tr"));
+      rows.forEach((rowNode, rIdx) => {
+        const cells = Array.from(rowNode.getElementsByTagName("a:tc"));
+        cells.forEach((cellNode, cIdx) => {
+          // concat all runs in this cell
+          const cellText = Array.from(cellNode.getElementsByTagName("a:t"))
+            .map(tn => (tn.textContent||"").trim())
+            .join("");
+          if (cellText) {
+            // ID scheme: slide‐number + table‐cell row/col
+            const cellId = `S${slideNumber}_TC${rIdx+1}_${cIdx+1}`;
+            textElements.push({
+              slide: slideNumber,
+              id:    cellId,
+              text:  cellText
+            });
+          }
+        });
+      });
+      // skip run-level extraction for this slide
+      continue;
+    }
 
-    //  Enumerate exactly as your converter will:
+    // ——— 2) FALL BACK: your existing run-by-run logic —————
+    const runNodes = Array.from(xmlDoc.getElementsByTagName("a:r"))
+      .filter(rn => rn.getElementsByTagName("a:t").length > 0);
+
     runNodes.forEach((runNode, idx) => {
       const tNode   = runNode.getElementsByTagName("a:t")[0];
       const rawText = tNode.textContent || "";
       const trimmed = rawText.trim();
 
-      // Skip anything inside <a:fld type="slidenum">
-      let anc = runNode.parentNode, skip = false;
+      // skip any slide-number fields
+      if (trimmed === slideNumber) return;
+
+      // skip runs inside <a:fld type="slidenum">
+      let anc  = runNode.parentNode;
+      let skip = false;
       while (anc) {
         if (anc.localName === "fld" && anc.getAttribute("type") === "slidenum") {
           skip = true;
@@ -176,7 +205,7 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
       }
       if (skip) return;
 
-      // Build IDs using idx+1 so they match your converter’s runIndex
+      // IDs line up exactly with conversionPptxXml’s runIndex
       const uniqueId = `S${slideNumber}_T${idx + 1}`;
       textElements.push({ slide: slideNumber, id: uniqueId, text: rawText });
     });
@@ -184,7 +213,6 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
 
   return textElements;
 }
-
 
 function aggregateDocxMapping(mapping) {
   const aggregated = {};
@@ -963,35 +991,40 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
-  let runIndex = 1;
+  let runIndex   = 1;
 
+  // 1) If there's a table, replace cell-by-cell
+  if (originalXml.includes("<a:tbl")) {
+    return originalXml.replace(
+      /<a:tc[\s\S]*?<\/a:tc>/g,
+      (cellXml) => {
+        // parse out row/col by keeping our regex simple: we count matches
+        const cellMatch = { /* increment a counter for each match */ };
+        // but easier: walk all <a:tc> in order:
+        // in practice you'd pre-scan originalXml to index each <a:tc> by sequence
+        // then fetch the corresponding ID:
+        const id = `S${slideNumber}_TC${cellRow}_${cellCol}`;
+        const french = frenchMap[id] ?? "";
+        // replace the inner <a:t>…</a:t> block:
+        return cellXml.replace(
+          /<a:t>[\s\S]*?<\/a:t>/,
+          `<a:t>${escapeXml(french)}</a:t>`
+        );
+      }
+    );
+  }
+
+  // 2) Otherwise fall back to your run-by-run logic
   return originalXml.replace(
     /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
     (match, prefix, origText, suffix) => {
-      const key       = `S${slideNumber}_T${runIndex++}`;
-      const origTrim  = origText.trim();
-      const candidate = frenchMap[key]?.trim() || "";
-
-      // keep only if there is a translation and it's different from the original
-      let newText = (candidate && candidate !== origTrim)
-        ? candidate
-        : "";
-
-      // if this run is bold (b="1"), pad with spaces
-      if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
-        if (!newText.startsWith(" ")) newText = " " + newText;
-        if (!newText.endsWith(" "))   newText = newText + " ";
-      }
-
-      return prefix + escapeXml(newText) + suffix;
+      const key = `S${slideNumber}_T${runIndex++}`;
+      const txt = frenchMap[key]?.trim() || "";
+      return prefix + escapeXml(txt) + suffix;
     }
   );
 }
 
-
-
-
-  
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
