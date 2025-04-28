@@ -986,28 +986,25 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const parser   = new DOMParser();
   const xmlDoc   = parser.parseFromString(originalXml, "application/xml");
 
-  // 1) TABLE‐LEVEL REPLACEMENT
+  // ——— 1) TABLE‐LEVEL REPLACEMENT —————————————————————
   const tbl = xmlDoc.getElementsByTagName("a:tbl")[0];
   if (tbl) {
     const rows = Array.from(tbl.getElementsByTagName("a:tr"));
     rows.forEach((rowNode, rowIdx) => {
       const cells = Array.from(rowNode.getElementsByTagName("a:tc"));
       cells.forEach((cellNode, colIdx) => {
-        // Skip any cell that is purely a slide‐number field
+        // Skip any slide‐number fields in a table
         if (cellNode.querySelector('a\\:fld[type="slidenum"]')) return;
 
-        // Build the ID for this cell
-        const cellId = `S${slideNumber}_TC${rowIdx + 1}_${colIdx + 1}`;
+        const cellId  = `S${slideNumber}_TC${rowIdx+1}_${colIdx+1}`;
         const newText = (frenchMap[cellId] || "").trim();
 
-        // Replace all <a:t> in this cell with newText
-        const textNodes = Array.from(cellNode.getElementsByTagName("a:t"));
-        if (textNodes.length) {
-          // put new text in the first run
-          textNodes[0].textContent = newText;
-          // drop any extra runs (to avoid leftover fragments)
-          for (let i = 1; i < textNodes.length; i++) {
-            const run = textNodes[i].parentNode; // the <a:r>
+        const textRuns = Array.from(cellNode.getElementsByTagName("a:t"));
+        if (textRuns.length) {
+          textRuns[0].textContent = newText;
+          // remove leftover runs so you don't get fragments
+          for (let i = 1; i < textRuns.length; i++) {
+            const run = textRuns[i].parentNode; // <a:r>
             run.parentNode.removeChild(run);
           }
         }
@@ -1015,30 +1012,28 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
     });
   }
 
-  // 2) RUN‐BY‐RUN REPLACEMENT (titles, bullets, captions, etc.)
+  // ——— 2) RUN‐BY‐RUN REPLACEMENT ————————————————————
   let runIndex = 1;
   const runNodes = Array.from(xmlDoc.getElementsByTagName("a:r"))
     .filter(r => r.getElementsByTagName("a:t").length > 0);
 
   runNodes.forEach(runNode => {
-    const tNode      = runNode.getElementsByTagName("a:t")[0];
-    const origText   = tNode.textContent || "";
-    const trimmed    = origText.trim();
+    const tNode = runNode.getElementsByTagName("a:t")[0];
+    const orig  = tNode.textContent || "";
+    const trimmed = orig.trim();
 
-    // Skip literal slide-number runs ("8" on slide 8, etc.)
+    // A) skip literal slide‐number runs (“8” on slide 8)
     if (trimmed === slideNumber) {
       tNode.textContent = "";
       runIndex++;
       return;
     }
 
-    // Skip any run inside a <a:fld type="slidenum">
-    let anc = runNode.parentNode,
-        skip = false;
+    // B) skip runs inside <a:fld type="slidenum">
+    let anc = runNode.parentNode, skip = false;
     while (anc) {
-      if (anc.localName === "fld" && anc.getAttribute("type") === "slidenum") {
-        skip = true;
-        break;
+      if (anc.localName === "fld" && anc.getAttribute("type")==="slidenum") {
+        skip = true; break;
       }
       anc = anc.parentNode;
     }
@@ -1047,7 +1042,13 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       return;
     }
 
-    // Lookup the French translation for this run
+    // C) skip *table* runs entirely (so we don’t clear your newly‐translated cells)
+    if (runNode.closest("a\\:tbl")) {
+      runIndex++;
+      return;
+    }
+
+    // D) normal run‐replacement
     const key       = `S${slideNumber}_T${runIndex++}`;
     const candidate = (frenchMap[key] || "").trim();
     let newText     = "";
@@ -1056,7 +1057,7 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       newText = candidate;
     }
 
-    // If this run is bold, pad with spaces
+    // E) pad bold runs
     const rPr    = runNode.getElementsByTagName("a:rPr")[0];
     const isBold = rPr && rPr.getAttribute("b") === "1";
     if (newText && isBold) {
@@ -1067,9 +1068,10 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
     tNode.textContent = newText;
   });
 
-  // 3) Serialize the modified XML back to string
+  // ——— 3) Serialize back to XML ——————————————————————
   return new XMLSerializer().serializeToString(xmlDoc);
 }
+
 
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
