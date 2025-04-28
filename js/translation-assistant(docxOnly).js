@@ -983,39 +983,70 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
-  let runIndex   = 1;
 
-  // 1) If there's a table, replace cell-by-cell
-  if (originalXml.includes("<a:tbl")) {
-    return originalXml.replace(
-      /<a:tc[\s\S]*?<\/a:tc>/g,
-      (cellXml) => {
-        // parse out row/col by keeping our regex simple: we count matches
-        const cellMatch = { /* increment a counter for each match */ };
-        // but easier: walk all <a:tc> in order:
-        // in practice you'd pre-scan originalXml to index each <a:tc> by sequence
-        // then fetch the corresponding ID:
-        const id = `S${slideNumber}_TC${cellRow}_${cellCol}`;
-        const french = frenchMap[id] ?? "";
-        // replace the inner <a:t>…</a:t> block:
-        return cellXml.replace(
-          /<a:t>[\s\S]*?<\/a:t>/,
-          `<a:t>${escapeXml(french)}</a:t>`
-        );
-      }
-    );
+  // Parse the slide XML
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(originalXml, "application/xml");
+
+  // 1) TABLE-LEVEL REPLACEMENT
+  const tbl = xmlDoc.getElementsByTagName("a:tbl")[0];
+  if (tbl) {
+    const rows = Array.from(tbl.getElementsByTagName("a:tr"));
+    rows.forEach((rowNode, rowIdx) => {
+      const cells = Array.from(rowNode.getElementsByTagName("a:tc"));
+      cells.forEach((cellNode, colIdx) => {
+        const cellId = `S${slideNumber}_TC${rowIdx+1}_${colIdx+1}`;
+        const newText = (frenchMap[cellId] || "").trim();
+
+        // Replace every <a:t> in this cell with newText (or empty if missing)
+        const textNodes = Array.from(cellNode.getElementsByTagName("a:t"));
+        if (textNodes.length) {
+          // put newText into the first <a:t>
+          textNodes[0].textContent = newText;
+          // remove any extra runs so we don't keep stale fragments
+          for (let i = 1; i < textNodes.length; i++) {
+            const r = textNodes[i].parentNode;        // <a:r>
+            r.parentNode.removeChild(r);
+          }
+        }
+      });
+    });
+
+    // serialize back to string
+    const serializer = new XMLSerializer();
+    return serializer.serializeToString(xmlDoc);
   }
 
-  // 2) Otherwise fall back to your run-by-run logic
+  // 2) RUN-BY-RUN FALLBACK (your existing logic)
+  let runIndex = 1;
   return originalXml.replace(
     /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
     (match, prefix, origText, suffix) => {
-      const key = `S${slideNumber}_T${runIndex++}`;
-      const txt = frenchMap[key]?.trim() || "";
-      return prefix + escapeXml(txt) + suffix;
+      const key       = `S${slideNumber}_T${runIndex++}`;
+      const origTrim  = origText.trim();
+      const candidate = frenchMap[key]?.trim() || "";
+
+      // only inject if there's a real French translation
+      let newText = (candidate && candidate !== origTrim)
+        ? candidate
+        : "";
+
+      // preserve a single space if you need structural fallback
+      if (newText === "") {
+        newText = "";
+      }
+
+      // pad bold runs
+      if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
+        if (!newText.startsWith(" ")) newText = " " + newText;
+        if (!newText.endsWith(" "))   newText = newText + " ";
+      }
+
+      return prefix + escapeXml(newText) + suffix;
     }
   );
 }
+
 
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
