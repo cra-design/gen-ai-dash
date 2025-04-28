@@ -8,7 +8,7 @@ function extractXmlFromFile(file) {
     handleFileExtractionToXML(file, resolve, reject);
   });
 } 
-
+// Function to format raw translated output into structured HTML.
 function formatTranslatedOutput(rawText) {
   if (!rawText) return "";
   rawText = rawText.trim();
@@ -155,47 +155,18 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
     const slideXml    = await zip.file(fileName).async("string");
     const xmlDoc      = new DOMParser().parseFromString(slideXml, "application/xml");
 
-    // ——— 1) TABLE HANDLER —————————————————————————— 
-    const tbl = xmlDoc.getElementsByTagName("a:tbl")[0];
-    if (tbl) {
-      const rows = Array.from(tbl.getElementsByTagName("a:tr"));
-      rows.forEach((rowNode, rIdx) => {
-        const cells = Array.from(rowNode.getElementsByTagName("a:tc"));
-        cells.forEach((cellNode, cIdx) => {
-          // concat all runs in this cell
-          const cellText = Array.from(cellNode.getElementsByTagName("a:t"))
-            .map(tn => (tn.textContent||"").trim())
-            .join("");
-          if (cellText) {
-            // ID scheme: slide‐number + table‐cell row/col
-            const cellId = `S${slideNumber}_TC${rIdx+1}_${cIdx+1}`;
-            textElements.push({
-              slide: slideNumber,
-              id:    cellId,
-              text:  cellText
-            });
-          }
-        });
-      });
-      // skip run-level extraction for this slide
-      continue;
-    }
-
-    // ——— 2) FALL BACK: your existing run-by-run logic —————
+    // Find every <a:r> that actually has a <a:t> child
     const runNodes = Array.from(xmlDoc.getElementsByTagName("a:r"))
-      .filter(rn => rn.getElementsByTagName("a:t").length > 0);
+      .filter(r => r.getElementsByTagName("a:t").length > 0);
 
+    //  Enumerate exactly as your converter will:
     runNodes.forEach((runNode, idx) => {
       const tNode   = runNode.getElementsByTagName("a:t")[0];
       const rawText = tNode.textContent || "";
       const trimmed = rawText.trim();
 
-      // skip any slide-number fields
-      if (trimmed === slideNumber) return;
-
-      // skip runs inside <a:fld type="slidenum">
-      let anc  = runNode.parentNode;
-      let skip = false;
+      // Skip anything inside <a:fld type="slidenum">
+      let anc = runNode.parentNode, skip = false;
       while (anc) {
         if (anc.localName === "fld" && anc.getAttribute("type") === "slidenum") {
           skip = true;
@@ -205,7 +176,7 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
       }
       if (skip) return;
 
-      // IDs line up exactly with conversionPptxXml’s runIndex
+      // Build IDs using idx+1 so they match your converter’s runIndex
       const uniqueId = `S${slideNumber}_T${idx + 1}`;
       textElements.push({ slide: slideNumber, id: uniqueId, text: rawText });
     });
@@ -213,6 +184,7 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
 
   return textElements;
 }
+
 
 function aggregateDocxMapping(mapping) {
   const aggregated = {};
@@ -280,41 +252,41 @@ $(document).ready(function() {
 
 
   // Handle file input change for both source and second file uploads.
-$(document).on("change", "input", async function (event) {
+ $(document).on("change", "input", async function (event) {
   if (event.target.id === "source-file" || event.target.id === "second-file") {
-    const language = event.target.id === "source-file" ? "source" : "second";
+    let language = event.target.id === "source-file" ? "source" : "second";
     $(`#${language}-doc-detecting`).removeClass("hidden");
     $(`#${language}-multiple-msg, #${language}-doc-error`).addClass("hidden");
     $(`#${language}-language-heading`).removeClass("hidden");
     $(`#${language}-language-doc`).addClass("hidden");
 
-    const fileList = event.target.files;
+    var fileList = event.target.files;
     if (!fileList || fileList.length === 0) return;
     if (fileList.length > 1) {
       $(`#${language}-multiple-msg`).removeClass("hidden");
       $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
       return;
     }
-
-    const uploadedFile = fileList[0];
-    const fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
-    const validExtensions = ["docx", "xlsx", "pptx"];
-    const validMimeTypes = [
+    var uploadedFile = fileList[0];
+    var fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
+    var validExtensions = ["docx", "xlsx", "pptx"];
+    var validMimeTypes = [
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/vnd.openxmlformats-officedocument.presentationml.presentation"
     ];
+    
     if (!validExtensions.includes(fileExtension) || !validMimeTypes.includes(uploadedFile.type)) {
       $(`#${language}-doc-error`).removeClass("hidden");
       $(`#${language}-doc-detecting`).addClass("hidden");
       $(`#${language}-language-heading`).removeClass("hidden");
       return;
     }
-
+    
     try {
       let textContent;
       if (fileExtension === "docx" || fileExtension === "xlsx") {
-        const arrayBuffer = await uploadedFile.arrayBuffer();
+        let arrayBuffer = await uploadedFile.arrayBuffer();
         const zip = await JSZip.loadAsync(arrayBuffer);
         const docXmlStr = await zip.file("word/document.xml").async("string");
         const parser = new DOMParser();
@@ -325,24 +297,12 @@ $(document).on("change", "input", async function (event) {
           .map(node => `<p>${node.textContent}</p>`)
           .join('');
       } else if (fileExtension === "pptx") {
-        // remember for download
-        if (event.target.id === "source-file") {
-          englishFile = uploadedFile;
-        }
-
-        const arrayBuffer = await uploadedFile.arrayBuffer();
-        const textElements = await extractPptxTextXmlWithId(arrayBuffer);
-        const pptxHtml = textElements
+        let arrayBuffer = await uploadedFile.arrayBuffer();
+        let textElements = await extractPptxTextXmlWithId(arrayBuffer);
+        let pptxHtml = textElements
           .map(item => `<p id="${item.id}">${item.text}</p>`)
           .join('');
-
         textContent = pptxHtml;
-
-        // store for AI prompt & display if this is the source
-        if (event.target.id === "source-file") {
-          englishHtmlStored = pptxHtml;
-          $("#translation-A").html(pptxHtml);
-        }
       } else {
         throw new Error("Unsupported file type");
       }
@@ -358,30 +318,48 @@ $(document).on("change", "input", async function (event) {
       $(`#${language}-doc-detecting`).addClass("hidden");
       $(`#${language}-language-doc`).val(detectedLanguage).removeClass("hidden");
 
-      // For DOCX, also render the preview if source-file
-      if (event.target.id === "source-file" && (fileExtension === "docx")) {
-        // Re-extract mapping & display
-        const arrayBuffer = await uploadedFile.arrayBuffer();
-        const rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
-        const aggregatedMapping = aggregateDocxMapping(rawMapping);
-        const aggregatedHtml = aggregatedMapping
-          .map(item => `<p id="${item.id}">${item.text}</p>`)
-          .join('');
-        englishHtmlStored = aggregatedHtml;
-        $("#translation-A").html(aggregatedHtml);
-      }
-      // For second-file (French), just store it
-      if (event.target.id === "second-file") {
+      // Process the source file for English content if it's "source-file"
+      if (event.target.id === "source-file") {
+        try {
+          englishFile = uploadedFile;
+          if (fileExtension === 'docx') {
+            let arrayBuffer = await uploadedFile.arrayBuffer();
+
+            // Now extract raw mapping with IDs and aggregate
+            let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
+            let aggregatedMapping = aggregateDocxMapping(rawMapping);
+
+            // Rebuild the English HTML with the aggregated mapping
+            let aggregatedHtml = aggregatedMapping
+              .map(item => `<p id="${item.id}">${item.text}</p>`)
+              .join('');
+            // Store for AI prompt and display
+            englishHtmlStored = aggregatedHtml;
+            $("#translation-A").html(aggregatedHtml);
+          }  else if (fileExtension === 'pptx'){
+                let arrayBuffer = await uploadedFile.arrayBuffer();
+                let textElements = await extractPptxTextXmlWithId(arrayBuffer); 
+                console.log("Extracted PPTX Text Elements:", textElements);
+                let pptxHtml = textElements
+                  .map(item => `<p id="${item.id}">${item.text}</p>`)
+                  .join('');
+                englishHtmlStored = pptxHtml;
+                $("#translation-A").html(pptxHtml);
+         }
+        } catch (err) {
+          console.error('Error processing source file:', err);
+          $(`#${language}-doc-error`).removeClass("hidden");
+          $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
+        }
+      } else {
+        // Handling for "second-file" (French file)
         frenchFile = uploadedFile;
       }
     } catch (err) {
       console.error('Error processing file change:', err);
-      $(`#${language}-doc-error`).removeClass("hidden");
-      $(`#${language}-doc-detecting, #${language}-language-heading`).addClass("hidden");
     }
   }
 });
-
 
 
 $(document).on("click", "#copy-all-btn", function(e) {
@@ -416,6 +394,8 @@ $(document).on("click", "#copy-all-btn", function(e) {
     $tempTextarea.remove();
   }
 });
+
+
 
   /***********************************************************************
    * Translate Button Flow:
@@ -849,7 +829,7 @@ $("#convert-translation-download-btn").click(async function () {
       
       generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
     } else if (fileExtension === 'pptx') {
-      const arrayBuffer = await englishFile.arrayBuffer();
+       const arrayBuffer = await englishFile.arrayBuffer();
       const zip = await JSZip.loadAsync(arrayBuffer);
       const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
 
@@ -983,40 +963,35 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
-  let runIndex   = 1;
+  let runIndex = 1;
 
-  // 1) If there's a table, replace cell-by-cell
-  if (originalXml.includes("<a:tbl")) {
-    return originalXml.replace(
-      /<a:tc[\s\S]*?<\/a:tc>/g,
-      (cellXml) => {
-        // parse out row/col by keeping our regex simple: we count matches
-        const cellMatch = { /* increment a counter for each match */ };
-        // but easier: walk all <a:tc> in order:
-        // in practice you'd pre-scan originalXml to index each <a:tc> by sequence
-        // then fetch the corresponding ID:
-        const id = `S${slideNumber}_TC${cellRow}_${cellCol}`;
-        const french = frenchMap[id] ?? "";
-        // replace the inner <a:t>…</a:t> block:
-        return cellXml.replace(
-          /<a:t>[\s\S]*?<\/a:t>/,
-          `<a:t>${escapeXml(french)}</a:t>`
-        );
-      }
-    );
-  }
-
-  // 2) Otherwise fall back to your run-by-run logic
   return originalXml.replace(
     /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
     (match, prefix, origText, suffix) => {
-      const key = `S${slideNumber}_T${runIndex++}`;
-      const txt = frenchMap[key]?.trim() || "";
-      return prefix + escapeXml(txt) + suffix;
+      const key       = `S${slideNumber}_T${runIndex++}`;
+      const origTrim  = origText.trim();
+      const candidate = frenchMap[key]?.trim() || "";
+
+      // keep only if there is a translation and it's different from the original
+      let newText = (candidate && candidate !== origTrim)
+        ? candidate
+        : "";
+
+      // if this run is bold (b="1"), pad with spaces
+      if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
+        if (!newText.startsWith(" ")) newText = " " + newText;
+        if (!newText.endsWith(" "))   newText = newText + " ";
+      }
+
+      return prefix + escapeXml(newText) + suffix;
     }
   );
 }
 
+
+
+
+  
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
