@@ -76,71 +76,40 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
   }
   return textElements;
 }
-async function extractPptxText(arrayBuffer) {
-  const zip = await JSZip.loadAsync(arrayBuffer);
-  const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
-  let allParagraphs = [];
+async function extractPptxTextXmlWithId(arrayBuffer) {
+  const zip     = await JSZip.loadAsync(arrayBuffer);
+  const slideRe = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  const out     = [];
 
   for (const fileName of Object.keys(zip.files)) {
-    const match = slideRegex.exec(fileName);
-    if (!match) continue;
+    const m = slideRe.exec(fileName);
+    if (!m) continue;
+    const slideNumber = m[1];
+    const xml         = await zip.file(fileName).async("string");
+    const doc         = new DOMParser().parseFromString(xml, "application/xml");
 
-    const slideNumber = match[1];
-    const slideXml    = await zip.file(fileName).async("string");
-    const parser      = new DOMParser();
-    const xmlDoc      = parser.parseFromString(slideXml, "application/xml");
+    // grab _all_ the <a:t> nodes in document order
+    const allT = Array.from(doc.getElementsByTagName("a:t"));
 
-    // grab each paragraph on this slide
-    const paraNodes = xmlDoc.getElementsByTagName("a:p");
-    for (let i = 0; i < paraNodes.length; i++) {
-      const paraNode     = paraNodes[i];
-      let paragraphText  = "";
-
-      // for each run (<a:t>) in the paragraph…
-      const textNodes = paraNode.getElementsByTagName("a:t");
-      for (let j = 0; j < textNodes.length; j++) {
-        const node     = textNodes[j];
-        const rawText  = node.textContent || "";
-        const trimmed  = rawText.trim();
-
-        // 1) skip literal slide-number runs ("3" on slide 3)
-        if (trimmed === slideNumber) {
-          continue;
+    allT.forEach((tNode, i) => {
+      // skip slide-number placeholders
+      let anc = tNode, skip = false;
+      while (anc) {
+        if (anc.localName === "fld" && anc.getAttribute("type")==="slidenum") {
+          skip = true; break;
         }
-
-        // 2) skip runs inside <a:fld type="slidenum">
-        let ancestor = node.parentNode;
-        let inSlideNumField = false;
-        while (ancestor) {
-          if (
-            ancestor.localName === "fld" &&
-            ancestor.getAttribute("type") === "slidenum"
-          ) {
-            inSlideNumField = true;
-            break;
-          }
-          ancestor = ancestor.parentNode;
-        }
-        if (inSlideNumField) {
-          continue;
-        }
-
-        // otherwise include this run in the paragraph
-        paragraphText += rawText;
+        anc = anc.parentNode;
       }
+      if (skip) return;
 
-      // only keep non-empty paragraphs
-      if (paragraphText.trim().length > 0) {
-        allParagraphs.push(paragraphText.trim());
-      }
-    }
+      const raw = tNode.textContent || "";
+      const id  = `S${slideNumber}_T${i+1}`;
+      out.push({ slide: slideNumber, id, text: raw.trim() });
+    });
   }
 
-  // join slides with blank lines
-  return allParagraphs.join("\n\n");
+  return out;
 }
-
-
 
 // Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
 async function extractPptxTextXmlWithId(arrayBuffer) {
@@ -963,22 +932,22 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
-  let runIndex = 1;
+  let runIndex    = 1;
 
   return originalXml.replace(
-    /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
+    /(<a:r[\s\S]*?>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
     (match, prefix, origText, suffix) => {
       const key       = `S${slideNumber}_T${runIndex++}`;
       const origTrim  = origText.trim();
-      const candidate = frenchMap[key]?.trim() || "";
+      const candidate = frenchMap[key];   // may be "" or e.g. "0,29"
 
-      // keep only if there is a translation and it's different from the original
-      let newText = (candidate && candidate !== origTrim)
+      // always re-insert it if it exists; fall back otherwise
+      let newText = (candidate !== undefined)
         ? candidate
-        : "";
+        : origTrim;
 
-      // if this run is bold (b="1"), pad with spaces
-      if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
+      // preserve your bold-padding logic
+      if (/ <a:rPr[^>]*\sb="1"/.test(prefix)) {
         if (!newText.startsWith(" ")) newText = " " + newText;
         if (!newText.endsWith(" "))   newText = newText + " ";
       }
@@ -987,8 +956,6 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
     }
   );
 }
-
-
 
 
   
