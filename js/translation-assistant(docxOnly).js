@@ -142,56 +142,49 @@ async function extractPptxText(arrayBuffer) {
 
 
 
-// if you already have `async function extractPptxText(file) { … }` 
-// you can just alias it once at top of your file:
-const extractPptxText = extractPptxTextXmlWithId;
-
-
-// now change the signature here to “file” (or whatever you call it):
-async function extractPptxTextXmlWithId(fileOrArrayBuffer) {
-  // normalize to ArrayBuffer
-  const arrayBuffer = fileOrArrayBuffer instanceof ArrayBuffer
-    ? fileOrArrayBuffer
-    : // assume File/Blob
-      await fileOrArrayBuffer.arrayBuffer();
-
-  const zip       = await JSZip.loadAsync(arrayBuffer);
-  const slideRe   = /^ppt\/slides\/slide(\d+)\.xml$/i;
-  const textElems = [];
+// Function to unzip PPTX, parse each slide's XML, and extract textual content with unique identifiers.
+async function extractPptxTextXmlWithId(arrayBuffer) {
+  const zip          = await JSZip.loadAsync(arrayBuffer);
+  const slideRe      = /^ppt\/slides\/slide(\d+)\.xml$/i;
+  const textElements = [];
 
   for (const fileName of Object.keys(zip.files)) {
     const m = slideRe.exec(fileName);
     if (!m) continue;
     const slideNumber = m[1];
     const slideXml    = await zip.file(fileName).async("string");
-    const xmlDoc      = new DOMParser()
-      .parseFromString(slideXml, "application/xml");
+    const xmlDoc      = new DOMParser().parseFromString(slideXml, "application/xml");
 
+    // Find every <a:r> that actually has a <a:t> child
     const runNodes = Array.from(xmlDoc.getElementsByTagName("a:r"))
       .filter(r => r.getElementsByTagName("a:t").length > 0);
 
+    //  Enumerate exactly as your converter will:
     runNodes.forEach((runNode, idx) => {
       const tNode   = runNode.getElementsByTagName("a:t")[0];
       const rawText = tNode.textContent || "";
       const trimmed = rawText.trim();
 
-      // skip slide-number fields
+      // Skip anything inside <a:fld type="slidenum">
       let anc = runNode.parentNode, skip = false;
       while (anc) {
         if (anc.localName === "fld" && anc.getAttribute("type") === "slidenum") {
-          skip = true; break;
+          skip = true;
+          break;
         }
         anc = anc.parentNode;
       }
       if (skip) return;
 
-      const uniqueId = `S${slideNumber}_T${idx+1}`;
-      textElems.push({ slide:slideNumber, id:uniqueId, text:rawText });
+      // Build IDs using idx+1 so they match your converter’s runIndex
+      const uniqueId = `S${slideNumber}_T${idx + 1}`;
+      textElements.push({ slide: slideNumber, id: uniqueId, text: rawText });
     });
   }
 
-  return textElems;
+  return textElements;
 }
+
 
 function aggregateDocxMapping(mapping) {
   const aggregated = {};
@@ -968,13 +961,6 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
 }
 
 // Helper function to convert French HTML back to PPTX XML:
-// keep your old extractor around for backwards compatibility
-async function extractPptxTextXmlWithId(arrayBuffer) {
-  // …your existing implementation…
-}
-const extractPptxText = extractPptxTextXmlWithId;
-
-
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
   let runIndex = 1;
@@ -982,23 +968,16 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   return originalXml.replace(
     /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
     (match, prefix, origText, suffix) => {
-      const key      = `S${slideNumber}_T${runIndex++}`;
-      const origTrim = origText.trim();
-      const candidate = (frenchMap[key] || "").trim();
+      const key       = `S${slideNumber}_T${runIndex++}`;
+      const origTrim  = origText.trim();
+      const candidate = frenchMap[key]?.trim() || "";
 
-      let newText = "";
+      // keep only if there is a translation and it's different from the original
+      let newText = (candidate && candidate !== origTrim)
+        ? candidate
+        : "";
 
-      // 1) if there's a real translation and it changed, use it
-      if (candidate && candidate !== origTrim) {
-        newText = candidate;
-      }
-      // 2) otherwise, if the original is just digits/dots/commas, keep it
-      else if (/^[0-9.,\s]+$/.test(origTrim)) {
-        newText = origTrim;
-      }
-      // 3) else leave blank (same as before)
-
-      // re-apply your bold padding logic
+      // if this run is bold (b="1"), pad with spaces
       if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
         if (!newText.startsWith(" ")) newText = " " + newText;
         if (!newText.endsWith(" "))   newText = newText + " ";
@@ -1008,7 +987,11 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
     }
   );
 }
- 
+
+
+
+
+  
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
