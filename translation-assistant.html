@@ -244,13 +244,13 @@ summary::-webkit-details-marker {
     <div class="card-body card-pad pt-2 h-100">
       <div id="source-upload" class="after-key-unhide hidden justify-content-between">
         <fieldset>
-          <legend>Provide the source content</legend>
-          <div class="inline-checkbox-container" style="margin-bottom: 15px;">
-<!--             <input type="radio" id="source-upload-text" name="source-upload-option" value="source-upload-text" checked>
-            <label for="source-upload-text">Provide text</label><br> -->
-            <input type="radio" id="source-upload-doc" name="source-upload-option" value="source-upload-doc" checked>
+          <legend>Upload source language file</legend>
+       <!--    <div class="inline-checkbox-container" style="margin-bottom: 15px;">
+           <input type="radio" id="source-upload-text" name="source-upload-option" value="source-upload-text" checked>
+            <label for="source-upload-text">Provide text</label><br>
+           <input type="radio" id="source-upload-doc" name="source-upload-option" value="source-upload-doc" checked>
             <label for="source-upload-doc">Provide file</label><br>
-          </div>
+          </div> -->
 
           <!-- Text Upload -->
           <div id="text-upload" class="translation-container hidden">
@@ -300,7 +300,7 @@ summary::-webkit-details-marker {
     <details>
       <summary class="preview-header">
         <div class="summary-content">
-          <span class="preview-label">Source text preview</span>
+          <span class="preview-label">Preview source language file</span>
           <button id="copy-all-btn" class="toolbar-button" title="Copy All">
             <i class="fa fa-copy"></i>
           </button>
@@ -319,7 +319,7 @@ summary::-webkit-details-marker {
                               <div class="card-body card-pad pt-2 h-100">
                                 <div class="justify-content-between">
                                   <fieldset>
-                                    <legend id="second-upload-legend">Provide your translation</legend>
+                                    <legend id="second-upload-legend">Paste target language content</legend>
 <!--                                     <div id="second-upload-radio" class="inline-checkbox-container" style="margin-bottom: 15px;">
                                       <input type="radio" id="second-upload-text" name="second-upload-option" value="second-upload-text">
                                       <label for="second-upload-text">Provide text</label><br>
@@ -349,7 +349,7 @@ summary::-webkit-details-marker {
                                         <select id="second-language-doc" class="hidden"><option value="english">English</option><option value="french">French</option></select>
                                       </div>
                                     </div>
-                                    <button id="second-upload-btn">Generate formatted translation document</button>
+                                    <button id="second-upload-btn">Format target language content</button>
                                   </fieldset>
                                 </div>
                               </div>
@@ -403,9 +403,9 @@ summary::-webkit-details-marker {
       <div class="justify-content-between">
       </div>
       <div id="translated-doc-download" class="justify-content-between hidden">
-        <h4>Translated document</h4>
-        <p>The reformatted translation document is ready for download!</p>
-        <button id="convert-translation-download-btn" style="margin-top: 20px">Download document</button>
+        <h4>Formatting complete</h4>
+        <p>The formatted target language file is ready for download.</p>
+        <button id="convert-translation-download-btn" style="margin-top: 20px">Download file</button>
       </div>
     </div>
   </div>
