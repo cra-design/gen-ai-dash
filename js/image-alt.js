@@ -380,8 +380,9 @@ $(document).ready(function() {
                              console.log(`Got page ${i}`); // Debug log
                             const viewport = page.getViewport({ scale: 2.0 }); // Increased scale
                              console.log(`Got viewport for page ${i}`); // Debug log
-                            const canvas = document.getElementById('pdf-canvas');
-                             if (!canvas) throw new Error("Canvas element #pdf-canvas not found");
+                            
+                            // Create a new canvas for each page instead of reusing the same one
+                            const canvas = document.createElement('canvas');
                             const context = canvas.getContext('2d');
                              if (!context) throw new Error("Could not get 2D context from canvas");
                             canvas.height = viewport.height;
