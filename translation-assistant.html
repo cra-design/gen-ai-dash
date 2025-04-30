@@ -277,7 +277,7 @@ summary::-webkit-details-marker {
               <p id="source-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
               <p id="source-doc-error" class="error-msg hidden">You must upload a .docx, .pptx or .xlsx file to proceed.</p>
             </div>
-            <div class="sidebyside-wrapper">
+           <!-- <div class="sidebyside-wrapper">
               <p id="source-language-heading" style="margin-top: 15px;">
                 Source language: <span id="source-doc-detecting" class="hidden">detecting...</span>
               </p>
@@ -285,7 +285,7 @@ summary::-webkit-details-marker {
                 <option value="english">English</option>
                 <option value="french">French</option>
               </select>
-            </div>
+            </div>-->
           </div>
 
           <!-- Upload Button -->
@@ -328,9 +328,9 @@ summary::-webkit-details-marker {
                                     </div> -->
                                     <div id="second-text-upload" class="translation-container">
                                       <div class="text-box-container">
-                                        <div class="text-box-header">
+                                       <!-- <div class="text-box-header">
                                           <label for="source-language">Source Language:</label><span id="second-language">French</span>
-                                        </div>
+                                        </div>-->
                                         <div class="translation-textarea-container">
                                           <textarea id="second-text" name="source-text" placeholder="Enter your translation" class="inputbox-translation"></textarea>
                                           <p id="second-text-error" class="error-msg hidden">Text cannot be empty.</p>
@@ -446,6 +446,6 @@ https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.min.js
 <script src="js/content-assistant.js"></script>
 <!--<script src="js/page-assistant.js"></script> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.21.0/docxtemplater.min.js"></script>
-<script src="js/translation-assistant.js"></script>
+<script src="js/translation-assistant(docxOnly).js"></script>
 </body>
 </html>
