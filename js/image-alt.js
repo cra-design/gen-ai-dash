@@ -275,6 +275,23 @@ $(document).ready(function() {
              setTimeout(() => button.text('Copy Text'), 2000);
         });
     });
+    
+    // Event delegation for toggle buttons (show more/less)
+    $('#results-display').on('click', '.toggle-button', function() {
+        const $button = $(this);
+        const $container = $button.closest('.collapsible-container');
+        const $preview = $container.find('.preview-text');
+        const $fullText = $container.find('.full-text');
+        
+        $preview.toggleClass('hidden');
+        $fullText.toggleClass('hidden');
+        
+        if ($fullText.hasClass('hidden')) {
+            $button.text('Show More');
+        } else {
+            $button.text('Show Less');
+        }
+    });
   
     // --- Processing Functions ---
   
@@ -695,23 +712,67 @@ $(document).ready(function() {
                      console.log(`Displaying results for ${fileName}${pageIdentifier}`); // Debug log
                     const $columns = $(`<div class="result-columns"></div>`);
                     const title = fileInfo.type === 'pdf' ? 'Description' : 'Alt Text';
-  
-                    $columns.append(`
-                        <div class="result-column">
-                            <strong>English ${title}:</strong>
-                            <p>${escapeHtml(itemData.english) || '[Not available]'}</p>
-                            ${itemData.english ? `<button class="copy-button" data-copytext="${escapeHtml(itemData.english)}">Copy Text</button>` : ''}
-                        </div>
-                    `);
-  
-                    $columns.append(`
-                        <div class="result-column">
-                            <strong>${title} Français:</strong>
-                            <p>${escapeHtml(itemData.french) || '[Not available]'}</p>
-                             ${itemData.french ? `<button class="copy-button" data-copytext="${escapeHtml(itemData.french)}">Copy Text</button>` : ''}
-                        </div>
-                    `);
-                     $pageContainer.append($columns);
+                    
+                    // Determine if we should use collapsible sections (for PDF descriptions that are long)
+                    const isPdfWithLongText = fileInfo.type === 'pdf' && itemData.english && itemData.english.length > 300;
+                    
+                    // English column with potential collapsible content
+                    if (isPdfWithLongText) {
+                        $columns.append(`
+                            <div class="result-column">
+                                <strong>English ${title}:</strong>
+                                <div class="collapsible-container">
+                                    <div class="preview-text">${escapeHtml(itemData.english.substring(0, 150))}...</div>
+                                    <button class="toggle-button">Show More</button>
+                                    <div class="full-text hidden formatted-description">${formatDescription(escapeHtml(itemData.english))}</div>
+                                </div>
+                                ${itemData.english ? `<button class="copy-button" data-copytext="${escapeHtml(itemData.english)}">Copy Text</button>` : ''}
+                            </div>
+                        `);
+                    } else {
+                        // For shorter content or non-PDF files
+                        const displayContent = fileInfo.type === 'pdf'
+                            ? formatDescription(escapeHtml(itemData.english) || '[Not available]')
+                            : `<p>${escapeHtml(itemData.english) || '[Not available]'}</p>`;
+                            
+                        $columns.append(`
+                            <div class="result-column">
+                                <strong>English ${title}:</strong>
+                                <div class="${fileInfo.type === 'pdf' ? 'formatted-description' : ''}">${displayContent}</div>
+                                ${itemData.english ? `<button class="copy-button" data-copytext="${escapeHtml(itemData.english)}">Copy Text</button>` : ''}
+                            </div>
+                        `);
+                    }
+                    
+                    // French column with potential collapsible content
+                    if (isPdfWithLongText && itemData.french && itemData.french.length > 300) {
+                        $columns.append(`
+                            <div class="result-column">
+                                <strong>${title} Français:</strong>
+                                <div class="collapsible-container">
+                                    <div class="preview-text">${escapeHtml(itemData.french.substring(0, 150))}...</div>
+                                    <button class="toggle-button">Show More</button>
+                                    <div class="full-text hidden formatted-description">${formatDescription(escapeHtml(itemData.french))}</div>
+                                </div>
+                                ${itemData.french ? `<button class="copy-button" data-copytext="${escapeHtml(itemData.french)}">Copy Text</button>` : ''}
+                            </div>
+                        `);
+                    } else {
+                        // For shorter content or non-PDF files
+                        const displayContent = fileInfo.type === 'pdf'
+                            ? formatDescription(escapeHtml(itemData.french) || '[Not available]')
+                            : `<p>${escapeHtml(itemData.french) || '[Not available]'}</p>`;
+                            
+                        $columns.append(`
+                            <div class="result-column">
+                                <strong>${title} Français:</strong>
+                                <div class="${fileInfo.type === 'pdf' ? 'formatted-description' : ''}">${displayContent}</div>
+                                ${itemData.french ? `<button class="copy-button" data-copytext="${escapeHtml(itemData.french)}">Copy Text</button>` : ''}
+                            </div>
+                        `);
+                    }
+                    
+                    $pageContainer.append($columns);
                 }
                 $container.append($pageContainer);
             });
@@ -808,6 +869,38 @@ $(document).ready(function() {
              .replace(/>/g, "&gt;")
              .replace(/"/g, "&quot;")
              .replace(/'/g, "&#39;"); // Escapes single quotes too
+     }
+
+     // Format description text with better paragraph and list detection
+     function formatDescription(text) {
+        if (!text) return '';
+        
+        // Convert paragraphs (double line breaks) to proper HTML paragraphs
+        let formatted = text.replace(/\n\s*\n/g, '</p><p>');
+        
+        // Convert single line breaks to <br>
+        formatted = formatted.replace(/\n/g, '<br>');
+        
+        // Wrap in paragraph tags if not already
+        if (!formatted.startsWith('<p>')) {
+            formatted = '<p>' + formatted;
+        }
+        if (!formatted.endsWith('</p>')) {
+            formatted = formatted + '</p>';
+        }
+        
+        // Identify and format lists (lines starting with - or * or numbers)
+        formatted = formatted.replace(/<p>(\s*[-*•][\s\S]*?)<\/p>/g, '<ul><li>$1</li></ul>');
+        formatted = formatted.replace(/<br>\s*([-*•])\s+/g, '</li><li>');
+        
+        // Format numbered lists
+        formatted = formatted.replace(/<p>(\s*\d+\.[\s\S]*?)<\/p>/g, '<ol><li>$1</li></ol>');
+        formatted = formatted.replace(/<br>\s*(\d+\.)\s+/g, '</li><li>');
+        
+        // Format headings (lines in all caps or ending with colon)
+        formatted = formatted.replace(/<p>([A-Z][A-Z\s]+[A-Z]:?)<\/p>/g, '<h4>$1</h4>');
+        
+        return formatted;
      }
   
   }); // End secondary document ready for processing logic
