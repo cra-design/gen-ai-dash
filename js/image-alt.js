@@ -803,11 +803,11 @@ $(document).ready(function() {
         if (typeof unsafe !== 'string') return '';
         // Stricter escaping for display in HTML
         return unsafe
-             .replace(/&/g, "&")
-             .replace(/</g, "<")
-             .replace(/>/g, ">")
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
              .replace(/"/g, "&quot;")
-             .replace(/'/g, "'"); // Escapes single quotes too
+             .replace(/'/g, "&#39;"); // Escapes single quotes too
      }
   
   }); // End secondary document ready for processing logic
