@@ -969,30 +969,27 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
     /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
     (match, prefix, origText, suffix) => {
       const key       = `S${slideNumber}_T${runIndex++}`;
+      const candidate = (frenchMap[key] || "").trim();
       const origTrim  = origText.trim();
-      const candidate = frenchMap[key]?.trim() || "";
 
-      // only map if there's a genuine translation
-      let newText = (candidate && candidate !== origTrim)
-        ? candidate
-        : "";
+      // only swap if truly different
+      let newText = (candidate && candidate !== origTrim) ? candidate : "";
 
-      // if this run is bold (b="1"), we might pad it…
+      // if bold, decide padding
       if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
-        // trim off any stray whitespace
         newText = newText.trim();
 
-        // heuristic: if this is a “heading” run (more than 2 words),
-        // treat it as a standalone title—only add a trailing space
-        const wordCount = newText.split(/\s+/).length;
-        const isHeading = wordCount > 2;
+        // is every word Title-Cased? then it's a heading
+        const words       = newText.split(/\s+/);
+        const isTitleCase = words.every(w => /^[A-ZÀÉÈÙÂÊÎÔÛÄËÏÖÜÇ]/.test(w));
 
-        if (isHeading) {
+        if (isTitleCase) {
+          // heading: only trailing space
           if (!newText.endsWith(" ")) newText += " ";
         } else {
-          // inline-bold: keep both leading *and* trailing spaces
+          // inline bold: both sides
           if (!newText.startsWith(" ")) newText = " " + newText;
-          if (!newText.endsWith(" "))   newText = newText + " ";
+          if (!newText.endsWith(" "))   newText += " ";
         }
       }
 
@@ -1000,9 +997,6 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
     }
   );
 }
-
-
-
   
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
