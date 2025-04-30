@@ -180,7 +180,8 @@ $(document).ready(function() {
                         try {
                             const page = await pdf.getPage(i);
                             const viewport = page.getViewport({ scale: 1.5 }); // Adjust scale for quality
-                            const canvas = document.getElementById('pdf-canvas');
+                            // Create a new canvas for each page instead of reusing the same one
+                            const canvas = document.createElement('canvas');
                             const context = canvas.getContext('2d');
                             canvas.height = viewport.height;
                             canvas.width = viewport.width;
