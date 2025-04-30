@@ -522,13 +522,30 @@ $(document).ready(function() {
             console.log(`Using alt text prompt for image (${visionModel}): ${identifier}`); // Debug log
         }
   
-        const messages = [{
-            "role": "user",
-            "content": [
-                { "type": "image_url", "image_url": { "url": base64Data } }, // base64Data should already have the 'data:image/png;base64,' prefix
-                { "type": "text", "text": prompt } // Use the selected prompt
-            ]
-        }];
+        // Different models require different message formats
+        let messages;
+        
+        // Check if we're using Llama or Qwen model
+        if (visionModel.includes('llama') || visionModel.includes('qwen')) {
+            // Llama and Qwen models require a different format with the image and text combined
+            messages = [{
+                "role": "user",
+                "content": [
+                    { "type": "text", "text": prompt }, // Put text first for these models
+                    { "type": "image_url", "image_url": { "url": base64Data } }
+                ]
+            }];
+            console.log(`Using text-first message format for ${visionModel} model: ${identifier}`);
+        } else {
+            // Standard format for other models (Gemini, etc.)
+            messages = [{
+                "role": "user",
+                "content": [
+                    { "type": "image_url", "image_url": { "url": base64Data } },
+                    { "type": "text", "text": prompt }
+                ]
+            }];
+        }
   
         const payload = {
             model: visionModel,
