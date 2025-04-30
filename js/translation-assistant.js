@@ -972,22 +972,34 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       const origTrim  = origText.trim();
       const candidate = frenchMap[key]?.trim() || "";
 
-      // keep only if there is a translation and it's different from the original
+      // only map if there's a genuine translation
       let newText = (candidate && candidate !== origTrim)
         ? candidate
         : "";
 
-      // if this run is bold (b="1"), pad with spaces
+      // if this run is bold (b="1"), we might pad it…
       if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
-        if (!newText.startsWith(" ")) newText = " " + newText;
-        if (!newText.endsWith(" "))   newText = newText + " ";
+        // trim off any stray whitespace
+        newText = newText.trim();
+
+        // heuristic: if this is a “heading” run (more than 2 words),
+        // treat it as a standalone title—only add a trailing space
+        const wordCount = newText.split(/\s+/).length;
+        const isHeading = wordCount > 2;
+
+        if (isHeading) {
+          if (!newText.endsWith(" ")) newText += " ";
+        } else {
+          // inline-bold: keep both leading *and* trailing spaces
+          if (!newText.startsWith(" ")) newText = " " + newText;
+          if (!newText.endsWith(" "))   newText = newText + " ";
+        }
       }
 
       return prefix + escapeXml(newText) + suffix;
     }
   );
 }
-
 
 
 
