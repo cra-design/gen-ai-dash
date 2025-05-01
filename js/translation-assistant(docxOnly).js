@@ -975,11 +975,12 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       // only map if there's a genuine translation
       let newText;
       if (candidate && candidate !== origTrim) {
-        newText = candidate;
+      newText = candidate;
       } else {
-      // allow fallback for simple alphabetic words or acronyms
-      const isSimpleWord = /^[a-zA-Z]{2,10}$/.test(origTrim);
-      newText = isSimpleWord ? origText : "";
+      // Fallback if it's a number or a short label (like "cra", "dtc")
+      const isNumber = /^-?\d+(\.\d+)?$/.test(origTrim);
+      const isShortWord = /^[a-zA-Z]{2,20}$/.test(origTrim);
+      newText = (isNumber || isShortWord) ? origText : "";
       }
 
 
