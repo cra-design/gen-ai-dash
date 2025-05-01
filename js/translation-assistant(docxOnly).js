@@ -962,34 +962,40 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
 
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
-  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
+  const frenchMap = buildFrenchTextMap(finalFrenchHtml); // maps ID to Fr string
+  const memoryCache = {};  // for fallback lookup
   let runIndex = 1;
-  const memoryCache = {}; // stores last seen translation for repeated En text
 
   return originalXml.replace(
     /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
     (match, prefix, origText, suffix) => {
-      const key       = `S${slideNumber}_T${runIndex++}`;
-      const origTrim  = origText.trim();
-      const candidate = (frenchMap[key] || "").trim();
-
+      const key = `S${slideNumber}_T${runIndex++}`;
+      const origTrim = origText.trim();
+      const candidate = frenchMap[key]?.trim() || "";
       let newText = "";
 
+      // Use French candidate if it's present and not identical to English
       if (candidate && candidate !== origTrim) {
         newText = candidate;
-        memoryCache[origTrim] = candidate; // remember it
-      } else if (memoryCache[origTrim]) {
-        newText = memoryCache[origTrim]; // reuse prior translated version
-      } else {
-        // Only fallback to showing original for short items
-        const isNumber = /^-?\d+(\.\d+)?$/.test(origTrim);
-        const isShortWord = /^[a-zA-Z]{2,20}$/.test(origTrim);
-        newText = (isNumber || isShortWord) ? origText : "";
+        memoryCache[origTrim] = candidate;
+      }
+      // Fallback: use memory-based match for repeated values like "canada"
+      else if (!candidate && memoryCache[origTrim]) {
+        newText = memoryCache[origTrim];
+      }
+      // Optional: fallback to English if it's short and untranslatable (e.g., numbers or codes)
+      else if (!candidate && origTrim.length <= 5 && /^[\w\d.\-]+$/.test(origTrim)) {
+        newText = origTrim;
+      }
+      // Otherwise, leave blank
+      else {
+        newText = "";
       }
 
-      // Handle spacing for bold text
+      // If bold, apply heading/inline rules
       if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
         newText = newText.trim();
+
         const wordCount = newText.split(/\s+/).length;
         const isHeading = wordCount > 2;
 
