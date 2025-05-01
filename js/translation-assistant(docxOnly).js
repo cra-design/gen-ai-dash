@@ -964,42 +964,40 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
   let runIndex = 1;
+  const memoryCache = {}; // stores last seen translation for repeated En text
 
   return originalXml.replace(
     /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
     (match, prefix, origText, suffix) => {
       const key       = `S${slideNumber}_T${runIndex++}`;
       const origTrim  = origText.trim();
-      const candidate = frenchMap[key]?.trim() || "";
+      const candidate = (frenchMap[key] || "").trim();
 
-      // only map if there's a genuine translation
-      let newText;
+      let newText = "";
+
       if (candidate && candidate !== origTrim) {
-      newText = candidate;
+        newText = candidate;
+        memoryCache[origTrim] = candidate; // remember it
+      } else if (memoryCache[origTrim]) {
+        newText = memoryCache[origTrim]; // reuse prior translated version
       } else {
-      // Fallback if it's a number or a short label (like "cra", "dtc")
-      const isNumber = /^-?\d+(\.\d+)?$/.test(origTrim);
-      const isShortWord = /^[a-zA-Z]{2,20}$/.test(origTrim);
-      newText = (isNumber || isShortWord) ? origText : "";
+        // Only fallback to showing original for short items
+        const isNumber = /^-?\d+(\.\d+)?$/.test(origTrim);
+        const isShortWord = /^[a-zA-Z]{2,20}$/.test(origTrim);
+        newText = (isNumber || isShortWord) ? origText : "";
       }
 
-
-      // if this run is bold (b="1"), we might pad it…
+      // Handle spacing for bold text
       if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
-        // trim off any stray whitespace
         newText = newText.trim();
-
-        // heuristic: if this is a “heading” run (more than 2 words),
-        // treat it as a standalone title—only add a trailing space
         const wordCount = newText.split(/\s+/).length;
         const isHeading = wordCount > 2;
 
         if (isHeading) {
           if (!newText.endsWith(" ")) newText += " ";
         } else {
-          // inline-bold: keep both leading *and* trailing spaces
           if (!newText.startsWith(" ")) newText = " " + newText;
-          if (!newText.endsWith(" "))   newText = newText + " ";
+          if (!newText.endsWith(" "))   newText += " ";
         }
       }
 
@@ -1008,9 +1006,6 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   );
 }
 
-
-
-  
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
