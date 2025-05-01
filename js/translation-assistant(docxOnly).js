@@ -100,7 +100,7 @@ async function extractPptxText(arrayBuffer) {
       const textNodes = paraNode.getElementsByTagName("a:t");
       for (let j = 0; j < textNodes.length; j++) {
         const node     = textNodes[j];
-        const rawText = (tNode.textContent || "").trim();
+        const rawText = (node.textContent || "").trim();
         
 
         // 1) skip literal slide-number runs ("3" on slide 3)
