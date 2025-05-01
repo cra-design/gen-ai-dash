@@ -973,9 +973,14 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       const candidate = frenchMap[key]?.trim() || "";
 
       // only map if there's a genuine translation
-      let newText = (candidate && candidate !== origTrim)
-        ? candidate
-        : "";
+      let newText;
+      if (candidate && candidate !== origTrim) {
+            newText = candidate;
+      } else {
+      // Fallback if it's a simple value (e.g., number or single word)
+     const isSimple = /^[\d.,]+$/.test(origTrim) || /^[\w-]+$/.test(origTrim);
+     newText = isSimple ? origText : "";
+      }
 
       // if this run is bold (b="1"), we might pad it…
       if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
