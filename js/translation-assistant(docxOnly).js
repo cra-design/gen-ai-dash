@@ -975,12 +975,13 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       // only map if there's a genuine translation
       let newText;
       if (candidate && candidate !== origTrim) {
-            newText = candidate;
+        newText = candidate;
       } else {
-      // Fallback if it's a simple value (e.g., number or single word)
-     const isSimple = /^[\d.,]+$/.test(origTrim) || /^[\w-]+$/.test(origTrim);
-     newText = isSimple ? origText : "";
+      // allow fallback for simple alphabetic words or acronyms
+      const isSimpleWord = /^[a-zA-Z]{2,10}$/.test(origTrim);
+      newText = isSimpleWord ? origText : "";
       }
+
 
       // if this run is bold (b="1"), we might pad it…
       if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
