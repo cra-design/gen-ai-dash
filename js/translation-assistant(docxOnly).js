@@ -163,7 +163,8 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
     //  Enumerate exactly as your converter will:
     runNodes.forEach((runNode, idx) => {
       const tNode   = runNode.getElementsByTagName("a:t")[0];
-      const rawText = (tNode.textContent || "").trim();
+      const rawText = tNode.textContent || ""; 
+      const trimmed = rawText.trim();
 
       // Skip anything inside <a:fld type="slidenum">
       let anc = runNode.parentNode, skip = false;
