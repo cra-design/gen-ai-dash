@@ -100,7 +100,8 @@ async function extractPptxText(arrayBuffer) {
       const textNodes = paraNode.getElementsByTagName("a:t");
       for (let j = 0; j < textNodes.length; j++) {
         const node     = textNodes[j];
-        const rawText = (node.textContent || "").trim();
+        const rawText  = node.textContent || "";
+        const trimmed  = rawText.trim();
         
 
         // 1) skip literal slide-number runs ("3" on slide 3)
@@ -162,8 +163,7 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
     //  Enumerate exactly as your converter will:
     runNodes.forEach((runNode, idx) => {
       const tNode   = runNode.getElementsByTagName("a:t")[0];
-      const rawText = tNode.textContent || "";
-      const trimmed = rawText.trim();
+      const rawText = (tNode.textContent || "").trim();
 
       // Skip anything inside <a:fld type="slidenum">
       let anc = runNode.parentNode, skip = false;
