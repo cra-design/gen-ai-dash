@@ -1,14 +1,15 @@
 let generatedDownloadFile = null;
 let englishHtmlStored = "";
 let frenchFile = null; 
-let finalFrenchHtml = "";
+let finalFrenchHtml = ""; 
+let englishFile = null;
 
 function extractXmlFromFile(file) {
   return new Promise((resolve, reject) => {
     handleFileExtractionToXML(file, resolve, reject);
   });
 } 
-
+// Function to format raw translated output into structured HTML.
 function formatTranslatedOutput(rawText) {
   if (!rawText) return "";
   rawText = rawText.trim();
@@ -102,6 +103,7 @@ async function extractPptxText(arrayBuffer) {
         const node     = textNodes[j];
         const rawText  = node.textContent || "";
         const trimmed  = rawText.trim();
+        
 
         // 1) skip literal slide-number runs ("3" on slide 3)
         if (trimmed === slideNumber) {
@@ -162,7 +164,7 @@ async function extractPptxTextXmlWithId(arrayBuffer) {
     //  Enumerate exactly as your converter will:
     runNodes.forEach((runNode, idx) => {
       const tNode   = runNode.getElementsByTagName("a:t")[0];
-      const rawText = tNode.textContent || "";
+      const rawText = tNode.textContent || ""; 
       const trimmed = rawText.trim();
 
       // Skip anything inside <a:fld type="slidenum">
@@ -962,37 +964,45 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
 
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
-  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
+  const frenchMap = buildFrenchTextMap(finalFrenchHtml); // maps ID to Fr string
+  const memoryCache = {};  // for fallback lookup
   let runIndex = 1;
 
   return originalXml.replace(
     /(<a:r>[\s\S]*?<a:t>)([\s\S]*?)(<\/a:t>[\s\S]*?<\/a:r>)/g,
     (match, prefix, origText, suffix) => {
-      const key       = `S${slideNumber}_T${runIndex++}`;
-      const origTrim  = origText.trim();
+      const key = `S${slideNumber}_T${runIndex++}`;
+      const origTrim = origText.trim();
       const candidate = frenchMap[key]?.trim() || "";
+      let newText = "";
 
-      // only map if there's a genuine translation
-      let newText = (candidate && candidate !== origTrim)
-        ? candidate
-        : "";
-
-      // if this run is bold (b="1"), we might pad it…
+      // Use French candidate if it's present and not identical to English
+      if (candidate !== undefined) {
+  // If present, use the candidate even if it's same as original — numbers and repeated tokens need this
+  newText = candidate;
+  if (origTrim && candidate !== origTrim) {
+    memoryCache[origTrim] = candidate;
+  }
+} else if (memoryCache[origTrim]) {
+  newText = memoryCache[origTrim];
+} else if (/^\s*[\d.,-]+\s*$/.test(origTrim)) {
+  // Allow number-like fallback (e.g. "1.00", "0.29")
+  newText = origTrim;
+} else {
+  newText = ""; // Skip
+}
+      // If bold, apply heading/inline rules
       if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
-        // trim off any stray whitespace
         newText = newText.trim();
 
-        // heuristic: if this is a “heading” run (more than 2 words),
-        // treat it as a standalone title—only add a trailing space
         const wordCount = newText.split(/\s+/).length;
         const isHeading = wordCount > 2;
 
         if (isHeading) {
           if (!newText.endsWith(" ")) newText += " ";
         } else {
-          // inline-bold: keep both leading *and* trailing spaces
           if (!newText.startsWith(" ")) newText = " " + newText;
-          if (!newText.endsWith(" "))   newText = newText + " ";
+          if (!newText.endsWith(" "))   newText += " ";
         }
       }
 
@@ -1001,9 +1011,6 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
   );
 }
 
-
-
-  
 // Function to generate a file blob from the zip and XML content.
 function generateFile(zip, xmlContent, mimeType, renderFunction) {
   try {
