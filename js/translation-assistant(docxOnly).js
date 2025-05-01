@@ -975,23 +975,20 @@ function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
       let newText = "";
 
       // Use French candidate if it's present and not identical to English
-      if (candidate && candidate !== origTrim) {
-        newText = candidate;
-        memoryCache[origTrim] = candidate;
-      }
-      // Fallback: use memory-based match for repeated values like "canada"
-      else if (!candidate && memoryCache[origTrim]) {
-        newText = memoryCache[origTrim];
-      }
-      // Optional: fallback to English if it's short and untranslatable (e.g., numbers or codes)
-      else if (!candidate && origTrim.length <= 5 && /^[\w\d.\-]+$/.test(origTrim)) {
-        newText = origTrim;
-      }
-      // Otherwise, leave blank
-      else {
-        newText = "";
-      }
-
+      if (candidate !== undefined) {
+  // If present, use the candidate even if it's same as original — numbers and repeated tokens need this
+  newText = candidate;
+  if (origTrim && candidate !== origTrim) {
+    memoryCache[origTrim] = candidate;
+  }
+} else if (memoryCache[origTrim]) {
+  newText = memoryCache[origTrim];
+} else if (/^\s*[\d.,-]+\s*$/.test(origTrim)) {
+  // Allow number-like fallback (e.g. "1.00", "0.29")
+  newText = origTrim;
+} else {
+  newText = ""; // Skip
+}
       // If bold, apply heading/inline rules
       if (newText && /<a:rPr[^>]*\sb="1"/.test(prefix)) {
         newText = newText.trim();
