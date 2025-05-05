@@ -714,14 +714,14 @@ $("#second-upload-btn").click(async function () {
     { role: "user", content: combinedPrompt }
   ];
 
-  const models = [  
+  const models = [   
+    "google/gemini-exp-1206:free",
+    "google/gemini-flash-1.5-8b-exp",
     "cognitivecomputations/dolphin3.0-r1-mistral-24b:free", 
     "cognitivecomputations/dolphin3.0-mistral-24b:free",
     "google/gemini-2.0-flash-exp:free",
     "meta-llama/llama-3.3-70b-instruct:free",
     "nvidia/llama-3.1-nemotron-70b-instruct:free",
-    "google/gemini-exp-1206:free",
-    "google/gemini-flash-1.5-8b-exp",
     "deepseek/deepseek-r1:free"
   ];
 
