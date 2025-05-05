@@ -914,23 +914,6 @@ function escapeXml(str) {
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
 } 
-function splitFrenchText(text, parts) {
-  if (parts <= 1) return [text];
-
-  const words = text.split(/\s+/);
-  const result = Array(parts).fill("");
-  let current = 0;
-
-  for (let i = 0; i < words.length; i++) {
-    result[current] += (result[current] ? " " : "") + words[i];
-    // Rotate to next run if not last one
-    if (current < parts - 1 && result[current].length > text.length / parts) {
-      current++;
-    }
-  }
-
-  return result;
-}
 
 
 function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMapping) {
@@ -964,13 +947,12 @@ function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMappi
       const key = aggregatedMapping[mappingIndex].id; // e.g., "P35"
       // Only update if we have a French translation for this key.
       if (frenchMap[key]) {
-       const frenchText = frenchMap[key];
-       const originalRuns = tElements.length;
-       const splitText = splitFrenchText(frenchText, originalRuns);
-
-       for (let j = 0; j < originalRuns; j++) {
-       tElements[j].textContent = splitText[j] || "";
-}
+        // Replace the text in the first <w:t> element.
+        tElements[0].textContent = frenchMap[key];
+        // Clear the text for any additional <w:t> elements.
+        for (let j = 1; j < tElements.length; j++) {
+          tElements[j].textContent = "";
+        }
       }
       mappingIndex++; // Move to the next aggregated paragraph.
     }
