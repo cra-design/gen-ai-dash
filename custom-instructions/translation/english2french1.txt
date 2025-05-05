@@ -3,7 +3,7 @@ You will be provided two inputs in HTML format:
 1. An English HTML document that defines the structure. Each paragraph has a unique ID (e.g., <p id="P1">, <p id="P2">, etc.).
 2. A block of French text provided by the user. This is the correct translation of the English content.
 Your task is to return the French document in HTML format such that:
-- Every piece of English text is replaced by its correct French translation (Ensure that no Arabic, Germany, Japanese or unrelated content appears, only French should be used). 
+- Every piece of English text is replaced by its correct French translation (Ensure that no Arabic, Germany, Japanese, Spanish or any other language, only French should be used). 
 - Do not translate anything, do not use your own wording, only use the French text exactly as provided!!
 - The HTML structure (all tags, attributes, and order) remains unchanged.
 - Each text element retains its original unique ID.
