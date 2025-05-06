@@ -696,12 +696,8 @@ $(document).on("click", "#copy-all-btn", function(e) {
 } 
 function fixInlineTagSpacing(html) {
   return html
-    // Add space before <a> or <strong> if directly stuck to previous word
-    .replace(/([^\s>])(<a[\s>])/g, '$1 $2')
-    .replace(/([^\s>])(<strong[\s>])/g, '$1 $2')
-    // Add space after </a> or </strong> if directly stuck to next word
-    .replace(/(<\/a>)([^\s<])/g, '$1 $2')
-    .replace(/(<\/strong>)([^\s<])/g, '$1 $2');
+    .replace(/([^\s>])(<(a|strong)[^>]*>)/g, '$1 $2')   
+    .replace(/(<\/(a|strong)>)([^\s<])/g, '$1 $3');       
 }
 
 
@@ -828,8 +824,7 @@ $("#second-upload-btn").click(async function () {
       }
       }
      
-      finalFrenchHtml = rebuilt.join('');
-      finalFrenchHtml = fixInlineTagSpacing(finalFrenchHtml);  // ⬅️ insert here
+     finalFrenchHtml = rebuilt.join('');
       formattedOutput = finalFrenchHtml;
     } else {
       formattedOutput = formatTranslatedOutput(finalFrenchHtml);
@@ -883,8 +878,9 @@ $("#convert-translation-download-btn").click(async function () {
       
       // Reconstruct aggregatedMapping (this should be the same mapping you built on file upload)
       let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
-      let aggregatedMapping = aggregateDocxMapping(rawMapping);
+      let aggregatedMapping = aggregateDocxMapping(rawMapping); 
       
+      finalFrenchHtml = fixInlineTagSpacing(finalFrenchHtml); 
       // Use the new conversion function.
       let updatedDocXml = conversionDocxXmlModified(docXmlStr, finalFrenchHtml, aggregatedMapping);
       
@@ -952,22 +948,24 @@ function deduplicateFrenchParagraphs(finalFrenchHtml) {
   }
 
   return cleanedParagraphs.join("");
-} 
+}  
+
 function buildFrenchTextMap(finalFrenchHtml) {
-  // Optionally deduplicate first or perform other cleaning.
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = finalFrenchHtml;
-  // Select all paragraphs that have an id
+
   const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
-  // Build mapping while filtering out empty texts.
   const frenchMap = {};
+
   rawParagraphs.forEach(p => {
     const id = p.getAttribute("id");
-    let text = p.textContent.replace(/\s+/g, ' ').trim();
-    if (text.length > 0) {
-      frenchMap[id] = text;
+    const htmlContent = p.innerHTML.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+
+    if (htmlContent.length > 0) {
+      frenchMap[id] = htmlContent;
     }
   });
+
   return frenchMap;
 }
 
