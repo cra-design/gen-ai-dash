@@ -76,7 +76,7 @@ function extractTextRunsByContext(paragraphNode) {
 
 async function extractDocxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
-  let docXmlStr = await zip.file("word/document.xml").async("string");
+  const docXmlStr = await zip.file("word/document.xml").async("string");
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
 
@@ -84,28 +84,37 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
   let textElements = [];
   let paragraphCounter = 1;
 
-  // Process each paragraph.
   for (let i = 0; i < paragraphs.length; i++) {
     const paragraph = paragraphs[i];
     const runElements = paragraph.getElementsByTagName("w:r");
-    if (runElements.length === 0) continue; // Skip empty paragraphs
+    if (runElements.length === 0) continue;
 
     let runCounter = 1;
-    // Process each run in the paragraph.
+    let paragraphTextParts = [];
+
     for (let j = 0; j < runElements.length; j++) {
       const run = runElements[j];
-      // For each run, get <w:t> elements.
       const textNodes = run.getElementsByTagName("w:t");
+      const isInsideHyperlink = !!run.closest("w\\:hyperlink");
+
       for (let k = 0; k < textNodes.length; k++) {
-        const text = textNodes[k].textContent;
+        const text = textNodes[k].textContent || "";
         const id = `P${paragraphCounter}_R${runCounter++}`;
-        textElements.push({ id, text });
+
+        // Mark this text as inside a hyperlink using <a> wrapper
+        const wrappedText = isInsideHyperlink ? `<a>${text}</a>` : text;
+
+        textElements.push({ id, text: wrappedText });
+        paragraphTextParts.push(wrappedText);
       }
     }
+
     paragraphCounter++;
   }
+
   return textElements;
 }
+
 async function extractPptxText(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
