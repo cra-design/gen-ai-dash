@@ -3,7 +3,7 @@ You will be given two inputs:
 1. An English HTML document with unique IDs for each paragraph (e.g., <p id="P1">, <p id="P2">, etc.).
 2. A French translation in plain text. This is the correct translation — do not translate anything yourself.
 Your task:
-- Replace the English text with the exact French text provided.
+- Replace the English text with the exact French text provided.Where the English input contains a hyperlink (marked with <a>...</a>), wrap the corresponding French translation inside <a> tags in the same location. Do not change the meaning or structure.
 - Use only the French text given. Do not rewrite, guess, or add any other language.
 - Keep the HTML tags, IDs, attributes, and structure exactly the same.
 - If the English paragraph contains a hyperlink or formatting (like <a> or <strong>), keep those tags and place the correct French inside them.
