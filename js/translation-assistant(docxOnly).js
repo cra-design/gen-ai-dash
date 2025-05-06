@@ -916,52 +916,67 @@ function escapeXml(str) {
             .replace(/>/g, "&gt;");
 } 
 
+function splitFrenchText(text, parts) {
+  if (parts <= 1) return [text];
+
+  const words = text.split(/\s+/);
+  const result = Array(parts).fill("");
+  let current = 0;
+
+  for (let i = 0; i < words.length; i++) {
+    result[current] += (result[current] ? " " : "") + words[i];
+    if (current < parts - 1 && result[current].length > text.length / parts) {
+      current++;
+    }
+  }
 
 function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMapping) {
-  // Build the French mapping from the AI output.
-  // Expected keys: "P1", "P2", etc.
+  // Build the French mapping from the AI output. Expected keys: "P1", "P2", etc.
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
-  
-  // Parse the original DOCX XML.
+
+  // Parse the original DOCX XML
   const parser = new DOMParser();
   const serializer = new XMLSerializer();
   const xmlDoc = parser.parseFromString(originalXml, "application/xml");
-  
-  // Get all paragraphs (<w:p> elements).
+
+  // Get all paragraphs (<w:p> elements)
   const paragraphs = xmlDoc.getElementsByTagName("w:p");
   let mappingIndex = 0; // Index for aggregatedMapping
-  
+
   for (let i = 0; i < paragraphs.length && mappingIndex < aggregatedMapping.length; i++) {
     const p = paragraphs[i];
-    // Get all text runs in this paragraph.
-    const tElements = p.getElementsByTagName("w:t");
-    // Check if at least one text element in this paragraph has non-empty text.
-    let paragraphHasText = false;
-    for (let j = 0; j < tElements.length; j++) {
-      if (tElements[j].textContent.trim()) {
-        paragraphHasText = true;
-        break;
+
+    // Collect all <w:t> elements in this paragraph, whether inside <w:hyperlink> or not
+    const runElements = Array.from(p.getElementsByTagName("w:r"));
+    const tNodes = [];
+
+    runElements.forEach(run => {
+      const ts = Array.from(run.getElementsByTagName("w:t"));
+      tNodes.push(...ts);
+    });
+
+    // Check if this paragraph has any real text
+    const paragraphHasText = tNodes.some(t => t.textContent.trim().length > 0);
+    if (!paragraphHasText) continue;
+
+    // Use the corresponding aggregated mapping entry
+    const key = aggregatedMapping[mappingIndex].id; // e.g., "P35"
+    const frenchText = frenchMap[key];
+
+    if (frenchText) {
+      // Split French sentence across all <w:t> in this paragraph
+      const splitText = splitFrenchText(frenchText, tNodes.length);
+      for (let j = 0; j < tNodes.length; j++) {
+        tNodes[j].textContent = splitText[j] || "";
       }
     }
-    if (paragraphHasText) {
-      // Use the corresponding aggregated mapping entry.
-      const key = aggregatedMapping[mappingIndex].id; // e.g., "P35"
-      // Only update if we have a French translation for this key.
-      if (frenchMap[key]) {
-        // Replace the text in the first <w:t> element.
-        tElements[0].textContent = frenchMap[key];
-        // Clear the text for any additional <w:t> elements.
-        for (let j = 1; j < tElements.length; j++) {
-          tElements[j].textContent = "";
-        }
-      }
-      mappingIndex++; // Move to the next aggregated paragraph.
-    }
+
+    mappingIndex++; // Move to the next paragraph
   }
-  
-  // Serialize the updated XML back to a string.
+
   return serializer.serializeToString(xmlDoc);
 }
+
 
 // Helper function to convert French HTML back to PPTX XML:
 function conversionPptxXml(originalXml, finalFrenchHtml, slideNumber) {
