@@ -44,6 +44,35 @@ async function extractDocxParagraphs(arrayBuffer) {
   // Join paragraphs with double newline to separate them
   return fullText.join("\n\n");
 } 
+function extractTextRunsByContext(paragraphNode) {
+  const hyperlinkTexts = [];
+  const normalTexts = [];
+
+  // All direct <w:hyperlink> elements in this paragraph
+  const hyperlinks = Array.from(paragraphNode.getElementsByTagName("w:hyperlink"));
+
+  hyperlinks.forEach(hyperlink => {
+    const runs = Array.from(hyperlink.getElementsByTagName("w:r"));
+    runs.forEach(run => {
+      const t = run.getElementsByTagName("w:t")[0];
+      if (t) hyperlinkTexts.push({ tNode: t, inHyperlink: true });
+    });
+  });
+
+  const allRuns = Array.from(paragraphNode.getElementsByTagName("w:r"));
+  allRuns.forEach(run => {
+    const insideHyperlink = !!run.closest("w\\:hyperlink");
+    const t = run.getElementsByTagName("w:t")[0];
+    if (t && !insideHyperlink) {
+      normalTexts.push({ tNode: t, inHyperlink: false });
+    }
+  });
+
+  return {
+    normal: normalTexts,
+    hyperlink: hyperlinkTexts
+  };
+}
 
 async function extractDocxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
@@ -919,60 +948,85 @@ function escapeXml(str) {
 function splitFrenchText(text, parts) {
   if (parts <= 1) return [text];
 
-  const words = text.split(/\s+/);
+  const words = text.trim().split(/\s+/);
   const result = Array(parts).fill("");
   let current = 0;
 
   for (let i = 0; i < words.length; i++) {
     result[current] += (result[current] ? " " : "") + words[i];
-    if (current < parts - 1 && result[current].length > text.length / parts) {
+    if (current < parts - 1 && result[current].length >= text.length / parts) {
       current++;
     }
-  } 
-   return result;
-}
-function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMapping) {
-  // Build the French mapping from the AI output. Expected keys: "P1", "P2", etc.
-  const frenchMap = buildFrenchTextMap(finalFrenchHtml);
+  }
 
-  // Parse the original DOCX XML
+  return result;
+}
+function splitFrenchTextByHyperlink(frenchHtml) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(frenchHtml, "text/html");
+  const map = {};
+
+  const paragraphs = doc.querySelectorAll("p[id^='P']");
+  paragraphs.forEach(p => {
+    const id = p.id;
+    const a = p.querySelector("a");
+
+    if (a) {
+      const hyperlinkText = a.textContent.trim();
+      const fullText = p.textContent.trim();
+      const before = fullText.split(hyperlinkText)[0]?.trim();
+      const after = fullText.split(hyperlinkText)[1]?.trim();
+      const nonHyperlinkText = [before, after].filter(Boolean).join(" ");
+      map[id] = {
+        full: fullText,
+        hyperlink: hyperlinkText,
+        normal: nonHyperlinkText
+      };
+    } else {
+      map[id] = {
+        full: p.textContent.trim(),
+        hyperlink: "",
+        normal: p.textContent.trim()
+      };
+    }
+  });
+
+  return map;
+}
+
+function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMapping) {
+  const frenchMap = splitFrenchTextByHyperlink(finalFrenchHtml);
+
   const parser = new DOMParser();
   const serializer = new XMLSerializer();
   const xmlDoc = parser.parseFromString(originalXml, "application/xml");
 
-  // Get all paragraphs (<w:p> elements)
   const paragraphs = xmlDoc.getElementsByTagName("w:p");
-  let mappingIndex = 0; // Index for aggregatedMapping
+  let mappingIndex = 0;
 
   for (let i = 0; i < paragraphs.length && mappingIndex < aggregatedMapping.length; i++) {
     const p = paragraphs[i];
 
-    // Collect all <w:t> elements in this paragraph, whether inside <w:hyperlink> or not
-    const runElements = Array.from(p.getElementsByTagName("w:r"));
-    const tNodes = [];
+    const { normal, hyperlink } = extractTextRunsByContext(p);
+    const key = aggregatedMapping[mappingIndex].id;
+    const frenchEntry = frenchMap[key];
 
-    runElements.forEach(run => {
-      const ts = Array.from(run.getElementsByTagName("w:t"));
-      tNodes.push(...ts);
-    });
+    // Only process if we have some French content for this ID
+    if (frenchEntry) {
+      // Assign normal text
+      const splitNormal = splitFrenchText(frenchEntry.normal, normal.length);
+      for (let j = 0; j < normal.length; j++) {
+        normal[j].tNode.textContent = splitNormal[j] || "";
+      }
 
-    // Check if this paragraph has any real text
-    const paragraphHasText = tNodes.some(t => t.textContent.trim().length > 0);
-    if (!paragraphHasText) continue;
-
-    // Use the corresponding aggregated mapping entry
-    const key = aggregatedMapping[mappingIndex].id; // e.g., "P35"
-    const frenchText = frenchMap[key];
-
-    if (frenchText) {
-      // Split French sentence across all <w:t> in this paragraph
-      const splitText = splitFrenchText(frenchText, tNodes.length);
-      for (let j = 0; j < tNodes.length; j++) {
-        tNodes[j].textContent = splitText[j] || "";
+      // Assign hyperlink text
+      const splitHyperlink = splitFrenchText(frenchEntry.hyperlink, hyperlink.length);
+      for (let j = 0; j < hyperlink.length; j++) {
+        hyperlink[j].tNode.textContent = splitHyperlink[j] || "";
       }
     }
 
-    mappingIndex++; // Move to the next paragraph
+    mappingIndex++;
   }
 
   return serializer.serializeToString(xmlDoc);
