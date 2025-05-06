@@ -106,7 +106,14 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
   for (let k = 0; k < textNodes.length; k++) {
     const text = textNodes[k].textContent || "";
     const id = `P${paragraphCounter}_R${runCounter++}`;
-    const wrappedText = isInsideHyperlink ? `<a>${text}</a>` : text;
+    let wrappedText = text;
+
+if (isInsideHyperlink) {
+  // If it doesn't already start with a space, but the original text does, add it
+  const hasLeadingSpace = /^\s/.test(text);
+  const trimmedText = text.trim();
+  wrappedText = hasLeadingSpace ? ` <a>${trimmedText}</a>` : `<a>${trimmedText}</a>`;
+}
 
     textElements.push({ id, text: wrappedText });
     paragraphTextParts.push(wrappedText);
@@ -686,7 +693,18 @@ $(document).on("click", "#copy-all-btn", function(e) {
   // Remove any trailing lines that contain only backticks and optional whitespace
   str = str.replace(/\n\s*```+\s*$/, '');
   return str.trim();
+} 
+function fixInlineTagSpacing(html) {
+  return html
+    // Add space before <a> or <strong> if directly stuck to previous word
+    .replace(/([^\s>])(<a[\s>])/g, '$1 $2')
+    .replace(/([^\s>])(<strong[\s>])/g, '$1 $2')
+    // Add space after </a> or </strong> if directly stuck to next word
+    .replace(/(<\/a>)([^\s<])/g, '$1 $2')
+    .replace(/(<\/strong>)([^\s<])/g, '$1 $2');
 }
+
+
   // Add event listener for "convert back to document" link
   $("a[href='#convert-translation']").click(function(e) {
     e.preventDefault();
@@ -810,7 +828,8 @@ $("#second-upload-btn").click(async function () {
       }
       }
      
-      finalFrenchHtml = rebuilt.join('');  
+      finalFrenchHtml = rebuilt.join('');
+      finalFrenchHtml = fixInlineTagSpacing(finalFrenchHtml);  // ⬅️ insert here
       formattedOutput = finalFrenchHtml;
     } else {
       formattedOutput = formatTranslatedOutput(finalFrenchHtml);
