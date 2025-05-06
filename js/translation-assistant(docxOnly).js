@@ -73,7 +73,13 @@ function extractTextRunsByContext(paragraphNode) {
     hyperlink: hyperlinkTexts
   };
 }
-
+function isInsideHyperlinkNode(node) {
+  while (node) {
+    if (node.nodeName === "w:hyperlink") return true;
+    node = node.parentNode;
+  }
+  return false;
+}
 async function extractDocxTextXmlWithId(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const docXmlStr = await zip.file("word/document.xml").async("string");
@@ -93,21 +99,19 @@ async function extractDocxTextXmlWithId(arrayBuffer) {
     let paragraphTextParts = [];
 
     for (let j = 0; j < runElements.length; j++) {
-      const run = runElements[j];
-      const textNodes = run.getElementsByTagName("w:t");
-      const isInsideHyperlink = !!run.closest("w\\:hyperlink");
+  const run = runElements[j];
+  const textNodes = run.getElementsByTagName("w:t");
+  const isInsideHyperlink = isInsideHyperlinkNode(run);
 
-      for (let k = 0; k < textNodes.length; k++) {
-        const text = textNodes[k].textContent || "";
-        const id = `P${paragraphCounter}_R${runCounter++}`;
+  for (let k = 0; k < textNodes.length; k++) {
+    const text = textNodes[k].textContent || "";
+    const id = `P${paragraphCounter}_R${runCounter++}`;
+    const wrappedText = isInsideHyperlink ? `<a>${text}</a>` : text;
 
-        // Mark this text as inside a hyperlink using <a> wrapper
-        const wrappedText = isInsideHyperlink ? `<a>${text}</a>` : text;
-
-        textElements.push({ id, text: wrappedText });
-        paragraphTextParts.push(wrappedText);
-      }
-    }
+    textElements.push({ id, text: wrappedText });
+    paragraphTextParts.push(wrappedText);
+  }
+}
 
     paragraphCounter++;
   }
