@@ -715,7 +715,7 @@ $("#second-upload-btn").click(async function () {
   ];
 
   const models = [   
-    "google/gemini-2.0-flash-exp:free",
+    "meta-llama/llama-4-maverick:free",
     "google/gemma-3-12b-it:free",
     "google/gemma-3-4b-it:free",
     "google/gemma-3-1b-it:free",
