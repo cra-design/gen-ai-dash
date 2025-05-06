@@ -725,9 +725,10 @@ $("#second-upload-btn").click(async function () {
     "deepseek/deepseek-r1:free"
   ];
 
-  finalFrenchHtml = "";
+  finalFrenchHtml = ""; 
+  const temperature = 0.0;
   for (let model of models) {
-    const ORjson = await getORData(model, requestJson);
+    const ORjson = await getORData(model, requestJson, temperature);
     console.log(`Model: ${model}`, ORjson);
     if (ORjson?.choices?.[0]?.message) {
       finalFrenchHtml = ORjson.choices[0].message.content;
