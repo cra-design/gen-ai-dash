@@ -699,21 +699,6 @@ function fixInlineTagSpacing(html) {
     .replace(/([^\s>])(<(a|strong)[^>]*>)/g, '$1 $2')   
     .replace(/(<\/(a|strong)>)([^\s<])/g, '$1 $3');       
 }
-
-
-  // Add event listener for "convert back to document" link
-  $("a[href='#convert-translation']").click(function(e) {
-    e.preventDefault();
-    if ($("#translation-preview").is(":visible")) { 
-       $("#convert-translation").removeClass("hidden");  
-       $("#translated-doc-download").removeClass("hidden");
-        // Optionally, scroll to the conversion card
-        $('html, body').animate({
-            scrollTop: $("#convert-translation").offset().top
-        }, 500);
-    } else {
-        alert("Please complete the translation before converting back to document.");
-    }
 });
 
   /***********************************************************************
