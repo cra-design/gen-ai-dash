@@ -518,7 +518,7 @@ $(document).on("click", "#copy-all-btn", function(e) {
     ];
     
     // Iterate over your model list until one returns a valid response.
-    let translatedJoinedText = null;
+    let translatedJoinedText = null; 
     for (let model of models) {
       let ORjson = await getORData(model, requestJson);
       if (ORjson && ORjson.choices && ORjson.choices.length > 0 && ORjson.choices[0].message) {
@@ -767,9 +767,10 @@ $("#second-upload-btn").click(async function () {
     "deepseek/deepseek-r1:free"
   ];
 
-  finalFrenchHtml = "";
+  finalFrenchHtml = ""; 
+  const temperature = 0.0;
   for (let model of models) {
-    const ORjson = await getORData(model, requestJson);
+    const ORjson = await getORData(model, requestJson, temperature);
     console.log(`Model: ${model}`, ORjson);
     if (ORjson?.choices?.[0]?.message) {
       finalFrenchHtml = ORjson.choices[0].message.content;
