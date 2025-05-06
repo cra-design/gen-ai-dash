@@ -129,7 +129,7 @@ $(document).ready(function() {
 
 });
 
-async function getORData(model, requestJson) {
+async function getORData(model, requestJson, temperature = 0.0) {
     let ORjson;
     console.log(JSON.stringify({
         "model": model,
