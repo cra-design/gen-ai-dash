@@ -928,7 +928,8 @@ function splitFrenchText(text, parts) {
     if (current < parts - 1 && result[current].length > text.length / parts) {
       current++;
     }
-  }
+  } 
+   return result;
 }
 function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMapping) {
   // Build the French mapping from the AI output. Expected keys: "P1", "P2", etc.
