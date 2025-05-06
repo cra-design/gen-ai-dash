@@ -929,7 +929,7 @@ function splitFrenchText(text, parts) {
       current++;
     }
   }
-
+}
 function conversionDocxXmlModified(originalXml, finalFrenchHtml, aggregatedMapping) {
   // Build the French mapping from the AI output. Expected keys: "P1", "P2", etc.
   const frenchMap = buildFrenchTextMap(finalFrenchHtml);
