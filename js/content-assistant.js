@@ -144,7 +144,8 @@ async function getORData(model, requestJson) {
             },
             body: JSON.stringify({
                 "model": model,
-                "messages": requestJson
+                "messages": requestJson, 
+                "temperature": temperature
             })
         });
 
