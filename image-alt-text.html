@@ -167,8 +167,8 @@
                <!-- Using simpler structure than Angular components -->
                <div class="ng-star-inserted">
                   <!-- !! CHANGE HEADING !! -->
-                  <h2>Image Alt Text Assistant</h2>
-                  <p>Upload images (PNG, JPG) or PDFs to create image alt text with French translations for use on Canada.ca</p>
+                  <h2>Image Alt Text Assistant (OpenAI)</h2>
+                  <p>Upload images (PNG, JPG) or PDFs to create image alt text with French translations using OpenAI's GPT-4o-mini for use on Canada.ca</p>
 
                   <upd-card titlesize="h5">
                      <div tabindex="0" class="card pt-2">
@@ -177,8 +177,8 @@
 
                               <!-- API Key Entry (Copied from page-assistant.html) -->
                               <div id="api-key-entry">
-                                 <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Enter the GenAI API key</h3>
-                                 <p>Before we start, add an openrouter API key to make your requests.</p>
+                                 <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Enter the OpenAI API key</h3>
+                                 <p>Before we start, add an openrouter API key to make your requests to OpenAI's GPT-4o-mini model.</p>
                                  <fieldset style="margin-bottom:20px;">
                                     <legend>OpenRouter API key</legend>
                                     <!-- Hidden input to store key from URL -->
@@ -196,7 +196,7 @@
                                  <div style="margin-bottom: 20px;">
                                     <label for="vision-model-select">Choose Vision Model:</label>
                                     <select id="vision-model-select" class="form-control" style="display: inline-block; width: auto; margin-left: 10px;">
-                                       <option value="google/gemini-pro-vision" selected>google/gemini-pro-vision</option>
+                                       <option value="openai/gpt-4o-mini" selected>openai/gpt-4o-mini</option>
                                        <!-- Qwen model -->
                                        <option value="qwen/qwen2.5-vl-32b-instruct:free">qwen/qwen2.5-vl-32b-instruct:free</option>
                                        <!-- Add other compatible models if available on OpenRouter -->
