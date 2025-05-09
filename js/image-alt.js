@@ -501,14 +501,14 @@ $(document).ready(function() {
   
         if (isPdf) {
             // Conditional PDF prompt based on model
-            if (visionModel === 'google/gemini-pro-vision') {
-                // Use the more detailed prompt for Gemini when processing PDFs
+            if (visionModel === 'openai/gpt-4o-mini') {
+                // Use the more detailed prompt for GPT-4o-mini when processing PDFs
                 prompt = "Describe this PDF page in extensive detail for accessibility purposes. Extract and include ALL visible text content, including headings, paragraphs, list items, table content, form elements, and any captions. Also, briefly describe the general layout and structure (e.g., columns, sections identified by headings). Aim for a complete textual representation of the page's content. Do not omit details or summarize briefly. Be thorough.";
-                console.log(`Using detailed Gemini prompt for PDF: ${identifier}`); // Debug log
+                console.log(`Using detailed GPT-4o-mini prompt for PDF: ${identifier}`); // Debug log
             } else {
                 // Use the original prompt for other models (like Llama) for PDFs
                 prompt = "Provide a thorough description of the text content in this page. Be concise and don't truncate your response";
-                 console.log(`Using standard prompt for PDF (${visionModel}): ${identifier}`); // Debug log
+                console.log(`Using standard prompt for PDF (${visionModel}): ${identifier}`); // Debug log
             }
             max_tokens = 500; // Keep max_tokens high for PDF descriptions regardless of model
         } else {
@@ -537,7 +537,7 @@ $(document).ready(function() {
             }];
             console.log(`Using text-first message format for ${visionModel} model: ${identifier}`);
         } else {
-            // Standard format for other models (Gemini, etc.)
+            // Standard format for OpenAI models (GPT-4o-mini) and others
             messages = [{
                 "role": "user",
                 "content": [

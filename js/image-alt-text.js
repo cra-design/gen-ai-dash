@@ -282,13 +282,24 @@ $(document).ready(function() {
         const apiKey = $("#api-key").val();
         if (!apiKey) return { error: "API Key not found." };
 
-        const prompt = isPdf
-            ? "Provide a thorough description of the text content in this page. Be concise and don't truncate your response"
-            : "Create a short, concise alt text for this image suitable for a website. " +
-              "DO NOT start with phrases like 'The image depicts', 'The image shows', or similar. " +
-              "Instead, directly describe the main subject in 15-20 words maximum. " +
-              "Focus only on the key elements necessary for accessibility. " +
-              "Use simple, direct language without unnecessary words.";
+        let prompt;
+        if (isPdf) {
+            // Conditional PDF prompt based on model
+            if (visionModel === 'openai/gpt-4o-mini') {
+                // Use the more detailed prompt for GPT-4o-mini when processing PDFs
+                prompt = "Describe this PDF page in extensive detail for accessibility purposes. Extract and include ALL visible text content, including headings, paragraphs, list items, table content, form elements, and any captions. Also, briefly describe the general layout and structure (e.g., columns, sections identified by headings). Aim for a complete textual representation of the page's content. Do not omit details or summarize briefly. Be thorough.";
+            } else {
+                // Use the original prompt for other models
+                prompt = "Provide a thorough description of the text content in this page. Be concise and don't truncate your response";
+            }
+        } else {
+            // Use the standard concise alt text prompt for non-PDF images (applies to all models)
+            prompt = "Create a short, concise alt text for this image suitable for a website. " +
+                  "DO NOT start with phrases like 'The image depicts', 'The image shows', or similar. " +
+                  "Instead, directly describe the main subject in 15-20 words maximum. " +
+                  "Focus only on the key elements necessary for accessibility. " +
+                  "Use simple, direct language without unnecessary words.";
+        }
         const max_tokens = isPdf ? 500 : 50; // Increased slightly for alt text
 
         // Different models require different message formats
@@ -306,7 +317,7 @@ $(document).ready(function() {
             }];
             console.log(`Using text-first message format for ${visionModel} model: ${identifier}`);
         } else {
-            // Standard format for other models (Gemini, etc.)
+            // Standard format for OpenAI models (GPT-4o-mini) and others
             messages = [{
                 "role": "user",
                 "content": [
