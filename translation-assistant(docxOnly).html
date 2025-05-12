@@ -211,9 +211,8 @@ summary::-webkit-details-marker {
                <upd-projects _nghost-ng-c947851115="" class="ng-star-inserted" style="">
                   <router-outlet _ngcontent-ng-c947851115=""></router-outlet>
                   <upd-projects-home _nghost-ng-c1826793033="" class="ng-star-inserted">
-                     <h2 _ngcontent-ng-c1826793033="">Translation Assistant</h2>
-
-                     <upd-card>
+                     <h2 _ngcontent-ng-c1826793033="">Translation Assistant</h2>  
+			    <upd-card>
                         <div class="card pt-2">
                            <div class="card-body card-pad pt-2 h-100">
                               <div id="api-key-entry" class=" justify-content-between">
@@ -238,9 +237,29 @@ summary::-webkit-details-marker {
                                   </li>
                                   <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
                                 </ol>
-                              </div>
-                           
-  <div class="card pt-2">
+                              </div> 
+				   
+                     <div id="tab-screen" class="hidden"> 
+		     <!-- === Tab buttons === -->  
+                     <div class="tab-buttons">
+  			<button class="tab-btn active" data-target="translation">Translation</button>
+  			<button class="tab-btn"        data-target="formatting">Formatting</button>
+  			<button class="tab-btn"        data-target="compare">Text Comparing</button>
+		     </div>  
+
+		      <!-- Translation Panel -->
+    			<div id="translation" class="tab-panel active">
+      			<div class="card">
+        		<div class="card-body">
+          		<h4>Translation UI</h4>
+         		 <p>…your translation workflow goes here…</p>
+       			 </div>
+      			</div>
+    			</div>
+
+                   <!-- Formatting Panel -->
+    <div id="formatting" class="tab-panel">
+              <div class="card pt-2">
     <div class="card-body card-pad pt-2 h-100">
       <div id="source-upload" class="after-key-unhide hidden justify-content-between">
         <fieldset>
@@ -410,6 +429,30 @@ summary::-webkit-details-marker {
     </div>
   </div>
 </upd-card>
+          </fieldset>
+
+          <details style="margin-top:1rem;">
+            <summary>Preview source language file</summary>
+            <pre id="source-text-preview">…file contents…</pre>
+          </details>
+        </div>
+      </div>
+    </div>
+
+		    <div id="compare" class="tab-panel">
+                    <!-- Build your compare UI here -->
+                    	<div class="row">
+                    		<div class="col">
+                    			<h3>Original</h3>
+                    			<pre id="compare-original"></pre>
+                    		</div>
+                    		<div class="col">
+                    			<h3>Translated</h3>
+                    			<pre id="compare-translated"></pre>
+                   		</div>
+                	</div>
+                    </div>  
+                   
 
                                   <!--requred libraries-->
                                 </main>
