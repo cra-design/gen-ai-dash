@@ -211,12 +211,11 @@ summary::-webkit-details-marker {
                <upd-projects _nghost-ng-c947851115="" class="ng-star-inserted" style="">
                   <router-outlet _ngcontent-ng-c947851115=""></router-outlet>
                   <upd-projects-home _nghost-ng-c1826793033="" class="ng-star-inserted">
-                     <h2 _ngcontent-ng-c1826793033="">Translation Assistant</h2>  
-			    <upd-card>
-                        <div class="card pt-2">
-                           <div class="card-body card-pad pt-2 h-100">
-                              <div id="api-key-entry" class=" justify-content-between">
-                                <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Enter the GenAI API key</h3>
+                     <h2 _ngcontent-ng-c1826793033="">Translation Assistant</h2>   
+			  <div id="key-screen">
+  				<div class="card">
+    				<div class="card-body">
+      <h3 class="card-title h5 modal-icon-alignment pb-2 ng-star-inserted">Enter the GenAI API key</h3>
                                 <p>Before we start, add an openrouter API key to make your requests.</p>
                                 <fieldset style="margin-bottom:20px;">
                                   <legend>OpenRouter API key</legend>
@@ -237,57 +236,32 @@ summary::-webkit-details-marker {
                                   </li>
                                   <li>Now that you have a key, paste it in the input box above, which will use it for this session (the key is not sent back to us, so we won't see it!)</li>
                                 </ol>
-                              </div> 
+   			 </div>
+  			</div>
+			</div>
+			 
 				   
-                     <div id="tab-screen" class="hidden"> 
-		     <!-- === Tab buttons === -->  
-                     <div class="tab-buttons">
-  			<button class="tab-btn active" data-target="translation">Translation</button>
-  			<button class="tab-btn"        data-target="formatting">Formatting</button>
-  			<button class="tab-btn"        data-target="compare">Text Comparing</button>
-		     </div>  
+                    <div id="tab-screen" class="hidden">
+  			<!-- Tab buttons -->
+  			<div class="tab-buttons">
+    			<button class="tab-btn active" data-target="translation">Translation</button>
+    			<button class="tab-btn" data-target="formatting">Formatting</button>
+   			<button class="tab-btn" data-target="compare">Text Comparing</button>
+  			</div> 
 
-		      <!-- Translation Panel -->
-    			<div id="translation" class="tab-panel active">
-      			<div class="card">
-        		<div class="card-body">
-          		<h4>Translation UI</h4>
-         		 <p>…your translation workflow goes here…</p>
-       			 </div>
-      			</div>
-    			</div>
+		        <!-- Translation Panel -->
+  			<div id="translation" class="tab-panel active">
+		    	<!-- Your translation panel -->
+  			</div> 
 
-                   <!-- Formatting Panel -->
-    <div id="formatting" class="tab-panel">
-              <div class="card pt-2">
+			<div id="formatting" class="tab-panel">
+  <div class="card pt-2">
     <div class="card-body card-pad pt-2 h-100">
+      
+      <!-- Source Upload Section -->
       <div id="source-upload" class="after-key-unhide hidden justify-content-between">
         <fieldset>
           <legend>Upload source language file</legend>
-      <!--        <div class="inline-checkbox-container" style="margin-bottom: 15px;">
-         <input type="radio" id="source-upload-text" name="source-upload-option" value="source-upload-text" checked>
-            <label for="source-upload-text">Provide text</label><br> 
-            <input type="radio" id="source-upload-doc" name="source-upload-option" value="source-upload-doc" checked>
-            <label for="source-upload-doc">Provide file</label><br>
-          </div>-->
-
-          <!-- Text Upload -->
-          <div id="text-upload" class="translation-container hidden">
-<!--             <div class="text-box-container">
-              <div class="text-box-header">
-                <label for="source-language">Source Language: </label>
-                <span id="source-heading-detecting" class="hidden">detecting...</span>
-                <select id="source-language" class="hidden">
-                  <option value="english">English</option>
-                  <option value="french">French</option>
-                </select>
-              </div>
-               <div class="translation-textarea-container">
-                <textarea id="source-text" name="source-text" placeholder="Enter text to translate" class="inputbox-translation"></textarea>
-                <p id="source-text-error" class="error-msg hidden">Text cannot be empty.</p>
-              </div> 
-            </div> -->
-          </div>
 
           <!-- File Upload -->
           <div id="source-doc-upload">
@@ -296,162 +270,85 @@ summary::-webkit-details-marker {
               <p id="source-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
               <p id="source-doc-error" class="error-msg hidden">You must upload a .docx, .pptx or .xlsx file to proceed.</p>
             </div>
-           <!-- <div class="sidebyside-wrapper">
-              <p id="source-language-heading" style="margin-top: 15px;">
-                Source language: <span id="source-doc-detecting" class="hidden">detecting...</span>
-              </p>
-              <select id="source-language-doc" class="hidden">
-                <option value="english">English</option>
-                <option value="french">French</option>
-              </select>
-            </div>-->
           </div>
 
           <!-- Upload Button -->
           <div class="sidebyside-wrapper">
             <button id="source-upload-provide-btn">Upload file</button>
           </div>
+
+          <!-- Source Text Preview -->
+          <ul class="list-unstyled">
+            <li id="source-preview-wrapper" class="hidden">
+              <details>
+                <summary class="preview-header">
+                  <div class="summary-content">
+                    <span class="preview-label">Preview source language file</span>
+                    <button id="copy-all-btn" class="toolbar-button" title="Copy All">
+                      <i class="fa fa-copy"></i>
+                    </button>
+                  </div>
+                </summary>
+                <pre id="source-text-preview"></pre>
+              </details>
+            </li>
+          </ul>
         </fieldset>
-
-        <!-- Source Text Preview -->
-      <ul class="list-unstyled">
-  <li id="source-preview-wrapper" class="hidden">
-    <details>
-      <summary class="preview-header">
-        <div class="summary-content">
-          <span class="preview-label">Preview source language file</span>
-          <button id="copy-all-btn" class="toolbar-button" title="Copy All">
-            <i class="fa fa-copy"></i>
-          </button>
-        </div>
-      </summary>
-      <pre id="source-text-preview"></pre>
-    </details>
-  </li>
-</ul>
       </div>
+
+      <!-- Target Upload Section -->
+      <upd-card id="second-upload" class="hidden">
+        <div class="card pt-2">
+          <div class="card-body card-pad pt-2 h-100">
+            <fieldset>
+              <legend id="second-upload-legend">Paste target language content</legend>
+              
+              <div id="second-text-upload" class="translation-container">
+                <div class="text-box-container">
+                  <div class="translation-textarea-container">
+                    <textarea id="second-text" name="source-text" placeholder="Enter your translation" class="inputbox-translation"></textarea>
+                    <p id="second-text-error" class="error-msg hidden">Text cannot be empty.</p>
+                  </div>
+                </div>
+              </div>
+
+              <button id="second-upload-btn">Format target language content</button>
+            </fieldset>
+          </div>
+        </div>
+      </upd-card>
+
+      <!-- Processing Spinner -->
+      <div id="processing-spinner" class="hidden">
+        <div class="spinner"></div>
+        <p>Generating reports...</p>
+      </div>
+
+      <!-- Convert Translation -->
+      <upd-card id="convert-translation" class="convert-translation hidden">
+        <div class="card pt-2">
+          <div class="card-body card-pad pt-2 h-100">
+            <div id="translated-doc-download" class="justify-content-between hidden">
+              <h4>Formatting complete</h4>
+              <p>The formatted target language file is ready for download.</p>
+              <button id="convert-translation-download-btn" style="margin-top: 20px">Download file</button>
+            </div>
+          </div>
+        </div>
+      </upd-card>
+
     </div>
   </div>
+</div>
 
-                        <upd-card id="second-upload" class="hidden">
-                           <div class="card pt-2">
-                              <div class="card-body card-pad pt-2 h-100">
-                                <div class="justify-content-between">
-                                  <fieldset>
-                                    <legend id="second-upload-legend">Paste target language content</legend>
-<!--                                     <div id="second-upload-radio" class="inline-checkbox-container" style="margin-bottom: 15px;">
-                                      <input type="radio" id="second-upload-text" name="second-upload-option" value="second-upload-text">
-                                      <label for="second-upload-text">Provide text</label><br>
-                                      <input type="radio" id="second-upload-doc" name="second-upload-option" value="second-upload-doc">
-                                      <label for="second-upload-doc">Translated document</label><br>
-                                    </div> -->
-                                    <div id="second-text-upload" class="translation-container">
-                                      <div class="text-box-container">
-                                       <!-- <div class="text-box-header">
-                                          <label for="source-language">Source Language:</label><span id="second-language">French</span>
-                                        </div>-->
-                                        <div class="translation-textarea-container">
-                                          <textarea id="second-text" name="source-text" placeholder="Enter your translation" class="inputbox-translation"></textarea>
-                                          <p id="second-text-error" class="error-msg hidden">Text cannot be empty.</p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <div id="second-doc-upload" class="hidden">
-                                      <div id="second-file-container">
-                                        <input type="file" id="second-file">
-                                        <p id="second-multiple-msg" class="error-msg hidden">Please upload one document at a time.</p>
-                                        <p id="second-doc-error" class="error-msg hidden">You must upload a .docx, .pptx or .xlsx file to proceed.</p>
-                                        <p id="second-doc-mismatch-msg" class="error-msg hidden">Both documents appear to be in the same language.</p>
-                                      </div>
-                                      <div class="sidebyside-wrapper">
-                                        <p id="second-language-heading" style="margin-top: 15px;">Source language: <span id="source-doc-detecting" class="hidden">detecting...</span></p>
-                                        <select id="second-language-doc" class="hidden"><option value="english">English</option><option value="french">French</option></select>
-                                      </div>
-                                    </div>
-                                    <button id="second-upload-btn">Format target language content</button>
-                                  </fieldset>
-                                </div>
-                              </div>
-                            </div>
-                          </upd-card>
-<!--                           <upd-card id="translation-preview" class="hidden">
-                            <div class="card pt-2">
-                              <div class="card-body card-pad pt-2 h-100">
-                                <div class="justify-content-between">
-                                  <h2>Review the translation</h2>
-                                  <p class="convert-translation">If you want to put the translation back in a document, <a href="#convert-translation">convert back to document</a> below the translation preview.</p>
-                                  <div class="sidebyside-wrapper">
-                                    <div id="translation-A-container" class="sidebyside-container report-container-A">
-                                      <div id="$translation-A-toolbar" class="toolbar">
-                                        <button class="toolbar-button hidden" id="accept-translation-A-btn" title="Accept A">
-                                          <i class="fa fa-check"></i>
-                                        </button>
-                                        <button class="toolbar-button" id="edit-translation-A-btn" title="Edit A">
-                                          <i class="fa fa-edit"></i>
-                                        </button>
-                                      </div>
-                                      <div class="sidebyside-report">
-                                        <p id="translation-A"></p>
-                                        <p id="translation-model-A" class="small"></p>
-                                      </div>
-                                    </div>
-                                    <div id="translation-B-container" class="sidebyside-container report-container-B hidden">
-                                      <div id="translation-B-toolbar" class="toolbar">
-                                        <button class="toolbar-button hidden" id="accept-translation-B-btn" title="Accept B">
-                                          <i class="fa fa-check"></i>
-                                        </button>
-                                      </div>
-                                      <div class="sidebyside-report">
-                                        <p id="translation-B"></p>
-                                        <p id="translation-model-A" class="small"></p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </upd-card>  -->
-			 	<div id="processing-spinner" class="hidden">
-      				<div class="spinner"></div>
-      				<p>Generating reports...</p>
-    				</div> 
-			    
-                       <upd-card id="convert-translation" class="convert-translation hidden">
-  <div class="card pt-2">
-    <div class="card-body card-pad pt-2 h-100">
-      <div class="justify-content-between">
-      </div>
-      <div id="translated-doc-download" class="justify-content-between hidden">
-        <h4>Formatting complete</h4>
-        <p>The formatted target language file is ready for download.</p>
-        <button id="convert-translation-download-btn" style="margin-top: 20px">Download file</button>
-      </div>
-    </div>
-  </div>
-</upd-card>
-          </fieldset>
+  
 
-          <details style="margin-top:1rem;">
-            <summary>Preview source language file</summary>
-            <pre id="source-text-preview">…file contents…</pre>
-          </details>
-        </div>
-      </div>
-    </div>
+          
 
-		    <div id="compare" class="tab-panel">
-                    <!-- Build your compare UI here -->
-                    	<div class="row">
-                    		<div class="col">
-                    			<h3>Original</h3>
-                    			<pre id="compare-original"></pre>
-                    		</div>
-                    		<div class="col">
-                    			<h3>Translated</h3>
-                    			<pre id="compare-translated"></pre>
-                   		</div>
-                	</div>
-                    </div>  
+		    <!-- Translation Panel -->
+  			<div id="compare" class="tab-panel active">
+		    	<!-- Your translation panel -->
+  			</div>  
                    
 
                                   <!--requred libraries-->
