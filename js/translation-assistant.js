@@ -236,7 +236,12 @@ $(document).ready(function() {
         $('#genai-model-options').addClass("hidden");
       }
     }
-  }); 
+  });  
+
+$('#clear-btn').click(function() {
+  location.reload();
+});
+
 
   // Detect language from entered text as the user types.
   $('#source-text').on('input', function() {
