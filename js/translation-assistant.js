@@ -209,7 +209,10 @@ function aggregateDocxMapping(mapping) {
     .filter(item => item.text.length > 0);
 }
 
-$(document).ready(function() {
+$(document).ready(function() { 
+  $('#clear-btn').click(function() {
+    location.reload();
+  });
   $('#source-upload-doc').prop('checked', true);
   $('#source-doc-upload').removeClass('hidden');
   $('#text-upload').addClass('hidden');
@@ -237,11 +240,6 @@ $(document).ready(function() {
       }
     }
   });  
-
-$('#clear-btn').click(function() {
-  location.reload();
-});
-
 
   // Detect language from entered text as the user types.
   $('#source-text').on('input', function() {
