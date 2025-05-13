@@ -111,6 +111,16 @@ summary::-webkit-details-marker {
 /* Hide the preview section by default */
 .hidden {
   display: none;
+} 
+.legend-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;  /* Important: makes the button float to the right */
+}
+
+.clear-btn {
+  margin-left: 10px; /* Optional spacing */
 }
   </style>
    <body id="body-pd" class="body-pd">
@@ -244,7 +254,7 @@ summary::-webkit-details-marker {
     <div class="card-body card-pad pt-2 h-100">
       <div id="source-upload" class="after-key-unhide hidden justify-content-between">
         <fieldset> 	
-          <legend>Upload source language file 
+          <legend class="legend-flex">Upload source language file 
 	  <button class="clear-btn"> Clear </button> 
 	  </legend>
        <!--    <div class="inline-checkbox-container" style="margin-bottom: 15px;">
