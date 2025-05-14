@@ -258,26 +258,23 @@ function aggregateDocxMapping(mapping) {
     .filter(item => item.text.length > 0);
 }
 
-function openFuntion(evt, functionName) {
-  // Hide all tab contents
-  $(".tabcontent").hide();
-
-  // Remove 'active' class from all tab links
-  $(".tab-btn").removeClass("active");
-
-  // Show the selected tab content by id
-  $("#" + functionName).show();
-
-  // Add 'active' class to the clicked tab link
-  $(evt.currentTarget).addClass("active");
-}
-
-// Trigger click on the element with id="defaultOpen"
-$("#defaultOpen").trigger("click");
-
-
-// Simulate click on the default tab link
-$("#defaultOpen").trigger("click");
+ $(document).on("click", "input[type=radio]", function (event) {
+    var target = event.target;
+    // var parts = target.name.split("-");
+    // var locationNumber = parts[parts.length - 1];
+    if (target.name == "function-option") {
+      //Check which radio button it is and which content it's show/hiding
+      resetHiddenUploadOptions();
+      if (target.id == "translation") {
+        $('#translation-upload').removeClass("hidden");
+        $('#translation-upload-input').removeClass("hidden");
+      } else if (target.id == "formatting") {
+        $('#formatting-upload').removeClass("hidden");
+        $('#formatting-upload-input').removeClass("hidden");
+      } else if (target.id == "word") {
+        $('#word-upload').removeClass("hidden");
+        $('#word-upload-input').removeClass("hidden");
+      }
 
 
 $(document).ready(function () {
