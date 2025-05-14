@@ -258,26 +258,30 @@ function aggregateDocxMapping(mapping) {
     .filter(item => item.text.length > 0);
 }
 
- $(document).on("click", "input[type=radio]", function (event) {
-    var target = event.target;
-    // var parts = target.name.split("-");
-    // var locationNumber = parts[parts.length - 1];
-    if (target.name == "function-option") {
-      //Check which radio button it is and which content it's show/hiding
-      resetHiddenUploadOptions();
-      if (target.id == "translation") {
-        $('#translation-upload').removeClass("hidden");
+function resetHiddenUploadOptions() {
+  $('#translation-upload').addClass("hidden");
+  $('#formatting-upload').addClass("hidden");
+  $('#word-upload').addClass("hidden");
+} 
+
+     $(document).on("click", "input[name='function-option']", function () {
+    resetHiddenUploadOptions();
+
+    if (this.id === "translation") {
+       $('#translation-upload').removeClass("hidden");
         $('#translation-upload-input').removeClass("hidden");
-      } else if (target.id == "formatting") {
-        $('#formatting-upload').removeClass("hidden");
+    } else if (this.id === "formatting") {
+      $('#formatting-upload').removeClass("hidden");
         $('#formatting-upload-input').removeClass("hidden");
-      } else if (target.id == "word") {
-        $('#word-upload').removeClass("hidden");
+    } else if (this.id === "word") {
+      $('#word-upload').removeClass("hidden");
         $('#word-upload-input').removeClass("hidden");
-      }
+    }
+  });
 
 
-$(document).ready(function () {
+$(document).ready(function () { 
+  $("input[name='function-option']:checked").trigger("click");
   $('#source-upload-doc').prop('checked', true);
   $('#source-doc-upload').removeClass('hidden');
   $('#text-upload').addClass('hidden');
