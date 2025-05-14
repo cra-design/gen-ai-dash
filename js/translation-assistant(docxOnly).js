@@ -272,7 +272,6 @@ function resetHiddenUploadOptions() {
         $('#translation-upload-input').removeClass("hidden");
     } else if (this.id === "formatting") {
       $('#formatting-upload').removeClass("hidden");
-        $('#formatting-upload-input').removeClass("hidden");
     } else if (this.id === "word") {
       $('#word-upload').removeClass("hidden");
         $('#word-upload-input').removeClass("hidden");
