@@ -259,24 +259,55 @@ function aggregateDocxMapping(mapping) {
 }
 
 function resetHiddenUploadOptions() {
-  $('#translation-upload').addClass("hidden");
-  $('#formatting-upload').addClass("hidden");
-  $('#word-upload').addClass("hidden");
-} 
+  $('#translation-upload').addClass('hidden');
+  $('#formatting-upload').addClass('hidden');
+  $('#word-upload').addClass('hidden');
+}
 
-     $(document).on("click", "input[name='function-option']", function () {
-    resetHiddenUploadOptions();
+// 2) Top-level radio clicks
+$(document).on('click', "input[name='function-option']", function() {
+  resetHiddenUploadOptions();
 
-    if (this.id === "translation") {
-       $('#translation-upload').removeClass("hidden");
-        $('#translation-upload-input').removeClass("hidden");
-    } else if (this.id === "formatting") {
-      $('#formatting-upload').removeClass("hidden");
-    } else if (this.id === "word") {
-      $('#word-upload').removeClass("hidden");
-        $('#word-upload-input').removeClass("hidden");
-    }
-  });
+  if (this.id === 'translation') {
+    $('#translation-upload').removeClass('hidden');
+  }
+  else if (this.id === 'formatting') {
+    $('#formatting-upload').removeClass('hidden');
+  }
+  else if (this.id === 'word') {
+    $('#word-upload').removeClass('hidden');
+  }
+});
+
+// 3) Formatting panel: Stage 1 → Stage 2 (preview)
+$('#source-upload-provide-btn-formatting').on('click', function() {
+  // hide previous error
+  $('#source-doc-error-formatting').addClass('hidden');
+
+  const file = $('#source-file-formatting').prop('files')[0];
+  if (!file) {
+    $('#source-doc-error-formatting').removeClass('hidden');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    // populate your original preview markup
+    $('#source-text-preview').text(e.target.result);
+    $('#source-preview-wrapper').removeClass('hidden');
+    $('#second-upload-formatting').removeClass('hidden');
+  };
+  reader.readAsText(file);
+});
+
+// 4) Formatting panel: Stage 3 → Stage 4 (spinner) → Stage 5 (download)
+$('#second-upload-btn-formatting').on('click', function() {
+  $('#processing-spinner-formatting').removeClass('hidden');
+  // simulate async formatting
+  setTimeout(() => {
+    $('#processing-spinner-formatting').addClass('hidden');
+    $('#converted-formatting').removeClass('hidden');
+  }, 2000);
+});
 
 
 $(document).ready(function () { 
