@@ -695,7 +695,7 @@ $(document).ready(function () {
   });
 
   // 'Provide translation' button, show the second upload section
-  $("#source-upload-provide-btn").click(async function () {
+  $("#source-upload-provide-btn-formatting").click(async function () {
     if (!englishFile) {
       alert("Please upload the English document first.");
       return;
