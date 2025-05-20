@@ -280,23 +280,52 @@ $(document).on('click', "input[name='function-option']", function() {
 });
 
 // 3) Formatting panel: Stage 1 → Stage 2 (preview)
-$('#source-upload-provide-btn-formatting').on('click', function() {
-  // hide previous error
-  $('#source-doc-error-formatting').addClass('hidden');
-
-  const file = $('#source-file-formatting').prop('files')[0];
-  if (!file) {
-    $('#source-doc-error-formatting').removeClass('hidden');
+$("#source-upload-provide-btn-formatting").on("click", async function() {
+  // grab the uploaded file
+  const englishFile = $("#source-file-formatting")[0].files[0];
+  if (!englishFile) {
+    alert("Please upload the source document first.");
     return;
   }
-  const reader = new FileReader();
-  reader.onload = e => {
+
+  // hide any previous error
+  $("#source-doc-error-formatting").addClass("hidden");
+
+  try {
+    // determine extension
+    const ext = englishFile.name.split('.').pop().toLowerCase();
+    let extractedText = "";
+
+    if (ext === "docx") {
+      const arrayBuffer = await englishFile.arrayBuffer();
+      extractedText = await extractDocxParagraphs(arrayBuffer);
+    }
+    else if (ext === "pptx") {
+      const arrayBuffer = await englishFile.arrayBuffer();
+      extractedText = await extractPptxText(arrayBuffer);
+    }
+    else if (ext === "xlsx") {
+      const arrayBuffer = await englishFile.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      extractedText = XLSX.utils.sheet_to_csv(worksheet);
+    }
+    else {
+      throw new Error("Unsupported file type for extraction");
+    }
+
     // populate your original preview markup
-    $('#source-text-preview').text(e.target.result);
-    $('#source-preview-wrapper').removeClass('hidden');
-    $('#second-upload-formatting').removeClass('hidden');
-  };
-  reader.readAsText(file);
+    $("#source-text-preview").text(extractedText);
+    // reveal the preview
+    $("#source-preview-wrapper").removeClass("hidden");
+    // reveal the next stage (paste & format)
+    $("#second-upload-formatting").removeClass("hidden");
+  }
+  catch (err) {
+    console.error("Error extracting source text:", err);
+    $("#source-doc-error-formatting").removeClass("hidden");
+  }
 });
 
 // 4) Formatting panel: Stage 3 → Stage 4 (spinner) → Stage 5 (download)
@@ -691,47 +720,6 @@ $(document).ready(function () {
           }
         }
       }
-    }
-  });
-
-  // 'Provide translation' button, show the second upload section
-  $("#source-upload-provide-btn-formatting").click(async function () {
-    if (!englishFile) {
-      alert("Please upload the English document first.");
-      return;
-    }
-    $("#source-doc-error").addClass("hidden");
-    // Clear any previous preview content.
-    // $("#source-text-preview").text("");
-
-    try {
-      const fileExtension = englishFile.name.split('.').pop().toLowerCase();
-      let extractedText = "";
-
-      if (fileExtension === "docx") {
-        const arrayBuffer = await englishFile.arrayBuffer();
-        extractedText = await extractDocxParagraphs(arrayBuffer);
-      } else if (fileExtension === "pptx") {
-        let arrayBuffer = await englishFile.arrayBuffer();
-        extractedText = await extractPptxText(arrayBuffer);
-      } else if (fileExtension === "xlsx") {
-        let arrayBuffer = await englishFile.arrayBuffer();
-        let workbook = XLSX.read(arrayBuffer, { type: "array" });
-        let sheetName = workbook.SheetNames[0];
-        let worksheet = workbook.Sheets[sheetName];
-        let csvData = XLSX.utils.sheet_to_csv(worksheet);
-        extractedText = csvData;
-      } else {
-        throw new Error("Unsupported file type for extraction");
-      }
-      $("#source-text-preview").text(extractedText);
-      // Unhide the preview section.
-      $("#source-preview-wrapper").removeClass("hidden").show();
-      // Unhide the second upload section.
-      $("#second-upload").removeClass("hidden");
-    } catch (err) {
-      console.error("Error extracting source text:", err);
-      $("#source-doc-error").removeClass("hidden");
     }
   });
   /***********************************************************************
