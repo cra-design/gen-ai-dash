@@ -1287,19 +1287,19 @@
                       </ol>
                     </div>
 
-                    <div id="function-chooser" class="after-key-unhide">
-  <fieldset>
-    <legend>Which function do you want to use?</legend>
-    <input type="radio" id="translation" name="function-option" value="translation" checked>
-    <label for="translation">Translation</label><br>
-    <input type="radio" id="formatting" name="function-option" value="formatting">
-    <label for="formatting">Formatting</label><br>
-    <input type="radio" id="word" name="function-option" value="word">
-    <label for="word">Text Comparing</label><br>
-  </fieldset>
-</div>
+                    <div id="function-chooser" class="after-key-unhide hidden">
+                      <fieldset>
+                        <legend>Which function do you want to use?</legend>
+                        <input type="radio" id="translation" name="function-option" value="translation" checked>
+                        <label for="translation">Tranlsation</label><br>
+                        <input type="radio" id="formatting" name="function-option" value="formatting">
+                        <label for="formatting">Formatting</label><br>
+                        <input type="radio" id="word" name="function-option" value="word">
+                        <label for="word">Text Comparing</label><br>
+                      </fieldset>
+                    </div>
 
-                    <div id="translation-upload" class="after-key-unhide hidden">
+                    <div id="translation-upload" class="after-key-unhide">
                       <div id="translation-upload-input" style="margin-top: 20px; margin-bottom:20px;" class="">
                         <fieldset>
                           <legend>Upload source language file</legend>
@@ -1318,129 +1318,76 @@
                       </div>
 
                       <div id="formatting-upload" class="after-key-unhide hidden">
-                            <fieldset>
-                              <legend>Upload source language file</legend>
-                              <div id="text-upload" class="translation-container hidden"></div>
-                              <!-- File Upload -->
-                              <div id="source-doc-upload">
-                                <div id="source-file-container">
-                                  <input type="file" id="source-file">
-                                  <p id="source-multiple-msg" class="error-msg hidden">Please upload one document at a
-                                    time.
-                                  </p>
-                                  <p id="source-doc-error" class="error-msg hidden">You must upload a .docx, .pptx or
-                                    .xlsx
-                                    file to proceed.</p>
-                                </div>
-                              </div>
-
-                              <!-- Upload Button -->
-                              <div class="sidebyside-wrapper">
-                                <button id="source-upload-provide-btn">Upload file</button>
-                              </div>
-                            </fieldset>
-
-                            <!-- Source Text Preview -->
-                            <ul class="list-unstyled">
-                              <li id="source-preview-wrapper" class="hidden">
-                                <details>
-                                  <summary class="preview-header">
-                                    <div class="summary-content">
-                                      <span class="preview-label">Preview source language file</span>
-                                      <button id="copy-all-btn" class="toolbar-button" title="Copy All">
-                                        <i class="fa fa-copy"></i>
-                                      </button>
-                                    </div>
-                                  </summary>
-                                  <pre id="source-text-preview"></pre>
-                                </details>
-                              </li>
-                            </ul>
-                          </div> 
-                      
-                          <upd-card id="second-upload" class="hidden">
-                            <div class="card pt-2">
-                              <div class="card-body card-pad pt-2 h-100">
-                                <div class="justify-content-between">
-                                  <fieldset>
-                                    <legend id="second-upload-legend">Paste target language content</legend>
-
-                                    <div id="second-text-upload" class="translation-container">
-                                      <div class="text-box-container">
-
-                                        <div class="translation-textarea-container">
-                                          <textarea id="second-text" name="source-text"
-                                            placeholder="Enter your translation"
-                                            class="inputbox-translation"></textarea>
-                                          <p id="second-text-error" class="error-msg hidden">Text cannot be empty.</p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <div id="second-doc-upload" class="hidden">
-                                      <div id="second-file-container">
-                                        <input type="file" id="second-file">
-                                        <p id="second-multiple-msg" class="error-msg hidden">Please upload one document
-                                          at a
-                                          time.</p>
-                                        <p id="second-doc-error" class="error-msg hidden">You must upload a .docx, .pptx
-                                          or
-                                          .xlsx file to proceed.</p>
-                                        <p id="second-doc-mismatch-msg" class="error-msg hidden">Both documents appear
-                                          to be in
-                                          the same language.</p>
-                                      </div>
-                                      <div class="sidebyside-wrapper">
-                                        <p id="second-language-heading" style="margin-top: 15px;">Source language: <span
-                                            id="source-doc-detecting" class="hidden">detecting...</span></p>
-                                        <select id="second-language-doc" class="hidden">
-                                          <option value="english">English</option>
-                                          <option value="french">French</option>
-                                        </select>
-                                      </div>
-                                    </div>
-                                    <button id="second-upload-btn">Format target language content</button>
-                                  </fieldset>
-                                </div>
-                              </div>
-                            </div>
-                          </upd-card>
-
-                          <div id="processing-spinner" class="hidden">
-                            <div class="spinner"></div>
-                            <p>Generating reports...</p>
+                        <fieldset>
+                          <legend>Upload source language file</legend>
+                          <div id="source-doc-upload-formatting">
+                            <input type="file" id="source-file-formatting">
+                            <p id="source-doc-error-formatting" class="error-msg hidden">
+                              You must upload a .docx, .pptx or .xlsx file to proceed.
+                            </p>
                           </div>
 
-                          <upd-card id="convert-translation" class="convert-translation hidden">
-                            <div class="card pt-2">
-                              <div class="card-body card-pad pt-2 h-100">
-                                <div class="justify-content-between">
-                                </div>
-                                <div id="translated-doc-download" class="justify-content-between hidden">
-                                  <h4>Formatting complete</h4>
-                                  <p>The formatted target language file is ready for download.</p>
-                                  <button id="convert-translation-download-btn" style="margin-top: 20px">Download
-                                    file</button>
-                                </div>
-                              </div>
-                            </div>
-                          </upd-card>
-                        </div>
-                     
+                          <button id="source-upload-provide-btn-formatting">Upload file</button>
+                        </fieldset>
 
-                      <div id="word-upload" class="after-key-unhide hidden">
-                        <div id="word-upload-input" class="" style="margin-top:20px">
+
+                        <!-- Source Text Preview -->
+                        <ul class="list-unstyled">
+                          <li id="source-preview-wrapper" class="hidden">
+                            <details>
+                              <summary class="preview-header">
+                                <div class="summary-content">
+                                  <span class="preview-label">Preview source language file</span>
+                                  <button id="copy-all-btn" class="toolbar-button" title="Copy All">
+                                    <i class="fa fa-copy"></i>
+                                  </button>
+                                </div>
+                              </summary>
+                              <pre id="source-text-preview"></pre>
+                            </details>
+                          </li>
+                        </ul>
+
+                        <div id="second-upload-formatting" class="hidden">
                           <fieldset>
-                            <legend>Upload .docx word documents to generate HTML markup</legend>
-                            <input type="file" id="word-file" name="word-file">
-                          </fieldset> 
-                          <div class="sidebyside-wrapper">
-                            <button id="source-upload-provide-btn">Upload file</button>
-                          </div>
+                            <legend>Paste target language content</legend>
+                            <textarea id="second-text-formatting" placeholder="Enter your translation"></textarea>
+                            <button id="second-upload-btn-formatting">Format target language content</button>
+                          </fieldset>
+                        </div>
+
+
+
+                        <div id="processing-spinner-formatting" class="hidden">
+                          <div class="spinner"></div>
+                          <p>Generating reports...</p>
+                        </div>
+
+                        <upd-card id="convert-translation" class="convert-translation hidden">
+
+
+                          <h4>Formatting complete</h4>
+                          <p>The formatted target language file is ready for download.</p>
+                          <button id="convert-translation-download-btn" style="margin-top: 20px">Download
+                            file</button>
+                      </div>
+                    </div>
+
+
+                    <div id="word-upload" class="">
+                      <div id="word-upload-input" class="" style="margin-top:20px">
+                        <fieldset>
+                          <legend>Upload .docx word documents to generate HTML markup</legend>
+                          <input type="file" id="word-file" name="word-file">
+                        </fieldset>
+                        <div class="sidebyside-wrapper">
+                          <button id="source-upload-provide-btn">Upload file</button>
                         </div>
                       </div>
+                    </div>
 
 
-                      <!--requred libraries-->
+                    <!--requred libraries-->
       </main>
       <footer _ngcontent-ng-c3392822675="" class="mt-4 ng-tns-c3392822675-0">
         <div _ngcontent-ng-c3392822675=""
