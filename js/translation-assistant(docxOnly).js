@@ -329,15 +329,131 @@ $("#source-upload-provide-btn-formatting").on("click", async function() {
 });
 
 // 4) Formatting panel: Stage 3 → Stage 4 (spinner) → Stage 5 (download)
-$('#second-upload-btn-formatting').on('click', function() {
+$('#second-upload-btn-formatting').on('click', async function () {
+  // 1) Show the formatting spinner
   $('#processing-spinner-formatting').removeClass('hidden');
-  // simulate async formatting
-  setTimeout(() => {
-    $('#processing-spinner-formatting').addClass('hidden');
-    $('#converted-formatting').removeClass('hidden');
-  }, 2000);
-});
 
+  // 2) Grab the French text the user pasted
+  const frenchText = $('#second-text').val().trim();
+  if (!frenchText) {
+    alert("No French document/text found. Please copy and paste your translation.");
+    $('#processing-spinner-formatting').addClass('hidden');
+    return;
+  }
+
+  // 3) Get the stored English HTML (from your global)
+  let englishHtml = englishHtmlStored || "";
+  if (!englishHtml) {
+    alert("No formatted English document found. Please complete the first step.");
+    $('#processing-spinner-formatting').addClass('hidden');
+    return;
+  }
+
+   englishHtml = englishHtml.replace(/<img[^>]*>/g, '');
+
+  // Determine prompt based on the original English file extension
+  const fileExtensionEnglish = (englishFile?.name || "").split('.').pop().toLowerCase();
+  const promptPath = (fileExtensionEnglish === "pptx")
+    ? "custom-instructions/translation/english2french-pptx.txt"
+    : "custom-instructions/translation/english2french1.txt";
+
+  let systemPrompt = "";
+  try {
+    systemPrompt = await $.get(promptPath);
+  } catch (error) {
+    console.error("Error loading system prompt:", error);
+    alert("Could not load translation instructions. Please check your files.");
+    $('#converting-spinner').addClass("hidden");
+    $('#processing-spinner').addClass("hidden");
+    return;
+  }
+
+  const combinedPrompt = `${systemPrompt}\n\nEnglish Document (HTML):\n${englishHtml}\n\nFrench Text:\n${frenchText}\n\nPlease return the French document in HTML format that exactly follows the structure of the English document.`;
+
+  const requestJson = [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: combinedPrompt }
+  ];
+
+  const models = [
+    "google/gemini-2.0-flash-exp:free",
+    "google/gemma-3-12b-it:free",
+    "google/gemma-3-4b-it:free",
+    "google/gemma-3-1b-it:free",
+    "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+    "cognitivecomputations/dolphin3.0-mistral-24b:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "nvidia/llama-3.1-nemotron-70b-instruct:free",
+    "deepseek/deepseek-r1:free"
+  ];
+
+  finalFrenchHtml = "";
+  const temperature = 0.0;
+  for (let model of models) {
+    const ORjson = await getORData(model, requestJson, temperature);
+    console.log(`Model: ${model}`, ORjson);
+    if (ORjson?.choices?.[0]?.message) {
+      finalFrenchHtml = ORjson.choices[0].message.content;
+      console.log("Raw AI output:", finalFrenchHtml);
+      break;
+    }
+  }
+
+  try {
+    if (!finalFrenchHtml) {
+      alert("Translation alignment failed. No valid response from any model.");
+      return;
+    }
+
+    finalFrenchHtml = removeCodeFences(finalFrenchHtml);
+
+    const fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
+    let formattedOutput;
+
+    if (fileExtension === 'pptx') {
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = finalFrenchHtml;
+      const rawParagraphs = Array.from(tempDiv.querySelectorAll("p[id]"));
+      const rebuilt = [];
+
+      for (let i = 0; i < rawParagraphs.length; i++) {
+        const currText = rawParagraphs[i].textContent.trim();
+        const currId = rawParagraphs[i].id;
+
+        if (/^([nN]d|[rR]d|[sS]t|[tT]h|[dlLcsà'‘’`’“”])$/.test(currText)
+          && rawParagraphs[i + 1]) {
+          const nextText = rawParagraphs[i + 1].textContent.trim();
+          rebuilt.push(`<p id="${currId}">${currText}${nextText}</p>`);
+          i++;
+        } else {
+          rebuilt.push(`<p id="${currId}">${currText}</p>`);
+        }
+      }
+
+      finalFrenchHtml = rebuilt.join('');
+      formattedOutput = finalFrenchHtml;
+    } else {
+      formattedOutput = formatTranslatedOutput(finalFrenchHtml);
+    }
+
+    if (!formattedOutput || formattedOutput.trim() === "") {
+      alert("Formatted output is empty. Please check the AI response.");
+    } else {
+      // Do not display output, store it internally
+      console.log("AI translation ready and stored (not displayed).");
+    }
+
+    console.log("Final French HTML (cleaned):", finalFrenchHtml);
+
+  } catch (err) {
+    console.error("Error during final output processing:", err);
+    alert("An error occurred while processing the AI output.");
+  } finally {
+      $('#processing-spinner-formatting').addClass('hidden');
+  $('#convert-translation').removeClass('hidden');
+  $('#translated-doc-download').removeClass('hidden');
+  }
+});
 
 $(document).ready(function () { 
   $("input[name='function-option']:checked").trigger("click");
