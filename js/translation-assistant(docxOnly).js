@@ -313,8 +313,11 @@ $("#source-upload-provide-btn-formatting").on("click", async function() {
     }
     else {
       throw new Error("Unsupported file type for extraction");
-    }
-
+    } 
+    
+    englishHtmlStored = extractedText;
+    englishFile = formattingFile; 
+    
     // populate your original preview markup
     $("#source-text-preview").text(extractedText);
     // reveal the preview
