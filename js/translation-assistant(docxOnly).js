@@ -285,49 +285,74 @@ $(document).on('change', 'input[type="file"]', async function(event) {
   const uploadedFile = event.target.files[0];
   if (!uploadedFile) return;
 
-  const fileExtension = uploadedFile.name
-    .split('.')
-    .pop()
-    .toLowerCase();
+  const ext = uploadedFile.name.split('.').pop().toLowerCase();
+  const isSource      = event.target.id === 'source-file';
+  const isFormatting  = event.target.id === 'source-file-formatting';
+  const isSecondFile  = event.target.id === 'second-file';
+
+  // Common unsupported‐type check
+  const supported = ['docx','pptx','xlsx'];
+  if (!supported.includes(ext)) {
+    alert('Please upload a .docx, .pptx or .xlsx file.');
+    return;
+  }
 
   try {
-    if (event.target.id === "source-file") {
-      // This is the English document
+    // ─── 1) Translation panel extraction ─────────
+    if (isSource) {
       englishFile = uploadedFile;
+      let html = '';
 
-      if (fileExtension === 'docx') {
-        const arrayBuffer = await uploadedFile.arrayBuffer();
-        const rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
-        const aggregatedMapping = aggregateDocxMapping(rawMapping);
-        const aggregatedHtml = aggregatedMapping
-          .map(item => `<p id="${item.id}">${item.text}</p>`)
-          .join('');
-        englishHtmlStored = aggregatedHtml;
-        $("#translation-A").html(aggregatedHtml);
+      if (ext === 'docx') {
+        const buf      = await uploadedFile.arrayBuffer();
+        const rawMap   = await extractDocxTextXmlWithId(buf);
+        const agg      = aggregateDocxMapping(rawMap);
+        html           = agg.map(i => `<p id="${i.id}">${i.text}</p>`).join('');
+      }
+      else if (ext === 'pptx') {
+        const buf    = await uploadedFile.arrayBuffer();
+        const elems  = await extractPptxTextXmlWithId(buf);
+        html         = elems.map(i => `<p id="${i.id}">${i.text}</p>`).join('');
+      }
+      // (xlsx handling optional)
+      englishHtmlStored = html;
+      $('#translation-A').html(html);
+    }
 
-      } else if (fileExtension === 'pptx') {
-        const arrayBuffer = await uploadedFile.arrayBuffer();
-        const textElements = await extractPptxTextXmlWithId(arrayBuffer);
-        const pptxHtml = textElements
-          .map(item => `<p id="${item.id}">${item.text}</p>`)
-          .join('');
-        englishHtmlStored = pptxHtml;
-        $("#translation-A").html(pptxHtml);
+    // ─── 2) Formatting panel extraction ─────────
+    else if (isFormatting) {
+      englishFile = uploadedFile;      // reuse same global
+      let html = '';
 
-      } else {
-        // you could handle xlsx here if needed
-        throw new Error("Unsupported file type for source-file");
+      if (ext === 'docx') {
+        const buf   = await uploadedFile.arrayBuffer();
+        html        = await extractDocxParagraphs(buf);
+      }
+      else if (ext === 'pptx') {
+        const buf   = await uploadedFile.arrayBuffer();
+        html        = await extractPptxText(buf);
+      }
+      else if (ext === 'xlsx') {
+        const buf   = await uploadedFile.arrayBuffer();
+        const wb    = XLSX.read(buf, { type:'array' });
+        const ws    = wb.Sheets[wb.SheetNames[0]];
+        html        = XLSX.utils.sheet_to_csv(ws);
       }
 
-    } else if (event.target.id === "second-file") {
-      // This is the French document, if you ever need it
+      englishHtmlStored = html;
+      // populate your preview
+      $('#source-text-preview').text(html);
+      $('#source-preview-wrapper, #second-upload-formatting').removeClass('hidden');
+    }
+
+    // ─── 3) French file store ─────────
+    else if (isSecondFile) {
       frenchFile = uploadedFile;
     }
-  } catch (err) {
-    console.error('Error processing file change:', err);
-    // show your existing error UI for source language
-    $(`#source-doc-error`).removeClass("hidden");
-    $(`#source-doc-detecting, #source-language-heading`).addClass("hidden");
+  }
+  catch (err) {
+    console.error('File extraction error:', err);
+    alert('Error extracting file content. See console.');
   }
 });
 
