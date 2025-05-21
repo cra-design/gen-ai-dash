@@ -278,6 +278,67 @@ $(document).on('click', "input[name='function-option']", function() {
     $('#word-upload').removeClass('hidden');
   }
 });
+// ——————————————————————————————————————
+// 0) Globals (at top of your script)
+// ——————————————————————————————————————
+let generatedDownloadFile = null;
+let englishHtmlStored    = "";
+let frenchFile           = null;
+let finalFrenchHtml      = "";
+let englishFile          = null;
+
+// ——————————————————————————————————————
+// 1) Source‐file change: extract & store English HTML
+// ——————————————————————————————————————
+$(document).on('change', 'input[type="file"]', async function(event) {
+  const uploadedFile = event.target.files[0];
+  if (!uploadedFile) return;
+
+  const fileExtension = uploadedFile.name
+    .split('.')
+    .pop()
+    .toLowerCase();
+
+  try {
+    if (event.target.id === "source-file") {
+      // This is the English document
+      englishFile = uploadedFile;
+
+      if (fileExtension === 'docx') {
+        const arrayBuffer = await uploadedFile.arrayBuffer();
+        const rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
+        const aggregatedMapping = aggregateDocxMapping(rawMapping);
+        const aggregatedHtml = aggregatedMapping
+          .map(item => `<p id="${item.id}">${item.text}</p>`)
+          .join('');
+        englishHtmlStored = aggregatedHtml;
+        $("#translation-A").html(aggregatedHtml);
+
+      } else if (fileExtension === 'pptx') {
+        const arrayBuffer = await uploadedFile.arrayBuffer();
+        const textElements = await extractPptxTextXmlWithId(arrayBuffer);
+        const pptxHtml = textElements
+          .map(item => `<p id="${item.id}">${item.text}</p>`)
+          .join('');
+        englishHtmlStored = pptxHtml;
+        $("#translation-A").html(pptxHtml);
+
+      } else {
+        // you could handle xlsx here if needed
+        throw new Error("Unsupported file type for source-file");
+      }
+
+    } else if (event.target.id === "second-file") {
+      // This is the French document, if you ever need it
+      frenchFile = uploadedFile;
+    }
+  } catch (err) {
+    console.error('Error processing file change:', err);
+    // show your existing error UI for source language
+    $(`#source-doc-error`).removeClass("hidden");
+    $(`#source-doc-detecting, #source-language-heading`).addClass("hidden");
+  }
+});
 
 // 3) Formatting panel: Stage 1 → Stage 2 (preview)
 $("#source-upload-provide-btn-formatting").on("click", async function() {
