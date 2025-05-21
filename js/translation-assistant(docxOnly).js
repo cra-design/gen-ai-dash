@@ -416,7 +416,7 @@ $("#source-upload-provide-btn-formatting").on("click", async function() {
       .replace(/([^\s>])(<(a|strong)[^>]*>)/g, '$1 $2')
       .replace(/(<\/(a|strong)>)([^\s<])/g, '$1 $3');
   }
-});
+
 // 4) Formatting panel: Stage 3 → Stage 4 (spinner) → Stage 5 (download)
 $('#second-upload-btn-formatting').on('click', async function () {
   // 1) Show the formatting spinner
