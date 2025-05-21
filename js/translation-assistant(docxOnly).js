@@ -265,7 +265,7 @@ function resetHiddenUploadOptions() {
 }
 
 // 2) Top-level radio clicks
-$(document).on('click', "input[name='function-option']", function() {
+$(document).on('click', "input[name='function-option']", function () {
   resetHiddenUploadOptions();
 
   if (this.id === 'translation') {
@@ -281,17 +281,17 @@ $(document).on('click', "input[name='function-option']", function() {
 // ——————————————————————————————————————
 // 1) Source‐file change: extract & store English HTML
 // ——————————————————————————————————————
-$(document).on('change', 'input[type="file"]', async function(event) {
+$(document).on('change', 'input[type="file"]', async function (event) {
   const uploadedFile = event.target.files[0];
   if (!uploadedFile) return;
 
   const ext = uploadedFile.name.split('.').pop().toLowerCase();
-  const isSource      = event.target.id === 'source-file';
-  const isFormatting  = event.target.id === 'source-file-formatting';
-  const isSecondFile  = event.target.id === 'second-file';
+  const isSource = event.target.id === 'source-file';
+  const isFormatting = event.target.id === 'source-file-formatting';
+  const isSecondFile = event.target.id === 'second-file';
 
   // Common unsupported‐type check
-  const supported = ['docx','pptx','xlsx'];
+  const supported = ['docx', 'pptx', 'xlsx'];
   if (!supported.includes(ext)) {
     alert('Please upload a .docx, .pptx or .xlsx file.');
     return;
@@ -304,15 +304,15 @@ $(document).on('change', 'input[type="file"]', async function(event) {
       let html = '';
 
       if (ext === 'docx') {
-        const buf      = await uploadedFile.arrayBuffer();
-        const rawMap   = await extractDocxTextXmlWithId(buf);
-        const agg      = aggregateDocxMapping(rawMap);
-        html           = agg.map(i => `<p id="${i.id}">${i.text}</p>`).join('');
+        const buf = await uploadedFile.arrayBuffer();
+        const rawMap = await extractDocxTextXmlWithId(buf);
+        const agg = aggregateDocxMapping(rawMap);
+        html = agg.map(i => `<p id="${i.id}">${i.text}</p>`).join('');
       }
       else if (ext === 'pptx') {
-        const buf    = await uploadedFile.arrayBuffer();
-        const elems  = await extractPptxTextXmlWithId(buf);
-        html         = elems.map(i => `<p id="${i.id}">${i.text}</p>`).join('');
+        const buf = await uploadedFile.arrayBuffer();
+        const elems = await extractPptxTextXmlWithId(buf);
+        html = elems.map(i => `<p id="${i.id}">${i.text}</p>`).join('');
       }
       // (xlsx handling optional)
       englishHtmlStored = html;
@@ -325,18 +325,18 @@ $(document).on('change', 'input[type="file"]', async function(event) {
       let html = '';
 
       if (ext === 'docx') {
-        const buf   = await uploadedFile.arrayBuffer();
-        html        = await extractDocxParagraphs(buf);
+        const buf = await uploadedFile.arrayBuffer();
+        html = await extractDocxParagraphs(buf);
       }
       else if (ext === 'pptx') {
-        const buf   = await uploadedFile.arrayBuffer();
-        html        = await extractPptxText(buf);
+        const buf = await uploadedFile.arrayBuffer();
+        html = await extractPptxText(buf);
       }
       else if (ext === 'xlsx') {
-        const buf   = await uploadedFile.arrayBuffer();
-        const wb    = XLSX.read(buf, { type:'array' });
-        const ws    = wb.Sheets[wb.SheetNames[0]];
-        html        = XLSX.utils.sheet_to_csv(ws);
+        const buf = await uploadedFile.arrayBuffer();
+        const wb = XLSX.read(buf, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        html = XLSX.utils.sheet_to_csv(ws);
       }
 
       englishHtmlStored = html;
@@ -357,7 +357,7 @@ $(document).on('change', 'input[type="file"]', async function(event) {
 });
 
 // 3) Formatting panel: Stage 1 → Stage 2 (preview)
-$("#source-upload-provide-btn-formatting").on("click", async function() {
+$("#source-upload-provide-btn-formatting").on("click", async function () {
   // grab the uploaded file
   const englishFile = $("#source-file-formatting")[0].files[0];
   if (!englishFile) {
@@ -390,8 +390,8 @@ $("#source-upload-provide-btn-formatting").on("click", async function() {
     }
     else {
       throw new Error("Unsupported file type for extraction");
-    } 
-    
+    }
+
     // populate your original preview markup
     $("#source-text-preview").text(extractedText);
     // reveal the preview
@@ -403,19 +403,19 @@ $("#source-upload-provide-btn-formatting").on("click", async function() {
     console.error("Error extracting source text:", err);
     $("#source-doc-error-formatting").removeClass("hidden");
   }
-}); 
+});
 
- function removeCodeFences(str) {
+function removeCodeFences(str) {
   // Remove all lines that start with ```
   return str
     .replace(/^```.*$/gm, '')
     .trim();
 }
-  function fixInlineTagSpacing(html) {
-    return html
-      .replace(/([^\s>])(<(a|strong)[^>]*>)/g, '$1 $2')
-      .replace(/(<\/(a|strong)>)([^\s<])/g, '$1 $3');
-  }
+function fixInlineTagSpacing(html) {
+  return html
+    .replace(/([^\s>])(<(a|strong)[^>]*>)/g, '$1 $2')
+    .replace(/(<\/(a|strong)>)([^\s<])/g, '$1 $3');
+}
 
 // 4) Formatting panel: Stage 3 → Stage 4 (spinner) → Stage 5 (download)
 $('#second-upload-btn-formatting').on('click', async function () {
@@ -438,7 +438,7 @@ $('#second-upload-btn-formatting').on('click', async function () {
     return;
   }
 
-   englishHtml = englishHtml.replace(/<img[^>]*>/g, '');
+  englishHtml = englishHtml.replace(/<img[^>]*>/g, '');
 
   // Determine prompt based on the original English file extension
   const fileExtensionEnglish = (englishFile?.name || "").split('.').pop().toLowerCase();
@@ -464,9 +464,9 @@ $('#second-upload-btn-formatting').on('click', async function () {
     { role: "user", content: combinedPrompt }
   ];
 
-   const models = [ 
+  const models = [
     "google/gemini-2.0-flash-exp:free",
-    "cognitivecomputations/dolphin3.0-r1-mistral-24b:free", 
+    "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
     "cognitivecomputations/dolphin3.0-mistral-24b:free",
     "meta-llama/llama-3.3-70b-instruct:free",
     "nvidia/llama-3.1-nemotron-70b-instruct:free",
@@ -537,16 +537,16 @@ $('#second-upload-btn-formatting').on('click', async function () {
     console.error("Error during final output processing:", err);
     alert("An error occurred while processing the AI output.");
   } finally {
-      $('#processing-spinner-formatting').addClass('hidden');
-  $('#convert-translation').removeClass('hidden');
-  $('#translated-doc-download').removeClass('hidden');
+    $('#processing-spinner-formatting').addClass('hidden');
+    $('#convert-translation').removeClass('hidden');
+    $('#translated-doc-download').removeClass('hidden');
   }
-}); 
+});
 
 // ─────────────────────────────────────────
 // 5) Download “formatted” document
 // ─────────────────────────────────────────
-$(document).on('click', '#convert-translation-download-btn', async function() {
+$(document).on('click', '#convert-translation-download-btn', async function () {
   // 1) Guard: do we have AI output?
   if (!finalFrenchHtml || !finalFrenchHtml.trim()) {
     alert("No formatted French document available.");
@@ -566,33 +566,33 @@ $(document).on('click', '#convert-translation-download-btn', async function() {
   try {
     if (ext === 'docx') {
       // reload the original .docx as a zip
-      const ab      = await englishFile.arrayBuffer();
-      const zip     = await JSZip.loadAsync(ab);
-      const docXml  = await zip.file("word/document.xml").async("string");
+      const ab = await englishFile.arrayBuffer();
+      const zip = await JSZip.loadAsync(ab);
+      const docXml = await zip.file("word/document.xml").async("string");
 
       // rebuild your mapping
-      const raw     = await extractDocxTextXmlWithId(ab);
-      const agg     = aggregateDocxMapping(raw);
+      const raw = await extractDocxTextXmlWithId(ab);
+      const agg = aggregateDocxMapping(raw);
 
       // patch in the AI output
       finalFrenchHtml = fixInlineTagSpacing(finalFrenchHtml);
-      const updated  = conversionDocxXmlModified(docXml, finalFrenchHtml, agg);
+      const updated = conversionDocxXmlModified(docXml, finalFrenchHtml, agg);
       zip.file("word/document.xml", updated);
 
       blob = await zip.generateAsync({ type: "blob", mimeType: mime });
     }
     else if (ext === 'pptx') {
       // reload .pptx zip, rewrite each slide
-      const ab   = await englishFile.arrayBuffer();
-      const zip  = await JSZip.loadAsync(ab);
+      const ab = await englishFile.arrayBuffer();
+      const zip = await JSZip.loadAsync(ab);
       const slideRe = /^ppt\/slides\/slide(\d+)\.xml$/i;
 
       for (const name of Object.keys(zip.files)) {
         const m = slideRe.exec(name);
         if (m) {
           const slideNum = m[1];
-          const xml      = await zip.file(name).async("string");
-          const patched  = conversionPptxXml(xml, finalFrenchHtml, slideNum);
+          const xml = await zip.file(name).async("string");
+          const patched = conversionPptxXml(xml, finalFrenchHtml, slideNum);
           zip.file(name, patched);
         }
       }
@@ -612,10 +612,10 @@ $(document).on('click', '#convert-translation-download-btn', async function() {
   // 3) Kick off the download
   const baseName = (englishFile?.name || "translated-file").replace(/\.[^/.]+$/, "");
   const fileName = `${baseName}-FR.${ext}`;
-  const url      = URL.createObjectURL(blob);
+  const url = URL.createObjectURL(blob);
 
   const a = document.createElement('a');
-  a.href    = url;
+  a.href = url;
   a.download = fileName;
   document.body.appendChild(a);
   a.click();
@@ -623,7 +623,7 @@ $(document).on('click', '#convert-translation-download-btn', async function() {
   URL.revokeObjectURL(url);
 });
 
-$(document).ready(function () { 
+$(document).ready(function () {
   $("input[name='function-option']:checked").trigger("click");
   $('#source-upload-doc').prop('checked', true);
   $('#source-doc-upload').removeClass('hidden');
@@ -1006,82 +1006,6 @@ $(document).ready(function () {
       }
     }
   });
-
-
-
-/*************************************************************
- * Download Document Workflow
- *************************************************************/
-$("#convert-translation-download-btn").click(async function () {
-  if (!finalFrenchHtml || !finalFrenchHtml.trim()) {
-    alert("No formatted French document available.");
-    return;
-  }
-
-  let fileExtension = (englishFile?.name || "").split('.').pop().toLowerCase();
-  let mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-  if (fileExtension === 'pptx') {
-    mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-  } else if (fileExtension === 'xlsx') {
-    mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-  }
-
-  let generatedBlob;
-  try {
-    if (fileExtension === 'docx') {
-      let arrayBuffer = await englishFile.arrayBuffer();
-      const zip = await JSZip.loadAsync(arrayBuffer);
-      let docXmlStr = await zip.file("word/document.xml").async("string");
-
-      // Reconstruct aggregatedMapping (this should be the same mapping you built on file upload)
-      let rawMapping = await extractDocxTextXmlWithId(arrayBuffer);
-      let aggregatedMapping = aggregateDocxMapping(rawMapping);
-
-      finalFrenchHtml = fixInlineTagSpacing(finalFrenchHtml);
-      // Use the new conversion function.
-      let updatedDocXml = conversionDocxXmlModified(docXmlStr, finalFrenchHtml, aggregatedMapping);
-
-      // Write updated document.xml back into the zip.
-      zip.file("word/document.xml", updatedDocXml);
-
-      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
-    } else if (fileExtension === 'pptx') {
-      const arrayBuffer = await englishFile.arrayBuffer();
-      const zip = await JSZip.loadAsync(arrayBuffer);
-      const slideRegex = /^ppt\/slides\/slide(\d+)\.xml$/i;
-
-      for (const fileName of Object.keys(zip.files)) {
-        const match = slideRegex.exec(fileName);
-        if (match) {
-          const slideNumber = match[1];
-          const slideXml = await zip.file(fileName).async("string");
-          const updatedSlideXml = conversionPptxXml(slideXml, finalFrenchHtml, slideNumber);
-          zip.file(fileName, updatedSlideXml);
-        }
-      }
-      generatedBlob = await zip.generateAsync({ type: "blob", mimeType: mimeType });
-    } else if (fileExtension === 'xlsx') {
-      // XLSX branch
-    }
-  } catch (err) {
-    console.error("Error while generating translated file:", err);
-    alert("Failed to generate translated file.");
-    return;
-  }
-
-  if (!generatedBlob) {
-    alert("File generation failed.");
-    return;
-  }
-
-  let baseFileName = englishFile ? englishFile.name.split('.').slice(0, -1).join('.') : "translated-file";
-  let modifiedFileName = `${baseFileName}-FR.${fileExtension}`;
-
-  let downloadLink = document.createElement('a');
-  downloadLink.href = URL.createObjectURL(generatedBlob);
-  downloadLink.download = modifiedFileName;
-  downloadLink.click();
-  URL.revokeObjectURL(downloadLink.href);
 });
 
 //************************************************************************************
