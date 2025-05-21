@@ -464,15 +464,14 @@ $('#second-upload-btn-formatting').on('click', async function () {
     { role: "user", content: combinedPrompt }
   ];
 
-  const models = [
+   const models = [ 
     "google/gemini-2.0-flash-exp:free",
-    "google/gemma-3-12b-it:free",
-    "google/gemma-3-4b-it:free",
-    "google/gemma-3-1b-it:free",
-    "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+    "cognitivecomputations/dolphin3.0-r1-mistral-24b:free", 
     "cognitivecomputations/dolphin3.0-mistral-24b:free",
     "meta-llama/llama-3.3-70b-instruct:free",
     "nvidia/llama-3.1-nemotron-70b-instruct:free",
+    "google/gemini-exp-1206:free",
+    "google/gemini-flash-1.5-8b-exp",
     "deepseek/deepseek-r1:free"
   ];
 
@@ -542,6 +541,86 @@ $('#second-upload-btn-formatting').on('click', async function () {
   $('#convert-translation').removeClass('hidden');
   $('#translated-doc-download').removeClass('hidden');
   }
+}); 
+
+// ─────────────────────────────────────────
+// 5) Download “formatted” document
+// ─────────────────────────────────────────
+$(document).on('click', '#convert-translation-download-btn', async function() {
+  // 1) Guard: do we have AI output?
+  if (!finalFrenchHtml || !finalFrenchHtml.trim()) {
+    alert("No formatted French document available.");
+    return;
+  }
+
+  // 2) Pick correct MIME type from the original englishFile extension
+  const ext = (englishFile?.name || "translated-file").split('.').pop().toLowerCase();
+  let mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  if (ext === 'pptx') {
+    mime = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+  } else if (ext === 'xlsx') {
+    mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  }
+
+  let blob;
+  try {
+    if (ext === 'docx') {
+      // reload the original .docx as a zip
+      const ab      = await englishFile.arrayBuffer();
+      const zip     = await JSZip.loadAsync(ab);
+      const docXml  = await zip.file("word/document.xml").async("string");
+
+      // rebuild your mapping
+      const raw     = await extractDocxTextXmlWithId(ab);
+      const agg     = aggregateDocxMapping(raw);
+
+      // patch in the AI output
+      finalFrenchHtml = fixInlineTagSpacing(finalFrenchHtml);
+      const updated  = conversionDocxXmlModified(docXml, finalFrenchHtml, agg);
+      zip.file("word/document.xml", updated);
+
+      blob = await zip.generateAsync({ type: "blob", mimeType: mime });
+    }
+    else if (ext === 'pptx') {
+      // reload .pptx zip, rewrite each slide
+      const ab   = await englishFile.arrayBuffer();
+      const zip  = await JSZip.loadAsync(ab);
+      const slideRe = /^ppt\/slides\/slide(\d+)\.xml$/i;
+
+      for (const name of Object.keys(zip.files)) {
+        const m = slideRe.exec(name);
+        if (m) {
+          const slideNum = m[1];
+          const xml      = await zip.file(name).async("string");
+          const patched  = conversionPptxXml(xml, finalFrenchHtml, slideNum);
+          zip.file(name, patched);
+        }
+      }
+      blob = await zip.generateAsync({ type: "blob", mimeType: mime });
+    }
+    else if (ext === 'xlsx') {
+      // TODO: implement XLSX branch if you need it
+      throw new Error("XLSX download not implemented yet");
+    }
+  }
+  catch (err) {
+    console.error("Error while generating translated file:", err);
+    alert("Failed to generate translated file.");
+    return;
+  }
+
+  // 3) Kick off the download
+  const baseName = (englishFile?.name || "translated-file").replace(/\.[^/.]+$/, "");
+  const fileName = `${baseName}-FR.${ext}`;
+  const url      = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href    = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 });
 
 $(document).ready(function () { 
