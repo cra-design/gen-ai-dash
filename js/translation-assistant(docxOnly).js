@@ -279,15 +279,6 @@ $(document).on('click', "input[name='function-option']", function() {
   }
 });
 // ——————————————————————————————————————
-// 0) Globals (at top of your script)
-// ——————————————————————————————————————
-let generatedDownloadFile = null;
-let englishHtmlStored    = "";
-let frenchFile           = null;
-let finalFrenchHtml      = "";
-let englishFile          = null;
-
-// ——————————————————————————————————————
 // 1) Source‐file change: extract & store English HTML
 // ——————————————————————————————————————
 $(document).on('change', 'input[type="file"]', async function(event) {
