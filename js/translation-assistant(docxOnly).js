@@ -403,8 +403,15 @@ $("#source-upload-provide-btn-formatting").on("click", async function() {
     console.error("Error extracting source text:", err);
     $("#source-doc-error-formatting").removeClass("hidden");
   }
-});
+}); 
 
+  function removeCodeFences(str) {
+    // Remove a leading line that starts with ``` (plus any following text)
+    str = str.replace(/^```.*\n/, '');
+    // Remove any trailing lines that contain only backticks and optional whitespace
+    str = str.replace(/\n\s*```+\s*$/, '');
+    return str.trim();
+  }
 // 4) Formatting panel: Stage 3 → Stage 4 (spinner) → Stage 5 (download)
 $('#second-upload-btn-formatting').on('click', async function () {
   // 1) Show the formatting spinner
@@ -919,15 +926,6 @@ $(document).ready(function () {
    * Provide Translation Button Flow:
    * show the second upload section
   ***********************************************************************/
-
-
-  function removeCodeFences(str) {
-    // Remove a leading line that starts with ``` (plus any following text)
-    str = str.replace(/^```.*\n/, '');
-    // Remove any trailing lines that contain only backticks and optional whitespace
-    str = str.replace(/\n\s*```+\s*$/, '');
-    return str.trim();
-  }
   function fixInlineTagSpacing(html) {
     return html
       .replace(/([^\s>])(<(a|strong)[^>]*>)/g, '$1 $2')
