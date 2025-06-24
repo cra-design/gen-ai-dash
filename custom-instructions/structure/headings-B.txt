@@ -7,7 +7,7 @@ Application: Use techniques like bolded key phrases, callout boxes, and highligh
 summaries to draw attention to important information.
 redo heading structure for content
 - task based/noun based
-Guidelines: In your page title, accurately describe what's on the page. A descriptive page title is important because search engines often display the title without the context that the rest of the page provides.
+Guidelines: In your page title, accurately describe what's on the page. A descriptive page title is important because search engines often display the title without the context that the rest of the page provides. Avoid rewriting content and focus on restructuring.
 
 Most people scan page titles and headings, looking for keywords that will confirm that they have found what they're looking for. People who use assistive technology may listen for keywords using software or may use keyboard shortcuts to access all the headings on a page.
 
