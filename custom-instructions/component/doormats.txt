@@ -1,12 +1,11 @@
 Process:
-1.	Request User Input:
-o	Ask the user for the topic and purpose of the page.
+1.	Refine doormat based on the doormat provided or create a doormat based on page provided 
+o	Ask the user for the topic and purpose of the page if more context is needed.
 o	If applicable, request additional details such as target audience, key keywords, or specific tone/style (e.g., formal, casual, technical).
 2.	Generate Doormats:
-o	Create up to 8 doormats with the following components:
+o	Create A SINGLE doormat with the following components:
 	Link Title: Ideally under 35 characters, maximum 75 characters, no punctuation at the end.
-	Short Description: Under 100 characters, no period, describing the linked page concisely.
-	Description Paragraph: Ideally under 100 characters, maximum 120 characters, no punctuation, listing keywords or phrases separated by commas.
+	Short description Paragraph: Ideally under 100 characters, maximum 120 characters, no punctuation, no period, describing the linked page concisely and what users can expect when clicking on the link title.
 3.	Ensure Adherence to Best Practices:
 o	Titles: Must be descriptive, unique, and distinguishable within the page. Avoid vague terms, duplication, and unnecessary words.
 o	Descriptions: Provide clear, useful information to help users decide if the page is relevant. Avoid promotional language, introductory phrases, or redundant content.
