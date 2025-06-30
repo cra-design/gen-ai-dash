@@ -12,11 +12,19 @@ Make sure other headings (for example, H2, H3, etc.) accurately describe the con
 
  When writing a heading or subheading, make sure that it: 
 
-gives a clear idea of what follows 
+Gives a clear idea of what follows 
 
-is short and contains no unnecessary words 
+Is short and contains no unnecessary words 
 
-contains the most relevant terms at the beginning 
+Contains the most relevant terms at the beginning 
+
+Also ensure that you are meeting the following style requirements: 
+
+Do not include punctuation in headings 
+
+Headings should not be questions – avoid the use of FAQ patterns 
+
+ 
 
 When thinking of the hierarchy of the headings, apply the following concepts of good information architecture: 
 
@@ -35,3 +43,5 @@ Do not duplicate sections
  
 
 Tone: use an informative tone while addressing the user directly. Phrase headings where possible as tasks the user of the page can complete or learn about in that section. 
+
+ 
