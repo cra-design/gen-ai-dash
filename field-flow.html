@@ -111,9 +111,11 @@
     </select>
 
     <label>Answer Options</label>
-    <input type="text" placeholder="Option 1">
-    <input type="text" placeholder="Option 2">
-    <button class="btn">+ Add Option</button>
+<div id="options-container">
+  <input type="text" placeholder="Option 1">
+  <input type="text" placeholder="Option 2">
+</div>
+<button class="btn" onclick="addOption()">+ Add Option</button>
 
     <label>Reset Behavior</label>
     <select>
@@ -206,6 +208,20 @@
       document.querySelector('.tab:nth-child(2)').classList.add('active');
     }
   }
+  function addOption() {
+  const container = document.getElementById('options-container');
+
+  // Get the current number of option inputs
+  const optionCount = container.querySelectorAll('input').length + 1;
+
+  // Create new input element
+  const newInput = document.createElement('input');
+  newInput.type = 'text';
+  newInput.placeholder = `Option ${optionCount}`;
+
+  // Append the new input field
+  container.appendChild(newInput);
+}
 </script>
 
 </body>
